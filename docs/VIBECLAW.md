@@ -13,11 +13,13 @@ tool reads promoted repository state
   → the next tool reads that promotion
 ```
 
-Normal GSD commands continue to work without VibeClaw. Nothing creates orchestration state until `vibe init` is run in a project.
+Normal GSD workflows continue to work without VibeClaw orchestration. Direct
+`vgsd` use still creates a standalone execution branch; nothing creates
+`.planning-vibe/` orchestration state until `vibe init` is run in a project.
 
 ## GSD versus VibeClaw
 
-GSD remains the methodology and canonical workflow content. Its project documents stay in `.planning/`, its commands stay under the `gsd` namespace, and its runtime-specific command/skill transformations still happen during installation.
+GSD remains the methodology and canonical workflow content. Its project documents stay in `.planning/`, VibeClaw exposes its commands under the collision-free `vgsd` namespace, and runtime-specific command/skill transformations still happen during installation.
 
 VibeClaw manages cross-tool execution around GSD:
 
@@ -70,7 +72,47 @@ Initialization creates:
 
 It also adds `.vibe/` to `.git/info/exclude`. Candidate worktrees are stored under `.vibe/worktrees/`, so they cannot be committed accidentally. `.planning-vibe/` is not ignored: project routes and durable orchestration state are intended to be inspectable and committable.
 
-Initialization is idempotent. It validates existing configuration and only creates missing bundled templates.
+Initialization is idempotent. It validates existing configuration, only creates
+missing bundled templates, and scans `vgsd/*` branches plus Git-local execution
+metadata. Any direct pre-Vibe work is recorded in
+`.planning-vibe/state/standalone-executions.json`.
+
+## vgsd execution-branch guard
+
+Every public `vgsd` command begins with the same portable preflight. Installer
+path conversion carries it to Claude Code, Gemini CLI, Codex, and the other
+supported runtimes.
+
+```text
+vgsd command starts
+  ├─ valid Vibe candidate → reuse candidate branch/worktree
+  ├─ Vibe exists, not a candidate → block and require stage preparation
+  ├─ matching standalone branch → reuse it
+  ├─ standalone branch owned by another tool → block
+  └─ no Vibe setup → create vgsd/<runtime>/<command>/<execution-id>
+```
+
+The Vibe adapter supplies `VIBE_CANDIDATE_ID`, `VIBE_TOOL`, and `GSD_RUNTIME`
+to managed launches. The guard verifies those values against the candidate
+manifest, current branch, worktree path, tool assignment, and active candidate
+status. A branch name alone is not sufficient inside a Vibe-managed project.
+
+Standalone provenance is written below Git's common directory at
+`vgsd/executions/`. Raw runtime session IDs are hashed before storage. The
+working tree is not dirtied by the metadata, and existing dirty files remain in
+place when Git switches to the new branch.
+
+For diagnostics, call the compatibility utility inside the runtime install
+directory (this Codex example uses `.codex`; use `.claude` or `.gemini` for
+those installs):
+
+```bash
+node "$HOME/.codex/get-shit-done/bin/gsd-tools.cjs" execution-branch inspect help --runtime codex
+node "$HOME/.codex/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure plan-phase --runtime codex
+```
+
+Normally users do not run these directly; the installed `vgsd` command prompt
+runs them before its workflow body.
 
 For a complete three-tool operating recipe using Gemini, Codex, and Claude Code, see [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md).
 

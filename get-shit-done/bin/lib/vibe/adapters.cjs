@@ -88,7 +88,12 @@ function command(program, args, context, extraEnv = {}) {
     program,
     args,
     cwd: context.worktree || context.project.root,
-    env: { VIBE_CANDIDATE_ID: context.candidate_id, VIBE_TOOL: context.tool.id, ...extraEnv },
+    env: {
+      VIBE_CANDIDATE_ID: context.candidate_id,
+      VIBE_TOOL: context.tool.id,
+      GSD_RUNTIME: context.tool.id,
+      ...extraEnv,
+    },
   };
 }
 

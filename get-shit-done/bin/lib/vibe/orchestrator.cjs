@@ -7,6 +7,7 @@ const childProcess = require('child_process');
 const { VibeStore } = require('./store.cjs');
 const { createDefaultRegistry, renderCommand } = require('./adapters.cjs');
 const { formatGsdSlash } = require('../runtime-slash.cjs');
+const { discoverStandaloneExecutions } = require('../execution-branch.cjs');
 const {
   assertId,
   normalizeConfig,
@@ -93,6 +94,27 @@ class VibeOrchestrator {
       this.listRoutes();
       this.listWorkflows();
       const exclude = git.ensurePrivateWorktreeExclude(this.projectRoot, this.gitOptions);
+      const standaloneExecutions = discoverStandaloneExecutions(this.projectRoot, { gitOptions: this.gitOptions });
+      const standaloneState = {
+        schema_version: 1,
+        discovered_at: iso(this.now()),
+        executions: standaloneExecutions,
+      };
+      let standaloneChanged = true;
+      if (fs.existsSync(this.store.paths.standaloneExecutions)) {
+        const previous = this.store.readJson(this.store.paths.standaloneExecutions, 'Standalone execution state');
+        standaloneChanged = JSON.stringify(previous.executions || []) !== JSON.stringify(standaloneExecutions);
+        if (!standaloneChanged) standaloneState.discovered_at = previous.discovered_at || standaloneState.discovered_at;
+      }
+      if (standaloneChanged || !fs.existsSync(this.store.paths.standaloneExecutions)) {
+        this.store.writeJson(this.store.paths.standaloneExecutions, standaloneState);
+        if (standaloneExecutions.length > 0) {
+          this.store.appendEvent(this.event('standalone-executions.discovered', {
+            count: standaloneExecutions.length,
+            branches: standaloneExecutions.map((execution) => execution.branch),
+          }));
+        }
+      }
       if (!existed) this.store.appendEvent(this.event('project.initialized', { project_root: this.projectRoot }));
       return {
         initialized: true,
@@ -101,6 +123,8 @@ class VibeOrchestrator {
         state_root: this.store.root,
         templates_created: copied,
         worktree_exclude: exclude,
+        standalone_executions: standaloneExecutions,
+        standalone_execution_state: this.store.paths.standaloneExecutions,
       };
     });
   }

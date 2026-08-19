@@ -141,7 +141,10 @@ function main(argv = process.argv.slice(2)) {
   if (command === 'init') {
     assertNoArgs(tokens);
     result = orchestrator.initialize();
-    emit(result, json, (value) => `VibeClaw initialized at ${value.state_root}${value.already_initialized ? ' (already initialized)' : ''}`);
+    emit(result, json, (value) => {
+      const count = value.standalone_executions ? value.standalone_executions.length : 0;
+      return `VibeClaw initialized at ${value.state_root}${value.already_initialized ? ' (already initialized)' : ''}\nStandalone vgsd executions discovered: ${count}`;
+    });
     return 0;
   }
 

@@ -11,7 +11,7 @@
  * bug-3135-capture-backlog-workflow for the full-surface contract checks.
  *
  * Contract:
- *   1. name:          present, non-empty, starts with gsd: or gsd-
+ *   1. name:          present, non-empty, starts with vgsd: or vgsd-
  *   2. description:   present, non-empty
  *   3. allowed-tools: present, non-empty, all entries from CANONICAL_TOOLS
  *   4. execution_context @-refs: every reference resolves to an existing file
@@ -42,12 +42,12 @@ const commandFiles = fs
 
 describe('command contract: name field (ADR-0002)', () => {
   for (const { name, full } of commandFiles) {
-    test(`${name}: name: present and starts with gsd: or gsd-`, () => {
+    test(`${name}: name: present and starts with vgsd: or vgsd-`, () => {
       const fm = parseFrontmatter(fs.readFileSync(full, 'utf-8'));
       assert.ok(fm.name && fm.name.trim(), `${name}: name: field missing or empty`);
       assert.ok(
-        /^gsd[:-]/.test(fm.name.trim()),
-        `${name}: name: must start with "gsd:" or "gsd-", got "${fm.name.trim()}"`,
+        /^vgsd[:-]/.test(fm.name.trim()),
+        `${name}: name: must start with "vgsd:" or "vgsd-", got "${fm.name.trim()}"`,
       );
     });
   }

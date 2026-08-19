@@ -10,6 +10,17 @@ allowed-tools:
   - AskUserQuestion
 requires: [config, phase, plan-phase]
 ---
+<execution_branch_guard>
+Before reading execution context, invoking another skill, or changing project state, run:
+`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "new-project" --runtime __VGSD_RUNTIME__`
+
+Parse the JSON response:
+- Continue only when `allowed` is `true`.
+- If `allowed` is `false`, stop and show its `message` and `hint`.
+- If `action` is `created` or `adopted`, tell the user which `branch` is active once.
+- For `reused` or `inspected`, continue silently.
+</execution_branch_guard>
+
 <runtime_note>
 **Copilot (VS Code):** Use `vscode_askquestions` wherever this workflow calls `AskUserQuestion`. They are equivalent — `vscode_askquestions` is the VS Code Copilot implementation of the same interactive question API.
 </runtime_note>

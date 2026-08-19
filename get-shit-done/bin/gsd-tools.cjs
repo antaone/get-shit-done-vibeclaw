@@ -30,6 +30,8 @@
  *   current-timestamp [format]         Get timestamp (full|date|filename)
  *   list-todos [area]                  Count and enumerate pending todos
  *   verify-path-exists <path>          Check file/directory existence
+ *   execution-branch ensure <command>  Verify Vibe candidate or create a standalone smart branch
+ *   execution-branch inspect <command> Inspect branch safety without creating a branch
  *   config-ensure-section              Initialize .planning/config.json
  *   history-digest                     Aggregate all SUMMARY.md data
  *   summary-extract <path> [--fields]  Extract structured data from SUMMARY.md
@@ -198,6 +200,7 @@ const { routePhaseCommand } = require('./lib/phase-command-router.cjs');
 const { routePhasesCommand } = require('./lib/phases-command-router.cjs');
 const { routeValidateCommand } = require('./lib/validate-command-router.cjs');
 const { routeRoadmapCommand } = require('./lib/roadmap-command-router.cjs');
+const executionBranch = require('./lib/execution-branch.cjs');
 
 // ─── SDK bridge (Phase 6 inline family / non-family delegation) ───────────────
 // For inline case blocks that have SDK counterparts (frontmatter, config, and
@@ -361,8 +364,12 @@ async function main() {
   // Resolve worktree root: in a linked worktree, .planning/ lives in the main worktree.
   // However, in monorepo worktrees where the subdirectory itself owns .planning/,
   // skip worktree resolution — the CWD is already the correct project root.
+  // The execution-branch preflight is also exempt: a project-bootstrap Vibe
+  // candidate intentionally has no .planning/ yet, and must be verified in
+  // its candidate worktree rather than remapped to the integration worktree.
   const { resolveWorktreeRoot } = require('./lib/core.cjs');
-  if (!fs.existsSync(path.join(cwd, '.planning'))) {
+  const executionBranchPreflight = args[0] === 'execution-branch';
+  if (!executionBranchPreflight && !fs.existsSync(path.join(cwd, '.planning'))) {
     const worktreeRoot = resolveWorktreeRoot(cwd);
     if (worktreeRoot !== cwd) {
       cwd = worktreeRoot;
@@ -445,7 +452,7 @@ async function main() {
     'Commands: agent-skills, audit-open, audit-uat, check-commit, commit, commit-to-subrepo, ' +
     'config-ensure-section, config-get, config-new-project, config-path, config-set, migrate-config, ' +
     'current-timestamp, detect-custom-files, docs-init, extract-messages, find-phase, ' +
-    'from-gsd2, frontmatter, gap-analysis, generate-claude-md, generate-claude-profile, ' +
+    'execution-branch, from-gsd2, frontmatter, gap-analysis, generate-claude-md, generate-claude-profile, ' +
     'generate-dev-preferences, generate-slug, graphify, history-digest, init, intel, ' +
     'learnings, list-todos, milestone, phase, phase-plan-index, phases, profile-questionnaire, ' +
     'profile-sample, progress, prompt-budget, requirements, resolve-model, roadmap, scaffold, state, ' +
@@ -494,7 +501,7 @@ async function main() {
   const SKIP_ROOT_RESOLUTION = new Set([
     'generate-slug', 'current-timestamp', 'verify-path-exists',
     'verify-summary', 'template', 'frontmatter', 'detect-custom-files',
-    'worktree', 'prompt-budget',
+    'worktree', 'prompt-budget', 'execution-branch',
   ]);
   if (!SKIP_ROOT_RESOLUTION.has(command)) {
     cwd = findProjectRoot(cwd);
@@ -1043,6 +1050,24 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
         name: parseMultiwordArg(args, 'name'),
       };
       commands.cmdScaffold(cwd, scaffoldType, scaffoldOptions, raw);
+      break;
+    }
+
+    case 'execution-branch': {
+      const action = args[1];
+      const commandName = args[2];
+      if (!['ensure', 'inspect'].includes(action) || !commandName) {
+        error('Usage: gsd-tools execution-branch <ensure|inspect> <vgsd-command> [--runtime <runtime>]', ERROR_REASON.USAGE);
+      }
+      const runtimeIdx = args.indexOf('--runtime');
+      const runtime = runtimeIdx !== -1 ? args[runtimeIdx + 1] : null;
+      if (runtimeIdx !== -1 && (!runtime || runtime.startsWith('--'))) {
+        error('Missing value for --runtime', ERROR_REASON.USAGE);
+      }
+      const result = action === 'ensure'
+        ? executionBranch.ensureExecutionBranch({ cwd, command: commandName, runtime })
+        : executionBranch.inspectExecutionBranch({ cwd, command: commandName, runtime, readOnly: true });
+      core.output(result, raw, result.branch || result.reason);
       break;
     }
 

@@ -5630,6 +5630,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
       const destPath = path.join(destDir, destName);
 
       let content = fs.readFileSync(srcPath, 'utf8');
+      content = content.replace(/__VGSD_RUNTIME__/g, runtime);
       const globalClaudeRegex = /~\/\.claude\//g;
       const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
       const localClaudeRegex = /\.\/\.claude\//g;
@@ -5847,8 +5848,8 @@ function migrateLegacyDevPreferencesToSkill(targetDir, saved, runtime, scope = '
 // ---------------------------------------------------------------------------
 
 /**
- * Apply per-runtime content rewrites in place across every SKILL.md inside a
- * staged directory. Reproduces the rewrite scaffolding that the old
+ * Apply per-runtime content rewrites in place across every staged Markdown
+ * artifact. Reproduces the rewrite scaffolding that the old
  * copyCommandsAs<Runtime>Skills functions applied between read-content and
  * converter-call. Applied AFTER stage (which already called the converter);
  * rewrites target stable path patterns the converter doesn't touch.
@@ -5865,13 +5866,13 @@ function migrateLegacyDevPreferencesToSkill(targetDir, saved, runtime, scope = '
 function applyRuntimeContentRewritesInPlace(stagedDir, runtime, pathPrefix) {
   if (!fs.existsSync(stagedDir)) return;
 
-  // Walk all SKILL.md files under stagedDir
+  // Walk skill and command Markdown files under stagedDir.
   const walkAndRewrite = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         walkAndRewrite(fullPath);
-      } else if (entry.name === 'SKILL.md') {
+      } else if (entry.name.endsWith('.md')) {
         let content = fs.readFileSync(fullPath, 'utf8');
         content = _applyRuntimeRewrites(content, runtime, pathPrefix);
         fs.writeFileSync(fullPath, content);
@@ -5893,6 +5894,7 @@ function applyRuntimeContentRewritesInPlace(stagedDir, runtime, pathPrefix) {
 function _applyRuntimeRewrites(content, runtime, pathPrefix) {
   const dirName = getDirName(runtime);
   const normalizedPathPrefix = pathPrefix.replace(/\/$/, '');
+  content = content.replace(/__VGSD_RUNTIME__/g, runtime);
 
   switch (runtime) {
     case 'codex':
@@ -5900,6 +5902,7 @@ function _applyRuntimeRewrites(content, runtime, pathPrefix) {
       content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
       content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
       content = content.replace(/~\/\.codex\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.codex\//g, pathPrefix);
       content = processAttribution(content, getCommitAttribution(runtime));
       break;
 
@@ -5960,6 +5963,15 @@ function _applyRuntimeRewrites(content, runtime, pathPrefix) {
       break;
 
     case 'claude':
+      content = content.replace(/~\/\.claude\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
+      content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
+      content = processAttribution(content, getCommitAttribution(runtime));
+      break;
+
+    case 'gemini':
+    case 'opencode':
+    case 'kilo':
       content = content.replace(/~\/\.claude\//g, pathPrefix);
       content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
       content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
@@ -6316,7 +6328,7 @@ function installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile) {
 
   for (const kind of layout.kinds) {
     const staged = kind.stage(resolvedProfile);
-    if (kind.kind === 'skills') {
+    if (kind.kind === 'skills' || kind.kind === 'commands') {
       applyRuntimeContentRewritesInPlace(staged, runtime, pathPrefix);
     }
     const dest = path.join(layout.configDir, kind.destSubpath);
@@ -6501,6 +6513,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       // Replace ~/.claude/ and $HOME/.claude/ and ./.claude/ with runtime-appropriate paths
       // Skip generic replacement for Copilot — convertClaudeToCopilotContent handles all paths
       let content = fs.readFileSync(srcPath, 'utf8');
+      content = content.replace(/__VGSD_RUNTIME__/g, runtime);
       if (!isCopilot && !isAntigravity) {
         const globalClaudeRegex = /~\/\.claude\//g;
         const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;

@@ -33,6 +33,37 @@ Claude Code Router is a separate adapter with the ID `claude-router` and executa
 
 VibeClaw always promotes to the integration branch that was checked out when `vibe run start` ran. If the winner must land on `main`, start every run from a clean `main` branch.
 
+## How branch preflight fits this walkthrough
+
+Every `vgsd` command checks its branch before starting:
+
+- The three candidates in this guide already have Vibe-created branches and
+  worktrees, so their commands verify the candidate manifest and continue.
+- Running a `vgsd` command directly on `main` after `vibe init` stops. Prepare
+  and launch a candidate instead; this prevents accidental edits on the
+  integration branch.
+- Running `vgsd` before any Vibe setup creates a standalone branch named
+  `vgsd/<runtime>/<command>/<execution-id>`.
+- If you later run `vibe init` from that standalone branch, initialization
+  imports its provenance into
+  `.planning-vibe/state/standalone-executions.json` and future invocations can
+  safely reuse it.
+
+Managed Vibe launches set the candidate ID, tool ID, and GSD runtime in the
+environment automatically. A manual launch should be run inside the printed
+candidate worktree; branch and worktree discovery supplies the same check even
+when no launch environment is inherited.
+
+Standalone-first example:
+
+```text
+Codex runs $vgsd-new-project
+  → vgsd/codex/new-project/<execution-id>
+  → project work is committed
+  → vibe init
+  → standalone execution is imported for later orchestration
+```
+
 ## Prerequisites
 
 Install VibeClaw and GSD for all three tools, then confirm the adapters are available:

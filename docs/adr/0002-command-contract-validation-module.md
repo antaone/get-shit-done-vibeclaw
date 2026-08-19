@@ -9,7 +9,7 @@ We decided to centralize the `commands/gsd/*.md` file contract into a single val
 
 The command file contract defines what makes a valid `commands/gsd/*.md`:
 
-- `name:` field present, non-empty, matches `gsd:*` or `gsd-*` (ns- commands use `gsd-`)
+- `name:` field present, non-empty, matches `vgsd:*` or `vgsd-*` (ns- commands use `vgsd-`)
 - `description:` field present and non-empty
 - `allowed-tools:` block present and non-empty, all entries from the canonical tool set
 - Every `@`-reference inside `<execution_context>` blocks resolves to an existing file on disk

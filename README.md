@@ -28,6 +28,7 @@ Most multi-agent systems depend on shared conversations or hidden runtime state.
 - named routes provide overridable tool defaults;
 - multiple tools can run the same stage from the same exact Git commit;
 - every candidate receives an isolated branch and worktree;
+- every `vgsd` command verifies its Git execution branch before doing work;
 - completion and promotion are separate actions;
 - only the promoted candidate becomes input to the next stage;
 - manifests retain provenance, artifacts, timing, token usage, cost, notes, and ratings;
@@ -104,6 +105,35 @@ upstream GSD without ambiguous or duplicate commands. Gemini renders the same
 namespace with a colon because its command loader derives namespaces from
 directories; the workflow and persisted artifacts are otherwise identical.
 
+### Automatic execution branches
+
+Every installed `vgsd` command runs a Git preflight before it reads workflow
+context or changes project state. The result depends on the current project:
+
+| Current context | Result |
+| --- | --- |
+| Valid Vibe candidate worktree | Reuse its `vibe/<run>/<stage>/<tool>-NNN` branch |
+| Vibe initialized, but not in a candidate | Stop and require `vibe stage prepare` / `vibe stage launch` |
+| No Vibe setup | Create `vgsd/<runtime>/<command>/<execution-id>` |
+| Existing matching `vgsd/...` branch | Reuse it; a different command gets a new execution branch |
+| Existing branch owned by another runtime | Stop instead of mixing tool results |
+
+Standalone branch creation preserves uncommitted files and stores provenance
+under Git's local common directory, not in the working tree. It records the
+runtime, command, execution identity, source branch, and base commit without
+storing the raw session ID. Run `vibe init` later and VibeClaw imports those
+records into `.planning-vibe/state/standalone-executions.json`.
+
+This makes direct usage safe too. For example, Codex running
+`$vgsd-new-project` without Vibe creates a branch shaped like:
+
+```text
+vgsd/codex/new-project/20260819-123456-a1b2c3d4-e5f607
+```
+
+The one read-only exception is `vgsd help`: it inspects branch state but never
+creates a branch.
+
 ### Core GSD workflow
 
 ```text
@@ -143,7 +173,9 @@ For an existing codebase, run `/vgsd-map-codebase` before `/vgsd-new-project`. U
 - persistent progress, pause/resume state, workstreams, backlogs, and context threads;
 - configuration, model profiles, dynamic routing, hooks, and a TypeScript SDK.
 
-GSD can be used by itself. If you do not run `vibe init`, nothing creates `.planning-vibe/` or changes the normal GSD lifecycle.
+GSD can be used without orchestration. If you do not run `vibe init`, no
+`.planning-vibe/` store is created; `vgsd` still protects direct work with a
+standalone smart branch as described above.
 
 For the full methodology, see the [GSD User Guide](docs/USER-GUIDE.md), [Command Reference](docs/COMMANDS.md), [Feature Reference](docs/FEATURES.md), and [Configuration Reference](docs/CONFIGURATION.md).
 
@@ -256,7 +288,7 @@ VibeClaw keeps orchestration separate from GSD planning documents:
 ├── promotions/            Current and immutable promotion records
 ├── history/events.jsonl   Append-only event history
 ├── locks/                 Recoverable orchestration locks
-└── state/                 Active-run pointer
+└── state/                 Active-run pointer and imported standalone executions
 
 .vibe/worktrees/           Ignored candidate worktrees
 ```

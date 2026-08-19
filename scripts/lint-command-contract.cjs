@@ -4,7 +4,7 @@
  *
  * Enforces the commands/gsd/*.md contract across all 65 command files:
  *
- *   1. name:        present, non-empty, matches gsd: or gsd- prefix
+ *   1. name:        present, non-empty, matches vgsd: or vgsd- prefix
  *   2. description: present, non-empty
  *   3. allowed-tools: block present, non-empty, all entries from CANONICAL_TOOLS
  *   4. execution_context @-refs: every @-reference resolves to an existing file on disk
@@ -36,11 +36,11 @@ function check(filePath) {
   const fm       = parseFrontmatter(content);
   const violations = [];
 
-  // 1. name: present + gsd: / gsd- prefix
+  // 1. name: present + vgsd: / vgsd- prefix
   if (!fm.name || !fm.name.trim()) {
     violations.push('name: field missing or empty');
-  } else if (!/^gsd[:-]/.test(fm.name.trim())) {
-    violations.push(`name: must start with "gsd:" or "gsd-", got "${fm.name.trim()}"`);
+  } else if (!/^vgsd[:-]/.test(fm.name.trim())) {
+    violations.push(`name: must start with "vgsd:" or "vgsd-", got "${fm.name.trim()}"`);
   }
 
   // 2. description: present + non-empty

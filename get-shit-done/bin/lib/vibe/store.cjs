@@ -114,6 +114,7 @@ class VibeStore {
       history: path.join(this.root, 'history', 'events.jsonl'),
       locks: path.join(this.root, 'locks'),
       activeRun: path.join(this.root, 'state', 'active-run.json'),
+      standaloneExecutions: path.join(this.root, 'state', 'standalone-executions.json'),
     };
   }
 
