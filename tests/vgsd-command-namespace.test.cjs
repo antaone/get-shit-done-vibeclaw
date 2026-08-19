@@ -96,6 +96,41 @@ describe('VibeClaw public command namespace', () => {
     }
   });
 
+  test('runtime-loaded prompt sources contain no legacy public command references', () => {
+    const commandNames = fs.readdirSync(COMMANDS_DIR)
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => file.slice(0, -3));
+    const commandAlternation = commandNames
+      .sort((a, b) => b.length - a.length)
+      .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    const legacyReference = new RegExp(`(?<![A-Za-z0-9_-])(?:/|\\$)?gsd[:-](?:${commandAlternation})(?=[^A-Za-z0-9_-]|$)`);
+    const roots = [
+      COMMANDS_DIR,
+      path.join(ROOT, 'agents'),
+      path.join(ROOT, 'get-shit-done'),
+    ];
+    const promptFiles = [];
+
+    function collectMarkdown(current) {
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const target = path.join(current, entry.name);
+        if (entry.isDirectory()) collectMarkdown(target);
+        else if (entry.name.endsWith('.md') && entry.name !== 'CHANGELOG.md') promptFiles.push(target);
+      }
+    }
+
+    for (const root of roots) collectMarkdown(root);
+    for (const file of promptFiles) {
+      const content = fs.readFileSync(file, 'utf8');
+      assert.doesNotMatch(
+        content,
+        legacyReference,
+        `${path.relative(ROOT, file)} contains a legacy public GSD command reference`,
+      );
+    }
+  });
+
   test('reinstall removes legacy public artifacts and preserves dev preferences under vgsd', (t) => {
     const configDir = createTempDir('vgsd-upgrade-');
     t.after(() => cleanup(configDir));

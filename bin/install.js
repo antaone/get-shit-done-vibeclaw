@@ -5903,6 +5903,10 @@ function _applyRuntimeRewrites(content, runtime, pathPrefix) {
       content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
       content = content.replace(/~\/\.codex\//g, pathPrefix);
       content = content.replace(/\$HOME\/\.codex\//g, pathPrefix);
+      content = content.replace(/~\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/~\/\.codex\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.codex\b/g, normalizedPathPrefix);
       content = processAttribution(content, getCommitAttribution(runtime));
       break;
 
@@ -5966,15 +5970,47 @@ function _applyRuntimeRewrites(content, runtime, pathPrefix) {
       content = content.replace(/~\/\.claude\//g, pathPrefix);
       content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
       content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
+      content = content.replace(/~\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.claude\b/g, normalizedPathPrefix);
       content = processAttribution(content, getCommitAttribution(runtime));
       break;
 
     case 'gemini':
+      content = content.replace(/~\/\.claude\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
+      content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
+      content = content.replace(/~\/\.gemini\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.gemini\//g, pathPrefix);
+      content = content.replace(/~\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/~\/\.gemini\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.gemini\b/g, normalizedPathPrefix);
+      content = processAttribution(content, getCommitAttribution(runtime));
+      break;
+
     case 'opencode':
+      content = content.replace(/~\/\.claude\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
+      content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
+      content = content.replace(/~\/\.config\/opencode\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.config\/opencode\//g, pathPrefix);
+      content = content.replace(/~\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/~\/\.config\/opencode\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.config\/opencode\b/g, normalizedPathPrefix);
+      content = processAttribution(content, getCommitAttribution(runtime));
+      break;
+
     case 'kilo':
       content = content.replace(/~\/\.claude\//g, pathPrefix);
       content = content.replace(/\$HOME\/\.claude\//g, pathPrefix);
       content = content.replace(/\.\/\.claude\//g, `./${dirName}/`);
+      content = content.replace(/~\/\.config\/kilo\//g, pathPrefix);
+      content = content.replace(/\$HOME\/\.config\/kilo\//g, pathPrefix);
+      content = content.replace(/~\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.claude\b/g, normalizedPathPrefix);
+      content = content.replace(/~\/\.config\/kilo\b/g, normalizedPathPrefix);
+      content = content.replace(/\$HOME\/\.config\/kilo\b/g, normalizedPathPrefix);
       content = processAttribution(content, getCommitAttribution(runtime));
       break;
 
@@ -6105,6 +6141,69 @@ function _removeGsdEntries(destDir, kind) {
   }
 }
 
+function _captureLegacyDevPreferences(saved, skillFile) {
+  if (!fs.existsSync(skillFile)) return saved;
+  const next = saved || new Map();
+  next.set('dev-preferences.md', fs.readFileSync(skillFile, 'utf8'));
+  return next;
+}
+
+function _removeDirectoryIfEmpty(dir) {
+  if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+function _pruneLegacyFlatSkills(flatSkillsDir, saved) {
+  if (!fs.existsSync(flatSkillsDir)) return saved;
+  const managedNames = new Set(readGsdCommandNames());
+  let next = saved;
+  for (const entry of fs.readdirSync(flatSkillsDir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !entry.name.startsWith('gsd-')) continue;
+    const stem = entry.name.slice('gsd-'.length);
+    if (stem === 'dev-preferences') {
+      next = _captureLegacyDevPreferences(next, path.join(flatSkillsDir, entry.name, 'SKILL.md'));
+    } else if (!managedNames.has(stem)) {
+      continue;
+    }
+    fs.rmSync(path.join(flatSkillsDir, entry.name), { recursive: true, force: true });
+  }
+  return next;
+}
+
+function _pruneLegacyHermesCategory(nestedGsdDir, saved) {
+  if (!fs.existsSync(nestedGsdDir)) return saved;
+  const managedNames = new Set(readGsdCommandNames());
+  let next = saved;
+  for (const entry of fs.readdirSync(nestedGsdDir, { withFileTypes: true })) {
+    const fullPath = path.join(nestedGsdDir, entry.name);
+    const normalizedName = entry.name.startsWith('gsd-')
+      ? entry.name.slice('gsd-'.length)
+      : entry.name;
+    if (entry.isDirectory() && normalizedName === 'dev-preferences') {
+      next = _captureLegacyDevPreferences(next, path.join(fullPath, 'SKILL.md'));
+      fs.rmSync(fullPath, { recursive: true, force: true });
+    } else if (entry.isDirectory() && managedNames.has(normalizedName)) {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+    } else if (entry.isFile() && entry.name === 'DESCRIPTION.md') {
+      fs.rmSync(fullPath, { force: true });
+    }
+  }
+  _removeDirectoryIfEmpty(nestedGsdDir);
+  return next;
+}
+
+function _pruneLegacyFlatCommands(flatCommandsDir) {
+  if (!fs.existsSync(flatCommandsDir)) return;
+  const managedNames = new Set(readGsdCommandNames());
+  for (const entry of fs.readdirSync(flatCommandsDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.startsWith('gsd-') || !entry.name.endsWith('.md')) continue;
+    const stem = entry.name.slice('gsd-'.length, -'.md'.length);
+    if (!managedNames.has(stem)) continue;
+    fs.rmSync(path.join(flatCommandsDir, entry.name), { force: true });
+  }
+}
+
 /**
  * Run legacy install migrations that must execute BEFORE the layout-driven
  * copy so stale artifacts are cleaned up before new ones are written.
@@ -6127,49 +6226,19 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
     fs.rmSync(legacyCommandsGsd, { recursive: true });
   }
 
-  // Every pre-vgsd skills runtime used flat gsd-* directories. Preserve the
-  // one user-owned skill before removing the obsolete public namespace.
+  // Every pre-vgsd skills runtime used flat gsd-* directories. Remove only
+  // known public commands; unknown prefixed directories may be user-owned.
   const flatSkillsDir = path.join(configDir, 'skills');
-  if (fs.existsSync(flatSkillsDir)) {
-    for (const entry of fs.readdirSync(flatSkillsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory() || !entry.name.startsWith('gsd-')) continue;
-      if (entry.name === 'gsd-dev-preferences') {
-        const legacySkillFile = path.join(flatSkillsDir, entry.name, 'SKILL.md');
-        if (fs.existsSync(legacySkillFile)) {
-          savedLegacyArtifacts = savedLegacyArtifacts || new Map();
-          savedLegacyArtifacts.set('dev-preferences.md', fs.readFileSync(legacySkillFile, 'utf8'));
-        }
-      }
-      fs.rmSync(path.join(flatSkillsDir, entry.name), { recursive: true });
-    }
-  }
+  savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
 
   // Hermes previously nested the public category under skills/gsd/. Preserve
-  // dev-preferences while removing that obsolete category.
+  // dev-preferences and unknown user content while removing known commands.
   const nestedGsdDir = path.join(configDir, 'skills', 'gsd');
-  if (fs.existsSync(nestedGsdDir)) {
-    for (const candidate of [
-      path.join(nestedGsdDir, 'dev-preferences', 'SKILL.md'),
-      path.join(nestedGsdDir, 'gsd-dev-preferences', 'SKILL.md'),
-    ]) {
-      if (fs.existsSync(candidate)) {
-        savedLegacyArtifacts = savedLegacyArtifacts || new Map();
-        savedLegacyArtifacts.set('dev-preferences.md', fs.readFileSync(candidate, 'utf8'));
-        break;
-      }
-    }
-    fs.rmSync(nestedGsdDir, { recursive: true });
-  }
+  savedLegacyArtifacts = _pruneLegacyHermesCategory(nestedGsdDir, savedLegacyArtifacts);
 
   // OpenCode/Kilo used flat command/gsd-*.md files.
   const flatCommandsDir = path.join(configDir, 'command');
-  if (fs.existsSync(flatCommandsDir)) {
-    for (const entry of fs.readdirSync(flatCommandsDir, { withFileTypes: true })) {
-      if (entry.isFile() && entry.name.startsWith('gsd-') && entry.name.endsWith('.md')) {
-        fs.rmSync(path.join(flatCommandsDir, entry.name), { force: true });
-      }
-    }
-  }
+  _pruneLegacyFlatCommands(flatCommandsDir);
 
   // Migrate dev-preferences content into the runtime's new vgsd namespace.
   if (savedLegacyArtifacts) {
@@ -6223,42 +6292,13 @@ function _runLegacyUninstallCleanup(runtime, configDir, scope = 'global') {
   }
 
   const flatSkillsDir = path.join(configDir, 'skills');
-  if (fs.existsSync(flatSkillsDir)) {
-    for (const entry of fs.readdirSync(flatSkillsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory() || !entry.name.startsWith('gsd-')) continue;
-      if (entry.name === 'gsd-dev-preferences') {
-        const skillFile = path.join(flatSkillsDir, entry.name, 'SKILL.md');
-        if (fs.existsSync(skillFile)) {
-          savedLegacyArtifacts = savedLegacyArtifacts || new Map();
-          savedLegacyArtifacts.set('dev-preferences.md', fs.readFileSync(skillFile, 'utf8'));
-        }
-      }
-      fs.rmSync(path.join(flatSkillsDir, entry.name), { recursive: true });
-    }
-  }
+  savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
 
   const nestedGsdDir = path.join(configDir, 'skills', 'gsd');
-  if (fs.existsSync(nestedGsdDir)) {
-    for (const candidate of [
-      path.join(nestedGsdDir, 'dev-preferences', 'SKILL.md'),
-      path.join(nestedGsdDir, 'gsd-dev-preferences', 'SKILL.md'),
-    ]) {
-      if (!fs.existsSync(candidate)) continue;
-      savedLegacyArtifacts = savedLegacyArtifacts || new Map();
-      savedLegacyArtifacts.set('dev-preferences.md', fs.readFileSync(candidate, 'utf8'));
-      break;
-    }
-    fs.rmSync(nestedGsdDir, { recursive: true });
-  }
+  savedLegacyArtifacts = _pruneLegacyHermesCategory(nestedGsdDir, savedLegacyArtifacts);
 
   const flatCommandsDir = path.join(configDir, 'command');
-  if (fs.existsSync(flatCommandsDir)) {
-    for (const entry of fs.readdirSync(flatCommandsDir, { withFileTypes: true })) {
-      if (entry.isFile() && entry.name.startsWith('gsd-') && entry.name.endsWith('.md')) {
-        fs.rmSync(path.join(flatCommandsDir, entry.name), { force: true });
-      }
-    }
-  }
+  _pruneLegacyFlatCommands(flatCommandsDir);
 
   // Return saved artifacts so the caller can migrate after layout-driven removal.
   return savedLegacyArtifacts;

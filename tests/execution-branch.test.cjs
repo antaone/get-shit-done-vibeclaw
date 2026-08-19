@@ -265,14 +265,15 @@ describe('public vgsd command guard coverage', () => {
     }
   });
 
-  test('Claude, Gemini, and Codex installs receive runtime-correct guard paths', (t) => {
+  test('Claude, Gemini, Codex, and OpenCode installs receive runtime-correct guard paths', (t) => {
     const cases = [
-      ['claude', path.join('skills', 'vgsd-new-project', 'SKILL.md')],
-      ['gemini', path.join('commands', 'vgsd', 'new-project.md')],
-      ['codex', path.join('skills', 'vgsd-new-project', 'SKILL.md')],
+      ['claude', path.join('skills', 'vgsd-new-project', 'SKILL.md'), path.join('skills', 'vgsd-surface', 'SKILL.md')],
+      ['gemini', path.join('commands', 'vgsd', 'new-project.md'), path.join('commands', 'vgsd', 'surface.md')],
+      ['codex', path.join('skills', 'vgsd-new-project', 'SKILL.md'), path.join('skills', 'vgsd-surface', 'SKILL.md')],
+      ['opencode', path.join('command', 'vgsd-new-project.md'), path.join('command', 'vgsd-surface.md')],
     ];
 
-    for (const [runtime, relativePath] of cases) {
+    for (const [runtime, relativePath, surfaceRelativePath] of cases) {
       const configDir = createTempDir(`vgsd-guard-${runtime}-`);
       t.after(() => cleanup(configDir));
       installRuntimeArtifacts(runtime, configDir, 'global', CORE_PROFILE);
@@ -287,6 +288,17 @@ describe('public vgsd command guard coverage', () => {
         `${runtime} guard did not target its configured runtime directory`,
       );
       if (runtime !== 'claude') assert.doesNotMatch(content, /\.claude\//);
+
+      const surfacePath = path.join(configDir, surfaceRelativePath);
+      assert.ok(fs.existsSync(surfacePath), `${runtime} did not install ${surfaceRelativePath}`);
+      const surface = fs.readFileSync(surfacePath, 'utf8');
+      assert.ok(
+        surface.includes(`resolveRuntimeArtifactLayout('${runtime}', runtimeConfigDir, scope)`),
+        `${runtime} surface command did not resolve its native layout`,
+      );
+      if (runtime !== 'claude') {
+        assert.doesNotMatch(surface, /(?:~|\$HOME)\/\.claude\b/);
+      }
     }
   });
 });

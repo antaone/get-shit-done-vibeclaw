@@ -29,7 +29,7 @@ function tmpDir(prefix) {
 function createFixtureRuntime() {
   const base = createTempDir('gsd-surface-apply-');
   const runtimeConfigDir = base;
-  const commandsDir = path.join(runtimeConfigDir, 'commands', 'gsd');
+  const commandsDir = path.join(runtimeConfigDir, 'commands', 'vgsd');
   const agentsDir = path.join(runtimeConfigDir, 'agents');
   fs.mkdirSync(commandsDir, { recursive: true });
   fs.mkdirSync(agentsDir, { recursive: true });
@@ -180,14 +180,14 @@ describe('applySurface', () => {
     const destDir = path.join(base, 'dest');
     fs.mkdirSync(destDir, { recursive: true });
 
-    const stem1 = 'gsd-help';
-    const stem2 = 'gsd-update';
+    const stem1 = 'vgsd-help';
+    const stem2 = 'vgsd-update';
     fs.mkdirSync(path.join(stagedDir, stem1), { recursive: true });
     fs.writeFileSync(path.join(stagedDir, stem1, 'SKILL.md'), '# help\n', 'utf8');
     fs.mkdirSync(path.join(stagedDir, stem2), { recursive: true });
     fs.writeFileSync(path.join(stagedDir, stem2, 'SKILL.md'), '# update\n', 'utf8');
 
-    const staleDir = path.join(destDir, 'gsd-old-skill');
+    const staleDir = path.join(destDir, 'vgsd-old-skill');
     fs.mkdirSync(staleDir, { recursive: true });
     fs.writeFileSync(path.join(staleDir, 'SKILL.md'), '# old\n', 'utf8');
 
@@ -195,12 +195,12 @@ describe('applySurface', () => {
     fs.mkdirSync(foreignDir, { recursive: true });
     fs.writeFileSync(path.join(foreignDir, 'SKILL.md'), '# custom\n', 'utf8');
 
-    const skillsKind = { kind: 'skills', destSubpath: 'skills', prefix: 'gsd-', stage: () => stagedDir };
+    const skillsKind = { kind: 'skills', destSubpath: 'skills', prefix: 'vgsd-', stage: () => stagedDir };
 
     // Build a minimal manifest that includes the GSD-owned stems so that the
-    // manifest-membership gate (Finding 1 fix) correctly identifies gsd-old-skill
+    // manifest-membership gate (Finding 1 fix) correctly identifies vgsd-old-skill
     // as GSD-owned and prunes it. Without a manifest the new code conservatively
-    // preserves all gsd-* dirs it cannot confirm are GSD-owned.
+    // preserves all vgsd-* dirs it cannot confirm are GSD-owned.
     const manifest = new Map([
       ['help', []],
       ['update', []],
@@ -209,10 +209,10 @@ describe('applySurface', () => {
 
     _syncGsdDir(stagedDir, destDir, skillsKind, manifest);
 
-    assert.ok(fs.existsSync(path.join(destDir, stem1, 'SKILL.md')), 'gsd-help/SKILL.md should be copied');
-    assert.ok(fs.existsSync(path.join(destDir, stem2, 'SKILL.md')), 'gsd-update/SKILL.md should be copied');
-    // stale gsd- dir removed (it's in the manifest so it is GSD-owned, but not in staged set)
-    assert.ok(!fs.existsSync(staleDir), 'stale gsd-old-skill dir should be removed');
+    assert.ok(fs.existsSync(path.join(destDir, stem1, 'SKILL.md')), 'vgsd-help/SKILL.md should be copied');
+    assert.ok(fs.existsSync(path.join(destDir, stem2, 'SKILL.md')), 'vgsd-update/SKILL.md should be copied');
+    // stale vgsd- dir removed (it's in the manifest so it is GSD-owned, but not in staged set)
+    assert.ok(!fs.existsSync(staleDir), 'stale vgsd-old-skill dir should be removed');
     assert.ok(fs.existsSync(foreignDir), 'my-custom-skill dir should be preserved');
   });
 
@@ -231,10 +231,10 @@ describe('applySurface', () => {
     const layout = resolveRuntimeArtifactLayout('claude', runtimeConfigDir, 'local');
     applySurface(runtimeConfigDir, layout, manifest, CLUSTERS);
 
-    const commandsDir = path.join(runtimeConfigDir, 'commands', 'gsd');
-    assert.ok(fs.existsSync(commandsDir), 'commands/gsd dir should be created even if initially absent');
+    const commandsDir = path.join(runtimeConfigDir, 'commands', 'vgsd');
+    assert.ok(fs.existsSync(commandsDir), 'commands/vgsd dir should be created even if initially absent');
     const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    assert.ok(files.length > 0, 'commands/gsd should contain staged skill files');
+    assert.ok(files.length > 0, 'commands/vgsd should contain staged skill files');
     assert.ok(files.includes('help.md'), 'help.md should be present after applySurface on missing dest');
   });
 
@@ -539,7 +539,7 @@ describe('readSurface / writeSurface', () => {
   test('corrupt JSON returns null', () => {
     const dir = tmpDir('gsd-surface-state-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-surface.json'), '{not valid json', 'utf8');
+      fs.writeFileSync(path.join(dir, '.vgsd-surface.json'), '{not valid json', 'utf8');
       const result = readSurface(dir);
       assert.strictEqual(result, null);
     } finally {
@@ -551,7 +551,7 @@ describe('readSurface / writeSurface', () => {
     const dir = tmpDir('gsd-surface-state-');
     try {
       fs.writeFileSync(
-        path.join(dir, '.gsd-surface.json'),
+        path.join(dir, '.vgsd-surface.json'),
         JSON.stringify({ disabledClusters: [], explicitAdds: [], explicitRemoves: [] }),
         'utf8'
       );
@@ -566,7 +566,7 @@ describe('readSurface / writeSurface', () => {
     const dir = tmpDir('gsd-surface-state-');
     try {
       fs.writeFileSync(
-        path.join(dir, '.gsd-surface.json'),
+        path.join(dir, '.vgsd-surface.json'),
         JSON.stringify({ baseProfile: 'standard', disabledClusters: 'utility', explicitAdds: [], explicitRemoves: [] }),
         'utf8'
       );
@@ -585,7 +585,7 @@ describe('readSurface / writeSurface', () => {
       const files = fs.readdirSync(dir);
       const tmpFiles = files.filter(f => f.includes('.tmp.'));
       assert.deepStrictEqual(tmpFiles, [], 'no tmp files should remain after write');
-      assert.ok(files.includes('.gsd-surface.json'));
+      assert.ok(files.includes('.vgsd-surface.json'));
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

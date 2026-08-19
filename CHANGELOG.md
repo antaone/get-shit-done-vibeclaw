@@ -15,6 +15,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - **VibeClaw commands now use the collision-free `vgsd` namespace on every supported tool** — `/vgsd-*` on hyphen runtimes, `/vgsd:*` on Gemini, and `$vgsd-*` on Codex. Reinstalling removes legacy public `gsd` command artifacts while preserving user development preferences; internal `gsd-tools`, hooks, agents, and SDK names are unchanged.
+- **Runtime install verification and surface management are namespace-safe** — Claude Code, Gemini, Codex, and OpenCode installs now resolve custom config paths and native command/skill layouts without leaked `.claude` paths. Runtime-loaded prompts are checked for legacy public command references, and legacy Hermes cleanup preserves unknown user-owned skill directories while migrating known GSD artifacts to `vgsd`.
 
 ## [1.42.1](https://github.com/gsd-build/get-shit-done/compare/v1.41.0...v1.42.1) - 2026-05-15
 

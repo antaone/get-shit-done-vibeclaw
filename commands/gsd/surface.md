@@ -20,9 +20,10 @@ Parse the JSON response:
 </execution_branch_guard>
 
 <objective>
-Manage the runtime skill surface without reinstall. Reads/writes `~/.claude/.vgsd-surface.json`
-(sibling to `~/.claude/.gsd-profile`) and re-stages the active skills directory in place.
-Skill dirs live at `~/.claude/skills/vgsd-*/`.
+Manage the current runtime's command or skill surface without reinstall. Reads/writes
+`$HOME/.claude/.vgsd-surface.json` (sibling to `$HOME/.claude/.gsd-profile`) and
+re-stages the active runtime artifact destinations in place. The installer rewrites
+that base path and `__VGSD_RUNTIME__` for the active tool.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -125,28 +126,29 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 ## runtimeConfigDir resolution
 
-The `runtimeConfigDir` for `applySurface` is the **base Claude config directory**
-(`~/.claude`), NOT the skills sub-directory (`~/.claude/skills`).
-
-This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
-receive `~/.claude` as `configDir`. The skill dirs themselves live at
-`~/.claude/skills/vgsd-*/` because the `claude global` layout has `destSubpath =
-'skills'` — they are derived from `configDir`, not the root for it.
+The `runtimeConfigDir` for `applySurface` is the **base config directory for the
+installed runtime**, not a nested `skills`, `commands`, or `command` directory.
+The installer rewrites `$HOME/.claude/` below to that configured directory.
 
 ```bash
-# Claude Code — global install
-RUNTIME_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+# Values below are installer-resolved for the active runtime.
+RUNTIME="__VGSD_RUNTIME__"
+RUNTIME_CONFIG_DIR="$HOME/.claude/"
 SCOPE="global"
 
 # Artifact destinations are derived from runtime layout
-# via resolveRuntimeArtifactLayout(runtime, RUNTIME_CONFIG_DIR, SCOPE)
+# via resolveRuntimeArtifactLayout(RUNTIME, RUNTIME_CONFIG_DIR, SCOPE)
 # then applySurface(RUNTIME_CONFIG_DIR, layout, manifest, CLUSTERS)
 ```
 
-Surface state is stored at `${RUNTIME_CONFIG_DIR}/.vgsd-surface.json`
-(i.e. `~/.claude/.vgsd-surface.json`).
+For a project-local installation, set `SCOPE="local"` and use that project's
+runtime config directory. Never infer the destination directory manually; use
+`resolveRuntimeArtifactLayout('__VGSD_RUNTIME__', runtimeConfigDir, scope)` so
+Claude Code and Codex skills, Gemini namespaced TOML commands, and OpenCode flat
+commands are each re-staged in their native layout.
 
-All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
+Surface state is stored at `${RUNTIME_CONFIG_DIR}/.vgsd-surface.json`
+(i.e. `$HOME/.claude/.vgsd-surface.json` before installer path rewriting).
 
 ---
 
@@ -157,9 +159,11 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Surface state file: `~/.claude/.vgsd-surface.json`
-Install profile marker: `~/.claude/.gsd-profile`
-Skill dirs: `~/.claude/skills/vgsd-*/`
-Engine module: `~/.claude/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `~/.claude/get-shit-done/bin/lib/clusters.cjs`
+Runtime: `__VGSD_RUNTIME__`
+Runtime config directory: `$HOME/.claude/`
+Surface state file: `$HOME/.claude/.vgsd-surface.json`
+Install profile marker: `$HOME/.claude/.gsd-profile`
+Managed artifact destinations: derive with `resolveRuntimeArtifactLayout('__VGSD_RUNTIME__', runtimeConfigDir, scope)`
+Engine module: `$HOME/.claude/get-shit-done/bin/lib/surface.cjs`
+Cluster definitions: `$HOME/.claude/get-shit-done/bin/lib/clusters.cjs`
 </execution_context>
