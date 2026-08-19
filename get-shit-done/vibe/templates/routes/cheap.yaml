@@ -1,0 +1,17 @@
+version: 1
+name: cheap
+description: Cost-conscious defaults with explicit human promotion.
+stages:
+  research:
+    tool: gemini
+  discuss:
+    tool: claude
+  plan:
+    tool: codex
+  execute:
+    tool: opencode
+  verify:
+    tool: codex
+  review:
+    tool: claude
+

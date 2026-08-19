@@ -1,0 +1,106 @@
+version: 1
+name: feature-development
+description: Optional discussion around a research, plan, execute, verify, and review progression.
+stages:
+  research:
+    description: Research the feature and persist evidence for planning.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: false
+      promoted_stages: []
+    output:
+      - research_artifact
+      - summary
+    completion:
+      - research artifact persisted
+      - candidate summary written
+      - candidate work committed when tracked
+    gsd:
+      command: gsd:plan-phase
+  discuss:
+    description: Capture operator decisions using the existing GSD discussion workflow.
+    optional: true
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - research
+    output:
+      - context_artifact
+      - summary
+    completion:
+      - decisions persisted
+      - candidate summary written
+    gsd:
+      command: gsd:discuss-phase
+  plan:
+    description: Produce an executable GSD plan from the latest promoted research or discussion.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - research
+        - discuss
+    output:
+      - plan_artifact
+      - summary
+    completion:
+      - plan is complete
+      - plan verification executed
+      - candidate summary written
+    gsd:
+      command: gsd:plan-phase
+  execute:
+    description: Implement the promoted plan in an isolated candidate branch and worktree.
+    mutates_source: true
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - plan
+    output:
+      - source_commit
+      - summary
+    completion:
+      - implementation complete
+      - relevant tests run
+      - all candidate changes committed
+      - candidate summary written
+    gsd:
+      command: gsd:execute-phase
+  verify:
+    description: Verify the promoted implementation without selecting a winner automatically.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - execute
+    output:
+      - verification_artifact
+      - summary
+    completion:
+      - verification executed
+      - evidence persisted
+      - candidate summary written
+    gsd:
+      command: gsd:verify-work
+  review:
+    description: Review the promoted verification result and implementation.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - verify
+    output:
+      - review_artifact
+      - summary
+    completion:
+      - review findings persisted
+      - candidate summary written
+    gsd:
+      command: gsd:review

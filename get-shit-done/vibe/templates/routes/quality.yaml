@@ -1,0 +1,17 @@
+version: 1
+name: quality
+description: Higher-touch defaults for planning, execution, and review.
+stages:
+  research:
+    tool: gemini
+  discuss:
+    tool: claude
+  plan:
+    tool: codex
+  execute:
+    tool: claude-router
+  verify:
+    tool: codex
+  review:
+    tool: claude
+
