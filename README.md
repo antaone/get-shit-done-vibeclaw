@@ -56,7 +56,95 @@ npm link
 node bin/vibe.js --help
 ```
 
-## Quick start
+## GSD: the workflow foundation
+
+Get Shit Done is the spec-driven development system underneath VibeClaw. GSD turns a project idea into durable requirements, a roadmap, executable phase plans, implementation commits, and verification evidence. Its state lives in `.planning/`, so work survives context resets and can be resumed by another compatible runtime.
+
+VibeClaw does not replace this process. It adds routing, candidates, worktrees, and promotion around GSD stages.
+
+| Layer | Responsibility | State |
+| --- | --- | --- |
+| GSD | Discuss, research, specify, plan, execute, verify, and manage milestones | `.planning/` |
+| VibeClaw | Assign tools, isolate candidates, record provenance, and promote results | `.planning-vibe/` |
+
+### Install GSD
+
+After the local setup above, install GSD for the runtimes you use:
+
+```bash
+# Interactive runtime and location selection
+get-shit-done-cc
+
+# Examples
+get-shit-done-cc --codex --global
+get-shit-done-cc --claude --global
+get-shit-done-cc --gemini --global
+get-shit-done-cc --opencode --global
+
+# Install every supported runtime
+get-shit-done-cc --all --global
+```
+
+The published-package form is `npx get-shit-done-cc` with the same flags. Use `--local` instead of `--global` to install only into the current project. `--profile=core`, `--profile=standard`, and `--profile=full` control the installed skill surface; `full` is the default.
+
+The installer supports Claude Code, OpenCode, Gemini CLI, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Hermes Agent, Cline, and CodeBuddy.
+
+### GSD command syntax
+
+The installer writes the correct command form for each runtime:
+
+| Runtime | Example |
+| --- | --- |
+| Claude Code, OpenCode, Copilot, Kilo, Cursor, and similar runtimes | `/gsd-plan-phase 1` |
+| Gemini CLI | `/gsd:plan-phase 1` |
+| Codex | `$gsd-plan-phase 1` |
+
+The spelling changes, but the workflow and persisted artifacts are the same.
+
+### Core GSD workflow
+
+```text
+new project
+    |
+    v
+discuss phase -> plan phase -> execute phase -> verify work
+    |                                               |
+    +--------------- durable .planning/ state ------+
+                                                    |
+                                                    v
+                                           complete milestone
+```
+
+Using the common hyphen-style command form:
+
+```text
+/gsd-new-project
+/gsd-discuss-phase 1
+/gsd-plan-phase 1
+/gsd-execute-phase 1
+/gsd-verify-work 1
+/gsd-complete-milestone
+```
+
+For an existing codebase, run `/gsd-map-codebase` before `/gsd-new-project`. Use `/gsd-progress` to inspect the current position and `/gsd-resume-work` after a context reset or a new session.
+
+### What GSD provides
+
+- structured project discovery, requirements, roadmaps, and phase planning;
+- explicit discussion and decision capture before implementation;
+- specialized research, planning, execution, verification, review, and security roles;
+- plan checking, Nyquist validation, requirements coverage, and post-execution verification;
+- Git-aware phase execution, worktree support, commits, and milestone completion;
+- brownfield codebase mapping and dependency visualization;
+- quick tasks, autonomous phases, debugging, UI review, code review, and security audits;
+- persistent progress, pause/resume state, workstreams, backlogs, and context threads;
+- configuration, model profiles, dynamic routing, hooks, and a TypeScript SDK.
+
+GSD can be used by itself. If you do not run `vibe init`, nothing creates `.planning-vibe/` or changes the normal GSD lifecycle.
+
+For the full methodology, see the [GSD User Guide](docs/USER-GUIDE.md), [Command Reference](docs/COMMANDS.md), [Feature Reference](docs/FEATURES.md), and [Configuration Reference](docs/CONFIGURATION.md).
+
+## VibeClaw quick start
 
 Run these commands inside a Git repository with an initial commit:
 
