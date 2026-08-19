@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const childProcess = require('child_process');
 const { VibeStore } = require('./store.cjs');
 const { createDefaultRegistry, renderCommand } = require('./adapters.cjs');
+const { formatGsdSlash } = require('../runtime-slash.cjs');
 const {
   assertId,
   normalizeConfig,
@@ -78,6 +79,8 @@ class VibeOrchestrator {
         ['routes', 'cheap.yaml'],
         ['routes', 'quality.yaml'],
         ['workflows', 'feature-development.yaml'],
+        ['workflows', 'project-bootstrap.yaml'],
+        ['workflows', 'milestone-bootstrap.yaml'],
       ]) {
         const source = path.join(templateRoot, kind, name);
         const destination = path.join(this.store.root, kind, name);
@@ -382,6 +385,7 @@ class VibeOrchestrator {
     const adapter = this.registry.get(candidate.tool.id);
     const contextPath = this.store.contextPath(candidate.id, 'markdown');
     const summaryPath = path.join(this.store.candidateDir(candidate.id), 'summary.md');
+    const gsdCommand = candidate.contract.gsd.command || null;
     return {
       schema_version: 1,
       project: {
@@ -404,8 +408,8 @@ class VibeOrchestrator {
       expected_outputs: candidate.contract.output,
       completion_requirements: candidate.contract.completion,
       gsd: {
-        command: candidate.contract.gsd.command || null,
-        invocation: candidate.contract.gsd.command ? `/${candidate.contract.gsd.command}` : null,
+        command: gsdCommand,
+        invocation: gsdCommand ? formatGsdSlash(gsdCommand, candidate.tool.id) : null,
       },
       persistence: {
         manifest: this.store.candidatePath(candidate.id),
@@ -441,6 +445,7 @@ class VibeOrchestrator {
       `Base commit: ${context.base_commit}\n` +
       `Branch: ${context.branch || 'none'}\n` +
       `Worktree: ${context.worktree || context.project.root}\n\n` +
+      `## Assignment\n\n${context.stage.contract.description || 'Follow the stage contract below.'}\n\n` +
       `## Existing GSD action\n\n${context.gsd.invocation || 'No canonical GSD command is assigned.'}\n\n` +
       `## Promoted input artifacts\n\n${artifacts}\n\n` +
       `## Expected outputs\n\n${context.expected_outputs.map((item) => `- ${item}`).join('\n') || '- none'}\n\n` +

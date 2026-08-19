@@ -149,6 +149,8 @@ For the full methodology, see the [GSD User Guide](docs/USER-GUIDE.md), [Command
 
 ## VibeClaw quick start
 
+For the full Gemini + Codex + Claude Code flow—from a new project through later milestones and phase execution—follow the [Multi-Tool Project-to-Milestone Walkthrough](docs/MULTI-TOOL-WALKTHROUGH.md).
+
 Run these commands inside a Git repository with an initial commit:
 
 ```bash
@@ -217,6 +219,8 @@ VibeClaw includes two starting routes:
 
 | Stage | `cheap` | `quality` |
 | --- | --- | --- |
+| Project bootstrap | Gemini | Claude |
+| Milestone bootstrap | Codex | Claude |
 | Research | Gemini | Gemini |
 | Discuss | Claude | Claude |
 | Plan | Codex | Codex |
@@ -226,7 +230,9 @@ VibeClaw includes two starting routes:
 
 Routes are project-local YAML files under `.planning-vibe/routes/`. They are defaults, not restrictions; `--tool` always wins.
 
-The bundled `feature-development` workflow defines:
+VibeClaw includes `project-bootstrap` for competing GSD project foundations,
+`milestone-bootstrap` for competing milestone definitions, and
+`feature-development` for the repeated phase lifecycle:
 
 ```text
 research -> optional discuss -> plan -> execute -> verify -> review

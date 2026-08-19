@@ -2,6 +2,10 @@ version: 1
 name: cheap
 description: Cost-conscious defaults with explicit human promotion.
 stages:
+  project:
+    tool: gemini
+  milestone:
+    tool: codex
   research:
     tool: gemini
   discuss:
@@ -14,4 +18,3 @@ stages:
     tool: codex
   review:
     tool: claude
-

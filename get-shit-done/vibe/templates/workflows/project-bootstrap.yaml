@@ -1,0 +1,23 @@
+version: 1
+name: project-bootstrap
+description: Create competing GSD project initializations and promote one planning foundation.
+stages:
+  project:
+    description: Read PROJECT-BRIEF.md, run the existing GSD new-project workflow, and persist the resulting .planning foundation.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: false
+      promoted_stages: []
+    output:
+      - project_artifacts
+      - requirements
+      - roadmap
+      - summary
+    completion:
+      - PROJECT-BRIEF.md incorporated
+      - project, requirements, and roadmap artifacts persisted
+      - planning artifacts committed on the candidate branch
+      - candidate summary written
+    gsd:
+      command: vgsd:new-project

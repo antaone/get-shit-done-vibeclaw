@@ -1,0 +1,23 @@
+version: 1
+name: milestone-bootstrap
+description: Create competing GSD milestone proposals and promote one milestone foundation.
+stages:
+  milestone:
+    description: Read MILESTONE-BRIEF.md, run the existing GSD new-milestone workflow, and persist the selected milestone requirements and roadmap.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: false
+      promoted_stages: []
+    output:
+      - milestone_artifacts
+      - requirements
+      - roadmap
+      - summary
+    completion:
+      - MILESTONE-BRIEF.md incorporated
+      - milestone requirements and roadmap artifacts persisted
+      - planning artifacts committed on the candidate branch
+      - candidate summary written
+    gsd:
+      command: vgsd:new-milestone

@@ -22,6 +22,7 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 | [User Guide](USER-GUIDE.md) | All users | Workflow walkthroughs, troubleshooting, and recovery |
 | [Issue-Driven Orchestration](issue-driven-orchestration.md) | All users | Recipe for driving GSD from a tracker issue (GitHub / Linear / Jira) using existing primitives — no new commands or daemon |
 | [VibeClaw Multi-Tool Orchestration](VIBECLAW.md) | Operators, integrators | Repository-backed routes, workflow runs, competing tool candidates, Git isolation, explicit promotion, and JSON interfaces |
+| [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md) | Operators | Exact Gemini + Codex + Claude Code commands for project bootstrap, milestone bootstrap, phase planning, implementation, comparison, and promotion to `main` |
 | [Context Monitor](context-monitor.md) | All users | Context window monitoring hook architecture |
 | [Discuss Mode](workflow-discuss-mode.md) | All users | Assumptions vs interview mode for discuss-phase |
 | [Canary Stream](CANARY.md) | Contributors, early adopters | `dev` → `@canary` dist-tag policy, when to install, rollback path |
@@ -37,4 +38,5 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 - **Customizing ship PR bodies:** [Custom PR Body Sections](ship-pr-body-sections.md)
 - **How the system works internally:** [Architecture](ARCHITECTURE.md)
 - **Running stages across several AI tools:** [VibeClaw Multi-Tool Orchestration](VIBECLAW.md)
+- **Competing from project creation through milestones and phases:** [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md)
 - **Contributing or extending:** [CLI Tools Reference](CLI-TOOLS.md) + [Agent Reference](AGENTS.md)

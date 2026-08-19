@@ -9,6 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **Optional VibeClaw repository orchestration layer** — adds the separate `vibe` CLI, `.planning-vibe/` route/run/candidate/promotion state, normalized JSON/Markdown stage context, exact-base candidate branches and worktrees, explicit fast-forward or history-preserving replacement promotion, adapter-backed manual/managed launch, JSON output, durable provenance/metrics/history, recovery-aware locks, documentation, and temporary-repository tests. Existing GSD commands and `.planning/` behavior remain unchanged.
+- **Project-to-milestone multi-tool workflow guide and bootstrap templates** — adds bundled `project-bootstrap` and `milestone-bootstrap` workflows plus an operator walkthrough for comparing Gemini, Codex, and Claude Code candidates across project initialization, later milestones, phase planning, implementation, verification, and review.
 
 ### Changed
 

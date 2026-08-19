@@ -72,6 +72,8 @@ It also adds `.vibe/` to `.git/info/exclude`. Candidate worktrees are stored und
 
 Initialization is idempotent. It validates existing configuration and only creates missing bundled templates.
 
+For a complete three-tool operating recipe using Gemini, Codex, and Claude Code, see [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md).
+
 ## Configuration
 
 The default `.planning-vibe/config.yaml` is:
@@ -137,7 +139,17 @@ vibe run show feature-014
 vibe run list
 ```
 
-The run records its base commit and integration branch at creation. An explicit `--base` may name the same commit through another ref, but the resolved commit must equal the checked-out integration branch head; historical bases require checking out a dedicated integration branch first. The bundled `feature-development` workflow declares contracts for:
+The run records its base commit and integration branch at creation. An explicit `--base` may name the same commit through another ref, but the resolved commit must equal the checked-out integration branch head; historical bases require checking out a dedicated integration branch first. To promote to `main`, check out `main` before starting the run.
+
+The bundled workflows are:
+
+| Workflow | Stages | Purpose |
+| --- | --- | --- |
+| `project-bootstrap` | `project` | Compare GSD new-project foundations from the same brief and base commit |
+| `milestone-bootstrap` | `milestone` | Compare next-milestone definitions from the same brief and base commit |
+| `feature-development` | `research`, optional `discuss`, `plan`, `execute`, `verify`, `review` | Repeatable phase delivery lifecycle |
+
+The `feature-development` workflow declares contracts for:
 
 ```text
 research → optional discuss → plan → execute → verify → review

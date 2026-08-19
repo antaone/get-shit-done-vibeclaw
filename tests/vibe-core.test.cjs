@@ -46,9 +46,17 @@ describe('VibeClaw orchestration core', () => {
     assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'config.yaml')));
     assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'routes', 'cheap.yaml')));
     assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'feature-development.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'project-bootstrap.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'milestone-bootstrap.yaml')));
     assert.equal(vibe.loadConfig().default_route, 'cheap');
     assert.deepEqual(vibe.listRoutes().map((route) => route.name), ['cheap', 'quality']);
+    assert.deepEqual(
+      vibe.listWorkflows().map((workflow) => workflow.name),
+      ['feature-development', 'milestone-bootstrap', 'project-bootstrap'],
+    );
     assert.equal(vibe.loadWorkflow('feature-development').stages.execute.mutates_source, true);
+    assert.equal(vibe.loadWorkflow('project-bootstrap').stages.project.gsd.command, 'vgsd:new-project');
+    assert.equal(vibe.loadWorkflow('milestone-bootstrap').stages.milestone.gsd.command, 'vgsd:new-milestone');
     const excludePath = git(project, 'rev-parse', '--git-path', 'info/exclude');
     const absoluteExclude = path.isAbsolute(excludePath) ? excludePath : path.resolve(project, excludePath);
     assert.match(fs.readFileSync(absoluteExclude, 'utf8'), /^\.vibe\/$/m);
@@ -142,7 +150,20 @@ describe('VibeClaw orchestration core', () => {
     assert.equal(context.branch, prepared.candidate.git.branch);
     assert.equal(context.worktree, prepared.candidate.git.worktree);
     assert.equal(context.responsibility, 'candidate');
+    assert.equal(context.gsd.invocation, '/vgsd:plan-phase');
     assert.match(fs.readFileSync(context.context_file, 'utf8'), /VibeClaw Stage Context/);
+    assert.match(fs.readFileSync(context.context_file, 'utf8'), /## Assignment/);
+  });
+
+  test('renders the assigned GSD command in each tool-native vgsd form', () => {
+    vibe.startRun('project-bootstrap', { id: 'project-context' });
+    const gemini = vibe.context(vibe.prepareStage('project', { tool: 'gemini' }).candidate.id);
+    const codex = vibe.context(vibe.prepareStage('project', { tool: 'codex' }).candidate.id);
+    const claude = vibe.context(vibe.prepareStage('project', { tool: 'claude' }).candidate.id);
+
+    assert.equal(gemini.gsd.invocation, '/vgsd:new-project');
+    assert.equal(codex.gsd.invocation, '$vgsd-new-project');
+    assert.equal(claude.gsd.invocation, '/vgsd-new-project');
   });
 
   test('completion captures provenance and metrics but remains unpromoted', () => {
