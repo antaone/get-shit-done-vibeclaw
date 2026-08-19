@@ -2,7 +2,7 @@
 /**
  * Runtime surface module — ADR-0011 Phase 2 (Option B).
  *
- * Manages the runtime enable/disable surface state (the `.gsd-surface.json` marker in
+ * Manages the runtime enable/disable surface state (the `.vgsd-surface.json` marker in
  * each runtime's config dir root (e.g., ~/.claude)) independently of the install-time profile marker
  * (`.gsd-profile`). Runtime config locations are resolved by callers.
  *
@@ -34,7 +34,7 @@ const {
 const { CLUSTERS, allClusteredSkills } = require('./clusters.cjs');
 const { findInstallSourceRoot } = require('./runtime-artifact-layout.cjs');
 
-const SURFACE_FILE_NAME = '.gsd-surface.json';
+const SURFACE_FILE_NAME = '.vgsd-surface.json';
 
 // ---------------------------------------------------------------------------
 // State IO
@@ -239,7 +239,7 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
  * (surface apply) and callers that need stand-alone pruning use this function.
  *
  * @param {string} skillsDir        directory that contains the gsd-STEM sub-dirs
- * @param {Set<string>} retainedNames set of directory names to keep (e.g. 'gsd-help')
+ * @param {Set<string>} retainedNames set of directory names to keep (e.g. 'vgsd-help')
  * @param {string} prefix           GSD dir prefix, e.g. 'gsd-' (or '' for Hermes)
  * @param {Map<string, string[]>} [manifest] optional; required for Hermes empty-prefix case
  *                                  and for manifest-membership gate in prefixed case.

@@ -23,13 +23,13 @@ correctness fixes for Gemini, Copilot, Codex, and the canary publish workflow.
 
 - **Six namespace meta-skills with keyword-tag descriptions** — replace the flat
   86-skill listing with a two-stage hierarchical routing layer. The model sees 6
-  namespace routers (`gsd:workflow`, `gsd:project`, `gsd:review`, `gsd:context`,
+  namespace routers (`gsd:workflow`, `gsd:project`, `vgsd:review`, `gsd:context`,
   `gsd:manage`, `gsd:ideate`) instead of 86 entries; selects a namespace, then routes
   to the sub-skill. Existing sub-skills are unchanged and still invocable directly.
   ([#2792](https://github.com/gsd-build/get-shit-done/issues/2792))
 
-- **`/gsd-health --context` utilization guard** — context-window quality guard with
-  two thresholds: 60 % warns ("consider `/gsd-thread`"), 70 % is critical ("reasoning
+- **`/vgsd-health --context` utilization guard** — context-window quality guard with
+  two thresholds: 60 % warns ("consider `/vgsd-thread`"), 70 % is critical ("reasoning
   quality may degrade"). Also exposed as `gsd-tools validate context`.
   ([#2792](https://github.com/gsd-build/get-shit-done/issues/2792))
 
@@ -67,16 +67,16 @@ correctness fixes for Gemini, Copilot, Codex, and the canary publish workflow.
 
 ### Fixed
 
-- **Gemini slash commands now namespaced as `/gsd:<cmd>` instead of `/gsd-<cmd>`** —
-  Gemini CLI namespaces commands under `gsd:` so `/gsd-plan-phase` was unexecutable.
+- **Gemini slash commands now namespaced as `/vgsd:<cmd>` instead of `/vgsd-<cmd>`** —
+  Gemini CLI namespaces commands under `gsd:` so `/vgsd-plan-phase` was unexecutable.
   The install path now converts every body-text reference via a roster-checked regex,
   consistently rewriting command files, agent bodies, and banners.
   ([#2768](https://github.com/gsd-build/get-shit-done/issues/2768),
   [#2783](https://github.com/gsd-build/get-shit-done/issues/2783))
 
 - **GSD slash-command namespace drift cleaned up across docs, workflows, and
-  autocomplete** — remaining stale `/gsd:<cmd>` references now use canonical
-  `/gsd-<cmd>`; `scripts/fix-slash-commands.cjs` rewrites retired colon syntax.
+  autocomplete** — remaining stale `/vgsd:<cmd>` references now use canonical
+  `/vgsd-<cmd>`; `scripts/fix-slash-commands.cjs` rewrites retired colon syntax.
   ([#2858](https://github.com/gsd-build/get-shit-done/pull/2858))
 
 - **`SKILL.md` description quoted for Copilot / Antigravity / Trae / CodeBuddy** —

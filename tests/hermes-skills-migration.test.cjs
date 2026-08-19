@@ -61,7 +61,7 @@ describe('Hermes Agent: convertClaudeCommandToClaudeSkill', () => {
   test('preserves argument-hint', () => {
     const input = [
       '---',
-      'name: gsd:debug',
+      'name: vgsd:debug',
       'description: Debug issues',
       'argument-hint: "[issue description]"',
       'allowed-tools:',
@@ -72,7 +72,7 @@ describe('Hermes Agent: convertClaudeCommandToClaudeSkill', () => {
       'Debug body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-debug');
+    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-debug');
     assert.ok(result.includes('argument-hint:'), 'argument-hint field is present');
     assert.ok(
       result.includes('[issue description]'),
@@ -143,13 +143,13 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     }
   });
 
-  test('creates skills/gsd/quick/SKILL.md directory structure (Hermes bare-stem layout)', () => {
+  test('creates skills/vgsd/quick/SKILL.md directory structure (Hermes bare-stem layout)', () => {
     // Create source command files
     const srcDir = path.join(tmpDir, 'src', 'commands', 'gsd');
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'quick.md'), [
       '---',
-      'name: gsd:quick',
+      'name: vgsd:quick',
       'description: Execute a quick task',
       'allowed-tools:',
       '  - Read',
@@ -167,11 +167,11 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
     // Hermes layout: skills/gsd/<bare-stem>/SKILL.md (ADR-3660)
-    const skillPath = path.join(configDir, 'skills', 'gsd', 'quick', 'SKILL.md');
-    assert.ok(fs.existsSync(skillPath), 'skills/gsd/quick/SKILL.md exists');
+    const skillPath = path.join(configDir, 'skills', 'vgsd', 'quick', 'SKILL.md');
+    assert.ok(fs.existsSync(skillPath), 'skills/vgsd/quick/SKILL.md exists');
 
     // Verify content (structural — parse frontmatter, don't substring-grep)
-    // Hermes bare-stem: prefix='', so skillName passed to converter = 'quick' (not 'gsd-quick')
+    // Hermes bare-stem: prefix='', so skillName passed to converter = 'quick' (not 'vgsd-quick')
     const content = fs.readFileSync(skillPath, 'utf8');
     const fm = parseFrontmatter(content);
     assert.strictEqual(fm.name, 'quick', 'frontmatter name is bare stem for Hermes nested layout');
@@ -202,7 +202,7 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
     // Hermes layout: skills/gsd/<bare-stem>/SKILL.md
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'gsd', 'next', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd', 'next', 'SKILL.md'), 'utf8');
     assert.ok(!content.includes('~/.claude/'), 'old claude tilde-path removed');
     assert.ok(!content.includes('$HOME/.claude/'), 'old claude $HOME-path not present');
   });
@@ -226,7 +226,7 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
     // Hermes layout: skills/gsd/<bare-stem>/SKILL.md
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'gsd', 'plan', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd', 'plan', 'SKILL.md'), 'utf8');
     assert.ok(!content.includes('$HOME/.claude/'), 'old claude $HOME-path removed');
     assert.ok(!content.includes('~/.claude/'), 'old claude tilde-path not present');
   });
@@ -236,7 +236,7 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'quick.md'), [
       '---',
-      'name: gsd:quick',
+      'name: vgsd:quick',
       'description: Quick task',
       '---',
       '',
@@ -254,10 +254,10 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
 
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
-    // _runLegacyInstallMigrations removes skills/gsd-* flat dirs for hermes
+    // _runLegacyInstallMigrations removes skills/vgsd-* flat dirs for hermes
     assert.ok(!fs.existsSync(staleFlatSkillDir), 'stale flat gsd- skill removed');
     // New Hermes layout: skills/gsd/<bare-stem>/SKILL.md
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'gsd', 'quick', 'SKILL.md')), 'new skill installed at skills/gsd/quick/SKILL.md');
+    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'vgsd', 'quick', 'SKILL.md')), 'new skill installed at skills/vgsd/quick/SKILL.md');
   });
 
   test('preserves agent field in frontmatter', () => {
@@ -284,7 +284,7 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
     // Hermes layout: skills/gsd/<bare-stem>/SKILL.md
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'gsd', 'execute', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd', 'execute', 'SKILL.md'), 'utf8');
     const fm = parseFrontmatter(content);
     assert.strictEqual(fm.agent, 'gsd-executor', 'agent field preserved');
   });
@@ -296,7 +296,7 @@ describe('Hermes Agent: SKILL.md format validation', () => {
   test('SKILL.md frontmatter parses with required Hermes fields', () => {
     const input = [
       '---',
-      'name: gsd:review',
+      'name: vgsd:review',
       'description: Code review with quality checks',
       'argument-hint: "[PR number or branch]"',
       'agent: gsd-code-reviewer',
@@ -310,10 +310,10 @@ describe('Hermes Agent: SKILL.md format validation', () => {
     ].join('\n');
 
     // Pass runtime='hermes' so the version field is injected per Hermes spec.
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-review', 'hermes');
+    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-review', 'hermes');
     const fm = parseFrontmatter(result);
 
-    assert.strictEqual(fm.name, 'gsd-review', 'name uses hyphen form');
+    assert.strictEqual(fm.name, 'vgsd-review', 'name uses hyphen form');
     assert.ok(fm.description && fm.description.length > 0, 'description non-empty');
     assert.strictEqual(fm.version, pkg.version, 'version matches package.json');
     assert.strictEqual(fm.agent, 'gsd-code-reviewer', 'agent preserved');

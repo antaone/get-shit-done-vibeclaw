@@ -1,4 +1,4 @@
-# Design: /gsd-ultraplan-phase [BETA]
+# Design: /vgsd-ultraplan-phase [BETA]
 
 **Date:** 2026-04-17
 **Status:** Approved — ready for implementation
@@ -8,9 +8,9 @@
 
 ## Summary
 
-A standalone `/gsd-ultraplan-phase` command that offloads GSD's research+plan phase to Claude Code's ultraplan cloud infrastructure. The plan drafts remotely while the terminal stays free, is reviewed in a rich browser UI with inline comments, then imports back into GSD via the existing `/gsd-import --from` workflow.
+A standalone `/vgsd-ultraplan-phase` command that offloads GSD's research+plan phase to Claude Code's ultraplan cloud infrastructure. The plan drafts remotely while the terminal stays free, is reviewed in a rich browser UI with inline comments, then imports back into GSD via the existing `/vgsd-import --from` workflow.
 
-This is a **beta of a beta**: ultraplan itself is in research preview, so this command is intentionally isolated from the core `/gsd-plan-phase` pipeline to prevent breakage if ultraplan changes.
+This is a **beta of a beta**: ultraplan itself is in research preview, so this command is intentionally isolated from the core `/vgsd-plan-phase` pipeline to prevent breakage if ultraplan changes.
 
 ---
 
@@ -21,10 +21,10 @@ This is a **beta of a beta**: ultraplan itself is in research preview, so this c
 - New `get-shit-done/workflows/ultraplan-phase.md` workflow
 - Runtime gate: Claude Code only (checks `$CLAUDE_CODE_VERSION`)
 - Builds structured ultraplan prompt from GSD phase context
-- Return path via existing `/gsd-import --from <file>` (no new import logic)
+- Return path via existing `/vgsd-import --from <file>` (no new import logic)
 
 **Out of scope (future):**
-- Parallel next-phase planning during `/gsd-execute-phase`
+- Parallel next-phase planning during `/vgsd-execute-phase`
 - Auto-detection of ultraplan's saved file path
 - Text mode / non-interactive fallback
 
@@ -33,7 +33,7 @@ This is a **beta of a beta**: ultraplan itself is in research preview, so this c
 ## Architecture
 
 ```text
-/gsd-ultraplan-phase [phase]
+/vgsd-ultraplan-phase [phase]
         │
         ├─ Runtime gate (CLAUDE_CODE_VERSION check)
         ├─ gsd-sdk query init.plan-phase → phase context
@@ -47,7 +47,7 @@ This is a **beta of a beta**: ultraplan itself is in research preview, so this c
                 │
                 [terminal: Cancel → saves to file]
                 │
-                /gsd-import --from <saved file path>
+                /vgsd-import --from <saved file path>
                         │
                         ├─ Conflict detection
                         ├─ GSD format conversion
@@ -61,7 +61,7 @@ This is a **beta of a beta**: ultraplan itself is in research preview, so this c
 ## Command File (`commands/gsd/ultraplan-phase.md`)
 
 Frontmatter:
-- `name: gsd:ultraplan-phase`
+- `name: vgsd:ultraplan-phase`
 - `description:` includes `[BETA]` marker
 - `argument-hint: [phase-number]`
 - `allowed-tools:` Read, Bash, Glob, Grep
@@ -80,9 +80,9 @@ echo $CLAUDE_CODE_VERSION
 ```
 If unset/empty: print error and exit.
 ```text
-⚠ /gsd-ultraplan-phase requires Claude Code.
+⚠ /vgsd-ultraplan-phase requires Claude Code.
   /ultraplan is not available in this runtime.
-  Use /gsd-plan-phase for local planning.
+  Use /vgsd-plan-phase for local planning.
 ```
 
 ### 3. Initialize
@@ -91,7 +91,7 @@ INIT=$(gsd-sdk query init.plan-phase "$PHASE")
 ```
 Parse: phase number, phase name, phase slug, phase dir, roadmap path, requirements path, research path.
 
-If no `.planning/` exists: error — run `/gsd-new-project` first.
+If no `.planning/` exists: error — run `/vgsd-new-project` first.
 
 ### 4. Build Ultraplan Prompt
 Construct a prompt that includes:
@@ -109,7 +109,7 @@ When ◆ ultraplan ready:
   2. Review, comment, and revise the plan
   3. When satisfied: "Approve plan and teleport back to terminal"
   4. At the terminal dialog: choose Cancel (saves plan to file)
-  5. Run: /gsd-import --from <the file path Claude prints>
+  5. Run: /vgsd-import --from <the file path Claude prints>
 ```
 
 ### 6. Trigger Ultraplan
@@ -121,7 +121,7 @@ When ◆ ultraplan ready:
 
 ## Return Path
 
-No new code needed. The user runs `/gsd-import --from <path>` after ultraplan saves the file. That workflow handles everything: conflict detection, GSD format conversion, plan-checker, ROADMAP update, commit.
+No new code needed. The user runs `/vgsd-import --from <path>` after ultraplan saves the file. That workflow handles everything: conflict detection, GSD format conversion, plan-checker, ROADMAP update, commit.
 
 ---
 
@@ -156,5 +156,5 @@ Ultraplan runs as a standard Claude Code on the web session. For Pro/Max subscri
 - Workflow has init step (gsd-sdk query)
 - Workflow builds ultraplan prompt with phase context
 - Workflow triggers `/ultraplan`
-- Workflow has return-path instructions (Cancel path, `/gsd-import --from`)
-- Workflow does NOT directly implement plan writing (delegates to `/gsd-import`)
+- Workflow has return-path instructions (Cancel path, `/vgsd-import --from`)
+- Workflow does NOT directly implement plan writing (delegates to `/vgsd-import`)

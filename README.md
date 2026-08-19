@@ -18,7 +18,7 @@ VibeClaw repository state
       +-- Grok Build
 ```
 
-VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing GSD commands and `.planning/` projects continue to work normally; orchestration is an optional layer enabled per project with `vibe init`.
+VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing `.planning/` projects and GSD workflow behavior continue to work normally; this fork exposes the commands under `vgsd` so it can coexist with upstream GSD. Orchestration is an optional layer enabled per project with `vibe init`.
 
 ## Why VibeClaw
 
@@ -95,11 +95,14 @@ The installer writes the correct command form for each runtime:
 
 | Runtime | Example |
 | --- | --- |
-| Claude Code, OpenCode, Copilot, Kilo, Cursor, and similar runtimes | `/gsd-plan-phase 1` |
-| Gemini CLI | `/gsd:plan-phase 1` |
-| Codex | `$gsd-plan-phase 1` |
+| Claude Code, OpenCode, Copilot, Kilo, Cursor, and similar runtimes | `/vgsd-plan-phase 1` |
+| Gemini CLI | `/vgsd:plan-phase 1` |
+| Codex | `$vgsd-plan-phase 1` |
 
-The spelling changes, but the workflow and persisted artifacts are the same.
+VibeClaw intentionally owns the `vgsd` namespace so it can be installed beside
+upstream GSD without ambiguous or duplicate commands. Gemini renders the same
+namespace with a colon because its command loader derives namespaces from
+directories; the workflow and persisted artifacts are otherwise identical.
 
 ### Core GSD workflow
 
@@ -118,15 +121,15 @@ discuss phase -> plan phase -> execute phase -> verify work
 Using the common hyphen-style command form:
 
 ```text
-/gsd-new-project
-/gsd-discuss-phase 1
-/gsd-plan-phase 1
-/gsd-execute-phase 1
-/gsd-verify-work 1
-/gsd-complete-milestone
+/vgsd-new-project
+/vgsd-discuss-phase 1
+/vgsd-plan-phase 1
+/vgsd-execute-phase 1
+/vgsd-verify-work 1
+/vgsd-complete-milestone
 ```
 
-For an existing codebase, run `/gsd-map-codebase` before `/gsd-new-project`. Use `/gsd-progress` to inspect the current position and `/gsd-resume-work` after a context reset or a new session.
+For an existing codebase, run `/vgsd-map-codebase` before `/vgsd-new-project`. Use `/vgsd-progress` to inspect the current position and `/vgsd-resume-work` after a context reset or a new session.
 
 ### What GSD provides
 

@@ -50,7 +50,7 @@ npx get-shit-done-cc@latest
   phases with `**Mode:** mvp` set.
   ([#3178](https://github.com/gsd-build/get-shit-done/pull/3178))
 
-- **`/gsd-graphify status` surfaces commit-based staleness** — reads `built_at_commit`
+- **`/vgsd-graphify status` surfaces commit-based staleness** — reads `built_at_commit`
   from graphify v0.7+ graphs, compares against `git HEAD`, and adds four new fields
   (`built_at_commit`, `current_commit`, `commits_behind`, `commit_stale`). Pre-v0.7
   graphs return `commit_stale: null` and fall back to the existing mtime-based signal.
@@ -73,7 +73,7 @@ npx get-shit-done-cc@latest
   `.planning/phases/` layout, eliminating spurious W006 warnings.
   ([#3164](https://github.com/gsd-build/get-shit-done/issues/3164))
 
-- **`/gsd-graphify build` runs inline instead of spawning a sub-agent** — the
+- **`/vgsd-graphify build` runs inline instead of spawning a sub-agent** — the
   post-extraction clustering phase was SIGTERM'd when the sub-agent exited, leaving no
   `graph.json` / `graph.html` / `GRAPH_REPORT.md` artifacts.
   ([#3166](https://github.com/gsd-build/get-shit-done/issues/3166))
@@ -105,17 +105,17 @@ npx get-shit-done-cc@latest
   forms correctly.
   ([#3141](https://github.com/gsd-build/get-shit-done/issues/3129))
 
-- **`/gsd-plan-phase` no longer auto-dispatches to a subagent on OpenCode** — the
+- **`/vgsd-plan-phase` no longer auto-dispatches to a subagent on OpenCode** — the
   `agent: gsd-planner` frontmatter directive caused OpenCode to run the orchestrator in
   a context where the `Agent` tool is unavailable. Directive removed.
   ([#3156](https://github.com/gsd-build/get-shit-done/issues/3156))
 
-- **`/gsd-quick` worktree-merge resurrection guard** — the inverted `PRE_MERGE_FILES`
+- **`/vgsd-quick` worktree-merge resurrection guard** — the inverted `PRE_MERGE_FILES`
   grep that deleted freshly-created files (including `SUMMARY.md`) is replaced with the
   git-history check used by `execute-phase.md`.
   ([#3195](https://github.com/gsd-build/get-shit-done/issues/3195))
 
-- **`gsd-health` no longer raises W019 for `RETROSPECTIVE.md`** — registered in
+- **`vgsd-health` no longer raises W019 for `RETROSPECTIVE.md`** — registered in
   `CANONICAL_EXACT` in `artifacts.cjs` to match its established status as a milestone
   completion artifact.
   ([#3200](https://github.com/gsd-build/get-shit-done/issues/3198))
@@ -130,7 +130,7 @@ npx get-shit-done-cc@latest
   ([#3028](https://github.com/gsd-build/get-shit-done/issues/3020))
 
 - **Windows update-check no longer silently fails** — passes `shell: true` on Windows
-  so `npm.cmd` resolves via PATHEXT; without this the statusline "⬆ /gsd-update"
+  so `npm.cmd` resolves via PATHEXT; without this the statusline "⬆ /vgsd-update"
   indicator never rendered on Windows.
   ([#3102](https://github.com/gsd-build/get-shit-done/issues/3103))
 
@@ -138,7 +138,7 @@ npx get-shit-done-cc@latest
   shebang fails on NixOS, minimal Alpine images, and some container runtimes.
   ([#3194](https://github.com/gsd-build/get-shit-done/issues/3194))
 
-- **Gemini local install no longer duplicates `/gsd:*` commands** — when GSD is
+- **Gemini local install no longer duplicates `/vgsd:*` commands** — when GSD is
   already installed at user scope, a subsequent `--gemini --local` install skips the
   workspace scope. Previously both scopes received all 65 command files and Gemini's
   conflict detector renamed everything.
@@ -176,7 +176,7 @@ npx get-shit-done-cc@latest
 [`RELEASE-v1.40.0-rc.1.md`](RELEASE-v1.40.0-rc.1.md) — skill-surface consolidation
 (86 → 59, [#2790](https://github.com/gsd-build/get-shit-done/issues/2790)), six
 namespace meta-skills ([#2792](https://github.com/gsd-build/get-shit-done/issues/2792)),
-`/gsd-health --context` utilization guard, phase-lifecycle status-line read-side
+`/vgsd-health --context` utilization guard, phase-lifecycle status-line read-side
 ([#2833](https://github.com/gsd-build/get-shit-done/issues/2833)), and Gemini
 colon-form slash-command conversion.
 

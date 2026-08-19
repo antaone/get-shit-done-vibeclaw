@@ -29,7 +29,7 @@ VibeClaw manages cross-tool execution around GSD:
 - normalized tool context;
 - completion, metrics, promotion, and history.
 
-That state lives in `.planning-vibe/`. VibeClaw stage contracts reference existing commands such as `/gsd:plan-phase` and `/gsd:execute-phase`; they do not create `plan-phase-codex`, `plan-phase-claude`, or other runtime copies.
+That state lives in `.planning-vibe/`. VibeClaw stage contracts reference existing commands such as `/vgsd:plan-phase` and `/vgsd:execute-phase`; they do not create `plan-phase-codex`, `plan-phase-claude`, or other runtime copies.
 
 ## Install surface
 

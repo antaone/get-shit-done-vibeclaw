@@ -66,17 +66,17 @@ function walkMd(dir) {
 describe('bug-2808: SKILL.md name: uses hyphen form', () => {
   test('skillFrontmatterName returns hyphen form (not colon)', () => {
     assert.strictEqual(skillFrontmatterName('gsd-add-phase'), 'gsd-add-phase');
-    assert.strictEqual(skillFrontmatterName('gsd-plan-phase'), 'gsd-plan-phase');
-    assert.strictEqual(skillFrontmatterName('gsd-autonomous'), 'gsd-autonomous');
+    assert.strictEqual(skillFrontmatterName('vgsd-plan-phase'), 'vgsd-plan-phase');
+    assert.strictEqual(skillFrontmatterName('vgsd-autonomous'), 'vgsd-autonomous');
   });
 
-  test('generated SKILL.md contains name: gsd-<cmd> (not gsd:<cmd>)', () => {
+  test('generated SKILL.md contains name: vgsd-<cmd> (not vgsd:<cmd>)', () => {
     const cmdFiles = fs.readdirSync(COMMANDS_DIR).filter(f => f.endsWith('.md'));
     assert.ok(cmdFiles.length > 0, 'expected GSD command files');
 
     for (const cmd of cmdFiles) {
       const base = cmd.replace(/\.md$/, '');
-      const skillDirName = 'gsd-' + base;
+      const skillDirName = 'vgsd-' + base;
       const src = fs.readFileSync(path.join(COMMANDS_DIR, cmd), 'utf-8');
       const skillContent = convertClaudeCommandToClaudeSkill(src, skillDirName);
 
@@ -93,12 +93,12 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
         `${cmd}: SKILL.md name should be hyphen form, got "${name}"`
       );
       assert.ok(
-        name.startsWith('gsd-'),
-        `${cmd}: SKILL.md name should start with gsd-, got "${name}"`
+        name.startsWith('vgsd-'),
+        `${cmd}: SKILL.md name should start with vgsd-, got "${name}"`
       );
 
       // #3583 regression guard: the *body* must not leak retired colon-form
-      // command references (e.g. /gsd:plan-phase or gsd:review). The converter
+      // command references (e.g. /vgsd:plan-phase or vgsd:review). The converter
       // now uses transformContentToHyphen from the shared transformer.
       //
       // We explicitly scope to the body (after stripping the leading frontmatter
@@ -162,7 +162,7 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
 
     // Use the real COMMANDS_DIR as the source via .gsd-source marker.
     // installRuntimeArtifacts('claude', configDir, 'global') writes to
-    // configDir/skills/gsd-*/SKILL.md using the same converter as the shim did.
+    // configDir/skills/vgsd-*/SKILL.md using the same converter as the shim did.
     const configDir = path.join(tmp, 'config');
     fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(path.join(configDir, '.gsd-source'), COMMANDS_DIR + '\n');
@@ -171,7 +171,7 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
 
     // Don't filter the directory listing by `startsWith('gsd-')` — that
     // would silently hide exactly the kind of drift this test exists to
-    // catch (a `gsd:extract-learnings` colon variant or a bare
+    // catch (a `vgsd:extract-learnings` colon variant or a bare
     // `extract-learnings` without the namespace prefix would never be
     // collected, and the loop below would never see them). Capture every
     // generated directory and assert the namespace invariants explicitly.
@@ -183,8 +183,8 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
     assert.ok(skillDirs.length > 0, 'expected generated skill directories under skillsDir');
     for (const dir of skillDirs) {
       assert.ok(
-        dir.startsWith('gsd-'),
-        `${dir}: generated skill directory must start with the canonical 'gsd-' namespace`,
+        dir.startsWith('vgsd-'),
+        `${dir}: generated skill directory must start with the canonical 'vgsd-' namespace`,
       );
       assert.ok(
         !dir.includes(':'),
@@ -196,7 +196,7 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
       );
     }
 
-    assert.ok(skillDirs.includes('gsd-extract-learnings'), 'autocomplete surface must include gsd-extract-learnings');
+    assert.ok(skillDirs.includes('vgsd-extract-learnings'), 'autocomplete surface must include vgsd-extract-learnings');
     assert.ok(!skillDirs.includes('gsd-extract_learnings'), 'autocomplete surface must not include gsd-extract_learnings');
 
     for (const skillDir of skillDirs) {
@@ -208,7 +208,7 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
       const nameLine = fmMatch[1].split('\n').find((l) => /^name:\s*/.test(l));
       assert.ok(nameLine, `${skillDir}: generated SKILL.md is missing name: frontmatter`);
       const name = nameLine.replace(/^name:\s*/, '').trim();
-      assert.ok(name.startsWith('gsd-'), `${skillDir}: autocomplete name must start with gsd-, got ${name}`);
+      assert.ok(name.startsWith('vgsd-'), `${skillDir}: autocomplete name must start with vgsd-, got ${name}`);
       assert.ok(!name.includes(':'), `${skillDir}: autocomplete name must not contain colon, got ${name}`);
       assert.ok(!name.includes('_'), `${skillDir}: autocomplete name must not contain underscore, got ${name}`);
     }
@@ -219,12 +219,12 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
     const { transformContentToHyphen, readCmdNames } = transformer;
     const liveCmdNames = readCmdNames();
 
-    const input = 'Run /gsd:plan-phase then gsd:execute-phase. Also see /gsd:review and gsd-sdk query.';
+    const input = 'Run /vgsd:plan-phase then vgsd:execute-phase. Also see /vgsd:review and gsd-sdk query.';
     const out = transformContentToHyphen(input, liveCmdNames);
 
-    assert.ok(out.includes('/gsd-plan-phase'), 'leading-/ colon form must become hyphen');
-    assert.ok(out.includes('gsd-execute-phase'), 'bare colon form must become hyphen');
-    assert.ok(out.includes('/gsd-review'), 'another command reference must be rewritten');
+    assert.ok(out.includes('/vgsd-plan-phase'), 'leading-/ colon form must become hyphen');
+    assert.ok(out.includes('vgsd-execute-phase'), 'bare colon form must become hyphen');
+    assert.ok(out.includes('/vgsd-review'), 'another command reference must be rewritten');
     assert.ok(out.includes('gsd-sdk'), 'non-command gsd-sdk must be left untouched');
     assert.ok(!out.match(/\bgsd:[a-z]/), 'no colon-form command reference may survive');
   });
@@ -254,11 +254,11 @@ describe('bug-2808: SKILL.md name: uses hyphen form', () => {
     const { transformContentToHyphen, readCmdNames } = transformer;
     const liveCmdNames = readCmdNames();
 
-    const input = 'Run gsd-plan-phase and /gsd-execute-phase then gsd:review.'; // mixed, only colon should change
+    const input = 'Run vgsd-plan-phase and /vgsd-execute-phase then vgsd:review.'; // mixed, only colon should change
     const out = transformContentToHyphen(input, liveCmdNames);
-    assert.ok(out.includes('gsd-plan-phase'), 'pre-existing hyphen stays');
-    assert.ok(out.includes('/gsd-execute-phase'), 'pre-existing hyphen stays');
-    assert.ok(out.includes('gsd-review'), 'colon form was normalized');
-    assert.ok(!out.includes('gsd:review'), 'no colon form remains');
+    assert.ok(out.includes('vgsd-plan-phase'), 'pre-existing hyphen stays');
+    assert.ok(out.includes('/vgsd-execute-phase'), 'pre-existing hyphen stays');
+    assert.ok(out.includes('vgsd-review'), 'colon form was normalized');
+    assert.ok(!out.includes('vgsd:review'), 'no colon form remains');
   });
 });

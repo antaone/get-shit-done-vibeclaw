@@ -12,14 +12,14 @@ npx get-shit-done-cc@latest
 
 1.42.3 is a stability hotfix on top of 1.42.2. The headline is **Codex
 CLI 0.130.0 install routability** — after `npx get-shit-done-cc@latest
---codex`, `$gsd-*` skills now resolve correctly under Codex 0.130.0 and
+--codex`, `$vgsd-*` skills now resolve correctly under Codex 0.130.0 and
 later, where the previous build left users with zero routable
 entrypoints. The release also ships **runtime-aware slash formatting**
-so emitted commands match the install's routing shape (Claude → `/gsd-*`,
-Codex → `$gsd-*`) instead of the deprecated colon form, an **argv-based
+so emitted commands match the install's routing shape (Claude → `/vgsd-*`,
+Codex → `$vgsd-*`) instead of the deprecated colon form, an **argv-based
 subprocess** fix for `check.ship-ready` that closes a shell-injection
 class through git refnames, the **`phase_status` field on
-init.plan-phase** that gates `/gsd:plan-phase` on closed phases, plus
+init.plan-phase** that gates `/vgsd:plan-phase` on closed phases, plus
 correctness fixes for archived-phase warnings, future-phase warnings,
 canonical Codex hooks, and the SDK bridge load path.
 
@@ -27,7 +27,7 @@ canonical Codex hooks, and the SDK bridge load path.
 
 - **Codex CLI 0.130.0 install now materializes routable skills** —
   `bin/install.js` writes `~/.codex/skills/gsd-<name>/SKILL.md` for every
-  shipped command so `$gsd-*` skills resolve after install. Codex 0.130.0
+  shipped command so `$vgsd-*` skills resolve after install. Codex 0.130.0
   dropped the extra-skills-roots discovery the previous build relied on,
   leaving users with a successful-looking install and zero usable
   commands. Documented minimum Codex CLI version (0.130.0) inline in the
@@ -36,9 +36,9 @@ canonical Codex hooks, and the SDK bridge load path.
   [#3582](https://github.com/gsd-build/get-shit-done/pull/3609))
 
 - **Runtime-aware slash formatter for user-facing emissions** —
-  `runtime-slash.cjs` produces `/gsd-<cmd>` for skills-based runtimes
-  (Claude, Cursor, OpenCode, Kilo, etc.) and `$gsd-<cmd>` for Codex.
-  The deprecated colon form `/gsd:<cmd>` is no longer emitted at
+  `runtime-slash.cjs` produces `/vgsd-<cmd>` for skills-based runtimes
+  (Claude, Cursor, OpenCode, Kilo, etc.) and `$vgsd-<cmd>` for Codex.
+  The deprecated colon form `/vgsd:<cmd>` is no longer emitted at
   runtime, so the recommendations from `init`, `phase`, `verify`,
   `milestone`, `validate-command-router`, `workstream`, `profile-output`,
   `drift`, `gsd2-import`, and `commands` now paste cleanly into the
@@ -53,7 +53,7 @@ canonical Codex hooks, and the SDK bridge load path.
   branch.<name>.merge` triggered arbitrary code execution.
   ([#3587](https://github.com/gsd-build/get-shit-done/pull/3611))
 
-- **`init.plan-phase` surfaces `phase_status`; `/gsd:plan-phase` gates
+- **`init.plan-phase` surfaces `phase_status`; `/vgsd:plan-phase` gates
   on closed phases** — `init.plan-phase` payload now carries the
   authoritative phase status (`Pending` / `Planned` / `Executed` /
   `Complete`) from `determinePhaseStatus`. The plan-phase workflow
@@ -75,13 +75,13 @@ canonical Codex hooks, and the SDK bridge load path.
   ([#3567](https://github.com/gsd-build/get-shit-done/pull/3574))
 
 - **W006/W007 health warnings skip archived and future phases** —
-  `/gsd:health` no longer flags phases that are intentionally
+  `/vgsd:health` no longer flags phases that are intentionally
   unimplemented (future) or archived as missing-on-disk or
   missing-from-roadmap.
   ([#3559](https://github.com/gsd-build/get-shit-done/pull/3565),
   [#3560](https://github.com/gsd-build/get-shit-done/pull/3564))
 
-- **Ultraplan runtime gates on Claude Code markers** — `/gsd:ultraplan`
+- **Ultraplan runtime gates on Claude Code markers** — `/vgsd:ultraplan`
   detects the runtime via Claude Code markers and fails closed when
   the version is unavailable, instead of running against an unknown
   runtime.
@@ -89,7 +89,7 @@ canonical Codex hooks, and the SDK bridge load path.
 
 - **Padded phase IDs match unpadded ROADMAP prose** — phase routing
   through `phaseMarkdownRegexSource` handles `02.7` ↔ `2.7` and
-  similar padding mismatches so `/gsd:phase complete 02` updates a
+  similar padding mismatches so `/vgsd:phase complete 02` updates a
   ROADMAP that uses the short `### Phase 2:` form.
   ([#3537](https://github.com/gsd-build/get-shit-done/pull/3538))
 
@@ -124,7 +124,7 @@ canonical Codex hooks, and the SDK bridge load path.
 [`RELEASE-v1.42.1.md`](RELEASE-v1.42.1.md) — package legitimacy gate
 against slopsquatting, skill-surface budgeting (`--profile=core` /
 `standard` / `full`), installer migration framework, configurable
-`/gsd-ship` PR body sections, `review.default_reviewers`, optional
+`/vgsd-ship` PR body sections, `review.default_reviewers`, optional
 fallow structural review, structured `--json-errors` CLI mode, plus
 30+ correctness fixes across `project_code` phase prefixes, phase
 completion idempotency, nested git detection, Codex install migration,

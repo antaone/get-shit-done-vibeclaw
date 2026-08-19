@@ -78,7 +78,7 @@ Quality gates embutidos capturam problemas reais: detecção de schema drift sin
 Lista completa nas [notas de release v1.39.0](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0).
 
 - **Perfil de instalação `--minimal`** — alias `--core-only`. Instala apenas os 6 skills do loop principal (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `help`, `update`) e nenhum subagente `gsd-*`. Reduz o overhead do system prompt no cold-start de ~12k para ~700 tokens (≥94% de redução). Útil para LLMs locais com contexto de 32K–128K e APIs cobradas por token.
-- **`/gsd-phase --edit`** — edita qualquer campo de uma fase existente em `ROADMAP.md` no lugar, sem alterar o número ou a posição. `--force` pula o diff de confirmação; referências em `depends_on` são validadas e o `STATE.md` é atualizado na escrita.
+- **`/vgsd-phase --edit`** — edita qualquer campo de uma fase existente em `ROADMAP.md` no lugar, sem alterar o número ou a posição. `--force` pula o diff de confirmação; referências em `depends_on` são validadas e o `STATE.md` é atualizado na escrita.
 - **Build & test gate pós-merge** — o passo 5.6 de `execute-phase` agora detecta automaticamente o comando de build em `workflow.build_command`, com fallback para Xcode (`.xcodeproj`), Makefile, Justfile, Cargo, Go, Python ou npm. Projetos Xcode/iOS rodam `xcodebuild build` e `xcodebuild test` automaticamente. Funciona em modo paralelo e serial.
 - **Modelo de review por runtime** — `review.models.<cli>` permite que cada CLI externa de review (codex, gemini, etc.) escolha seu próprio modelo, independente do perfil de planner/executor.
 - **Herança de configuração de workstream** — quando `GSD_WORKSTREAM` está definido, o `.planning/config.json` raiz é carregado primeiro e merge-deep com o config da workstream (workstream vence em conflito). Um `null` explícito no config da workstream sobrescreve corretamente o valor raiz.
@@ -98,9 +98,10 @@ O instalador pede:
 2. **Local** — Global (todos os projetos) ou local (apenas projeto atual)
 
 Verifique com:
-- Claude Code / Gemini / Copilot / Antigravity: `/gsd-help`
-- OpenCode / Kilo / Augment / Trae: `/gsd-help`
-- Codex: `$gsd-help`
+- Claude Code / Copilot / Antigravity: `/vgsd-help`
+- Gemini: `/vgsd:help`
+- OpenCode / Kilo / Augment / Trae: `/vgsd-help`
+- Codex: `$vgsd-help`
 - Cline: GSD instala via `.clinerules` — verifique se `.clinerules` existe
 
 > [!NOTE]
@@ -183,12 +184,12 @@ claude --dangerously-skip-permissions
 
 ## Como funciona
 
-> **Já tem código?** Rode `/gsd-map-codebase` primeiro para analisar stack, arquitetura, convenções e riscos.
+> **Já tem código?** Rode `/vgsd-map-codebase` primeiro para analisar stack, arquitetura, convenções e riscos.
 
 ### 1. Inicializar projeto
 
 ```
-/gsd-new-project
+/vgsd-new-project
 ```
 
 O sistema:
@@ -202,7 +203,7 @@ O sistema:
 ### 2. Discutir fase
 
 ```
-/gsd-discuss-phase 1
+/vgsd-discuss-phase 1
 ```
 
 Captura suas preferências de implementação antes do planejamento.
@@ -212,7 +213,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 3. Planejar fase
 
 ```
-/gsd-plan-phase 1
+/vgsd-plan-phase 1
 ```
 
 1. Pesquisa abordagens
@@ -224,7 +225,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 4. Executar fase
 
 ```
-/gsd-execute-phase 1
+/vgsd-execute-phase 1
 ```
 
 1. Executa planos em ondas
@@ -237,7 +238,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 5. Verificar trabalho
 
 ```
-/gsd-verify-work 1
+/vgsd-verify-work 1
 ```
 
 Validação manual orientada para confirmar que a feature realmente funciona como esperado.
@@ -247,25 +248,25 @@ Validação manual orientada para confirmar que a feature realmente funciona com
 ### 6. Repetir -> Entregar -> Completar
 
 ```
-/gsd-discuss-phase 2
-/gsd-plan-phase 2
-/gsd-execute-phase 2
-/gsd-verify-work 2
-/gsd-ship 2
-/gsd-complete-milestone
-/gsd-new-milestone
+/vgsd-discuss-phase 2
+/vgsd-plan-phase 2
+/vgsd-execute-phase 2
+/vgsd-verify-work 2
+/vgsd-ship 2
+/vgsd-complete-milestone
+/vgsd-new-milestone
 ```
 
 Ou deixe o GSD decidir:
 
 ```
-/gsd-progress --next
+/vgsd-progress --next
 ```
 
 ### Modo rápido
 
 ```
-/gsd-quick
+/vgsd-quick
 ```
 
 Para tarefas ad-hoc sem ciclo completo de planejamento.
@@ -321,36 +322,36 @@ Cada tarefa gera commit próprio, facilitando `git bisect`, rollback e rastreabi
 
 | Comando | O que faz |
 |---------|-----------|
-| `/gsd-new-project [--auto]` | Inicializa projeto completo |
-| `/gsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | Captura decisões antes do plano (`--chain` encadeia automaticamente em plan+execute) |
-| `/gsd-plan-phase [N] [--auto] [--reviews]` | Pesquisa + plano + validação |
-| `/gsd-execute-phase <N>` | Executa planos em ondas paralelas |
-| `/gsd-verify-work [N]` | UAT manual |
-| `/gsd-ship [N] [--draft]` | Cria PR da fase validada |
-| `/gsd-progress --next` | Avança automaticamente para o próximo passo |
-| `/gsd-fast <text>` | Tarefas triviais sem planejamento |
-| `/gsd-complete-milestone` | Fecha o marco e marca release |
-| `/gsd-new-milestone [name]` | Inicia próximo marco |
+| `/vgsd-new-project [--auto]` | Inicializa projeto completo |
+| `/vgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | Captura decisões antes do plano (`--chain` encadeia automaticamente em plan+execute) |
+| `/vgsd-plan-phase [N] [--auto] [--reviews]` | Pesquisa + plano + validação |
+| `/vgsd-execute-phase <N>` | Executa planos em ondas paralelas |
+| `/vgsd-verify-work [N]` | UAT manual |
+| `/vgsd-ship [N] [--draft]` | Cria PR da fase validada |
+| `/vgsd-progress --next` | Avança automaticamente para o próximo passo |
+| `/vgsd-fast <text>` | Tarefas triviais sem planejamento |
+| `/vgsd-complete-milestone` | Fecha o marco e marca release |
+| `/vgsd-new-milestone [name]` | Inicia próximo marco |
 
 ### Qualidade e utilidades
 
 | Comando | O que faz |
 |---------|-----------|
-| `/gsd-review` | Peer review com múltiplas IAs |
-| `/gsd-pr-branch` | Cria branch limpa para PR |
-| `/gsd-settings` | Configura perfis e agentes |
-| `/gsd-config --profile <profile>` | Troca perfil (quality/balanced/budget/inherit) |
-| `/gsd-quick [--full] [--discuss] [--research]` | Execução rápida com garantias do GSD (`--full` ativa todas as etapas, `--validate` ativa apenas verificação) |
-| `/gsd-health [--repair]` | Verifica e repara `.planning/` |
+| `/vgsd-review` | Peer review com múltiplas IAs |
+| `/vgsd-pr-branch` | Cria branch limpa para PR |
+| `/vgsd-settings` | Configura perfis e agentes |
+| `/vgsd-config --profile <profile>` | Troca perfil (quality/balanced/budget/inherit) |
+| `/vgsd-quick [--full] [--discuss] [--research]` | Execução rápida com garantias do GSD (`--full` ativa todas as etapas, `--validate` ativa apenas verificação) |
+| `/vgsd-health [--repair]` | Verifica e repara `.planning/` |
 
-> Para a lista completa de comandos e opções, use `/gsd-help`.
+> Para a lista completa de comandos e opções, use `/vgsd-help`.
 
 ---
 
 ## Configuração
 
 As configurações do projeto ficam em `.planning/config.json`.
-Você pode configurar no `/gsd-new-project` ou ajustar depois com `/gsd-settings`.
+Você pode configurar no `/vgsd-new-project` ou ajustar depois com `/vgsd-settings`.
 
 ### Ajustes principais
 
@@ -370,7 +371,7 @@ Você pode configurar no `/gsd-new-project` ou ajustar depois com `/gsd-settings
 
 Troca rápida:
 ```
-/gsd-config --profile budget
+/vgsd-config --profile budget
 ```
 
 ---
@@ -414,7 +415,7 @@ Adicione padrões sensíveis ao deny list do Claude Code:
 - Verifique se os arquivos foram instalados no diretório correto
 
 **Comandos não funcionam como esperado?**
-- Rode `/gsd-help`
+- Rode `/vgsd-help`
 - Reinstale com `npx get-shit-done-cc@latest`
 
 **Em Docker/container?**

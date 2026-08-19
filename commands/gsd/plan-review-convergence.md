@@ -1,5 +1,5 @@
 ---
-name: gsd:plan-review-convergence
+name: vgsd:plan-review-convergence
 description: "Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain."
 argument-hint: "<phase> [--codex] [--gemini] [--claude] [--opencode] [--ollama] [--lm-studio] [--llama-cpp] [--text] [--ws <name>] [--all] [--max-cycles N]"
 allowed-tools:
@@ -14,12 +14,12 @@ requires: [phase, review]
 ---
 
 <objective>
-Cross-AI plan convergence loop — an outer revision gate around gsd-review and gsd-planner.
+Cross-AI plan convergence loop — an outer revision gate around vgsd-review and gsd-planner.
 Repeatedly: review plans with external AI CLIs → if HIGH concerns found → replan with --reviews feedback → re-review. Stops when no HIGH concerns remain or max cycles reached.
 
-**Flow:** Agent→Skill("gsd-plan-phase") → Agent→Skill("gsd-review") → check HIGHs → Agent→Skill("gsd-plan-phase --reviews") → Agent→Skill("gsd-review") → ... → Converge or escalate
+**Flow:** Agent→Skill("vgsd-plan-phase") → Agent→Skill("vgsd-review") → check HIGHs → Agent→Skill("vgsd-plan-phase --reviews") → Agent→Skill("vgsd-review") → ... → Converge or escalate
 
-Replaces gsd-plan-phase's internal gsd-plan-checker with external AI reviewers (codex, gemini, etc.). Each step runs inside an isolated Agent that calls the corresponding existing Skill — orchestrator only does loop control.
+Replaces vgsd-plan-phase's internal gsd-plan-checker with external AI reviewers (codex, gemini, etc.). Each step runs inside an isolated Agent that calls the corresponding existing Skill — orchestrator only does loop control.
 
 **Orchestrator role:** Parse arguments, validate phase, spawn Agents for existing Skills, check HIGHs, stall detection, escalation gate.
 </objective>

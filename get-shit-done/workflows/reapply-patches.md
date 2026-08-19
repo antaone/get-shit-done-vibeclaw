@@ -1,6 +1,6 @@
 # Reapply Local Patches Workflow
 
-Invoked by `/gsd:update --reapply` (`commands/gsd/update.md`).
+Invoked by `/vgsd:update --reapply` (`commands/gsd/update.md`).
 
 After a GSD update wipes and reinstalls files, this workflow merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to reliably distinguish user customizations from version drift.
 
@@ -24,12 +24,12 @@ PATCHES_DIR=""
 
 # Env overrides first — covers custom config directories used with --config-dir
 if [ -n "$KILO_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$KILO_CONFIG_DIR")/gsd-local-patches"
+  candidate="$(expand_home "$KILO_CONFIG_DIR")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -n "$KILO_CONFIG" ]; then
-  candidate="$(dirname "$(expand_home "$KILO_CONFIG")")/gsd-local-patches"
+  candidate="$(dirname "$(expand_home "$KILO_CONFIG")")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
@@ -41,12 +41,12 @@ elif [ -n "$XDG_CONFIG_HOME" ]; then
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$OPENCODE_CONFIG_DIR")/gsd-local-patches"
+  candidate="$(expand_home "$OPENCODE_CONFIG_DIR")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG" ]; then
-  candidate="$(dirname "$(expand_home "$OPENCODE_CONFIG")")/gsd-local-patches"
+  candidate="$(dirname "$(expand_home "$OPENCODE_CONFIG")")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
@@ -58,21 +58,21 @@ elif [ -z "$PATCHES_DIR" ] && [ -n "$XDG_CONFIG_HOME" ]; then
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$GEMINI_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$GEMINI_CONFIG_DIR")/gsd-local-patches"
+  candidate="$(expand_home "$GEMINI_CONFIG_DIR")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$CODEX_HOME" ]; then
-  candidate="$(expand_home "$CODEX_HOME")/gsd-local-patches"
+  candidate="$(expand_home "$CODEX_HOME")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$CLAUDE_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$CLAUDE_CONFIG_DIR")/gsd-local-patches"
+  candidate="$(expand_home "$CLAUDE_CONFIG_DIR")/vgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
@@ -111,7 +111,7 @@ Read `backup-meta.json` from the patches directory.
 ```
 No local patches found. Nothing to reapply.
 
-Local patches are automatically saved when you run /gsd:update
+Local patches are automatically saved when you run /vgsd:update
 after modifying any GSD workflow, command, or agent files.
 ```
 Exit.
@@ -228,7 +228,7 @@ d. **If ALL differences appear to be mechanical drift → still flag as CONFLICT
 When the config directory is a git repo but the pristine install commit can't be found, use commit history to identify user changes:
 ```bash
 # Find non-update commits that touched this file
-git -C "$CONFIG_DIR" log --oneline --no-merges -- "{file_path}" | grep -v "gsd:update\|gsd-update\|GSD update\|gsd-install"
+git -C "$CONFIG_DIR" log --oneline --no-merges -- "{file_path}" | grep -v "vgsd:update\|vgsd-update\|GSD update\|gsd-install"
 ```
 Each matching commit represents an intentional user modification. Use the commit messages and diffs to understand what was changed and why.
 
@@ -278,7 +278,7 @@ Run the deterministic verifier script. Do NOT rely solely on the free-text `veri
 Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${GSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
 
 ```bash
-PRISTINE_DIR="${CONFIG_DIR}/gsd-pristine"
+PRISTINE_DIR="${CONFIG_DIR}/vgsd-pristine"
 
 # Build args as a bash array so paths with spaces survive expansion intact
 # (string-concat + unquoted expansion would split incorrectly on whitespace).
@@ -324,9 +324,9 @@ Resolve before re-running:
         cp {patches_dir}/{file} {installed_path}  # then re-apply customisations
   (c) If the upstream changes are acceptable, update the backup-meta.json
       pristine_hashes entry for each drifted file to the current on-disk hash, then
-      re-run /gsd:update --reapply to re-verify with the refreshed baseline.
+      re-run /vgsd:update --reapply to re-verify with the refreshed baseline.
 
-Then re-run /gsd:update --reapply to re-verify.
+Then re-run /vgsd:update --reapply to re-verify.
 ```
 
 ```bash
@@ -353,7 +353,7 @@ Resolve before proceeding:
   (a) Re-merge the missing content into the installed file by hand, or
   (b) Restore from backup: cp {patches_dir}/{file} {installed_path}
 
-Then re-run /gsd:update --reapply to re-verify.
+Then re-run /vgsd:update --reapply to re-verify.
 ```
 
 Do not proceed to cleanup until the verifier exits 0.
@@ -370,7 +370,7 @@ The Hunk Verification Table produced in Step 4 must also be reviewed before proc
 ERROR: Hunk Verification Table is missing — Step 4 did not produce it.
 The deterministic verifier (5a) may still have passed, but a missing table
 means post-merge verification was not fully completed. Rerun
-/gsd:update --reapply to retry with full verification.
+/vgsd:update --reapply to retry with full verification.
 ```
 
 A missing table absent from the workflow output cannot bypass this gate.

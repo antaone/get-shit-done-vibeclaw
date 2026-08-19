@@ -81,7 +81,7 @@ Dirty application/source changes block promotion. Changes limited to `.planning-
 
 ## 6. Command model
 
-The separate `vibe` executable keeps orchestration distinct from `/gsd:*` methodology commands:
+The separate `vibe` executable keeps orchestration distinct from `/vgsd:*` methodology commands:
 
 ```text
 vibe init
@@ -102,7 +102,7 @@ All inspection and lifecycle commands support `--json`. `stage prepare` is inten
 
 ## 7. GSD compatibility
 
-Workflow contracts carry runtime-neutral stage semantics plus a `gsd.command` reference such as `gsd:plan-phase` or `gsd:execute-phase`. Stage context tells the selected tool which existing GSD action to run and where candidate-specific outputs belong. No runtime-specific copy of a GSD workflow is introduced.
+Workflow contracts carry runtime-neutral stage semantics plus a `gsd.command` reference such as `vgsd:plan-phase` or `vgsd:execute-phase`. Stage context tells the selected tool which existing GSD action to run and where candidate-specific outputs belong. No runtime-specific copy of a GSD workflow is introduced.
 
 Normal GSD operation does not create `.planning-vibe/` and does not load the VibeClaw library. VibeClaw only activates after `vibe init`.
 

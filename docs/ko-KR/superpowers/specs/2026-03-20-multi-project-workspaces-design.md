@@ -1,4 +1,4 @@
-# 멀티 프로젝트 워크스페이스 (`/gsd-workspace --new`)
+# 멀티 프로젝트 워크스페이스 (`/vgsd-workspace --new`)
 
 **Issue:** #1241
 **Date:** 2026-03-20
@@ -18,13 +18,13 @@ GSD는 작업 디렉토리당 하나의 `.planning/` 디렉토리에 종속되�
 
 ## 명령어
 
-### `/gsd-workspace --new`
+### `/vgsd-workspace --new`
 
 저장소 복사본과 자체 `.planning/`이 있는 워크스페이스 디렉토리를 생성합니다.
 
 ```bash
-/gsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI --path ~/workspaces/feature-b
-/gsd-workspace --new --name feature-b --repos . --strategy worktree   # 동일 저장소 격리
+/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI --path ~/workspaces/feature-b
+/vgsd-workspace --new --name feature-b --repos . --strategy worktree   # 동일 저장소 격리
 ```
 
 **인수.**
@@ -33,26 +33,26 @@ GSD는 작업 디렉토리당 하나의 `.planning/` 디렉토리에 종속되�
 |------|----------|---------|-------------|
 | `--name` | 예 | — | 워크스페이스 이름 |
 | `--repos` | 아니오 | 대화형 선택 | 쉼표로 구분된 저장소 경로 또는 이름 |
-| `--path` | 아니오 | `~/gsd-workspaces/<name>` | 대상 디렉토리 |
+| `--path` | 아니오 | `~/vgsd-workspaces/<name>` | 대상 디렉토리 |
 | `--strategy` | 아니오 | `worktree` | `worktree`(가볍고 .git 공유) 또는 `clone`(완전히 독립) |
 | `--branch` | 아니오 | `workspace/<name>` | 체크아웃할 브랜치 |
 | `--auto` | 아니오 | false | 대화형 질문 건너뛰고 기본값 사용 |
 
-### `/gsd-workspace --list`
+### `/vgsd-workspace --list`
 
-워크스페이스 매니페스트를 위해 `~/gsd-workspaces/*/WORKSPACE.md`를 스캔합니다. 이름, 경로, 저장소 수, GSD 상태(PROJECT.md 존재 여부, 현재 페이즈)가 있는 표를 표시합니다.
+워크스페이스 매니페스트를 위해 `~/vgsd-workspaces/*/WORKSPACE.md`를 스캔합니다. 이름, 경로, 저장소 수, GSD 상태(PROJECT.md 존재 여부, 현재 페이즈)가 있는 표를 표시합니다.
 
-### `/gsd-workspace --remove`
+### `/vgsd-workspace --remove`
 
 확인 후 워크스페이스 디렉토리를 제거합니다. worktree 전략의 경우 먼저 각 멤버 저장소에 대해 `git worktree remove`를 실행합니다. 저장소에 커밋되지 않은 변경사항이 있으면 거부합니다.
 
 ## 디렉토리 구조
 
 ```
-~/gsd-workspaces/feature-b/          # 워크스페이스 루트
+~/vgsd-workspaces/feature-b/          # 워크스페이스 루트
 ├── WORKSPACE.md                      # 매니페스트
 ├── .planning/                        # 독립적인 GSD 계획 디렉토리
-│   ├── PROJECT.md                    # (사용자가 /gsd-new-project를 실행한 경우)
+│   ├── PROJECT.md                    # (사용자가 /vgsd-new-project를 실행한 경우)
 │   ├── STATE.md
 │   └── config.json
 ├── hr-ui/                            # 소스 저장소의 git worktree
@@ -89,7 +89,7 @@ Strategy: worktree
 
 ## 워크플로우
 
-### `/gsd-workspace --new` 워크플로우 단계
+### `/vgsd-workspace --new` 워크플로우 단계
 
 1. **설정** — `init new-workspace` 호출, JSON 컨텍스트 파싱
 2. **입력 수집** — `--name`/`--repos`/`--path`가 제공되지 않으면 대화형으로 질문합니다. 저장소의 경우 cwd의 하위 `.git` 디렉토리를 옵션으로 표시합니다.
@@ -100,7 +100,7 @@ Strategy: worktree
    - Clone: `git clone <source> <workspace>/<repo-name>`
 6. **WORKSPACE.md 작성** — 소스 경로, 전략, 브랜치가 있는 매니페스트
 7. **.planning/ 초기화** — `mkdir -p <workspace>/.planning`
-8. **/gsd-new-project 제안** — 새 워크스페이스에서 프로젝트 초기화를 실행할지 사용자에게 질문
+8. **/vgsd-new-project 제안** — 새 워크스페이스에서 프로젝트 초기화를 실행할지 사용자에게 질문
 9. **커밋** — commit_docs가 활성화된 경우 WORKSPACE.md의 원자적 커밋
 10. **완료** — 워크스페이스 경로와 다음 단계 출력
 
@@ -111,7 +111,7 @@ Strategy: worktree
 - 대상 경로가 이미 존재하는지 여부
 - 소스 저장소에 커밋되지 않은 변경사항이 있는지 여부
 - `git worktree`를 사용할 수 있는지 여부
-- 기본 워크스페이스 기본 디렉토리(`~/gsd-workspaces/`)
+- 기본 워크스페이스 기본 디렉토리(`~/vgsd-workspaces/`)
 
 워크플로우 게이팅을 위한 플래그가 포함된 JSON을 반환합니다.
 
@@ -137,7 +137,7 @@ Strategy: worktree
 
 ### List-Workspaces 엣지 케이스
 
-- **`~/gsd-workspaces/`가 존재하지 않음** — "No workspaces found"
+- **`~/vgsd-workspaces/`가 존재하지 않음** — "No workspaces found"
 - **WORKSPACE.md는 있지만 내부 저장소가 사라짐** — 워크스페이스를 표시하되 저장소를 누락으로 표시
 
 ## 테스팅
@@ -182,4 +182,4 @@ Strategy: worktree
 | 워크스페이스 루트에 `.planning/` | 개별 저장소 계획으로부터 완전한 격리를 제공. 각 워크스페이스는 독립적인 GSD 프로젝트 |
 | 중앙 레지스트리 없음 | 상태 드리프트 방지. `list-workspaces`가 파일 시스템을 직접 스캔 |
 | A의 특수 케이스로서 케이스 B | `--repos .`는 동일한 메커니즘을 재사용하므로 특별한 피처 브랜치 코드 불필요 |
-| 기본 경로 `~/gsd-workspaces/<name>` | `list-workspaces`가 스캔할 예측 가능한 위치, 소스 저장소 외부에 워크스페이스 유지 |
+| 기본 경로 `~/vgsd-workspaces/<name>` | `list-workspaces`가 스캔할 예측 가능한 위치, 소스 저장소 외부에 워크스페이스 유지 |

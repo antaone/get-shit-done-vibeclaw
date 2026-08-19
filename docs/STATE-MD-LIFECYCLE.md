@@ -104,10 +104,10 @@ is to use the lifecycle stage:
 
 | Command | `status` value while in flight |
 |---|---|
-| `/gsd-discuss-phase` | `discussing` |
-| `/gsd-plan-phase` | `planning` |
-| `/gsd-execute-phase` | `executing` |
-| `/gsd-verify-work` | `verifying` |
+| `/vgsd-discuss-phase` | `discussing` |
+| `/vgsd-plan-phase` | `planning` |
+| `/vgsd-execute-phase` | `executing` |
+| `/vgsd-verify-work` | `verifying` |
 
 If `status` is left at `in_progress` (the milestone-level value), Scene 1
 renders just `Phase 4.5` without the stage suffix.

@@ -32,9 +32,9 @@ Currently, Grok Build is only supported via its Claude compatibility layer. This
 
 ### Installed Locations
 - `~/.agents/get-shit-done/` — Core workflows, references, templates, `gsd-tools.cjs`, `bin/`
-- `~/.agents/skills/gsd-*` — ~125 skills (heavily GSD + many large reference skills like `userinterface-wiki`, `react-best-practices`, etc.)
+- `~/.agents/skills/vgsd-*` — ~125 skills (heavily GSD + many large reference skills like `userinterface-wiki`, `react-best-practices`, etc.)
 - `~/.agents/agents/` — 22 GSD sub-agents (with `.md` + `.toml`)
-- `~/.claude/skills/gsd-*` + `~/.claude/get-shit-done/` + `~/.claude/agents/` — Parallel Claude Code install (~208 skills total)
+- `~/.claude/skills/vgsd-*` + `~/.claude/get-shit-done/` + `~/.claude/agents/` — Parallel Claude Code install (~208 skills total)
 - `~/.grok/skills/` — Mostly empty (only the 7 official bundled Grok skills)
 - `~/.grok/` — Not yet properly used by GSD
 
@@ -130,10 +130,10 @@ Possible components:
 - Create or enhance sync logic.
 - Test end-to-end inside an actual Grok Build session:
   - `grok inspect` cleanliness
-  - Command discovery (`/gsd-*` or Grok-native form)
+  - Command discovery (`/vgsd-*` or Grok-native form)
   - Agent spawning
   - Hook firing
-  - Full `gsd-new-project` → `gsd-progress` → `gsd-execute-phase` flow
+  - Full `vgsd-new-project` → `vgsd-progress` → `vgsd-execute-phase` flow
 - Verify no regression in Claude / Gemini / Codex usage.
 
 ### Phase 5 — Documentation & Future Upstream Path
@@ -166,7 +166,7 @@ Useful commands and checks when working on this:
 
 - `grok inspect` (and `grok inspect --json`) — check skill discovery, sources, and token counts.
 - `grok` TUI inside a real project that uses GSD.
-- Full workflow test: `/gsd-progress`, `/gsd-discuss-phase`, `/gsd-plan-phase`, `/gsd-execute-phase`, etc.
+- Full workflow test: `/vgsd-progress`, `/vgsd-discuss-phase`, `/vgsd-plan-phase`, `/vgsd-execute-phase`, etc.
 - Verify hooks fire correctly via Grok’s JSON hook system.
 - Check that subagents (the 22 GSD agents in `~/.agents/agents/`) can be spawned from Grok.
 
@@ -233,7 +233,7 @@ Then follow the phased plan in Section 4.
 - Slim the `<codex_skill_adapter>` blocks (currently ~60 lines inlined in every gsd-* SKILL.md). Options: extract detailed mapping to a shared `@reference/codex-skill-adapter.md` that skills include, or make the adapter header shorter/optional for lower `grok inspect` token cost.
 - Investigate Grok Build native hook support (JSON manifests under `~/.grok/hooks/` vs the shell hooks in `~/.agents/hooks/`).
 - Update `grok inspect` output cleanliness (remove "unknown tool prefix: Skill(gsd:*)" warnings if possible via settings or skill manifest).
-- Consider whether to also populate a native `~/.grok/skills/gsd-*` tree in addition to the working `.agents` layout.
+- Consider whether to also populate a native `~/.grok/skills/vgsd-*` tree in addition to the working `.agents` layout.
 
 This session delivered working `grok` runtime resolution + immediate version parity for the user's primary Grok Build harness.
 

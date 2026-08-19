@@ -17,7 +17,7 @@ stages:
       - candidate summary written
       - candidate work committed when tracked
     gsd:
-      command: gsd:plan-phase
+      command: vgsd:plan-phase
   discuss:
     description: Capture operator decisions using the existing GSD discussion workflow.
     optional: true
@@ -34,7 +34,7 @@ stages:
       - decisions persisted
       - candidate summary written
     gsd:
-      command: gsd:discuss-phase
+      command: vgsd:discuss-phase
   plan:
     description: Produce an executable GSD plan from the latest promoted research or discussion.
     mutates_source: false
@@ -52,7 +52,7 @@ stages:
       - plan verification executed
       - candidate summary written
     gsd:
-      command: gsd:plan-phase
+      command: vgsd:plan-phase
   execute:
     description: Implement the promoted plan in an isolated candidate branch and worktree.
     mutates_source: true
@@ -70,7 +70,7 @@ stages:
       - all candidate changes committed
       - candidate summary written
     gsd:
-      command: gsd:execute-phase
+      command: vgsd:execute-phase
   verify:
     description: Verify the promoted implementation without selecting a winner automatically.
     mutates_source: false
@@ -87,7 +87,7 @@ stages:
       - evidence persisted
       - candidate summary written
     gsd:
-      command: gsd:verify-work
+      command: vgsd:verify-work
   review:
     description: Review the promoted verification result and implementation.
     mutates_source: false
@@ -103,4 +103,4 @@ stages:
       - review findings persisted
       - candidate summary written
     gsd:
-      command: gsd:review
+      command: vgsd:review

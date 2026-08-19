@@ -1,5 +1,5 @@
 ---
-name: gsd:quick
+name: vgsd:quick
 description: Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents
 argument-hint: "[list | status <slug> | resume <slug> | --full] [--validate] [--discuss] [--research] [task description]"
 allowed-tools:
@@ -119,7 +119,7 @@ Status: {status from SUMMARY.md frontmatter, or "no summary yet"}
 Description: {first non-empty line from PLAN.md after frontmatter}
 Last action: {last meaningful line of SUMMARY.md, or "none"}
 ─────────────────────────────────────
-Resume with: /gsd:quick resume {slug}
+Resume with: /vgsd:quick resume {slug}
 ```
 
 No agent spawn. STOP after printing.

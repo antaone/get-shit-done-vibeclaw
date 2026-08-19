@@ -56,7 +56,7 @@
    Launch plan-phase using the Skill tool to avoid nested Task sessions
    (which cause runtime freezes due to deep agent nesting — see #686):
    ```
-   Skill(skill="gsd-plan-phase", args="${PHASE} --auto ${GSD_WS}")
+   Skill(skill="vgsd-plan-phase", args="${PHASE} --auto ${GSD_WS}")
    ```
 
    This keeps the auto-advance chain flat — discuss, plan, and execute all
@@ -75,22 +75,22 @@
 
      /clear then:
 
-     Next: /gsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${GSD_WS}
+     Next: /vgsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${GSD_WS}
      ```
    - **PLANNING COMPLETE** → Planning done, execution didn't complete:
      ```
      Auto-advance partial: Planning complete, execution did not finish.
-     Continue: /gsd:execute-phase ${PHASE} ${GSD_WS}
+     Continue: /vgsd:execute-phase ${PHASE} ${GSD_WS}
      ```
    - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
      ```
      Auto-advance stopped: Planning needs input.
-     Continue: /gsd:plan-phase ${PHASE} ${GSD_WS}
+     Continue: /vgsd:plan-phase ${PHASE} ${GSD_WS}
      ```
    - **GAPS FOUND** → Stop chain:
      ```
      Auto-advance stopped: Gaps found during execution.
-     Continue: /gsd:plan-phase ${PHASE} --gaps ${GSD_WS}
+     Continue: /vgsd:plan-phase ${PHASE} --gaps ${GSD_WS}
      ```
 
 7. **If none of `--auto`, `--chain`, nor config enabled:** route to

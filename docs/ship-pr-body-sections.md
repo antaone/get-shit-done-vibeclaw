@@ -1,12 +1,12 @@
 # Custom PR Body Sections
 
-`/gsd-ship` creates a pull request body from the planning artifacts for a verified phase. Projects can append extra PRD-style sections to that body with `ship.pr_body_sections` in `.planning/config.json`.
+`/vgsd-ship` creates a pull request body from the planning artifacts for a verified phase. Projects can append extra PRD-style sections to that body with `ship.pr_body_sections` in `.planning/config.json`.
 
 Use this when your project needs the PR to carry more release context than the default GSD sections, such as user stories, acceptance criteria, risks, release criteria, or stakeholder approval notes.
 
 ## What GSD Always Includes
 
-Every generated `/gsd-ship` PR body keeps the required core sections:
+Every generated `/vgsd-ship` PR body keeps the required core sections:
 
 - `Summary`
 - `Changes`
@@ -18,7 +18,7 @@ Custom sections are append-only. They render after `Key Decisions`; they cannot 
 
 ## Configure Sections During Onboarding
 
-During `/gsd-new-project`, GSD can seed optional PRD-style sections into `.planning/config.json`.
+During `/vgsd-new-project`, GSD can seed optional PRD-style sections into `.planning/config.json`.
 
 Recommended onboarding choices:
 
@@ -27,7 +27,7 @@ Recommended onboarding choices:
 - `Success Metrics & Release Criteria` for Definition of Done, measurable outcomes, and release checks.
 - `Stakeholder Review & Approval` for sign-off traceability.
 
-Selected sections are written with `"enabled": true`. Seeded but unselected sections are written with `"enabled": false`, so you can enable them later without editing the shipped `/gsd-ship` workflow.
+Selected sections are written with `"enabled": true`. Seeded but unselected sections are written with `"enabled": false`, so you can enable them later without editing the shipped `/vgsd-ship` workflow.
 
 ## Configure Sections Manually
 

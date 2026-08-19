@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Typed flag parser for the /gsd:code-review command.
+ * Typed flag parser for the /vgsd:code-review command.
  *
  * This is the canonical IR for code-review argument parsing. The workflow
  * (code-review.md) delegates flag dispatch logic to this module so that:

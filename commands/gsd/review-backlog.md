@@ -1,5 +1,5 @@
 ---
-name: gsd:review-backlog
+name: vgsd:review-backlog
 description: Review and promote backlog items to active milestone
 allowed-tools:
   - Read

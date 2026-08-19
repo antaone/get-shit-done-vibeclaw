@@ -1,6 +1,6 @@
 # Thread Workflow
 
-Invoked by `/gsd:thread` (`commands/gsd/thread.md`).
+Invoked by `/vgsd:thread` (`commands/gsd/thread.md`).
 
 Create, list, close, or resume persistent context threads for cross-session work.
 
@@ -52,7 +52,7 @@ frontend-build-tools      resolved      2026-04-01   Vite vs webpack
 
 If no threads exist (or none match the filter):
 ```
-No threads found. Create one with: /gsd:thread <description>
+No threads found. Create one with: /vgsd:thread <description>
 ```
 
 STOP after displaying. Do NOT proceed to further steps.
@@ -107,8 +107,8 @@ When SUBCMD=status and SLUG is set (already sanitized):
    Next Steps:
    {content of ## Next Steps section}
    ─────────────────────────────────────
-   Resume with: /gsd:thread {SLUG}
-   Close with:  /gsd:thread close {SLUG}
+   Resume with: /vgsd:thread {SLUG}
+   Close with:  /vgsd:thread close {SLUG}
    ```
 
 No agent spawn. STOP after printing.
@@ -195,8 +195,8 @@ updated: {today ISO date}
    Thread: {slug}
    File: .planning/threads/{slug}.md
 
-   Resume anytime with: /gsd:thread {slug}
-   Close when done with: /gsd:thread close {slug}
+   Resume anytime with: /vgsd:thread {slug}
+   Close when done with: /vgsd:thread close {slug}
    ```
 </mode_create>
 
@@ -204,10 +204,10 @@ updated: {today ISO date}
 
 <notes>
 - Threads are NOT phase-scoped — they exist independently of the roadmap
-- Lighter weight than /gsd:pause-work — no phase state, no plan context
+- Lighter weight than /vgsd:pause-work — no phase state, no plan context
 - The value is in Context and Next Steps — a cold-start session can pick up immediately
 - Threads can be promoted to phases or backlog items when they mature:
-  /gsd-add-phase or /gsd-add-backlog with context from the thread
+  /vgsd-add-phase or /vgsd-add-backlog with context from the thread
 - Thread files live in .planning/threads/ — no collision with phases or other GSD structures
 - Thread status values: `open`, `in_progress`, `resolved`
 </notes>

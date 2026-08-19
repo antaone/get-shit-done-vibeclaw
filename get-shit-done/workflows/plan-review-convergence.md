@@ -1,6 +1,6 @@
 <purpose>
 Cross-AI plan convergence loop — automates the manual chain:
-gsd-plan-phase N → gsd-review N --codex → gsd-plan-phase N --reviews → gsd-review N --codex → ...
+vgsd-plan-phase N → vgsd-review N --codex → vgsd-plan-phase N --reviews → vgsd-review N --codex → ...
 Each step runs inside an isolated Agent that calls the corresponding Skill.
 Orchestrator only does: init, loop control, parse CYCLE_SUMMARY for HIGH count, stall detection, escalation.
 </purpose>
@@ -49,14 +49,14 @@ CONVERGENCE_ENABLED=$(gsd-sdk query config-get workflow.plan_review_convergence 
 **If `CONVERGENCE_ENABLED` is not `"true"`:** Display and exit:
 
 ```text
-gsd-plan-review-convergence is disabled (workflow.plan_review_convergence=false).
+vgsd-plan-review-convergence is disabled (workflow.plan_review_convergence=false).
 
 This feature automates the plan→review→replan loop using external AI reviewers.
 Enable it with:
 
   gsd config-set workflow.plan_review_convergence true
 
-Then re-run: /gsd:plan-review-convergence {PHASE}
+Then re-run: /vgsd:plan-review-convergence {PHASE}
 ```
 
 ## 2. Initialize
@@ -102,9 +102,9 @@ Display: `◆ No plans found — spawning initial planning agent...`
 ```text
 Agent(
   description="Initial planning Phase {PHASE}",
-  prompt="Run /gsd:plan-phase for Phase {PHASE}.
+  prompt="Run /vgsd:plan-phase for Phase {PHASE}.
 
-Execute: Skill(skill='gsd-plan-phase', args='{PHASE} {GSD_WS}')
+Execute: Skill(skill='vgsd-plan-phase', args='{PHASE} {GSD_WS}')
 
 Complete the full planning workflow. Do NOT return until planning is complete and PLAN.md files are committed.",
   mode="auto"
@@ -138,9 +138,9 @@ Display: `◆ Cycle {cycle}/{MAX_CYCLES} — spawning review agent...`
 ```text
 Agent(
   description="Cross-AI review Phase {PHASE} cycle {cycle}",
-  prompt="Run /gsd:review for Phase {PHASE}.
+  prompt="Run /vgsd:review for Phase {PHASE}.
 
-Execute: Skill(skill='gsd-review', args='--phase {PHASE} {REVIEWER_FLAGS} {GSD_WS}')
+Execute: Skill(skill='vgsd-review', args='--phase {PHASE} {REVIEWER_FLAGS} {GSD_WS}')
 
 Complete the full review workflow. Do NOT return until REVIEWS.md is committed.
 
@@ -226,7 +226,7 @@ Display:
  No HIGH concerns remaining.
 
  REVIEWS.md: {REVIEWS_FILE}
- Next: /gsd:execute-phase {PHASE}
+ Next: /vgsd:execute-phase {PHASE}
 ```
 
 Exit — convergence achieved.
@@ -280,8 +280,8 @@ If "Manual review":
 ```text
 Review the concerns in: {REVIEWS_FILE}
 
-To replan manually:  /gsd:plan-phase {PHASE} --reviews
-To restart loop:     /gsd:plan-review-convergence {PHASE} {REVIEWER_FLAGS}
+To replan manually:  /vgsd:plan-phase {PHASE} --reviews
+To restart loop:     /vgsd:plan-review-convergence {PHASE} {REVIEWER_FLAGS}
 ```
 Exit workflow.
 
@@ -296,14 +296,14 @@ Display: `◆ Spawning replan agent with review feedback...`
 ```text
 Agent(
   description="Replan Phase {PHASE} with review feedback cycle {cycle}",
-  prompt="Run /gsd:plan-phase with --reviews for Phase {PHASE}.
+  prompt="Run /vgsd:plan-phase with --reviews for Phase {PHASE}.
 
-Execute: Skill(skill='gsd-plan-phase', args='{PHASE} --reviews --skip-research {GSD_WS}')
+Execute: Skill(skill='vgsd-plan-phase', args='{PHASE} --reviews --skip-research {GSD_WS}')
 
 This will replan incorporating cross-AI review feedback from REVIEWS.md.
 Do NOT return until replanning is complete and updated PLAN.md files are committed.
 
-IMPORTANT: When gsd-plan-phase outputs '## PLANNING COMPLETE', that means replanning is done. Return at that point.",
+IMPORTANT: When vgsd-plan-phase outputs '## PLANNING COMPLETE', that means replanning is done. Return at that point.",
   mode="auto"
 )
 ```
@@ -314,9 +314,9 @@ After agent returns → go back to **step 5a** (review again).
 
 <success_criteria>
 - [ ] Config gate checked before running — exits with enable instructions if workflow.plan_review_convergence is false
-- [ ] Initial planning via Agent → Skill("gsd-plan-phase") if no plans exist
-- [ ] Review via Agent → Skill("gsd-review") — isolated, not inline; {GSD_WS} forwarded
-- [ ] Replan via Agent → Skill("gsd-plan-phase --reviews") — isolated, not inline
+- [ ] Initial planning via Agent → Skill("vgsd-plan-phase") if no plans exist
+- [ ] Review via Agent → Skill("vgsd-review") — isolated, not inline; {GSD_WS} forwarded
+- [ ] Replan via Agent → Skill("vgsd-plan-phase --reviews") — isolated, not inline
 - [ ] Orchestrator only does: init, config gate, loop control, parse CYCLE_SUMMARY for HIGH count, stall detection, escalation
 - [ ] HIGH count extracted from review agent's CYCLE_SUMMARY return message (not by grepping REVIEWS.md)
 - [ ] Review agent prompt defines CYCLE_SUMMARY: current_high=<N> contract with PARTIALLY/FULLY RESOLVED definitions

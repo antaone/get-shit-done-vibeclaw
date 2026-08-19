@@ -15,7 +15,7 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 | [v1.42.1 Release Notes](RELEASE-v1.42.1.md) | All users | Stable release notes for the 1.42.1 release |
 | [Command Reference](COMMANDS.md) | All users | Stable commands with syntax, flags, options, and examples |
 | [Configuration Reference](CONFIGURATION.md) | All users | Full config schema, workflow toggles, model profiles, git branching |
-| [Custom PR Body Sections](ship-pr-body-sections.md) | All users | How to append project-specific PRD sections to `/gsd-ship` PR bodies |
+| [Custom PR Body Sections](ship-pr-body-sections.md) | All users | How to append project-specific PRD sections to `/vgsd-ship` PR bodies |
 | [CLI Tools Reference](CLI-TOOLS.md) | Contributors, agent authors | `gsd-tools.cjs` programmatic API for workflows and agents |
 | [JSON Error Mode](json-errors.md) | Contributors, agent authors | Machine-readable `gsd-tools --json-errors` failure envelopes |
 | [Agent Reference](AGENTS.md) | Contributors, advanced users | Role cards for primary agents — roles, tools, spawn patterns (the `agents/` filesystem is authoritative) |
@@ -30,7 +30,7 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 
 - **What's new:** see [v1.42.3 Release Notes](RELEASE-v1.42.3.md) (latest hotfix), [v1.42.1 Release Notes](RELEASE-v1.42.1.md), [CHANGELOG](../CHANGELOG.md), and upstream [README](../README.md) for release highlights
 - **Canary preview:** [`docs/CANARY.md`](CANARY.md) — opt into the early-preview stream from `dev`. Active cut: [`v1.50.0-canary.1`](RELEASE-v1.50.0-canary.1.md)
-- **Getting started:** [README](../README.md) → install → `/gsd-new-project`
+- **Getting started:** [README](../README.md) → install → `/vgsd-new-project`
 - **Full workflow walkthrough:** [User Guide](USER-GUIDE.md)
 - **All commands at a glance:** [Command Reference](COMMANDS.md)
 - **Configuring GSD:** [Configuration Reference](CONFIGURATION.md)

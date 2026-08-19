@@ -26,7 +26,7 @@
 ```
   ┌──────────────────────────────────────────────────┐
   │                   NEW PROJECT                    │
-  │  /gsd-new-project                                │
+  │  /vgsd-new-project                                │
   │  Questions -> Research -> Requirements -> Roadmap│
   └─────────────────────────┬────────────────────────┘
                             │
@@ -34,27 +34,27 @@
              │      FOR EACH PHASE:       │
              │                            │
              │  ┌────────────────────┐    │
-             │  │ /gsd-discuss-phase │    │  <- Lock in preferences
+             │  │ /vgsd-discuss-phase │    │  <- Lock in preferences
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-ui-phase      │    │  <- Design contract (frontend)
+             │  │ /vgsd-ui-phase      │    │  <- Design contract (frontend)
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-plan-phase    │    │  <- Research + Plan + Verify
+             │  │ /vgsd-plan-phase    │    │  <- Research + Plan + Verify
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-execute-phase │    │  <- Parallel execution
+             │  │ /vgsd-execute-phase │    │  <- Parallel execution
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-verify-work   │    │  <- Manual UAT
+             │  │ /vgsd-verify-work   │    │  <- Manual UAT
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-ship          │    │  <- Create PR (optional)
+             │  │ /vgsd-ship          │    │  <- Create PR (optional)
              │  └──────────┬─────────┘    │
              │             │              │
              │     Next Phase?────────────┘
@@ -62,8 +62,8 @@
              └─────────────┼──────────────┘
                             │
             ┌───────────────▼──────────────┐
-            │  /gsd-audit-milestone        │
-            │  /gsd-complete-milestone     │
+            │  /vgsd-audit-milestone        │
+            │  /vgsd-complete-milestone     │
             └───────────────┬──────────────┘
                             │
                    Another milestone?
@@ -71,14 +71,14 @@
                       Yes         No -> Done!
                        │
                ┌───────▼──────────────┐
-               │  /gsd-new-milestone  │
+               │  /vgsd-new-milestone  │
                └──────────────────────┘
 ```
 
 ### 계획 에이전트 조정
 
 ```
-  /gsd-plan-phase N
+  /vgsd-plan-phase N
          │
          ├── Phase Researcher (x4 parallel)
          │     ├── Stack researcher
@@ -119,14 +119,14 @@ plan-phase 조사 단계에서 GSD는 코드 작성 전에 각 페이즈 요구�
 
 **출력:** `{phase}-VALIDATION.md` — 해당 페이즈의 피드백 계약.
 
-**비활성화:** 테스트 인프라가 중요하지 않은 빠른 프로토타이핑 페이즈에서는 `/gsd-settings`에서 `workflow.nyquist_validation: false`로 설정하세요.
+**비활성화:** 테스트 인프라가 중요하지 않은 빠른 프로토타이핑 페이즈에서는 `/vgsd-settings`에서 `workflow.nyquist_validation: false`로 설정하세요.
 
-### 소급 검증 (`/gsd-validate-phase`)
+### 소급 검증 (`/vgsd-validate-phase`)
 
 Nyquist 검증 도입 전에 실행된 페이즈나 전통적인 테스트 스위트만 있는 기존 코드베이스의 경우 커버리지 갭을 소급하여 감사하고 보완할 수 있습니다.
 
 ```
-  /gsd-validate-phase N
+  /vgsd-validate-phase N
          |
          +-- Detect state (VALIDATION.md exists? SUMMARY.md exists?)
          |
@@ -146,13 +146,13 @@ Nyquist 검증 도입 전에 실행된 페이즈나 전통적인 테스트 스�
 
 감사자는 구현 코드를 수정하지 않으며 테스트 파일과 VALIDATION.md만 수정합니다. 테스트에서 구현 버그가 발견되면 사용자가 처리할 수 있도록 에스컬레이션으로 표시됩니다.
 
-**사용 시점:** Nyquist가 활성화되기 전에 계획된 페이즈를 실행한 후 또는 `/gsd-audit-milestone`에서 Nyquist 준수 갭이 발견된 후에 사용합니다.
+**사용 시점:** Nyquist가 활성화되기 전에 계획된 페이즈를 실행한 후 또는 `/vgsd-audit-milestone`에서 Nyquist 준수 갭이 발견된 후에 사용합니다.
 
 ### 가정 토론 모드
 
-기본적으로 `/gsd-discuss-phase`는 구현 선호도에 대한 개방형 질문을 합니다. 가정 모드는 이를 역전시킵니다. GSD가 먼저 코드베이스를 읽고 페이즈를 어떻게 구축할지에 대한 구조화된 가정을 제시한 후 수정사항만 요청합니다.
+기본적으로 `/vgsd-discuss-phase`는 구현 선호도에 대한 개방형 질문을 합니다. 가정 모드는 이를 역전시킵니다. GSD가 먼저 코드베이스를 읽고 페이즈를 어떻게 구축할지에 대한 구조화된 가정을 제시한 후 수정사항만 요청합니다.
 
-**활성화:** `/gsd-settings`에서 `workflow.discuss_mode`를 `'assumptions'`로 설정합니다.
+**활성화:** `/vgsd-settings`에서 `workflow.discuss_mode`를 `'assumptions'`로 설정합니다.
 
 **작동 방식.**
 1. PROJECT.md, 코드베이스 매핑, 기존 관례를 읽습니다.
@@ -175,18 +175,18 @@ Nyquist 검증 도입 전에 실행된 페이즈나 전통적인 테스트 스�
 
 AI 생성 프론트엔드가 시각적으로 일관성이 없는 이유는 Claude Code의 UI 능력이 부족해서가 아닙니다. 실행 전에 설계 계약이 존재하지 않았기 때문입니다. 공유 간격 척도, 색상 계약, 또는 카피라이팅 기준 없이 구축된 다섯 개의 컴포넌트는 다섯 가지 약간씩 다른 시각적 결정을 만들어냅니다.
 
-`/gsd-ui-phase`는 계획 전에 설계 계약을 확정합니다. `/gsd-ui-review`는 실행 후 결과를 감사합니다.
+`/vgsd-ui-phase`는 계획 전에 설계 계약을 확정합니다. `/vgsd-ui-review`는 실행 후 결과를 감사합니다.
 
 ### 명령어
 
 | 명령어 | 설명 |
 |--------|------|
-| `/gsd-ui-phase [N]` | 프론트엔드 페이즈를 위한 UI-SPEC.md 설계 계약 생성 |
-| `/gsd-ui-review [N]` | 구현된 UI의 6개 기둥 기반 시각적 감사 소급 수행 |
+| `/vgsd-ui-phase [N]` | 프론트엔드 페이즈를 위한 UI-SPEC.md 설계 계약 생성 |
+| `/vgsd-ui-review [N]` | 구현된 UI의 6개 기둥 기반 시각적 감사 소급 수행 |
 
-### 워크플로우: `/gsd-ui-phase`
+### 워크플로우: `/vgsd-ui-phase`
 
-**실행 시점:** `/gsd-discuss-phase` 이후, `/gsd-plan-phase` 이전 — 프론트엔드/UI 작업이 포함된 페이즈.
+**실행 시점:** `/vgsd-discuss-phase` 이후, `/vgsd-plan-phase` 이전 — 프론트엔드/UI 작업이 포함된 페이즈.
 
 **흐름.**
 1. CONTEXT.md, RESEARCH.md, REQUIREMENTS.md에서 기존 결정사항을 읽습니다.
@@ -199,9 +199,9 @@ AI 생성 프론트엔드가 시각적으로 일관성이 없는 이유는 Claud
 
 **출력:** `.planning/phases/{phase-dir}/`의 `{padded_phase}-UI-SPEC.md`
 
-### 워크플로우: `/gsd-ui-review`
+### 워크플로우: `/vgsd-ui-review`
 
-**실행 시점:** `/gsd-execute-phase` 또는 `/gsd-verify-work` 이후 — 프론트엔드 코드가 있는 모든 프로젝트.
+**실행 시점:** `/vgsd-execute-phase` 또는 `/vgsd-verify-work` 이후 — 프론트엔드 코드가 있는 모든 프로젝트.
 
 **독립 실행:** 모든 프로젝트에서 작동하며 GSD 관리 프로젝트가 아니어도 됩니다. UI-SPEC.md가 없으면 추상적인 6개 기둥 기준으로 감사합니다.
 
@@ -220,9 +220,9 @@ AI 생성 프론트엔드가 시각적으로 일관성이 없는 이유는 Claud
 | 설정 | 기본값 | 설명 |
 |------|--------|------|
 | `workflow.ui_phase` | `true` | 프론트엔드 페이즈를 위한 UI 설계 계약 생성 |
-| `workflow.ui_safety_gate` | `true` | plan-phase가 프론트엔드 페이즈에서 /gsd-ui-phase 실행을 유도합니다 |
+| `workflow.ui_safety_gate` | `true` | plan-phase가 프론트엔드 페이즈에서 /vgsd-ui-phase 실행을 유도합니다 |
 
-두 설정 모두 부재 시 활성화 패턴을 따릅니다. `/gsd-settings`에서 비활성화할 수 있습니다.
+두 설정 모두 부재 시 활성화 패턴을 따릅니다. `/vgsd-settings`에서 비활성화할 수 있습니다.
 
 ### shadcn 초기화
 
@@ -245,7 +245,7 @@ React/Next.js/Vite 프로젝트에서 `components.json`이 없으면 UI 조사�
 
 ### 스크린샷 저장
 
-`/gsd-ui-review`는 Playwright CLI를 통해 `.planning/ui-reviews/`에 스크린샷을 캡처합니다. 바이너리 파일이 git에 포함되지 않도록 `.gitignore`가 자동으로 생성됩니다. 스크린샷은 `/gsd-complete-milestone` 실행 시 정리됩니다.
+`/vgsd-ui-review`는 Playwright CLI를 통해 `.planning/ui-reviews/`에 스크린샷을 캡처합니다. 바이너리 파일이 git에 포함되지 않도록 `.gitignore`가 자동으로 생성됩니다. 스크린샷은 `/vgsd-complete-milestone` 실행 시 정리됩니다.
 
 ---
 
@@ -256,23 +256,23 @@ React/Next.js/Vite 프로젝트에서 `components.json`이 없으면 UI 조사�
 활성 계획에 아직 준비되지 않은 아이디어는 999.x 번호 체계를 사용하여 백로그에 보관하며 활성 페이즈 순서 밖에 유지됩니다.
 
 ```
-/gsd-capture --backlog "GraphQL API layer"     # Creates 999.1-graphql-api-layer/
-/gsd-capture --backlog "Mobile responsive"     # Creates 999.2-mobile-responsive/
+/vgsd-capture --backlog "GraphQL API layer"     # Creates 999.1-graphql-api-layer/
+/vgsd-capture --backlog "Mobile responsive"     # Creates 999.2-mobile-responsive/
 ```
 
-백로그 항목은 전체 페이즈 디렉터리를 얻으므로 `/gsd-discuss-phase 999.1`로 아이디어를 더 탐구하거나 준비가 되면 `/gsd-plan-phase 999.1`을 사용할 수 있습니다.
+백로그 항목은 전체 페이즈 디렉터리를 얻으므로 `/vgsd-discuss-phase 999.1`로 아이디어를 더 탐구하거나 준비가 되면 `/vgsd-plan-phase 999.1`을 사용할 수 있습니다.
 
-`/gsd-review-backlog`으로 **검토 및 승격**합니다 — 모든 백로그 항목을 표시하고 승격 (활성 순서로 이동), 유지 (백로그에 남김), 또는 제거 (삭제)를 선택할 수 있습니다.
+`/vgsd-review-backlog`으로 **검토 및 승격**합니다 — 모든 백로그 항목을 표시하고 승격 (활성 순서로 이동), 유지 (백로그에 남김), 또는 제거 (삭제)를 선택할 수 있습니다.
 
 ### 시드
 
 시드는 트리거 조건이 있는 미래 지향적인 아이디어입니다. 백로그 항목과 달리 시드는 적절한 마일스톤 시점에 자동으로 표면화됩니다.
 
 ```
-/gsd-capture --seed "Add real-time collab when WebSocket infra is in place"
+/vgsd-capture --seed "Add real-time collab when WebSocket infra is in place"
 ```
 
-시드는 전체 WHY와 언제 표면화할지를 보존합니다. `/gsd-new-milestone`은 모든 시드를 스캔하여 일치 항목을 제시합니다.
+시드는 전체 WHY와 언제 표면화할지를 보존합니다. `/vgsd-new-milestone`은 모든 시드를 스캔하여 일치 항목을 제시합니다.
 
 **저장 위치:** `.planning/seeds/SEED-NNN-slug.md`
 
@@ -281,14 +281,14 @@ React/Next.js/Vite 프로젝트에서 `components.json`이 없으면 UI 조사�
 스레드는 여러 세션에 걸쳐 이어지지만 특정 페이즈에 속하지 않는 작업을 위한 경량 교차 세션 지식 저장소입니다.
 
 ```
-/gsd-thread                              # List all threads
-/gsd-thread fix-deploy-key-auth          # Resume existing thread
-/gsd-thread "Investigate TCP timeout"    # Create new thread
+/vgsd-thread                              # List all threads
+/vgsd-thread fix-deploy-key-auth          # Resume existing thread
+/vgsd-thread "Investigate TCP timeout"    # Create new thread
 ```
 
-스레드는 `/gsd-pause-work`보다 가볍습니다. 페이즈 상태나 계획 컨텍스트가 없습니다. 각 스레드 파일에는 목표, 컨텍스트, 참조, 다음 단계 섹션이 포함됩니다.
+스레드는 `/vgsd-pause-work`보다 가볍습니다. 페이즈 상태나 계획 컨텍스트가 없습니다. 각 스레드 파일에는 목표, 컨텍스트, 참조, 다음 단계 섹션이 포함됩니다.
 
-스레드가 성숙해지면 페이즈(`/gsd-phase`)나 백로그 항목(`/gsd-capture --backlog`)으로 승격할 수 있습니다.
+스레드가 성숙해지면 페이즈(`/vgsd-phase`)나 백로그 항목(`/vgsd-capture --backlog`)으로 승격할 수 있습니다.
 
 **저장 위치:** `.planning/threads/{slug}.md`
 
@@ -304,16 +304,16 @@ React/Next.js/Vite 프로젝트에서 `components.json`이 없으면 UI 조사�
 
 | 명령어 | 목적 |
 |--------|------|
-| `/gsd-workstreams create <name>` | 격리된 계획 상태로 새 워크스트림 생성 |
-| `/gsd-workstreams switch <name>` | 활성 컨텍스트를 다른 워크스트림으로 전환 |
-| `/gsd-workstreams list` | 모든 워크스트림과 활성 워크스트림 표시 |
-| `/gsd-workstreams complete <name>` | 워크스트림을 완료로 표시하고 상태 아카이브 |
+| `/vgsd-workstreams create <name>` | 격리된 계획 상태로 새 워크스트림 생성 |
+| `/vgsd-workstreams switch <name>` | 활성 컨텍스트를 다른 워크스트림으로 전환 |
+| `/vgsd-workstreams list` | 모든 워크스트림과 활성 워크스트림 표시 |
+| `/vgsd-workstreams complete <name>` | 워크스트림을 완료로 표시하고 상태 아카이브 |
 
 ### 작동 방식
 
-각 워크스트림은 자체 `.planning/` 디렉터리 하위 트리를 유지합니다. 워크스트림을 전환하면 GSD가 활성 계획 컨텍스트를 교체하여 `/gsd-progress`, `/gsd-discuss-phase`, `/gsd-plan-phase` 및 기타 명령어가 해당 워크스트림의 상태로 동작합니다.
+각 워크스트림은 자체 `.planning/` 디렉터리 하위 트리를 유지합니다. 워크스트림을 전환하면 GSD가 활성 계획 컨텍스트를 교체하여 `/vgsd-progress`, `/vgsd-discuss-phase`, `/vgsd-plan-phase` 및 기타 명령어가 해당 워크스트림의 상태로 동작합니다.
 
-이는 `/gsd-workspace --new`(별도 저장소 worktree를 생성)보다 가볍습니다. 워크스트림은 동일한 코드베이스와 git 히스토리를 공유하지만 계획 아티팩트를 격리합니다.
+이는 `/vgsd-workspace --new`(별도 저장소 worktree를 생성)보다 가볍습니다. 워크스트림은 동일한 코드베이스와 git 히스토리를 공유하지만 계획 아티팩트를 격리합니다.
 
 ---
 
@@ -341,7 +341,7 @@ GSD는 LLM 시스템 프롬프트가 되는 마크다운 파일을 생성합니�
 ### 실행 웨이브 조정
 
 ```
-  /gsd-execute-phase N
+  /vgsd-execute-phase N
          │
          ├── Analyze plan dependencies
          │
@@ -356,13 +356,13 @@ GSD는 LLM 시스템 프롬프트가 되는 마크다운 파일을 생성합니�
                └── Check codebase against phase goals
                      │
                      ├── PASS -> VERIFICATION.md (success)
-                     └── FAIL -> Issues logged for /gsd-verify-work
+                     └── FAIL -> Issues logged for /vgsd-verify-work
 ```
 
 ### 브라운필드 워크플로우 (기존 코드베이스)
 
 ```
-  /gsd-map-codebase
+  /vgsd-map-codebase
          │
          ├── Stack Mapper     -> codebase/STACK.md
          ├── Arch Mapper      -> codebase/ARCHITECTURE.md
@@ -370,7 +370,7 @@ GSD는 LLM 시스템 프롬프트가 되는 마크다운 파일을 생성합니�
          └── Concern Mapper   -> codebase/CONCERNS.md
                 │
         ┌───────▼──────────┐
-        │ /gsd-new-project │  <- Questions focus on what you're ADDING
+        │ /vgsd-new-project │  <- Questions focus on what you're ADDING
         └──────────────────┘
 ```
 
@@ -382,78 +382,78 @@ GSD는 LLM 시스템 프롬프트가 되는 마크다운 파일을 생성합니�
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-new-project` | 전체 프로젝트 초기화: 질문, 조사, 요구사항, 로드맵 | 새 프로젝트 시작 시 |
-| `/gsd-new-project --auto @idea.md` | 문서에서 자동 초기화 | PRD나 아이디어 문서가 준비된 경우 |
-| `/gsd-discuss-phase [N]` | 구현 결정사항 캡처 | 계획 전 구축 방식을 결정할 때 |
-| `/gsd-ui-phase [N]` | UI 설계 계약 생성 | discuss-phase 이후, plan-phase 이전 (프론트엔드 페이즈) |
-| `/gsd-plan-phase [N]` | 조사 + 계획 + 검증 | 페이즈 실행 전 |
-| `/gsd-execute-phase <N>` | 병렬 웨이브로 모든 계획 실행 | 계획이 완료된 후 |
-| `/gsd-verify-work [N]` | 자동 진단을 포함한 수동 UAT | 실행 완료 후 |
-| `/gsd-ship [N]` | 검증된 작업으로 PR 생성 | 검증 통과 후 |
-| `/gsd-fast <text>` | 계획을 완전히 건너뛰는 인라인 간단 작업 | 오타 수정, 설정 변경, 소규모 리팩터링 |
-| `/gsd-progress --next` | 상태 자동 감지 및 다음 단계 실행 | 언제든 — "다음에 무엇을 해야 하나?" |
-| `/gsd-ui-review [N]` | 6개 기둥 기반 시각적 감사 소급 수행 | 실행 또는 verify-work 이후 (프론트엔드 프로젝트) |
-| `/gsd-audit-milestone` | 마일스톤이 완료 정의를 충족했는지 검증 | 마일스톤 완료 전 |
-| `/gsd-complete-milestone` | 마일스톤 아카이브 및 릴리스 태그 생성 | 모든 페이즈 검증 완료 시 |
-| `/gsd-new-milestone [name]` | 다음 버전 사이클 시작 | 마일스톤 완료 후 |
+| `/vgsd-new-project` | 전체 프로젝트 초기화: 질문, 조사, 요구사항, 로드맵 | 새 프로젝트 시작 시 |
+| `/vgsd-new-project --auto @idea.md` | 문서에서 자동 초기화 | PRD나 아이디어 문서가 준비된 경우 |
+| `/vgsd-discuss-phase [N]` | 구현 결정사항 캡처 | 계획 전 구축 방식을 결정할 때 |
+| `/vgsd-ui-phase [N]` | UI 설계 계약 생성 | discuss-phase 이후, plan-phase 이전 (프론트엔드 페이즈) |
+| `/vgsd-plan-phase [N]` | 조사 + 계획 + 검증 | 페이즈 실행 전 |
+| `/vgsd-execute-phase <N>` | 병렬 웨이브로 모든 계획 실행 | 계획이 완료된 후 |
+| `/vgsd-verify-work [N]` | 자동 진단을 포함한 수동 UAT | 실행 완료 후 |
+| `/vgsd-ship [N]` | 검증된 작업으로 PR 생성 | 검증 통과 후 |
+| `/vgsd-fast <text>` | 계획을 완전히 건너뛰는 인라인 간단 작업 | 오타 수정, 설정 변경, 소규모 리팩터링 |
+| `/vgsd-progress --next` | 상태 자동 감지 및 다음 단계 실행 | 언제든 — "다음에 무엇을 해야 하나?" |
+| `/vgsd-ui-review [N]` | 6개 기둥 기반 시각적 감사 소급 수행 | 실행 또는 verify-work 이후 (프론트엔드 프로젝트) |
+| `/vgsd-audit-milestone` | 마일스톤이 완료 정의를 충족했는지 검증 | 마일스톤 완료 전 |
+| `/vgsd-complete-milestone` | 마일스톤 아카이브 및 릴리스 태그 생성 | 모든 페이즈 검증 완료 시 |
+| `/vgsd-new-milestone [name]` | 다음 버전 사이클 시작 | 마일스톤 완료 후 |
 
 ### 탐색
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-progress` | 상태 및 다음 단계 표시 | 언제든 -- "지금 어디 있나?" |
-| `/gsd-resume-work` | 마지막 세션의 전체 컨텍스트 복원 | 새 세션 시작 시 |
-| `/gsd-pause-work` | 구조화된 핸드오프 저장 (HANDOFF.json + continue-here.md) | 페이즈 중간에 중단할 때 |
-| `/gsd-pause-work --report` | 작업 및 결과가 포함된 세션 요약 생성 | 세션 종료 시, 이해관계자 공유 시 |
-| `/gsd-help` | 모든 명령어 표시 | 빠른 레퍼런스 |
-| `/gsd-update` | 변경 로그 미리보기와 함께 GSD 업데이트 | 새 버전 확인 시 |
+| `/vgsd-progress` | 상태 및 다음 단계 표시 | 언제든 -- "지금 어디 있나?" |
+| `/vgsd-resume-work` | 마지막 세션의 전체 컨텍스트 복원 | 새 세션 시작 시 |
+| `/vgsd-pause-work` | 구조화된 핸드오프 저장 (HANDOFF.json + continue-here.md) | 페이즈 중간에 중단할 때 |
+| `/vgsd-pause-work --report` | 작업 및 결과가 포함된 세션 요약 생성 | 세션 종료 시, 이해관계자 공유 시 |
+| `/vgsd-help` | 모든 명령어 표시 | 빠른 레퍼런스 |
+| `/vgsd-update` | 변경 로그 미리보기와 함께 GSD 업데이트 | 새 버전 확인 시 |
 
 ### 페이즈 관리
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-phase` | 로드맵에 새 페이즈 추가 | 초기 계획 후 범위가 늘어날 때 |
-| `/gsd-phase --insert [N]` | 긴급 작업 삽입 (소수점 번호 체계) | 마일스톤 중간의 긴급 수정 시 |
-| `/gsd-phase --remove [N]` | 미래 페이즈 제거 및 재번호 | 기능 범위 축소 시 |
-| `/gsd-discuss-phase --assumptions [N]` | Claude의 예상 접근 방식 미리 확인 | 계획 전 방향 검증 시 |
-| `/gsd-plan-phase --research-phase [N]` | 심층 에코시스템 조사만 수행 | 복잡하거나 익숙하지 않은 도메인 |
+| `/vgsd-phase` | 로드맵에 새 페이즈 추가 | 초기 계획 후 범위가 늘어날 때 |
+| `/vgsd-phase --insert [N]` | 긴급 작업 삽입 (소수점 번호 체계) | 마일스톤 중간의 긴급 수정 시 |
+| `/vgsd-phase --remove [N]` | 미래 페이즈 제거 및 재번호 | 기능 범위 축소 시 |
+| `/vgsd-discuss-phase --assumptions [N]` | Claude의 예상 접근 방식 미리 확인 | 계획 전 방향 검증 시 |
+| `/vgsd-plan-phase --research-phase [N]` | 심층 에코시스템 조사만 수행 | 복잡하거나 익숙하지 않은 도메인 |
 
 ### 브라운필드 및 유틸리티
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-map-codebase` | 기존 코드베이스 분석 | 기존 코드에서 `/gsd-new-project` 실행 전 |
-| `/gsd-quick` | GSD 보증을 갖춘 임시 작업 | 버그 수정, 소규모 기능, 설정 변경 |
-| `/gsd-debug [desc]` | 지속적인 상태를 유지하는 체계적인 디버깅 | 문제가 발생했을 때 |
-| `/gsd-forensics` | 워크플로우 실패에 대한 진단 보고서 | 상태, 아티팩트, git 히스토리가 손상된 것 같을 때 |
-| `/gsd-capture [desc]` | 나중을 위한 아이디어 캡처 | 세션 중에 생각이 날 때 |
-| `/gsd-capture --list` | 보류 중인 할 일 목록 | 캡처된 아이디어 검토 시 |
-| `/gsd-settings` | 워크플로우 토글 및 모델 프로필 설정 | 모델 변경, 에이전트 토글 시 |
-| `/gsd-config --profile <profile>` | 빠른 프로필 전환 | 비용/품질 트레이드오프 변경 시 |
-| `/gsd-update --reapply` | 업데이트 후 로컬 수정사항 복원 | 로컬 편집이 있는 상태에서 `/gsd-update` 이후 |
+| `/vgsd-map-codebase` | 기존 코드베이스 분석 | 기존 코드에서 `/vgsd-new-project` 실행 전 |
+| `/vgsd-quick` | GSD 보증을 갖춘 임시 작업 | 버그 수정, 소규모 기능, 설정 변경 |
+| `/vgsd-debug [desc]` | 지속적인 상태를 유지하는 체계적인 디버깅 | 문제가 발생했을 때 |
+| `/vgsd-forensics` | 워크플로우 실패에 대한 진단 보고서 | 상태, 아티팩트, git 히스토리가 손상된 것 같을 때 |
+| `/vgsd-capture [desc]` | 나중을 위한 아이디어 캡처 | 세션 중에 생각이 날 때 |
+| `/vgsd-capture --list` | 보류 중인 할 일 목록 | 캡처된 아이디어 검토 시 |
+| `/vgsd-settings` | 워크플로우 토글 및 모델 프로필 설정 | 모델 변경, 에이전트 토글 시 |
+| `/vgsd-config --profile <profile>` | 빠른 프로필 전환 | 비용/품질 트레이드오프 변경 시 |
+| `/vgsd-update --reapply` | 업데이트 후 로컬 수정사항 복원 | 로컬 편집이 있는 상태에서 `/vgsd-update` 이후 |
 
 ### 코드 품질 및 리뷰
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-review --phase N` | 외부 CLI를 통한 교차 AI 동료 리뷰 | 실행 전 계획 검증 시 |
-| `/gsd-pr-branch` | `.planning/` 커밋을 필터링한 깔끔한 PR 브랜치 | 계획 없는 diff로 PR 생성 전 |
-| `/gsd-audit-uat` | 모든 페이즈의 검증 부채 감사 | 마일스톤 완료 전 |
+| `/vgsd-review --phase N` | 외부 CLI를 통한 교차 AI 동료 리뷰 | 실행 전 계획 검증 시 |
+| `/vgsd-pr-branch` | `.planning/` 커밋을 필터링한 깔끔한 PR 브랜치 | 계획 없는 diff로 PR 생성 전 |
+| `/vgsd-audit-uat` | 모든 페이즈의 검증 부채 감사 | 마일스톤 완료 전 |
 
 ### 백로그 및 스레드
 
 | 명령어 | 목적 | 사용 시점 |
 |--------|------|----------|
-| `/gsd-capture --backlog <desc>` | 백로그 파킹 롯에 아이디어 추가 (999.x) | 활성 계획에 준비되지 않은 아이디어 |
-| `/gsd-review-backlog` | 백로그 항목 승격/유지/제거 | 새 마일스톤 전 우선순위 결정 시 |
-| `/gsd-capture --seed <idea>` | 트리거 조건이 있는 미래 지향적인 아이디어 | 미래 마일스톤에서 표면화되어야 할 아이디어 |
-| `/gsd-thread [name]` | 지속적인 컨텍스트 스레드 | 페이즈 구조 밖의 교차 세션 작업 |
+| `/vgsd-capture --backlog <desc>` | 백로그 파킹 롯에 아이디어 추가 (999.x) | 활성 계획에 준비되지 않은 아이디어 |
+| `/vgsd-review-backlog` | 백로그 항목 승격/유지/제거 | 새 마일스톤 전 우선순위 결정 시 |
+| `/vgsd-capture --seed <idea>` | 트리거 조건이 있는 미래 지향적인 아이디어 | 미래 마일스톤에서 표면화되어야 할 아이디어 |
+| `/vgsd-thread [name]` | 지속적인 컨텍스트 스레드 | 페이즈 구조 밖의 교차 세션 작업 |
 
 ---
 
 ## 설정 레퍼런스
 
-GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-new-project` 중에 설정하거나 나중에 `/gsd-settings`로 업데이트할 수 있습니다.
+GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/vgsd-new-project` 중에 설정하거나 나중에 `/vgsd-settings`로 업데이트할 수 있습니다.
 
 ### 전체 config.json 스키마
 
@@ -517,7 +517,7 @@ GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-
 | `workflow.verifier` | `true`, `false` | `true` | 페이즈 목표에 대한 실행 후 검증 |
 | `workflow.nyquist_validation` | `true`, `false` | `true` | plan-phase 중 검증 아키텍처 조사 및 8번째 plan-check 차원 |
 | `workflow.ui_phase` | `true`, `false` | `true` | 프론트엔드 페이즈를 위한 UI 설계 계약 생성 |
-| `workflow.ui_safety_gate` | `true`, `false` | `true` | plan-phase가 프론트엔드 페이즈에서 /gsd-ui-phase 실행을 유도합니다 |
+| `workflow.ui_safety_gate` | `true`, `false` | `true` | plan-phase가 프론트엔드 페이즈에서 /vgsd-ui-phase 실행을 유도합니다 |
 | `workflow.research_before_questions` | `true`, `false` | `false` | 토론 질문 이후가 아닌 이전에 조사를 실행합니다 |
 | `workflow.discuss_mode` | `standard`, `assumptions` | `standard` | 토론 방식: 개방형 질문 vs. 코드베이스 기반 가정 |
 | `workflow.skip_discuss` | `true`, `false` | `false` | 자율 모드에서 discuss-phase를 완전히 건너뜁니다. ROADMAP 페이즈 목표에서 최소한의 CONTEXT.md를 작성합니다 |
@@ -538,7 +538,7 @@ GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-
 | `git.branching_strategy` | `none`, `phase`, `milestone` | `none` | 브랜치 생성 시점과 방법 |
 | `git.phase_branch_template` | 템플릿 문자열 | `gsd/phase-{phase}-{slug}` | phase 전략의 브랜치 이름 |
 | `git.milestone_branch_template` | 템플릿 문자열 | `gsd/{milestone}-{slug}` | milestone 전략의 브랜치 이름 |
-| `git.quick_branch_template` | 템플릿 문자열 또는 `null` | `null` | `/gsd-quick` 작업의 선택적 브랜치 이름 |
+| `git.quick_branch_template` | 템플릿 문자열 또는 `null` | `null` | `/vgsd-quick` 작업의 선택적 브랜치 이름 |
 
 **브랜칭 전략 설명.**
 
@@ -588,59 +588,59 @@ GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-
 
 ```bash
 claude --dangerously-skip-permissions
-/gsd-new-project            # Answer questions, configure, approve roadmap
+/vgsd-new-project            # Answer questions, configure, approve roadmap
 /clear
-/gsd-discuss-phase 1        # Lock in your preferences
-/gsd-ui-phase 1             # Design contract (frontend phases)
-/gsd-plan-phase 1           # Research + plan + verify
-/gsd-execute-phase 1        # Parallel execution
-/gsd-verify-work 1          # Manual UAT
-/gsd-ship 1                 # Create PR from verified work
-/gsd-ui-review 1            # Visual audit (frontend phases)
+/vgsd-discuss-phase 1        # Lock in your preferences
+/vgsd-ui-phase 1             # Design contract (frontend phases)
+/vgsd-plan-phase 1           # Research + plan + verify
+/vgsd-execute-phase 1        # Parallel execution
+/vgsd-verify-work 1          # Manual UAT
+/vgsd-ship 1                 # Create PR from verified work
+/vgsd-ui-review 1            # Visual audit (frontend phases)
 /clear
-/gsd-progress --next                   # Auto-detect and run next step
+/vgsd-progress --next                   # Auto-detect and run next step
 ...
-/gsd-audit-milestone        # Check everything shipped
-/gsd-complete-milestone     # Archive, tag, done
-/gsd-pause-work --report         # Generate session summary
+/vgsd-audit-milestone        # Check everything shipped
+/vgsd-complete-milestone     # Archive, tag, done
+/vgsd-pause-work --report         # Generate session summary
 ```
 
 ### 기존 문서로 새 프로젝트 시작
 
 ```bash
-/gsd-new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
+/vgsd-new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
 /clear
-/gsd-discuss-phase 1               # Normal flow from here
+/vgsd-discuss-phase 1               # Normal flow from here
 ```
 
 ### 기존 코드베이스
 
 ```bash
-/gsd-map-codebase           # Analyze what exists (parallel agents)
-/gsd-new-project            # Questions focus on what you're ADDING
+/vgsd-map-codebase           # Analyze what exists (parallel agents)
+/vgsd-new-project            # Questions focus on what you're ADDING
 # (normal phase workflow from here)
 ```
 
 ### 빠른 버그 수정
 
 ```bash
-/gsd-quick
+/vgsd-quick
 > "Fix the login button not responding on mobile Safari"
 ```
 
 ### 휴식 후 재개
 
 ```bash
-/gsd-progress               # See where you left off and what's next
+/vgsd-progress               # See where you left off and what's next
 # or
-/gsd-resume-work            # Full context restoration from last session
+/vgsd-resume-work            # Full context restoration from last session
 ```
 
 ### 릴리스 준비
 
 ```bash
-/gsd-audit-milestone        # Check requirements coverage, detect stubs
-/gsd-complete-milestone     # Archive, tag, done
+/vgsd-audit-milestone        # Check requirements coverage, detect stubs
+/vgsd-complete-milestone     # Archive, tag, done
 ```
 
 ### 속도 vs 품질 프리셋
@@ -651,16 +651,16 @@ claude --dangerously-skip-permissions
 | 일반 개발 | `interactive` | `standard` | `balanced` | 켜기 | 켜기 | 켜기 |
 | 프로덕션 | `interactive` | `fine` | `quality` | 켜기 | 켜기 | 켜기 |
 
-**자율 모드에서 discuss-phase 건너뛰기:** PROJECT.md에 선호도가 이미 충분히 캡처된 `yolo` 모드에서 실행할 때 `/gsd-settings`에서 `workflow.skip_discuss: true`로 설정하세요. 이렇게 하면 discuss-phase를 완전히 우회하고 ROADMAP 페이즈 목표에서 파생된 최소한의 CONTEXT.md를 작성합니다. PROJECT.md와 관례가 충분히 포괄적이어서 토론이 새로운 정보를 제공하지 않을 때 유용합니다.
+**자율 모드에서 discuss-phase 건너뛰기:** PROJECT.md에 선호도가 이미 충분히 캡처된 `yolo` 모드에서 실행할 때 `/vgsd-settings`에서 `workflow.skip_discuss: true`로 설정하세요. 이렇게 하면 discuss-phase를 완전히 우회하고 ROADMAP 페이즈 목표에서 파생된 최소한의 CONTEXT.md를 작성합니다. PROJECT.md와 관례가 충분히 포괄적이어서 토론이 새로운 정보를 제공하지 않을 때 유용합니다.
 
 ### 마일스톤 중간 범위 변경
 
 ```bash
-/gsd-phase              # Append a new phase to the roadmap
+/vgsd-phase              # Append a new phase to the roadmap
 # or
-/gsd-phase --insert 3         # Insert urgent work between phases 3 and 4
+/vgsd-phase --insert 3         # Insert urgent work between phases 3 and 4
 # or
-/gsd-phase --remove 7         # Descope phase 7 and renumber
+/vgsd-phase --remove 7         # Descope phase 7 and renumber
 ```
 
 ### 멀티 프로젝트 워크스페이스
@@ -669,18 +669,18 @@ claude --dangerously-skip-permissions
 
 ```bash
 # Create a workspace with repos from your monorepo
-/gsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
+/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
 
 # Feature branch isolation — worktree of current repo with its own .planning/
-/gsd-workspace --new --name feature-b --repos .
+/vgsd-workspace --new --name feature-b --repos .
 
 # Then cd into the workspace and initialize GSD
-cd ~/gsd-workspaces/feature-b
-/gsd-new-project
+cd ~/vgsd-workspaces/feature-b
+/vgsd-new-project
 
 # List and manage workspaces
-/gsd-workspace --list
-/gsd-workspace --remove feature-b
+/vgsd-workspace --list
+/vgsd-workspace --remove feature-b
 ```
 
 각 워크스페이스는 다음을 포함합니다.
@@ -694,15 +694,15 @@ cd ~/gsd-workspaces/feature-b
 
 ### "Project already initialized"
 
-`.planning/PROJECT.md`가 이미 존재하는데 `/gsd-new-project`를 실행했습니다. 이것은 안전 검사입니다. 처음부터 다시 시작하려면 먼저 `.planning/` 디렉터리를 삭제하세요.
+`.planning/PROJECT.md`가 이미 존재하는데 `/vgsd-new-project`를 실행했습니다. 이것은 안전 검사입니다. 처음부터 다시 시작하려면 먼저 `.planning/` 디렉터리를 삭제하세요.
 
 ### 긴 세션 중 컨텍스트 저하
 
-주요 명령어 사이에 컨텍스트 윈도우를 지우세요: Claude Code에서 `/clear`를 사용합니다. GSD는 새로운 컨텍스트를 기반으로 설계되었습니다 — 모든 서브에이전트는 깨끗한 200K 윈도우를 받습니다. 메인 세션의 품질이 저하되면 지우고 `/gsd-resume-work` 또는 `/gsd-progress`를 사용하여 상태를 복원하세요.
+주요 명령어 사이에 컨텍스트 윈도우를 지우세요: Claude Code에서 `/clear`를 사용합니다. GSD는 새로운 컨텍스트를 기반으로 설계되었습니다 — 모든 서브에이전트는 깨끗한 200K 윈도우를 받습니다. 메인 세션의 품질이 저하되면 지우고 `/vgsd-resume-work` 또는 `/vgsd-progress`를 사용하여 상태를 복원하세요.
 
 ### 계획이 잘못되거나 맞지 않는 경우
 
-계획 전에 `/gsd-discuss-phase [N]`을 실행하세요. 대부분의 계획 품질 문제는 `CONTEXT.md`가 있었다면 방지할 수 있었던 가정을 Claude가 세우기 때문에 발생합니다. `/gsd-discuss-phase --assumptions [N]`을 실행하여 계획에 동의하기 전에 Claude가 무엇을 하려는지 확인할 수도 있습니다.
+계획 전에 `/vgsd-discuss-phase [N]`을 실행하세요. 대부분의 계획 품질 문제는 `CONTEXT.md`가 있었다면 방지할 수 있었던 가정을 Claude가 세우기 때문에 발생합니다. `/vgsd-discuss-phase --assumptions [N]`을 실행하여 계획에 동의하기 전에 Claude가 무엇을 하려는지 확인할 수도 있습니다.
 
 ### 실행이 실패하거나 스텁을 생성하는 경우
 
@@ -710,15 +710,15 @@ cd ~/gsd-workspaces/feature-b
 
 ### 현재 위치를 잃어버린 경우
 
-`/gsd-progress`를 실행하세요. 모든 상태 파일을 읽고 현재 위치와 다음에 할 일을 정확히 알려줍니다.
+`/vgsd-progress`를 실행하세요. 모든 상태 파일을 읽고 현재 위치와 다음에 할 일을 정확히 알려줍니다.
 
 ### 실행 후 변경이 필요한 경우
 
-`/gsd-execute-phase`를 다시 실행하지 마세요. 목표를 정확히 수정하려면 `/gsd-quick`을 사용하거나 UAT를 통해 체계적으로 문제를 식별하고 수정하려면 `/gsd-verify-work`를 사용하세요.
+`/vgsd-execute-phase`를 다시 실행하지 마세요. 목표를 정확히 수정하려면 `/vgsd-quick`을 사용하거나 UAT를 통해 체계적으로 문제를 식별하고 수정하려면 `/vgsd-verify-work`를 사용하세요.
 
 ### 모델 비용이 너무 높은 경우
 
-예산 프로필로 전환하세요: `/gsd-config --profile budget`. 도메인이 익숙하다면 (또는 Claude에게 익숙하다면) `/gsd-settings`에서 조사 및 plan-check 에이전트를 비활성화하세요.
+예산 프로필로 전환하세요: `/vgsd-config --profile budget`. 도메인이 익숙하다면 (또는 Claude에게 익숙하다면) `/vgsd-settings`에서 조사 및 plan-check 에이전트를 비활성화하세요.
 
 ### 비Claude 런타임 사용 (Codex, OpenCode, Gemini CLI, Kilo)
 
@@ -743,19 +743,19 @@ cd ~/gsd-workspaces/feature-b
 
 ### 비Anthropic 공급자와 함께 Claude Code 사용 (OpenRouter, 로컬)
 
-GSD 서브에이전트가 Anthropic 모델을 호출하는데 OpenRouter나 로컬 공급자를 통해 비용을 지불하고 있다면 `inherit` 프로필로 전환하세요: `/gsd-config --profile inherit`. 이렇게 하면 모든 에이전트가 특정 Anthropic 모델 대신 현재 세션 모델을 사용합니다. `/gsd-settings` → Model Profile → Inherit도 참고하세요.
+GSD 서브에이전트가 Anthropic 모델을 호출하는데 OpenRouter나 로컬 공급자를 통해 비용을 지불하고 있다면 `inherit` 프로필로 전환하세요: `/vgsd-config --profile inherit`. 이렇게 하면 모든 에이전트가 특정 Anthropic 모델 대신 현재 세션 모델을 사용합니다. `/vgsd-settings` → Model Profile → Inherit도 참고하세요.
 
 ### 민감하거나 비공개 프로젝트에서 작업하는 경우
 
-`/gsd-new-project` 중에 또는 `/gsd-settings`에서 `commit_docs: false`로 설정하세요. `.planning/`을 `.gitignore`에 추가하세요. 계획 아티팩트는 로컬에 유지되며 git에 절대 포함되지 않습니다.
+`/vgsd-new-project` 중에 또는 `/vgsd-settings`에서 `commit_docs: false`로 설정하세요. `.planning/`을 `.gitignore`에 추가하세요. 계획 아티팩트는 로컬에 유지되며 git에 절대 포함되지 않습니다.
 
 ### GSD 업데이트가 로컬 변경사항을 덮어쓴 경우
 
-v1.17부터 설치 프로그램이 로컬로 수정된 파일을 `gsd-local-patches/`에 백업합니다. 변경사항을 다시 병합하려면 `/gsd-update --reapply`를 실행하세요.
+v1.17부터 설치 프로그램이 로컬로 수정된 파일을 `gsd-local-patches/`에 백업합니다. 변경사항을 다시 병합하려면 `/vgsd-update --reapply`를 실행하세요.
 
-### 워크플로우 진단 (`/gsd-forensics`)
+### 워크플로우 진단 (`/vgsd-forensics`)
 
-워크플로우가 명확하지 않은 방식으로 실패할 때 — 계획이 존재하지 않는 파일을 참조하거나 실행이 예상치 못한 결과를 생성하거나 상태가 손상된 것 같을 때 — `/gsd-forensics`를 실행하여 진단 보고서를 생성하세요.
+워크플로우가 명확하지 않은 방식으로 실패할 때 — 계획이 존재하지 않는 파일을 참조하거나 실행이 예상치 못한 결과를 생성하거나 상태가 손상된 것 같을 때 — `/vgsd-forensics`를 실행하여 진단 보고서를 생성하세요.
 
 **검사 항목.**
 - Git 히스토리 이상 (고아 커밋, 예상치 못한 브랜치 상태, rebase 아티팩트)
@@ -777,7 +777,7 @@ Claude Code 분류 버그에 대한 알려진 해결 방법이 있습니다. GSD
 All subagent/executor commits MUST use `--no-verify`.
 ```
 
-병렬 실행을 완전히 비활성화하려면: `/gsd-settings` → `parallelization.enabled`를 `false`로 설정합니다.
+병렬 실행을 완전히 비활성화하려면: `/vgsd-settings` → `parallelization.enabled`를 `false`로 설정합니다.
 
 ### Windows: 보호된 디렉터리에서 설치 충돌
 
@@ -789,17 +789,17 @@ Windows에서 설치 프로그램이 `EPERM: operation not permitted, scandir`�
 
 | 문제 | 해결 방법 |
 |------|----------|
-| 컨텍스트 손실 / 새 세션 | `/gsd-resume-work` 또는 `/gsd-progress` |
+| 컨텍스트 손실 / 새 세션 | `/vgsd-resume-work` 또는 `/vgsd-progress` |
 | 페이즈가 잘못됨 | 페이즈 커밋에 `git revert` 후 재계획 |
-| 범위 변경 필요 | `/gsd-phase`, `/gsd-phase --insert`, 또는 `/gsd-phase --remove` |
-| 무언가 고장남 | `/gsd-debug "description"` |
-| 워크플로우 상태 손상 의심 | `/gsd-forensics` |
-| 빠른 목표 수정 | `/gsd-quick` |
-| 계획이 비전과 맞지 않음 | `/gsd-discuss-phase [N]` 후 재계획 |
-| 비용이 높아짐 | `/gsd-config --profile budget` 및 `/gsd-settings`에서 에이전트 비활성화 |
-| 업데이트가 로컬 변경사항 파괴 | `/gsd-update --reapply` |
-| 이해관계자를 위한 세션 요약 필요 | `/gsd-pause-work --report` |
-| 다음 단계를 모르겠음 | `/gsd-progress --next` |
+| 범위 변경 필요 | `/vgsd-phase`, `/vgsd-phase --insert`, 또는 `/vgsd-phase --remove` |
+| 무언가 고장남 | `/vgsd-debug "description"` |
+| 워크플로우 상태 손상 의심 | `/vgsd-forensics` |
+| 빠른 목표 수정 | `/vgsd-quick` |
+| 계획이 비전과 맞지 않음 | `/vgsd-discuss-phase [N]` 후 재계획 |
+| 비용이 높아짐 | `/vgsd-config --profile budget` 및 `/vgsd-settings`에서 에이전트 비활성화 |
+| 업데이트가 로컬 변경사항 파괴 | `/vgsd-update --reapply` |
+| 이해관계자를 위한 세션 요약 필요 | `/vgsd-pause-work --report` |
+| 다음 단계를 모르겠음 | `/vgsd-progress --next` |
 | 병렬 실행 빌드 오류 | GSD 업데이트 또는 `parallelization.enabled: false` 설정 |
 
 ---
@@ -816,15 +816,15 @@ Windows에서 설치 프로그램이 `EPERM: operation not permitted, scandir`�
   STATE.md                # Decisions, blockers, session memory
   config.json             # Workflow configuration
   MILESTONES.md           # Completed milestone archive
-  HANDOFF.json            # Structured session handoff (from /gsd-pause-work)
-  research/               # Domain research from /gsd-new-project
-  reports/                # Session reports (from /gsd-pause-work --report)
+  HANDOFF.json            # Structured session handoff (from /vgsd-pause-work)
+  research/               # Domain research from /vgsd-new-project
+  reports/                # Session reports (from /vgsd-pause-work --report)
   todos/
     pending/              # Captured ideas awaiting work
     done/                 # Completed todos
   debug/                  # Active debug sessions
     resolved/             # Archived debug sessions
-  codebase/               # Brownfield codebase mapping (from /gsd-map-codebase)
+  codebase/               # Brownfield codebase mapping (from /vgsd-map-codebase)
   phases/
     XX-phase-name/
       XX-YY-PLAN.md       # Atomic execution plans
@@ -832,7 +832,7 @@ Windows에서 설치 프로그램이 `EPERM: operation not permitted, scandir`�
       CONTEXT.md          # Your implementation preferences
       RESEARCH.md         # Ecosystem research findings
       VERIFICATION.md     # Post-execution verification results
-      XX-UI-SPEC.md       # UI design contract (from /gsd-ui-phase)
-      XX-UI-REVIEW.md     # Visual audit scores (from /gsd-ui-review)
-  ui-reviews/             # Screenshots from /gsd-ui-review (gitignored)
+      XX-UI-SPEC.md       # UI design contract (from /vgsd-ui-phase)
+      XX-UI-REVIEW.md     # Visual audit scores (from /vgsd-ui-review)
+  ui-reviews/             # Screenshots from /vgsd-ui-review (gitignored)
 ```

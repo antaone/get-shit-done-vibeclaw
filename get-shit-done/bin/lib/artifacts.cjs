@@ -2,7 +2,7 @@
  * Canonical GSD artifact registry.
  *
  * Enumerates the file names that gsd workflows officially produce at the
- * .planning/ root level. Used by gsd-health (W019) to flag unrecognized files
+ * .planning/ root level. Used by vgsd-health (W019) to flag unrecognized files
  * so stale or misnamed artifacts don't silently mislead agents or reviewers.
  *
  * Add entries here whenever a new workflow produces a .planning/ root file.
@@ -28,7 +28,7 @@ const CANONICAL_EXACT = new Set([
 // Pattern-match canonical file names (regex tests on the basename)
 // Each pattern includes the name of the workflow that produces it as a comment.
 const CANONICAL_PATTERNS = [
-  /^v\d+\.\d+(?:\.\d+)?-MILESTONE-AUDIT\.md$/i,  // gsd-complete-milestone (pre-archive)
+  /^v\d+\.\d+(?:\.\d+)?-MILESTONE-AUDIT\.md$/i,  // vgsd-complete-milestone (pre-archive)
   /^v\d+\.\d+(?:\.\d+)?-.*\.md$/i,               // other version-stamped planning docs
 ];
 

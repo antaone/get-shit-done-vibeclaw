@@ -94,14 +94,14 @@ describe('CodeBuddy markdown conversion', () => {
   test('converts Claude-specific references to CodeBuddy equivalents', () => {
     const input = [
       'Claude Code reads CLAUDE.md before using .claude/skills/.',
-      'Run /gsd:plan-phase with $ARGUMENTS.',
+      'Run /vgsd:plan-phase with $ARGUMENTS.',
       'Use Bash(command) and Edit(file).',
     ].join('\n');
 
     const result = convertClaudeToCodebuddyMarkdown(input);
 
     assert.ok(result.includes('CodeBuddy reads CODEBUDDY.md before using .codebuddy/skills/.'), result);
-    assert.ok(result.includes('/gsd-plan-phase'), result);
+    assert.ok(result.includes('/vgsd-plan-phase'), result);
     assert.ok(result.includes('{{GSD_ARGS}}'), result);
     // CodeBuddy uses the same tool names as Claude Code — no conversion needed
     assert.ok(result.includes('Bash('), result);
@@ -110,11 +110,11 @@ describe('CodeBuddy markdown conversion', () => {
 
   test('converts commands and agents to CodeBuddy frontmatter', () => {
     const command = `---
-name: gsd:new-project
+name: vgsd:new-project
 description: Initialize a project
 ---
 
-Use .claude/skills/ and /gsd:help.
+Use .claude/skills/ and /vgsd:help.
 `;
     const agent = `---
 name: gsd-planner
@@ -126,12 +126,12 @@ color: blue
 Read CLAUDE.md before acting.
 `;
 
-    const convertedCommand = convertClaudeCommandToCodebuddySkill(command, 'gsd-new-project');
+    const convertedCommand = convertClaudeCommandToCodebuddySkill(command, 'vgsd-new-project');
     const convertedAgent = convertClaudeAgentToCodebuddyAgent(agent);
 
-    assert.ok(convertedCommand.includes('name: gsd-new-project'), convertedCommand);
+    assert.ok(convertedCommand.includes('name: vgsd-new-project'), convertedCommand);
     assert.ok(convertedCommand.includes('.codebuddy/skills/'), convertedCommand);
-    assert.ok(convertedCommand.includes('/gsd-help'), convertedCommand);
+    assert.ok(convertedCommand.includes('/vgsd-help'), convertedCommand);
 
     assert.ok(convertedAgent.includes('name: gsd-planner'), convertedAgent);
     assert.ok(!convertedAgent.includes('color:'), convertedAgent);
@@ -156,11 +156,11 @@ describe('installRuntimeArtifacts (codebuddy integration)', () => {
   test('creates one skill directory per GSD command', () => {
     installRuntimeArtifacts('codebuddy', configDir, 'local', resolvedProfileFull);
 
-    const generated = path.join(configDir, 'skills', 'gsd-help', 'SKILL.md');
+    const generated = path.join(configDir, 'skills', 'vgsd-help', 'SKILL.md');
     assert.ok(fs.existsSync(generated), generated);
 
     const content = fs.readFileSync(generated, 'utf8');
-    assert.ok(content.includes('name: gsd-help'), content);
+    assert.ok(content.includes('name: vgsd-help'), content);
   });
 });
 
@@ -187,16 +187,16 @@ describe('CodeBuddy local install/uninstall', () => {
     assert.strictEqual(result.runtime, 'codebuddy');
     assert.ok(result.settingsPath, 'should have settingsPath (CodeBuddy supports hooks)');
 
-    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'gsd-help', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'vgsd-help', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
     const manifest = writeManifest(targetDir, 'codebuddy');
-    assert.ok(Object.keys(manifest.files).some(file => file.startsWith('skills/gsd-help/')), JSON.stringify(manifest));
+    assert.ok(Object.keys(manifest.files).some(file => file.startsWith('skills/vgsd-help/')), JSON.stringify(manifest));
 
     uninstall(false, 'codebuddy');
 
-    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'gsd-help')), 'CodeBuddy skill directory removed');
+    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'vgsd-help')), 'CodeBuddy skill directory removed');
     assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')), 'get-shit-done removed');
   });
 });
@@ -224,14 +224,14 @@ describe('E2E: CodeBuddy uninstall skills cleanup', () => {
     assert.ok(fs.existsSync(skillsDir), 'skills dir exists after install');
 
     const installedSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
-      .filter(e => e.isDirectory() && e.name.startsWith('gsd-'));
+      .filter(e => e.isDirectory() && e.name.startsWith('vgsd-'));
     assert.ok(installedSkills.length > 0, `found ${installedSkills.length} gsd-* skill dirs before uninstall`);
 
     uninstall(false, 'codebuddy');
 
     if (fs.existsSync(skillsDir)) {
       const remainingGsd = fs.readdirSync(skillsDir, { withFileTypes: true })
-        .filter(e => e.isDirectory() && e.name.startsWith('gsd-'));
+        .filter(e => e.isDirectory() && e.name.startsWith('vgsd-'));
       assert.strictEqual(remainingGsd.length, 0,
         `Expected 0 gsd-* skill dirs after uninstall, found: ${remainingGsd.map(e => e.name).join(', ')}`);
     }

@@ -14,7 +14,7 @@ color: yellow
 <role>
 You are a GSD plan executor. You execute PLAN.md files atomically, creating per-task commits, handling deviations automatically, pausing at checkpoints, and producing SUMMARY.md files.
 
-Spawned by `/gsd:execute-phase` orchestrator.
+Spawned by `/vgsd:execute-phase` orchestrator.
 
 Your job: Execute the plan completely, commit each task, create SUMMARY.md, update STATE.md.
 
@@ -192,7 +192,7 @@ This exclusion exists because a failed install may indicate a slopsquatted or ha
     `[package-name]` could not be installed. Before proceeding:
     1. Verify the package exists and is legitimate: https://npmjs.com/package/[package-name]
     2. Confirm the package name is spelled correctly in PLAN.md
-    3. If the package does not exist, re-run /gsd:plan-phase --research-phase <N> to find the correct package
+    3. If the package does not exist, re-run /vgsd:plan-phase --research-phase <N> to find the correct package
   </how-to-verify>
   <resume-signal>Type "verified" with the correct package name, or "abort" to stop the phase</resume-signal>
 </task>

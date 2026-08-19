@@ -7,7 +7,7 @@ We propose extending the existing install profile seam (`get-shit-done/bin/lib/i
 
 ## Decision
 
-- Add a **Skill Surface Budget Module** by extending `get-shit-done/bin/lib/install-profiles.cjs` as the single owner for which `commands/gsd/*.md` and `agents/gsd-*.md` files are staged into the per-runtime copy pipeline.
+- Add a **Skill Surface Budget Module** by extending `get-shit-done/bin/lib/install-profiles.cjs` as the single owner for which `commands/gsd/*.md` and `agents/vgsd-*.md` files are staged into the per-runtime copy pipeline.
 - Replace the single `MINIMAL_SKILL_ALLOWLIST` constant with a typed `PROFILES` map keyed by profile name. Each profile is a *base set* of skills; the module computes the **transitive closure** over each skill's declared `requires:` set before staging.
 - Add a `requires:` frontmatter field to every skill whose body references another GSD skill. The dependency graph in the research memo (`docs/research/2026-05-12-skill-surface-budget.md` §3.1) is the migration spec for this pass.
 - Extend `bin/install.js` argument parsing to accept `--profile=<name>` and `--profile=<name1>,<name2>` (composable). Preserve `--minimal` / `--core-only` as aliases for `--profile=core`. Default install (no flag) remains `full` for back-compat.
@@ -29,7 +29,7 @@ First migration slice should land the profile model and one new tier above `core
 
 It should **not** in the first pass:
 
-- Build a runtime enable/disable surface (`/gsd:surface`). Track as a follow-up ADR (see "Open questions").
+- Build a runtime enable/disable surface (`/vgsd:surface`). Track as a follow-up ADR (see "Open questions").
 - Split GSD into multiple npm packages. The packaging-level alternative was considered and rejected — see research memo §4 Option F.
 - Consolidate further skills (e.g. collapsing `*-phase` into a dispatcher). Track separately as IA cleanup; orthogonal to surface curation.
 
@@ -110,7 +110,7 @@ Per-skill frontmatter contract:
 
 ```yaml
 ---
-name: gsd:plan-phase
+name: vgsd:plan-phase
 description: ...
 requires: [phase, discuss-phase]   # GSD skills only; not Claude Code primitives
 ---
@@ -122,7 +122,7 @@ requires: [phase, discuss-phase]   # GSD skills only; not Claude Code primitives
 
 - The skill-set written by the installer becomes a typed first-class artifact, not a side effect of file copies + an allowlist constant. ADR-0008 (Installer Migration Module) gains a clean handle for safe profile migrations on upgrade.
 - `gsd update` stops silently re-expanding a `--minimal` install to full — a current foot-gun documented inline in `install-profiles.cjs` (its module-level comment recommends `gsd update` without `--minimal` to "expand to the full surface"; that path remains available, but the default `gsd update` now respects the recorded profile).
-- The `requires:` manifest creates a new authoring obligation (~30 files in Phase 1), enforced by CI. Skill authors who add a `/gsd:phase` reference in a new skill body have to update `requires:`. The lint script keeps drift low-cost.
+- The `requires:` manifest creates a new authoring obligation (~30 files in Phase 1), enforced by CI. Skill authors who add a `/vgsd:phase` reference in a new skill body have to update `requires:`. The lint script keeps drift low-cost.
 - The `phase`-in-minimal latent gap (research memo §3.1) gets resolved as a side effect of adopting closure-based profile resolution — `phase` is auto-included whenever any minimal-loop skill `requires:` it.
 - First-time install UX gains a profile picker. The default remains `full` for non-interactive (`npx --yes`) installs, so back-compat for CI scripts is preserved.
 - The module becomes the canonical place to land future Anthropic platform features (lazy descriptions, per-plugin budgets, `.disabled` toggles — see Open Questions). It does not, in this ADR, *use* those features.
@@ -130,9 +130,9 @@ requires: [phase, discuss-phase]   # GSD skills only; not Claude Code primitives
 
 ## Open questions
 
-- Whether the Phase-2 runtime `/gsd:surface` command (research memo §4 Option B) should be its own ADR or an amendment to this one. Leaning **separate ADR** because it introduces persistent runtime state outside the install pipeline.
+- Whether the Phase-2 runtime `/vgsd:surface` command (research memo §4 Option B) should be its own ADR or an amendment to this one. Leaning **separate ADR** because it introduces persistent runtime state outside the install pipeline.
 - Profile naming bikeshed. `core / standard / full` is the working proposal. Alternatives surveyed: `minimal / recommended / everything`, functional names (`planning, audit, research`). Settle in the implementation PR after a contributor poll.
-- Whether the `requires:` field should also be consumed by `/gsd:help` to render a "skills you have installed and what depends on what" graph. Likely yes, but out of scope for this ADR.
+- Whether the `requires:` field should also be consumed by `/vgsd:help` to render a "skills you have installed and what depends on what" graph. Likely yes, but out of scope for this ADR.
 - Whether to keep `phase` explicitly listed in `core` forever vs relying purely on closure semantics. Current recommendation: keep explicit listing because minimal mode has a back-compat allowlist path.
 - Whether telemetry (opt-in) is worth proposing to inform where the `standard` profile line goes. Without it, the cut points are author-intuition. Track separately; not a blocker.
 - Whether the Anthropic platform asks (research memo §6 — lazy descriptions, per-plugin budgets, dependency-aware listing, `.disabled` toggles) should be filed before or after this ADR ships. Recommendation: file as a feedback bundle when ADR is accepted, so we ship Phase 1 unilaterally and platform improvements compose on top.

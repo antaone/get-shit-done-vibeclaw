@@ -111,7 +111,7 @@
 
 ### 1. Project Initialization
 
-**명령어:** `/gsd-new-project [--auto @file.md]`
+**명령어:** `/vgsd-new-project [--auto @file.md]`
 
 **목적:** 사용자의 아이디어를 연구, 범위가 지정된 요구사항, 단계별 로드맵을 갖춘 완전히 구조화된 프로젝트로 전환합니다.
 
@@ -150,13 +150,13 @@
 - 연구 에이전트는 현재 생태계 정보를 위한 웹 검색 기능을 갖추고 있습니다.
 - 세분화 설정으로 페이즈 수를 제어합니다. `coarse`(3-5), `standard`(5-8), `fine`(8-12)
 - `--auto` 모드는 대화형 질문 없이 제공된 문서에서 모든 정보를 추출합니다.
-- 기존 코드베이스 컨텍스트(`/gsd-map-codebase`에서)가 있으면 로드됩니다.
+- 기존 코드베이스 컨텍스트(`/vgsd-map-codebase`에서)가 있으면 로드됩니다.
 
 ---
 
 ### 2. Phase Discussion
 
-**명령어:** `/gsd-discuss-phase [N] [--auto] [--batch]`
+**명령어:** `/vgsd-discuss-phase [N] [--auto] [--batch]`
 
 **목적:** 연구와 계획이 시작되기 전에 사용자의 구현 선호도와 결정을 캡처합니다. AI가 추측하게 만드는 회색 지대를 제거합니다.
 
@@ -183,7 +183,7 @@
 
 ### 3. UI Design Contract
 
-**명령어:** `/gsd-ui-phase [N]`
+**명령어:** `/vgsd-ui-phase [N]`
 
 **목적:** 계획 전에 설계 결정을 확정하여 페이즈 내 모든 컴포넌트가 일관된 시각적 기준을 공유하도록 합니다.
 
@@ -215,7 +215,7 @@
 
 ### 4. Phase Planning
 
-**명령어:** `/gsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
+**명령어:** `/vgsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
 
 **목적:** 구현 도메인을 연구하고 검증된 원자적 실행 계획을 생성합니다.
 
@@ -226,7 +226,7 @@
 - REQ-PLAN-04: 모든 계획에 `read_first`와 `acceptance_criteria` 섹션을 포함해야 합니다.
 - REQ-PLAN-05: `--skip-verify`가 설정되지 않은 경우 계획 검사기 검증 루프를 실행해야 합니다(최대 3회 반복).
 - REQ-PLAN-06: 연구 단계를 건너뛰는 `--skip-research` 플래그를 지원해야 합니다.
-- REQ-PLAN-07: 프론트엔드 페이즈가 감지되고 UI-SPEC.md가 없는 경우 `/gsd-ui-phase` 실행을 촉구해야 합니다(UI 안전 게이트).
+- REQ-PLAN-07: 프론트엔드 페이즈가 감지되고 UI-SPEC.md가 없는 경우 `/vgsd-ui-phase` 실행을 촉구해야 합니다(UI 안전 게이트).
 - REQ-PLAN-08: `workflow.nyquist_validation`이 활성화된 경우 Nyquist 유효성 검사 매핑을 포함해야 합니다.
 - REQ-PLAN-09: 계획이 완료되기 전에 모든 페이즈 요구사항이 최소 하나의 계획에 포함되어 있는지 확인해야 합니다(요구사항 커버리지 게이트).
 
@@ -265,7 +265,7 @@
 
 ### 5. Phase Execution
 
-**명령어:** `/gsd-execute-phase <N>`
+**명령어:** `/vgsd-execute-phase <N>`
 
 **목적:** 실행자별 새로운 컨텍스트 창을 사용한 웨이브 기반 병렬화로 페이즈의 모든 계획을 실행합니다.
 
@@ -309,7 +309,7 @@
 
 ### 6. Work Verification
 
-**명령어:** `/gsd-verify-work [N]`
+**명령어:** `/vgsd-verify-work [N]`
 
 **목적:** 사용자 인수 테스트 — 각 결과물을 테스트하는 과정을 사용자와 함께 진행하고 실패를 자동으로 진단합니다.
 
@@ -327,7 +327,7 @@
 
 ### 6.5. Ship
 
-**명령어:** `/gsd-ship [N] [--draft]`
+**명령어:** `/vgsd-ship [N] [--draft]`
 
 **목적:** 로컬 완료에서 병합된 PR로의 전환. 검증 통과 후 브랜치를 푸시하고, 계획 산출물에서 자동 생성된 본문으로 PR을 작성하며, 선택적으로 검토를 요청하고 STATE.md에 추적합니다.
 
@@ -346,7 +346,7 @@
 
 ### 7. UI Review
 
-**명령어:** `/gsd-ui-review [N]`
+**명령어:** `/vgsd-ui-review [N]`
 
 **목적:** 구현된 프론트엔드 코드의 소급 6기둥 시각적 감사. 모든 프로젝트에서 독립적으로 작동합니다.
 
@@ -371,7 +371,7 @@
 
 ### 8. Milestone Management
 
-**명령어:** `/gsd-audit-milestone`, `/gsd-complete-milestone`, `/gsd-new-milestone [name]`
+**명령어:** `/vgsd-audit-milestone`, `/vgsd-complete-milestone`, `/vgsd-new-milestone [name]`
 
 **목적:** 마일스톤 완료를 검증하고, 보관하고, 릴리스 태그를 지정하며, 다음 개발 주기를 시작합니다.
 
@@ -393,7 +393,7 @@
 
 ### 9. Phase Management
 
-**명령어:** `/gsd-phase`, `/gsd-phase --insert [N]`, `/gsd-phase --remove [N]`
+**명령어:** `/vgsd-phase`, `/vgsd-phase --insert [N]`, `/vgsd-phase --remove [N]`
 
 **목적:** 개발 중 동적 로드맵 수정.
 
@@ -408,7 +408,7 @@
 
 ### 10. Quick Mode
 
-**명령어:** `/gsd-quick [--full] [--discuss] [--research]`
+**명령어:** `/vgsd-quick [--full] [--discuss] [--research]`
 
 **목적:** GSD 보증을 제공하지만 더 빠른 경로로 임시 작업을 실행합니다.
 
@@ -427,7 +427,7 @@
 
 ### 11. Autonomous Mode
 
-**명령어:** `/gsd-autonomous [--from N]`
+**명령어:** `/vgsd-autonomous [--from N]`
 
 **목적:** 나머지 모든 페이즈를 자율적으로 실행합니다 — 페이즈별로 논의 → 계획 → 실행.
 
@@ -442,7 +442,7 @@
 
 ### 12. Freeform Routing
 
-**명령어:** `/gsd-fast`
+**명령어:** `/vgsd-fast`
 
 **목적:** 자유형 텍스트를 분석하고 적절한 GSD 명령어로 라우팅합니다.
 
@@ -456,7 +456,7 @@
 
 ### 13. Note Capture
 
-**명령어:** `/gsd-capture`
+**명령어:** `/vgsd-capture`
 
 **목적:** 워크플로우를 방해하지 않고 아이디어를 즉시 캡처합니다. 타임스탬프가 있는 노트를 추가하거나, 모든 노트를 나열하거나, 노트를 구조화된 할 일로 승격합니다.
 
@@ -471,7 +471,7 @@
 
 ### 14. Auto-Advance (Next)
 
-**명령어:** `/gsd-progress --next`
+**명령어:** `/vgsd-progress --next`
 
 **목적:** 현재 프로젝트 상태를 자동으로 감지하고 다음 논리적 워크플로우 단계로 진행합니다. 현재 어느 페이즈/단계에 있는지 기억할 필요가 없습니다.
 
@@ -479,18 +479,18 @@
 - REQ-NEXT-01: STATE.md, ROADMAP.md, 페이즈 디렉토리를 읽어 현재 위치를 확인해야 합니다.
 - REQ-NEXT-02: 논의, 계획, 실행, 검증 중 어느 것이 필요한지 감지해야 합니다.
 - REQ-NEXT-03: 올바른 명령어를 자동으로 호출해야 합니다.
-- REQ-NEXT-04: 프로젝트가 없으면 `/gsd-new-project`를 제안해야 합니다.
-- REQ-NEXT-05: 모든 페이즈가 완료되면 `/gsd-complete-milestone`을 제안해야 합니다.
+- REQ-NEXT-04: 프로젝트가 없으면 `/vgsd-new-project`를 제안해야 합니다.
+- REQ-NEXT-05: 모든 페이즈가 완료되면 `/vgsd-complete-milestone`을 제안해야 합니다.
 
 **상태 감지 로직.**
 | 상태 | 액션 |
 |-------|--------|
-| `.planning/` 디렉토리 없음 | `/gsd-new-project` 제안 |
-| 페이즈에 CONTEXT.md 없음 | `/gsd-discuss-phase` 실행 |
-| 페이즈에 PLAN.md 파일 없음 | `/gsd-plan-phase` 실행 |
-| 계획 있지만 SUMMARY.md 없음 | `/gsd-execute-phase` 실행 |
-| 실행되었지만 VERIFICATION.md 없음 | `/gsd-verify-work` 실행 |
-| 모든 페이즈 완료 | `/gsd-complete-milestone` 제안 |
+| `.planning/` 디렉토리 없음 | `/vgsd-new-project` 제안 |
+| 페이즈에 CONTEXT.md 없음 | `/vgsd-discuss-phase` 실행 |
+| 페이즈에 PLAN.md 파일 없음 | `/vgsd-plan-phase` 실행 |
+| 계획 있지만 SUMMARY.md 없음 | `/vgsd-execute-phase` 실행 |
+| 실행되었지만 VERIFICATION.md 없음 | `/vgsd-verify-work` 실행 |
+| 모든 페이즈 완료 | `/vgsd-complete-milestone` 제안 |
 
 ---
 
@@ -505,12 +505,12 @@
 - REQ-NYQ-02: 각 요구사항을 특정 테스트 명령어에 매핑해야 합니다.
 - REQ-NYQ-03: 웨이브 0 작업(구현 전에 필요한 테스트 스캐폴딩)을 식별해야 합니다.
 - REQ-NYQ-04: 계획 검사기는 Nyquist 준수를 8번째 검증 차원으로 적용해야 합니다.
-- REQ-NYQ-05: `/gsd-validate-phase`를 통한 소급 유효성 검사를 지원해야 합니다.
+- REQ-NYQ-05: `/vgsd-validate-phase`를 통한 소급 유효성 검사를 지원해야 합니다.
 - REQ-NYQ-06: `workflow.nyquist_validation: false`로 비활성화 가능해야 합니다.
 
 **생성 산출물.** `{phase}-VALIDATION.md` — 테스트 커버리지 계약
 
-**소급 유효성 검사(`/gsd-validate-phase [N]`).**
+**소급 유효성 검사(`/vgsd-validate-phase [N]`).**
 - 구현을 스캔하고 요구사항을 테스트에 매핑합니다.
 - 요구사항에 자동화된 검증이 없는 갭을 식별합니다.
 - 테스트 생성을 위한 감사자를 생성합니다(최대 3회 시도).
@@ -538,7 +538,7 @@
 **요구사항.**
 - REQ-POSTVER-01: 작업 완료가 아닌 페이즈 목표에 대해 확인해야 합니다.
 - REQ-POSTVER-02: 합격/불합격 분석이 담긴 VERIFICATION.md를 생성해야 합니다.
-- REQ-POSTVER-03: `/gsd-verify-work`가 처리할 문제를 기록해야 합니다.
+- REQ-POSTVER-03: `/vgsd-verify-work`가 처리할 문제를 기록해야 합니다.
 - REQ-POSTVER-04: `workflow.verifier: false`로 비활성화 가능해야 합니다.
 
 ---
@@ -559,7 +559,7 @@
 
 ### 19. Health Validation
 
-**명령어:** `/gsd-health [--repair]`
+**명령어:** `/vgsd-health [--repair]`
 
 **목적:** `.planning/` 디렉토리 무결성을 검증하고 문제를 자동으로 복구합니다.
 
@@ -582,7 +582,7 @@
 - REQ-REGR-03: 회귀는 실행 후 검증 전에 표시되어야 합니다.
 - REQ-REGR-04: 어느 이전 페이즈의 테스트가 실패했는지 식별해야 합니다.
 
-**실행 시점.** `/gsd-execute-phase` 중 검증자 단계 전에 자동으로 실행됩니다.
+**실행 시점.** `/vgsd-execute-phase` 중 검증자 단계 전에 자동으로 실행됩니다.
 
 ---
 
@@ -596,7 +596,7 @@
 - REQ-COVGATE-03: 포함되지 않은 요구사항은 계획 완료를 차단해야 합니다.
 - REQ-COVGATE-04: 계획 커버리지가 없는 특정 요구사항을 보고해야 합니다.
 
-**실행 시점.** `/gsd-plan-phase`의 계획 검사기 루프 후 자동으로 실행됩니다.
+**실행 시점.** `/vgsd-plan-phase`의 계획 검사기 루프 후 자동으로 실행됩니다.
 
 ---
 
@@ -624,7 +624,7 @@
 
 ### 23. Session Management
 
-**명령어:** `/gsd-pause-work`, `/gsd-resume-work`, `/gsd-progress`
+**명령어:** `/vgsd-pause-work`, `/vgsd-resume-work`, `/vgsd-progress`
 
 **목적:** 컨텍스트 초기화와 세션 간에 프로젝트 연속성을 유지합니다.
 
@@ -641,7 +641,7 @@
 
 ### 24. Session Reporting
 
-**명령어:** `/gsd-pause-work --report`
+**명령어:** `/vgsd-pause-work --report`
 
 **목적:** 수행된 작업, 달성된 결과, 예상 리소스 사용량을 캡처하는 구조화된 세션 후 요약 문서를 생성합니다.
 
@@ -680,7 +680,7 @@
 
 ### 26. Model Profiles
 
-**명령어:** `/gsd-config --profile <quality|balanced|budget|inherit>`
+**명령어:** `/vgsd-config --profile <quality|balanced|budget|inherit>`
 
 **목적:** 각 에이전트가 사용하는 AI 모델을 제어하여 품질과 비용의 균형을 맞춥니다.
 
@@ -716,7 +716,7 @@
 
 ### 27. Codebase Mapping
 
-**명령어:** `/gsd-map-codebase [area]`
+**명령어:** `/vgsd-map-codebase [area]`
 
 **목적:** 새 프로젝트를 시작하기 전에 기존 코드베이스를 분석하여 GSD가 무엇이 존재하는지 이해하도록 합니다.
 
@@ -724,7 +724,7 @@
 - REQ-MAP-01: 각 분석 영역에 대한 병렬 매퍼 에이전트를 생성해야 합니다.
 - REQ-MAP-02: `.planning/codebase/`에 구조화된 문서를 생성해야 합니다.
 - REQ-MAP-03: 기술 스택, 아키텍처 패턴, 코딩 규범, 문제점을 감지해야 합니다.
-- REQ-MAP-04: 이후 `/gsd-new-project`는 코드베이스 매핑을 로드하고 추가하는 내용에 대한 질문에 집중해야 합니다.
+- REQ-MAP-04: 이후 `/vgsd-new-project`는 코드베이스 매핑을 로드하고 추가하는 내용에 대한 질문에 집중해야 합니다.
 - REQ-MAP-05: 선택적 `[area]` 인수는 매핑 범위를 특정 영역으로 제한해야 합니다.
 
 **생성 산출물.**
@@ -744,7 +744,7 @@
 
 ### 28. Debug System
 
-**명령어:** `/gsd-debug [description]`
+**명령어:** `/vgsd-debug [description]`
 
 **목적:** 컨텍스트 초기화 전반에 걸쳐 영구적인 상태로 체계적인 디버깅을 수행합니다.
 
@@ -762,7 +762,7 @@
 
 ### 29. Todo Management
 
-**명령어:** `/gsd-capture [desc]`, `/gsd-capture --list`
+**명령어:** `/vgsd-capture [desc]`, `/vgsd-capture --list`
 
 **목적:** 세션 중 나중에 처리할 아이디어와 작업을 캡처합니다.
 
@@ -776,7 +776,7 @@
 
 ### 30. Statistics Dashboard
 
-**명령어:** `/gsd-stats`
+**명령어:** `/vgsd-stats`
 
 **목적:** 프로젝트 지표를 표시합니다 — 페이즈, 계획, 요구사항, git 히스토리, 타임라인.
 
@@ -790,7 +790,7 @@
 
 ### 31. Update System
 
-**명령어:** `/gsd-update`
+**명령어:** `/vgsd-update`
 
 **목적:** 변경 로그 미리보기와 함께 GSD를 최신 버전으로 업데이트합니다.
 
@@ -799,13 +799,13 @@
 - REQ-UPDATE-02: 업데이트 전에 새 버전의 변경 로그를 표시해야 합니다.
 - REQ-UPDATE-03: 런타임을 인식하고 올바른 디렉토리를 대상으로 해야 합니다.
 - REQ-UPDATE-04: 로컬에서 수정된 파일을 `gsd-local-patches/`에 백업해야 합니다.
-- REQ-UPDATE-05: `/gsd-update --reapply`는 업데이트 후 로컬 수정사항을 복원해야 합니다.
+- REQ-UPDATE-05: `/vgsd-update --reapply`는 업데이트 후 로컬 수정사항을 복원해야 합니다.
 
 ---
 
 ### 32. Settings Management
 
-**명령어:** `/gsd-settings`
+**명령어:** `/vgsd-settings`
 
 **목적:** 워크플로우 토글과 모델 프로파일의 대화형 구성.
 
@@ -838,7 +838,7 @@
 
 ### 33. Test Generation
 
-**명령어:** `/gsd-add-tests [N]`
+**명령어:** `/vgsd-add-tests [N]`
 
 **목적:** UAT 기준과 구현을 기반으로 완료된 페이즈에 대한 테스트를 생성합니다.
 
@@ -930,14 +930,14 @@ fix(03-01): correct auth token expiry
 
 **상태표시줄 표시.**
 ```
-[⬆ /gsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
+[⬆ /vgsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
 ```
 
 색상 코드: <50% 초록, <65% 노랑, <80% 주황, ≥80% 해골 이모지와 함께 빨강
 
 ### 38. Developer Profiling
 
-**명령어:** `/gsd-profile-user [--questionnaire] [--refresh]`
+**명령어:** `/vgsd-profile-user [--questionnaire] [--refresh]`
 
 **목적:** Claude Code 세션 히스토리를 분석하여 8가지 차원에서 행동 프로파일을 구축하고, 개발자의 스타일에 맞게 Claude 응답을 개인화하는 산출물을 생성합니다.
 
@@ -994,14 +994,14 @@ fix(03-01): correct auth token expiry
 
 ### 40. Verification Debt Tracking
 
-**명령어:** `/gsd-audit-uat`
+**명령어:** `/vgsd-audit-uat`
 
 **목적:** 프로젝트가 미결 테스트가 있는 페이즈를 넘어 진행할 때 UAT/검증 항목이 자동으로 누락되는 것을 방지합니다. 모든 이전 페이즈에 걸쳐 검증 부채를 표시하여 항목이 잊히지 않도록 합니다.
 
 **구성 요소.**
 
 **1. 교차 페이즈 상태 확인** (progress.md 1.6단계)
-모든 `/gsd-progress` 호출은 현재 마일스톤의 모든 페이즈에서 미결 항목(pending, skipped, blocked, human_needed)을 스캔합니다. 실행 가능한 링크가 포함된 비차단 경고 섹션을 표시합니다.
+모든 `/vgsd-progress` 호출은 현재 마일스톤의 모든 페이즈에서 미결 항목(pending, skipped, blocked, human_needed)을 스캔합니다. 실행 가능한 링크가 포함된 비차단 경고 섹션을 표시합니다.
 
 **2. `status: partial`** (verify-work.md, UAT.md)
 "세션 종료"와 "모든 테스트 해결" 사이를 구분하는 새 UAT 상태입니다. 테스트가 여전히 pending, blocked, 또는 이유 없이 skipped된 경우 `status: complete`를 방지합니다.
@@ -1016,12 +1016,12 @@ fix(03-01): correct auth token expiry
 `phase complete` CLI는 JSON 출력에 검증 부채 경고를 반환합니다. 전환 워크플로우는 확인 전에 미결 항목을 표시합니다.
 
 **요구사항.**
-- REQ-DEBT-01: `/gsd-progress`에서 모든 이전 페이즈의 미결 UAT/검증 항목을 표시해야 합니다.
+- REQ-DEBT-01: `/vgsd-progress`에서 모든 이전 페이즈의 미결 UAT/검증 항목을 표시해야 합니다.
 - REQ-DEBT-02: 불완전한 테스트(partial)와 완료된 테스트(complete)를 구분해야 합니다.
 - REQ-DEBT-03: 차단된 테스트를 `blocked_by` 태그로 분류해야 합니다.
 - REQ-DEBT-04: human_needed 검증 항목을 추적 가능한 UAT 파일로 저장해야 합니다.
 - REQ-DEBT-05: 검증 부채가 있을 때 페이즈 완료와 전환 중에 경고해야 합니다(비차단).
-- REQ-DEBT-06: `/gsd-audit-uat`는 모든 페이즈를 스캔하고 테스트 가능성별로 항목을 분류하며 사람 테스트 계획을 생성해야 합니다.
+- REQ-DEBT-06: `/vgsd-audit-uat`는 모든 페이즈를 스캔하고 테스트 가능성별로 항목을 분류하며 사람 테스트 계획을 생성해야 합니다.
 
 ---
 
@@ -1029,7 +1029,7 @@ fix(03-01): correct auth token expiry
 
 ### 41. Fast Mode
 
-**명령어:** `/gsd-fast [task description]`
+**명령어:** `/vgsd-fast [task description]`
 
 **목적:** 하위 에이전트를 생성하거나 PLAN.md 파일을 생성하지 않고 인라인으로 간단한 작업을 실행합니다. 계획 오버헤드를 정당화하기에는 너무 작은 작업에 사용합니다: 오타 수정, 구성 변경, 작은 리팩터링, 잊혀진 커밋, 간단한 추가.
 
@@ -1039,15 +1039,15 @@ fix(03-01): correct auth token expiry
 - REQ-FAST-03: 상태 일관성을 위해 `.planning/quick/`에 작업을 추적해야 합니다.
 - REQ-FAST-04: 연구, 다단계 계획, 또는 검증이 필요한 작업에는 사용해서는 안 됩니다.
 
-**`/gsd-quick`과 비교하여 사용 시점.**
-- `/gsd-fast` — 2분 이내에 실행 가능한 한 문장 작업(오타, 구성 변경, 작은 추가)
-- `/gsd-quick` — 연구, 다단계 계획, 또는 검증이 필요한 모든 것
+**`/vgsd-quick`과 비교하여 사용 시점.**
+- `/vgsd-fast` — 2분 이내에 실행 가능한 한 문장 작업(오타, 구성 변경, 작은 추가)
+- `/vgsd-quick` — 연구, 다단계 계획, 또는 검증이 필요한 모든 것
 
 ---
 
 ### 42. Cross-AI Peer Review
 
-**명령어:** `/gsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--all]`
+**명령어:** `/vgsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--all]`
 
 **목적:** 외부 AI CLI(Gemini, Claude, Codex, CodeRabbit, OpenCode, Qwen Code, Cursor)를 호출하여 페이즈 계획을 독립적으로 검토합니다. 검토자별 피드백이 담긴 구조화된 REVIEWS.md를 생성합니다.
 
@@ -1056,7 +1056,7 @@ fix(03-01): correct auth token expiry
 - REQ-REVIEW-02: 페이즈 계획에서 구조화된 검토 프롬프트를 작성해야 합니다.
 - REQ-REVIEW-03: 선택된 각 CLI를 독립적으로 호출해야 합니다.
 - REQ-REVIEW-04: 응답을 수집하고 `REVIEWS.md`를 생성해야 합니다.
-- REQ-REVIEW-05: 검토는 `/gsd-plan-phase --reviews`가 사용할 수 있어야 합니다.
+- REQ-REVIEW-05: 검토는 `/vgsd-plan-phase --reviews`가 사용할 수 있어야 합니다.
 
 **생성 산출물.** `{phase}-REVIEWS.md` — 검토자별 구조화된 피드백
 
@@ -1064,17 +1064,17 @@ fix(03-01): correct auth token expiry
 
 ### 43. Backlog Parking Lot
 
-**명령어:** `/gsd-capture --backlog <description>`, `/gsd-review-backlog`, `/gsd-capture --seed <idea>`
+**명령어:** `/vgsd-capture --backlog <description>`, `/vgsd-review-backlog`, `/vgsd-capture --seed <idea>`
 
 **목적:** 아직 적극적인 계획에 준비되지 않은 아이디어를 캡처합니다. 백로그 항목은 활성 페이즈 순서 밖에 있기 위해 999.x 번호를 사용합니다. 시드는 올바른 마일스톤에서 자동으로 표시되는 트리거 조건이 있는 미래 지향적 아이디어입니다.
 
 **요구사항.**
 - REQ-BACKLOG-01: 백로그 항목은 활성 페이즈 순서 밖에 있기 위해 999.x 번호를 사용해야 합니다.
-- REQ-BACKLOG-02: `/gsd-discuss-phase`와 `/gsd-plan-phase`가 작동할 수 있도록 페이즈 디렉토리를 즉시 생성해야 합니다.
-- REQ-BACKLOG-03: `/gsd-review-backlog`는 항목별로 승격, 유지, 제거 액션을 지원해야 합니다.
+- REQ-BACKLOG-02: `/vgsd-discuss-phase`와 `/vgsd-plan-phase`가 작동할 수 있도록 페이즈 디렉토리를 즉시 생성해야 합니다.
+- REQ-BACKLOG-03: `/vgsd-review-backlog`는 항목별로 승격, 유지, 제거 액션을 지원해야 합니다.
 - REQ-BACKLOG-04: 승격된 항목은 활성 마일스톤 순서로 번호가 다시 매겨져야 합니다.
 - REQ-SEED-01: 시드는 표시 조건에 대한 전체 이유와 시기를 캡처해야 합니다.
-- REQ-SEED-02: `/gsd-new-milestone`은 시드를 스캔하고 일치하는 항목을 표시해야 합니다.
+- REQ-SEED-02: `/vgsd-new-milestone`은 시드를 스캔하고 일치하는 항목을 표시해야 합니다.
 
 **생성 산출물.**
 | 산출물 | 설명 |
@@ -1086,9 +1086,9 @@ fix(03-01): correct auth token expiry
 
 ### 44. Persistent Context Threads
 
-**명령어:** `/gsd-thread [name | description]`
+**명령어:** `/vgsd-thread [name | description]`
 
-**목적:** 여러 세션에 걸쳐 있지만 특정 페이즈에 속하지 않는 작업을 위한 가벼운 교차 세션 지식 저장소입니다. `/gsd-pause-work`보다 더 가볍습니다 — 페이즈 상태나 계획 컨텍스트가 없습니다.
+**목적:** 여러 세션에 걸쳐 있지만 특정 페이즈에 속하지 않는 작업을 위한 가벼운 교차 세션 지식 저장소입니다. `/vgsd-pause-work`보다 더 가볍습니다 — 페이즈 상태나 계획 컨텍스트가 없습니다.
 
 **요구사항.**
 - REQ-THREAD-01: 생성, 나열, 재개 모드를 지원해야 합니다.
@@ -1103,7 +1103,7 @@ fix(03-01): correct auth token expiry
 
 ### 45. PR Branch Filtering
 
-**명령어:** `/gsd-pr-branch [target branch]`
+**명령어:** `/vgsd-pr-branch [target branch]`
 
 **목적:** `.planning/` 커밋을 필터링하여 풀 리퀘스트에 적합한 깔끔한 브랜치를 생성합니다. 검토자는 GSD 계획 산출물이 아닌 코드 변경사항만 봅니다.
 
@@ -1131,7 +1131,7 @@ fix(03-01): correct auth token expiry
 `.planning/`을 대상으로 하는 Write/Edit 호출에서 주입 패턴을 스캔하는 PreToolUse 훅입니다. 정당한 작업을 차단하지 않고 인식을 위해 감지를 기록하는 권고 전용입니다.
 
 **3. 워크플로우 가드 훅** (`gsd-workflow-guard.js`)
-Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하는 것을 감지하는 PreToolUse 훅입니다. 직접 편집 대신 `/gsd-quick` 또는 `/gsd-fast` 사용을 권고합니다. `hooks.workflow_guard`로 구성 가능합니다(기본값: false).
+Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하는 것을 감지하는 PreToolUse 훅입니다. 직접 편집 대신 `/vgsd-quick` 또는 `/vgsd-fast` 사용을 권고합니다. `hooks.workflow_guard`로 구성 가능합니다(기본값: false).
 
 **4. CI 준비 주입 스캐너** (`prompt-injection-scan.test.cjs`)
 모든 에이전트, 워크플로우, 명령어 파일에서 포함된 주입 벡터를 스캔하는 테스트 스위트입니다.
@@ -1158,7 +1158,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 48. Discussion Audit Trail
 
-**목적:** `/gsd-discuss-phase` 중에 `DISCUSSION-LOG.md`를 자동 생성하여 논의 중에 내려진 결정의 전체 감사 추적을 제공합니다.
+**목적:** `/vgsd-discuss-phase` 중에 `DISCUSSION-LOG.md`를 자동 생성하여 논의 중에 내려진 결정의 전체 감사 추적을 제공합니다.
 
 **요구사항.**
 - REQ-DISCLOG-01: discuss-phase 중에 DISCUSSION-LOG.md를 자동 생성해야 합니다.
@@ -1171,7 +1171,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 49. Forensics
 
-**명령어:** `/gsd-forensics [description]`
+**명령어:** `/vgsd-forensics [description]`
 
 **목적:** 실패하거나 막힌 GSD 워크플로우의 사후 조사.
 
@@ -1197,7 +1197,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 50. Milestone Summary
 
-**명령어:** `/gsd-milestone-summary [version]`
+**명령어:** `/vgsd-milestone-summary [version]`
 
 **목적:** 팀 온보딩을 위해 마일스톤 산출물에서 포괄적인 프로젝트 요약을 생성합니다.
 
@@ -1220,7 +1220,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 51. Workstream Namespacing
 
-**명령어:** `/gsd-workstreams`
+**명령어:** `/vgsd-workstreams`
 
 **목적:** 마일스톤의 다른 영역에서 동시 작업을 위한 병렬 워크스트림.
 
@@ -1243,7 +1243,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 52. Manager Dashboard
 
-**명령어:** `/gsd-manager`
+**명령어:** `/vgsd-manager`
 
 **목적:** 하나의 터미널에서 여러 페이즈를 관리하는 대화형 명령 센터.
 
@@ -1263,7 +1263,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 53. Assumptions Discussion Mode
 
-**명령어:** `/gsd-discuss-phase` with `workflow.discuss_mode: 'assumptions'`
+**명령어:** `/vgsd-discuss-phase` with `workflow.discuss_mode: 'assumptions'`
 
 **목적:** 인터뷰 스타일 질문을 코드베이스 우선 가정 분석으로 대체합니다.
 
@@ -1289,20 +1289,20 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 54. UI Phase Auto-Detection
 
-**일부:** `/gsd-new-project` 및 `/gsd-progress`
+**일부:** `/vgsd-new-project` 및 `/vgsd-progress`
 
-**목적:** UI 중심 프로젝트를 자동으로 감지하고 `/gsd-ui-phase` 권장사항을 표시합니다.
+**목적:** UI 중심 프로젝트를 자동으로 감지하고 `/vgsd-ui-phase` 권장사항을 표시합니다.
 
 **요구사항.**
 - REQ-UI-DETECT-01: 프로젝트 설명에서 UI 신호를 감지해야 합니다(키워드, 프레임워크 참조).
 - REQ-UI-DETECT-02: 해당하는 경우 ROADMAP.md 페이즈에 `ui_hint`를 주석으로 추가해야 합니다.
-- REQ-UI-DETECT-03: UI 중심 페이즈의 다음 단계에서 `/gsd-ui-phase`를 제안해야 합니다.
-- REQ-UI-DETECT-04: `/gsd-ui-phase`를 필수로 만들어서는 안 됩니다.
+- REQ-UI-DETECT-03: UI 중심 페이즈의 다음 단계에서 `/vgsd-ui-phase`를 제안해야 합니다.
+- REQ-UI-DETECT-04: `/vgsd-ui-phase`를 필수로 만들어서는 안 됩니다.
 
 **프로세스.**
 1. **감지** — UI 신호(키워드, 프레임워크 참조)에 대한 프로젝트 설명 및 기술 스택 스캔
 2. **주석** — ROADMAP.md의 해당 페이즈에 `ui_hint` 표시 추가
-3. **표시** — UI 중심 페이즈의 다음 단계에 `/gsd-ui-phase` 권장사항 포함
+3. **표시** — UI 중심 페이즈의 다음 단계에 `/vgsd-ui-phase` 권장사항 포함
 
 ---
 
@@ -1382,7 +1382,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 59. 스키마 드리프트 감지
 
-**명령어:** `/gsd-execute-phase` 실행 시 자동
+**명령어:** `/vgsd-execute-phase` 실행 시 자동
 
 **목적:** ORM 스키마 파일이 대응하는 마이그레이션 또는 push 명령 없이 수정된 경우를 감지하여 오탐 검증을 방지합니다.
 
@@ -1405,7 +1405,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 60. 보안 시행
 
-**명령어:** `/gsd-secure-phase <N>`
+**명령어:** `/vgsd-secure-phase <N>`
 
 **목적:** 페이즈 구현에 대한 위협 모델 기반 보안 검증.
 
@@ -1436,7 +1436,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 61. 문서 생성
 
-**명령어:** `/gsd-docs-update`
+**명령어:** `/vgsd-docs-update`
 
 **목적:** 정확성 검사가 포함된 프로젝트 문서를 생성하고 검증합니다.
 
@@ -1459,7 +1459,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 62. 디스커스 체인 모드
 
-**플래그:** `/gsd-discuss-phase <N> --chain`
+**플래그:** `/vgsd-discuss-phase <N> --chain`
 
 **목적:** 수동 명령어 연속 실행을 줄이기 위해 discuss, plan, execute 페이즈를 하나의 플로우로 자동 체인합니다.
 
@@ -1477,7 +1477,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 63. 단일 페이즈 자율 모드
 
-**플래그:** `/gsd-autonomous --only N`
+**플래그:** `/vgsd-autonomous --only N`
 
 **목적:** 모든 남은 페이즈가 아닌 하나의 페이즈만 자율적으로 실행합니다.
 
@@ -1495,7 +1495,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 64. 범위 축소 감지
 
-**대상:** `/gsd-plan-phase`
+**대상:** `/vgsd-plan-phase`
 
 **목적:** 삼중 방어로 계획 생성 중 요구사항의 무단 삭제를 방지합니다.
 
@@ -1514,7 +1514,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 65. 주장 출처 태깅
 
-**대상:** `/gsd-plan-phase --research-phase`
+**대상:** `/vgsd-plan-phase --research-phase`
 
 **목적:** 연구 주장에 출처 증거를 태깅하고 가정을 별도로 기록합니다.
 
@@ -1573,13 +1573,13 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 **목적:** GSD 명령어를 하위 호환성을 유지하면서 Claude Code 2.1.88+ 스킬 형식으로 마이그레이션합니다.
 
 **요구사항.**
-- REQ-SKILLS-01: 설치 프로그램은 Claude Code 2.1.88+ 용 `skills/gsd-*/SKILL.md`를 작성해야 합니다.
+- REQ-SKILLS-01: 설치 프로그램은 Claude Code 2.1.88+ 용 `skills/vgsd-*/SKILL.md`를 작성해야 합니다.
 - REQ-SKILLS-02: 설치 프로그램은 레거시 `commands/gsd/` 디렉토리를 자동 정리해야 합니다.
 - REQ-SKILLS-03: Gemini 경로를 통해 이전 Claude Code 버전과의 하위 호환성을 유지해야 합니다.
 
 **프로세스.**
 1. **감지** — Claude Code 버전을 확인하여 스킬 지원 여부 판단
-2. **마이그레이션** — 각 GSD 명령어에 대해 `skills/gsd-*/SKILL.md` 파일 작성
+2. **마이그레이션** — 각 GSD 명령어에 대해 `skills/vgsd-*/SKILL.md` 파일 작성
 3. **정리** — 스킬이 설치되면 레거시 `commands/gsd/` 디렉토리 제거
 4. **폴백** — 이전 Claude Code 버전을 위한 Gemini 경로 호환성 유지
 
@@ -1613,7 +1613,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 70. 자율 모드 `--to N` 플래그
 
-**플래그:** `/gsd-autonomous --to N`
+**플래그:** `/vgsd-autonomous --to N`
 
 **목적:** 특정 페이즈 완료 후 자율 실행을 중단하여 부분적 자율 실행을 가능하게 합니다.
 
@@ -1631,7 +1631,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 71. 리서치 게이트
 
-**대상:** `/gsd-plan-phase`
+**대상:** `/vgsd-plan-phase`
 
 **목적:** RESEARCH.md에 미해결 오픈 질문이 있을 때 계획을 차단하여 불완전한 정보에 기반한 계획을 방지합니다.
 
@@ -1649,7 +1649,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 72. 검증자 마일스톤 범위 필터링
 
-**대상:** `/gsd-execute-phase` (검증자 단계)
+**대상:** `/vgsd-execute-phase` (검증자 단계)
 
 **목적:** 진정한 갭과 후속 페이즈로 연기된 항목을 구분하여 검증의 오탐을 줄입니다.
 
@@ -1698,7 +1698,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 75. 디스커스 페이즈 `--power` 플래그
 
-**플래그:** `/gsd-discuss-phase --power`
+**플래그:** `/vgsd-discuss-phase --power`
 
 **목적:** 디스커스 페이즈의 파일 기반 대량 질문 답변으로, 준비된 답변 파일에서 일괄 입력을 가능하게 합니다.
 
@@ -1711,7 +1711,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 76. 디버그 `--diagnose` 플래그
 
-**플래그:** `/gsd-debug --diagnose`
+**플래그:** `/vgsd-debug --diagnose`
 
 **목적:** 수정을 시도하지 않고 조사만 수행하는 진단 전용 모드.
 
@@ -1724,9 +1724,9 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 77. 페이즈 의존성 분석
 
-**명령어:** `/gsd-manager --analyze-deps`
+**명령어:** `/vgsd-manager --analyze-deps`
 
-**목적:** 페이즈 의존성을 감지하고 `/gsd-manager` 실행 전 ROADMAP.md에 `Depends on` 항목을 제안합니다.
+**목적:** 페이즈 의존성을 감지하고 `/vgsd-manager` 실행 전 ROADMAP.md에 `Depends on` 항목을 제안합니다.
 
 **요구사항.**
 - REQ-DEP-01: 시스템은 페이즈 간 파일 겹침을 감지해야 합니다.
@@ -1740,7 +1740,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 78. 안티패턴 심각도 레벨
 
-**대상:** `/gsd-resume-work`
+**대상:** `/vgsd-resume-work`
 
 **목적:** 심각도 기반 안티패턴 강제를 통한 재개 시 필수 이해 검사.
 
@@ -1765,7 +1765,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 80. 플래너 도달 가능성 검사
 
-**대상:** `/gsd-plan-phase`
+**대상:** `/vgsd-plan-phase`
 
 **목적:** 실행에 커밋하기 전에 계획 단계가 달성 가능한지 검증합니다.
 
@@ -1777,7 +1777,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 81. Playwright-MCP UI 검증
 
-**대상:** `/gsd-verify-work` (선택 사항)
+**대상:** `/vgsd-verify-work` (선택 사항)
 
 **목적:** 검증 페이즈 중 Playwright-MCP를 사용한 자동 시각적 검증.
 
@@ -1790,7 +1790,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 82. Pause-Work 확장
 
-**대상:** `/gsd-pause-work`
+**대상:** `/vgsd-pause-work`
 
 **목적:** 더 풍부한 핸드오프 데이터로 비페이즈 컨텍스트를 지원하여 pause-work의 적용 범위를 확대합니다.
 

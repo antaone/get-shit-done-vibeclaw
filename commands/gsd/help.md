@@ -1,5 +1,5 @@
 ---
-name: gsd:help
+name: vgsd:help
 description: Show available GSD commands and usage guide
 argument-hint: "[--brief | --full | <topic> | --brief <topic>]"
 allowed-tools:

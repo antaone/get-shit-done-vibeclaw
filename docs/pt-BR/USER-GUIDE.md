@@ -23,23 +23,23 @@ Referência detalhada de workflows, troubleshooting e configuração. Para setup
 
 Fluxo recomendado por fase:
 
-1. `/gsd-discuss-phase [N]` — trava preferências de implementação
-2. `/gsd-ui-phase [N]` — contrato visual para fases frontend
-3. `/gsd-plan-phase [N]` — pesquisa + plano + validação
-4. `/gsd-execute-phase [N]` — execução em ondas paralelas
-5. `/gsd-verify-work [N]` — UAT manual com diagnóstico
-6. `/gsd-ship [N]` — cria PR (opcional)
+1. `/vgsd-discuss-phase [N]` — trava preferências de implementação
+2. `/vgsd-ui-phase [N]` — contrato visual para fases frontend
+3. `/vgsd-plan-phase [N]` — pesquisa + plano + validação
+4. `/vgsd-execute-phase [N]` — execução em ondas paralelas
+5. `/vgsd-verify-work [N]` — UAT manual com diagnóstico
+6. `/vgsd-ship [N]` — cria PR (opcional)
 
 Para iniciar projeto novo:
 
 ```bash
-/gsd-new-project
+/vgsd-new-project
 ```
 
 Para seguir automaticamente o próximo passo:
 
 ```bash
-/gsd-progress --next
+/vgsd-progress --next
 ```
 
 ### Nyquist Validation
@@ -68,13 +68,13 @@ Com `workflow.discuss_mode: "assumptions"`, o GSD analisa o código antes de per
 
 | Comando | Descrição |
 |---------|-----------|
-| `/gsd-ui-phase [N]` | Gera contrato de design `UI-SPEC.md` para a fase |
-| `/gsd-ui-review [N]` | Auditoria visual retroativa em 6 pilares |
+| `/vgsd-ui-phase [N]` | Gera contrato de design `UI-SPEC.md` para a fase |
+| `/vgsd-ui-review [N]` | Auditoria visual retroativa em 6 pilares |
 
 ### Quando usar
 
-- Rode `/gsd-ui-phase` depois de `/gsd-discuss-phase` e antes de `/gsd-plan-phase`.
-- Rode `/gsd-ui-review` após execução/validação para avaliar qualidade visual e consistência.
+- Rode `/vgsd-ui-phase` depois de `/vgsd-discuss-phase` e antes de `/vgsd-plan-phase`.
+- Rode `/vgsd-ui-review` após execução/validação para avaliar qualidade visual e consistência.
 
 ### Configurações relacionadas
 
@@ -92,14 +92,14 @@ Com `workflow.discuss_mode: "assumptions"`, o GSD analisa o código antes de per
 Ideias fora da sequência ativa vão para backlog:
 
 ```bash
-/gsd-capture --backlog "Camada GraphQL"
-/gsd-capture --backlog "Responsividade mobile"
+/vgsd-capture --backlog "Camada GraphQL"
+/vgsd-capture --backlog "Responsividade mobile"
 ```
 
 Promover/revisar:
 
 ```bash
-/gsd-review-backlog
+/vgsd-review-backlog
 ```
 
 ### Seeds
@@ -107,7 +107,7 @@ Promover/revisar:
 Seeds guardam ideias futuras com condição de gatilho:
 
 ```bash
-/gsd-capture --seed "Adicionar colaboração real-time quando infra de WebSocket estiver pronta"
+/vgsd-capture --seed "Adicionar colaboração real-time quando infra de WebSocket estiver pronta"
 ```
 
 ### Threads persistentes
@@ -115,9 +115,9 @@ Seeds guardam ideias futuras com condição de gatilho:
 Threads são contexto leve entre sessões:
 
 ```bash
-/gsd-thread
-/gsd-thread fix-deploy-key-auth
-/gsd-thread "Investigar timeout TCP"
+/vgsd-thread
+/vgsd-thread fix-deploy-key-auth
+/vgsd-thread "Investigar timeout TCP"
 ```
 
 ---
@@ -128,10 +128,10 @@ Workstreams permitem trabalho paralelo sem colisão de estado de planejamento.
 
 | Comando | Função |
 |---------|--------|
-| `/gsd-workstreams create <name>` | Cria workstream isolado |
-| `/gsd-workstreams switch <name>` | Troca workstream ativo |
-| `/gsd-workstreams list` | Lista workstreams |
-| `/gsd-workstreams complete <name>` | Finaliza e arquiva workstream |
+| `/vgsd-workstreams create <name>` | Cria workstream isolado |
+| `/vgsd-workstreams switch <name>` | Troca workstream ativo |
+| `/vgsd-workstreams list` | Lista workstreams |
+| `/vgsd-workstreams complete <name>` | Finaliza e arquiva workstream |
 
 `workstreams` compartilham o mesmo código/git, mas isolam artefatos de `.planning/`.
 
@@ -156,27 +156,27 @@ Para arquivos sensíveis, use deny list no Claude Code.
 
 | Comando | Quando usar |
 |---------|-------------|
-| `/gsd-new-project` | Início de projeto |
-| `/gsd-discuss-phase [N]` | Definir preferências antes do plano |
-| `/gsd-plan-phase [N]` | Criar e validar planos |
-| `/gsd-execute-phase [N]` | Executar planos em ondas |
-| `/gsd-verify-work [N]` | UAT manual |
-| `/gsd-ship [N]` | Gerar PR da fase |
-| `/gsd-progress --next` | Próximo passo automático |
+| `/vgsd-new-project` | Início de projeto |
+| `/vgsd-discuss-phase [N]` | Definir preferências antes do plano |
+| `/vgsd-plan-phase [N]` | Criar e validar planos |
+| `/vgsd-execute-phase [N]` | Executar planos em ondas |
+| `/vgsd-verify-work [N]` | UAT manual |
+| `/vgsd-ship [N]` | Gerar PR da fase |
+| `/vgsd-progress --next` | Próximo passo automático |
 
 ### Gestão e utilidades
 
 | Comando | Quando usar |
 |---------|-------------|
-| `/gsd-progress` | Ver status atual |
-| `/gsd-resume-work` | Retomar sessão |
-| `/gsd-pause-work` | Pausar com handoff |
-| `/gsd-pause-work --report` | Resumo da sessão |
-| `/gsd-quick` | Tarefa ad-hoc com garantias GSD |
-| `/gsd-debug [desc]` | Debug sistemático |
-| `/gsd-forensics` | Diagnóstico de workflow quebrado |
-| `/gsd-settings` | Ajustar workflow/modelos |
-| `/gsd-config --profile <profile>` | Troca rápida de perfil |
+| `/vgsd-progress` | Ver status atual |
+| `/vgsd-resume-work` | Retomar sessão |
+| `/vgsd-pause-work` | Pausar com handoff |
+| `/vgsd-pause-work --report` | Resumo da sessão |
+| `/vgsd-quick` | Tarefa ad-hoc com garantias GSD |
+| `/vgsd-debug [desc]` | Debug sistemático |
+| `/vgsd-forensics` | Diagnóstico de workflow quebrado |
+| `/vgsd-settings` | Ajustar workflow/modelos |
+| `/vgsd-config --profile <profile>` | Troca rápida de perfil |
 
 Para lista completa e flags avançadas, consulte [Command Reference](../COMMANDS.md).
 
@@ -224,34 +224,34 @@ Detalhes completos: [Configuration Reference](../CONFIGURATION.md).
 
 ```bash
 claude --dangerously-skip-permissions
-/gsd-new-project
-/gsd-discuss-phase 1
-/gsd-ui-phase 1
-/gsd-plan-phase 1
-/gsd-execute-phase 1
-/gsd-verify-work 1
-/gsd-ship 1
+/vgsd-new-project
+/vgsd-discuss-phase 1
+/vgsd-ui-phase 1
+/vgsd-plan-phase 1
+/vgsd-execute-phase 1
+/vgsd-verify-work 1
+/vgsd-ship 1
 ```
 
 ### Código já existente
 
 ```bash
-/gsd-map-codebase
-/gsd-new-project
+/vgsd-map-codebase
+/vgsd-new-project
 ```
 
 ### Correção rápida
 
 ```bash
-/gsd-quick
+/vgsd-quick
 > "Corrigir botão de login no mobile Safari"
 ```
 
 ### Preparação para release
 
 ```bash
-/gsd-audit-milestone
-/gsd-complete-milestone
+/vgsd-audit-milestone
+/vgsd-complete-milestone
 ```
 
 ---
@@ -264,11 +264,11 @@ claude --dangerously-skip-permissions
 
 ### Sessão longa degradando contexto
 
-Use `/clear` entre etapas grandes e retome com `/gsd-resume-work` ou `/gsd-progress`.
+Use `/clear` entre etapas grandes e retome com `/vgsd-resume-work` ou `/vgsd-progress`.
 
 ### Plano desalinhado
 
-Rode `/gsd-discuss-phase [N]` antes do plano e valide suposições com `/gsd-discuss-phase --assumptions [N]`.
+Rode `/vgsd-discuss-phase [N]` antes do plano e valide suposições com `/vgsd-discuss-phase --assumptions [N]`.
 
 ### Execução falhou ou saiu com stubs
 
@@ -279,7 +279,7 @@ Replaneje com escopo menor (tarefas menores por plano).
 Use perfil budget:
 
 ```bash
-/gsd-config --profile budget
+/vgsd-config --profile budget
 ```
 
 ### Runtime não-Claude (Codex/OpenCode/Gemini/Kilo)
@@ -292,13 +292,13 @@ Use `resolve_model_ids: "omit"` para deixar o runtime resolver modelos padrão.
 
 | Problema | Solução |
 |---------|---------|
-| Perdeu contexto | `/gsd-resume-work` ou `/gsd-progress` |
+| Perdeu contexto | `/vgsd-resume-work` ou `/vgsd-progress` |
 | Fase deu errado | `git revert` + replanejar |
-| Precisa alterar escopo | `/gsd-phase`, `/gsd-phase --insert`, `/gsd-phase --remove` |
-| Bug em workflow | `/gsd-forensics` |
-| Correção pontual | `/gsd-quick` |
-| Custo alto | `/gsd-config --profile budget` |
-| Não sabe próximo passo | `/gsd-progress --next` |
+| Precisa alterar escopo | `/vgsd-phase`, `/vgsd-phase --insert`, `/vgsd-phase --remove` |
+| Bug em workflow | `/vgsd-forensics` |
+| Correção pontual | `/vgsd-quick` |
+| Custo alto | `/vgsd-config --profile budget` |
+| Não sabe próximo passo | `/vgsd-progress --next` |
 
 ---
 

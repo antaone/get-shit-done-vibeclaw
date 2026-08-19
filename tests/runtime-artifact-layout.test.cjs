@@ -35,8 +35,8 @@ describe('resolveRuntimeArtifactLayout — claude local', () => {
     assert.strictEqual(layout.configDir, FAKE_DIR);
     assert.strictEqual(layout.kinds.length, 2);
     assert.strictEqual(layout.kinds[0].kind, 'commands');
-    assert.strictEqual(layout.kinds[0].destSubpath, 'commands/gsd');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].destSubpath, 'commands/vgsd');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
     assert.strictEqual(layout.kinds[1].kind, 'agents');
     assert.strictEqual(layout.kinds[1].destSubpath, 'agents');
@@ -53,7 +53,7 @@ describe('resolveRuntimeArtifactLayout — claude global', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -66,7 +66,7 @@ describe('resolveRuntimeArtifactLayout — cursor', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -78,8 +78,8 @@ describe('resolveRuntimeArtifactLayout — gemini', () => {
     assert.strictEqual(layout.configDir, FAKE_DIR);
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'commands');
-    assert.strictEqual(layout.kinds[0].destSubpath, 'commands/gsd');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].destSubpath, 'commands/vgsd');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -92,7 +92,7 @@ describe('resolveRuntimeArtifactLayout — codex', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -105,7 +105,7 @@ describe('resolveRuntimeArtifactLayout — copilot', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -118,7 +118,7 @@ describe('resolveRuntimeArtifactLayout — antigravity', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -131,7 +131,7 @@ describe('resolveRuntimeArtifactLayout — windsurf', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -144,7 +144,7 @@ describe('resolveRuntimeArtifactLayout — augment', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -157,7 +157,7 @@ describe('resolveRuntimeArtifactLayout — trae', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -170,7 +170,7 @@ describe('resolveRuntimeArtifactLayout — qwen', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -182,7 +182,7 @@ describe('resolveRuntimeArtifactLayout — hermes', () => {
     assert.strictEqual(layout.configDir, FAKE_DIR);
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
-    assert.strictEqual(layout.kinds[0].destSubpath, 'skills/gsd');
+    assert.strictEqual(layout.kinds[0].destSubpath, 'skills/vgsd');
     assert.strictEqual(layout.kinds[0].prefix, '');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
@@ -196,7 +196,7 @@ describe('resolveRuntimeArtifactLayout — codebuddy', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'skills');
     assert.strictEqual(layout.kinds[0].destSubpath, 'skills');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -218,7 +218,7 @@ describe('resolveRuntimeArtifactLayout — opencode', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'commands');
     assert.strictEqual(layout.kinds[0].destSubpath, 'command');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -231,7 +231,7 @@ describe('resolveRuntimeArtifactLayout — kilo', () => {
     assert.strictEqual(layout.kinds.length, 1);
     assert.strictEqual(layout.kinds[0].kind, 'commands');
     assert.strictEqual(layout.kinds[0].destSubpath, 'command');
-    assert.strictEqual(layout.kinds[0].prefix, 'gsd-');
+    assert.strictEqual(layout.kinds[0].prefix, 'vgsd-');
     assert.strictEqual(typeof layout.kinds[0].stage, 'function');
   });
 });
@@ -239,9 +239,9 @@ describe('resolveRuntimeArtifactLayout — kilo', () => {
 // ─── resolveRuntimeArtifactLayout — edge-cases ──────────────────────────────
 
 describe('resolveRuntimeArtifactLayout edge-cases', () => {
-  test('hermes has destSubpath skills/gsd and empty prefix', () => {
+  test('hermes has destSubpath skills/vgsd and empty prefix', () => {
     const layout = resolveRuntimeArtifactLayout('hermes', '/tmp/x');
-    assert.strictEqual(layout.kinds[0].destSubpath, 'skills/gsd');
+    assert.strictEqual(layout.kinds[0].destSubpath, 'skills/vgsd');
     assert.strictEqual(layout.kinds[0].prefix, '');
   });
 
@@ -346,7 +346,7 @@ describe('stage — agents kind (claude local)', () => {
 });
 
 describe('stage — skills kind (claude global)', () => {
-  test('stage returns a directory containing gsd-<stem>/SKILL.md entries', () => {
+  test('stage returns a directory containing vgsd-<stem>/SKILL.md entries', () => {
     const layout = resolveRuntimeArtifactLayout('claude', FAKE_STAGE_DIR, 'global');
     const skillsKind = layout.kinds.find(k => k.kind === 'skills');
     assert.ok(skillsKind, 'should have a skills kind');
@@ -355,7 +355,7 @@ describe('stage — skills kind (claude global)', () => {
     assert.ok(fs.existsSync(stagedDir), 'stagedDir must exist');
     const entries = fs.readdirSync(stagedDir);
     for (const entry of entries) {
-      assert.ok(entry.startsWith('gsd-'), `entry should start with gsd-: ${entry}`);
+      assert.ok(entry.startsWith('vgsd-'), `entry should start with vgsd-: ${entry}`);
       const skillMd = path.join(stagedDir, entry, 'SKILL.md');
       assert.ok(fs.existsSync(skillMd), `SKILL.md must exist in ${entry}`);
     }
@@ -372,7 +372,7 @@ describe('stage — skills kind (claude global)', () => {
     const entries = fs.readdirSync(stagedDir);
     assert.ok(entries.length > 10, `full profile should have many skills, got ${entries.length}`);
     for (const entry of entries) {
-      assert.ok(entry.startsWith('gsd-'), `entry should start with gsd-: ${entry}`);
+      assert.ok(entry.startsWith('vgsd-'), `entry should start with vgsd-: ${entry}`);
       const skillMd = path.join(stagedDir, entry, 'SKILL.md');
       assert.ok(fs.existsSync(skillMd), `SKILL.md must exist in ${entry}`);
     }

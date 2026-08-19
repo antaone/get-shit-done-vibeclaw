@@ -1,5 +1,5 @@
 ---
-name: gsd:workspace
+name: vgsd:workspace
 description: Manage GSD workspaces — create, list, or remove isolated workspace environments
 argument-hint: "[--new | --list | --remove] [name]"
 allowed-tools:
@@ -23,7 +23,7 @@ Mode routing:
 | Flag | Action | Workflow |
 |------|--------|----------|
 | --new | Create workspace with worktree/clone strategy | new-workspace |
-| --list | Scan ~/gsd-workspaces/, show summary table | list-workspaces |
+| --list | Scan ~/vgsd-workspaces/, show summary table | list-workspaces |
 | --remove | Confirm and remove workspace directory | remove-workspace |
 
 </routing>

@@ -10,6 +10,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - **Optional VibeClaw repository orchestration layer** — adds the separate `vibe` CLI, `.planning-vibe/` route/run/candidate/promotion state, normalized JSON/Markdown stage context, exact-base candidate branches and worktrees, explicit fast-forward or history-preserving replacement promotion, adapter-backed manual/managed launch, JSON output, durable provenance/metrics/history, recovery-aware locks, documentation, and temporary-repository tests. Existing GSD commands and `.planning/` behavior remain unchanged.
 
+### Changed
+
+- **VibeClaw commands now use the collision-free `vgsd` namespace on every supported tool** — `/vgsd-*` on hyphen runtimes, `/vgsd:*` on Gemini, and `$vgsd-*` on Codex. Reinstalling removes legacy public `gsd` command artifacts while preserving user development preferences; internal `gsd-tools`, hooks, agents, and SDK names are unchanged.
+
 ## [1.42.1](https://github.com/gsd-build/get-shit-done/compare/v1.41.0...v1.42.1) - 2026-05-15
 
 ### Fixed

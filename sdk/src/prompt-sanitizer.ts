@@ -7,7 +7,7 @@
  * critical instructions that the real agent prompts depend on.
  *
  * Patterns removed (interactive-only, not useful headless):
- * - /gsd-... skill commands (can't invoke skills in Agent SDK)
+ * - /vgsd-... and legacy /vgsd-... skill commands (can't invoke skills in Agent SDK)
  * - AskUserQuestion(...) calls
  * - STOP directives in interactive contexts
  * - SlashCommand() calls
@@ -68,8 +68,8 @@ const LINE_PATTERNS: RegExp[] = [
   // @file:path/to/something references (explicit @file: directive, not @~/...)
   /^.*@file:\S+.*$/gm,
 
-  // /gsd-command references — entire line containing a skill command
-  /^.*\/gsd[:-]\S+.*$/gm,
+  // Public and legacy command references — entire line containing a skill command
+  /^.*\/(?:vgsd|gsd)[:-]\S+.*$/gm,
 
   // AskUserQuestion(...) calls — entire line
   /^.*AskUserQuestion\s*\(.*$/gm,

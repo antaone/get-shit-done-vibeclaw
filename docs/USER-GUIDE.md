@@ -29,8 +29,8 @@ execute → verify → review → ship loop using existing GSD primitives.
 
 GSD ships **the same set of skills** to every supported runtime, but two slash-form spellings are in play:
 
-- **Hyphen form** — `/gsd-command-name` — used by Claude Code, Copilot, OpenCode, Kilo, Cursor, Windsurf, Augment, Antigravity, and Trae.
-- **Colon form** — `/gsd:command-name` — used by **Gemini CLI only**. Gemini namespaces every plugin's commands under the plugin id, so the install path rewrites every body-text reference and command file to the colon form during `--gemini` install.
+- **Hyphen form** — `/vgsd-command-name` — used by Claude Code, Copilot, OpenCode, Kilo, Cursor, Windsurf, Augment, Antigravity, and Trae.
+- **Colon form** — `/vgsd:command-name` — used by **Gemini CLI only**. Gemini namespaces every plugin's commands under the plugin id, so the install path rewrites every body-text reference and command file to the colon form during `--gemini` install.
 
 You don't need to choose — the installer writes the correct form into the command directory of each runtime you target. When following a walkthrough on a Gemini terminal, replace the hyphen after `gsd` with a colon as you read each slash command.
 
@@ -40,14 +40,14 @@ v1.40 ships six **namespace meta-skills** as the first-stage entry points for hi
 
 | Namespace | Router | Routes to |
 |-----------|--------|-----------|
-| Phase pipeline | `/gsd-workflow` | discuss / plan / execute / verify / phase / progress |
-| Project lifecycle | `/gsd-project` | milestones, audits, summary |
-| Quality gates | `/gsd-quality` | code review, debug, audit, security, eval, ui |
-| Codebase intelligence | `/gsd-context` | map, graphify, docs, learnings |
-| Management | `/gsd-manage` | config, workspace, workstreams, thread, update, ship, inbox |
-| Exploration & capture | `/gsd-ideate` | explore, sketch, spike, spec, capture |
+| Phase pipeline | `/vgsd-workflow` | discuss / plan / execute / verify / phase / progress |
+| Project lifecycle | `/vgsd-project` | milestones, audits, summary |
+| Quality gates | `/vgsd-quality` | code review, debug, audit, security, eval, ui |
+| Codebase intelligence | `/vgsd-context` | map, graphify, docs, learnings |
+| Management | `/vgsd-manage` | config, workspace, workstreams, thread, update, ship, inbox |
+| Exploration & capture | `/vgsd-ideate` | explore, sketch, spike, spec, capture |
 
-You almost never need to type a namespace router yourself. Their value is in the routing layer the model uses to discover the right sub-skill — they exist so the system prompt can list 6 entries instead of 86. If you already know the concrete command (e.g. `/gsd-plan-phase`), call it directly.
+You almost never need to type a namespace router yourself. Their value is in the routing layer the model uses to discover the right sub-skill — they exist so the system prompt can list 6 entries instead of 86. If you already know the concrete command (e.g. `/vgsd-plan-phase`), call it directly.
 
 ---
 
@@ -58,7 +58,7 @@ This walkthrough shows how GSD phases connect for a typical single-phase project
 ### 1. Create the project
 
 ```
-/gsd-new-project
+/vgsd-new-project
 ```
 
 GSD asks questions about your idea, spawns parallel research agents, extracts requirements, and creates a roadmap. You approve the roadmap before any code is written.
@@ -104,7 +104,7 @@ configurable replay-protection tolerance window.
 ### 2. Discuss and plan the phase
 
 ```
-/gsd-discuss-phase 1
+/vgsd-discuss-phase 1
 ```
 
 GSD reads the phase goal and asks about your implementation preferences before any planning happens. This is where you shape *how* it builds — not just *what* it builds.
@@ -134,7 +134,7 @@ GSD reads the phase goal and asks about your implementation preferences before a
 Now plan the phase:
 
 ```
-/gsd-plan-phase 1
+/vgsd-plan-phase 1
 ```
 
 GSD spawns four parallel research agents (stack, features, architecture, pitfalls), then a planner reads `CONTEXT.md` + research findings and creates atomic task plans. A plan-checker verifies each plan achieves the phase goal before saving.
@@ -166,7 +166,7 @@ GSD spawns four parallel research agents (stack, features, architecture, pitfall
 ### 3. Execute
 
 ```
-/gsd-execute-phase 1
+/vgsd-execute-phase 1
 ```
 
 GSD groups plans into waves (parallel where independent, sequential where dependent), spawns a fresh 200k-context executor per plan, and commits each task atomically.
@@ -210,7 +210,7 @@ Phase 1 — Core middleware: executed, pending verify
 ### 4. Verify
 
 ```
-/gsd-verify-work 1
+/vgsd-verify-work 1
 ```
 
 GSD extracts testable deliverables from the phase goal and walks you through them one at a time.
@@ -230,7 +230,7 @@ Root cause: middleware catches crypto.timingSafeEqual TypeError when
 buffers are different lengths. Fix: normalize to same length before compare.
 
 Fix plan created: .planning/phases/01-core-middleware/01-03-PLAN.md
-Run /gsd-execute-phase 1 to apply.
+Run /vgsd-execute-phase 1 to apply.
 ```
 
 After re-running execute and re-verifying:
@@ -246,45 +246,45 @@ All 3 checks passed. Phase 1 verified.
 Once a phase is verified, ship it:
 
 ```
-/gsd-ship 1          # Creates a PR with auto-generated body
+/vgsd-ship 1          # Creates a PR with auto-generated body
 ```
 
-The PR body always includes the required GSD sections: `Summary`, `Changes`, `Requirements Addressed`, `Verification`, and `Key Decisions`. During `/gsd-new-project`, you can also enable optional PRD-style sections such as user stories, acceptance criteria, risks, release criteria, and stakeholder approval. These are appended through `ship.pr_body_sections` and do not change the required core sections.
+The PR body always includes the required GSD sections: `Summary`, `Changes`, `Requirements Addressed`, `Verification`, and `Key Decisions`. During `/vgsd-new-project`, you can also enable optional PRD-style sections such as user stories, acceptance criteria, risks, release criteria, and stakeholder approval. These are appended through `ship.pr_body_sections` and do not change the required core sections.
 
 For setup examples, field definitions, and troubleshooting, see [Custom PR Body Sections](ship-pr-body-sections.md).
 
 For multi-phase projects, repeat the loop:
 
 ```
-/gsd-discuss-phase 2
-/gsd-plan-phase 2
-/gsd-execute-phase 2
-/gsd-verify-work 2
+/vgsd-discuss-phase 2
+/vgsd-plan-phase 2
+/vgsd-execute-phase 2
+/vgsd-verify-work 2
 ```
 
 Or let GSD figure out the next step automatically:
 
 ```
-/gsd-progress --next
+/vgsd-progress --next
 ```
 
 When all phases are done:
 
 ```
-/gsd-audit-milestone     # Verify all requirements shipped
-/gsd-complete-milestone  # Archive, tag release
+/vgsd-audit-milestone     # Verify all requirements shipped
+/vgsd-complete-milestone  # Archive, tag release
 ```
 
 **Relevant flags covered in this walkthrough:**
 
 | Flag | Command | When to use |
 | ---- | ------- | ----------- |
-| `--auto` | `/gsd-new-project` | Skip interactive questions, ingest from a PRD file |
-| `--research` | `/gsd-quick` | Add a research agent to an ad-hoc task |
-| `--validate` | `/gsd-quick` | Add plan-checking and post-execution verification |
-| `--chain` | `/gsd-discuss-phase` | Auto-chain discuss → plan → execute without stopping |
-| `--skip-research` | `/gsd-plan-phase` | Skip research agents when the domain is already familiar |
-| `--draft` | `/gsd-ship` | Create a draft PR instead of a ready-for-review one |
+| `--auto` | `/vgsd-new-project` | Skip interactive questions, ingest from a PRD file |
+| `--research` | `/vgsd-quick` | Add a research agent to an ad-hoc task |
+| `--validate` | `/vgsd-quick` | Add plan-checking and post-execution verification |
+| `--chain` | `/vgsd-discuss-phase` | Auto-chain discuss → plan → execute without stopping |
+| `--skip-research` | `/vgsd-plan-phase` | Skip research agents when the domain is already familiar |
+| `--draft` | `/vgsd-ship` | Create a draft PR instead of a ready-for-review one |
 
 For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS.md). For configuration options (model profiles, workflow agents, git branching), see [`docs/CONFIGURATION.md`](CONFIGURATION.md).
 
@@ -297,7 +297,7 @@ For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS
 ```
   ┌──────────────────────────────────────────────────┐
   │                   NEW PROJECT                    │
-  │  /gsd-new-project                                │
+  │  /vgsd-new-project                                │
   │  Questions -> Research -> Requirements -> Roadmap│
   └─────────────────────────┬────────────────────────┘
                             │
@@ -305,27 +305,27 @@ For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS
              │      FOR EACH PHASE:       │
              │                            │
              │  ┌────────────────────┐    │
-             │  │ /gsd-discuss-phase │    │  <- Lock in preferences
+             │  │ /vgsd-discuss-phase │    │  <- Lock in preferences
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-ui-phase      │    │  <- Design contract (frontend)
+             │  │ /vgsd-ui-phase      │    │  <- Design contract (frontend)
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-plan-phase    │    │  <- Research + Plan + Verify
+             │  │ /vgsd-plan-phase    │    │  <- Research + Plan + Verify
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-execute-phase │    │  <- Parallel execution
+             │  │ /vgsd-execute-phase │    │  <- Parallel execution
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-verify-work   │    │  <- Manual UAT
+             │  │ /vgsd-verify-work   │    │  <- Manual UAT
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /gsd-ship          │    │  <- Create PR (optional)
+             │  │ /vgsd-ship          │    │  <- Create PR (optional)
              │  └──────────┬─────────┘    │
              │             │              │
              │     Next Phase?────────────┘
@@ -333,8 +333,8 @@ For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS
              └─────────────┼──────────────┘
                             │
             ┌───────────────▼──────────────┐
-            │  /gsd-audit-milestone        │
-            │  /gsd-complete-milestone     │
+            │  /vgsd-audit-milestone        │
+            │  /vgsd-complete-milestone     │
             └───────────────┬──────────────┘
                             │
                    Another milestone?
@@ -342,14 +342,14 @@ For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS
                       Yes         No -> Done!
                        │
                ┌───────▼──────────────┐
-               │  /gsd-new-milestone  │
+               │  /vgsd-new-milestone  │
                └──────────────────────┘
 ```
 
 ### Planning Agent Coordination
 
 ```
-  /gsd-plan-phase N
+  /vgsd-plan-phase N
          │
          ├── Phase Researcher (x4 parallel)
          │     ├── Stack researcher
@@ -395,16 +395,16 @@ lack automated verify commands will not be approved.
 
 **Output:** `{phase}-VALIDATION.md` -- the feedback contract for the phase.
 
-**Disable:** Set `workflow.nyquist_validation: false` in `/gsd-settings` for
+**Disable:** Set `workflow.nyquist_validation: false` in `/vgsd-settings` for
 rapid prototyping phases where test infrastructure isn't the focus.
 
-### Retroactive Validation (`/gsd-validate-phase`)
+### Retroactive Validation (`/vgsd-validate-phase`)
 
 For phases executed before Nyquist validation existed, or for existing codebases
 with only traditional test suites, retroactively audit and fill coverage gaps:
 
 ```
-  /gsd-validate-phase N
+  /vgsd-validate-phase N
          |
          +-- Detect state (VALIDATION.md exists? SUMMARY.md exists?)
          |
@@ -427,13 +427,13 @@ VALIDATION.md. If a test reveals an implementation bug, it's flagged as an
 escalation for you to address.
 
 **When to use:** After executing phases that were planned before Nyquist was
-enabled, or after `/gsd-audit-milestone` surfaces Nyquist compliance gaps.
+enabled, or after `/vgsd-audit-milestone` surfaces Nyquist compliance gaps.
 
 ### Assumptions Discussion Mode
 
-By default, `/gsd-discuss-phase` asks open-ended questions about your implementation preferences. Assumptions mode inverts this: GSD reads your codebase first, surfaces structured assumptions about how it would build the phase, and asks only for corrections.
+By default, `/vgsd-discuss-phase` asks open-ended questions about your implementation preferences. Assumptions mode inverts this: GSD reads your codebase first, surfaces structured assumptions about how it would build the phase, and asks only for corrections.
 
-**Enable:** Set `workflow.discuss_mode` to `'assumptions'` via `/gsd-settings`.
+**Enable:** Set `workflow.discuss_mode` to `'assumptions'` via `/vgsd-settings`.
 
 **How it works:**
 
@@ -489,7 +489,7 @@ already deferred — mark it one of these ways:
 
 **Disabling the gates.** Set
 `workflow.context_coverage_gate: false` in `.planning/config.json` (or via
-`/gsd-settings`) to skip both gates silently. Default is `true`.
+`/vgsd-settings`) to skip both gates silently. Default is `true`.
 
 ---
 
@@ -499,20 +499,20 @@ already deferred — mark it one of these ways:
 
 AI-generated frontends are visually inconsistent not because Claude Code is bad at UI but because no design contract existed before execution. Five components built without a shared spacing scale, color contract, or copywriting standard produce five slightly different visual decisions.
 
-`/gsd-ui-phase` locks the design contract before planning. `/gsd-ui-review` audits the result after execution.
+`/vgsd-ui-phase` locks the design contract before planning. `/vgsd-ui-review` audits the result after execution.
 
 ### Commands
 
 
 | Command              | Description                                              |
 | -------------------- | -------------------------------------------------------- |
-| `/gsd-ui-phase [N]`  | Generate UI-SPEC.md design contract for a frontend phase |
-| `/gsd-ui-review [N]` | Retroactive 6-pillar visual audit of implemented UI      |
+| `/vgsd-ui-phase [N]`  | Generate UI-SPEC.md design contract for a frontend phase |
+| `/vgsd-ui-review [N]` | Retroactive 6-pillar visual audit of implemented UI      |
 
 
-### Workflow: `/gsd-ui-phase`
+### Workflow: `/vgsd-ui-phase`
 
-**When to run:** After `/gsd-discuss-phase`, before `/gsd-plan-phase` — for phases with frontend/UI work.
+**When to run:** After `/vgsd-discuss-phase`, before `/vgsd-plan-phase` — for phases with frontend/UI work.
 
 **Flow:**
 
@@ -526,9 +526,9 @@ AI-generated frontends are visually inconsistent not because Claude Code is bad 
 
 **Output:** `{padded_phase}-UI-SPEC.md` in `.planning/phases/{phase-dir}/`
 
-### Workflow: `/gsd-ui-review`
+### Workflow: `/vgsd-ui-review`
 
-**When to run:** After `/gsd-execute-phase` or `/gsd-verify-work` — for any project with frontend code.
+**When to run:** After `/vgsd-execute-phase` or `/vgsd-verify-work` — for any project with frontend code.
 
 **Standalone:** Works on any project, not just GSD-managed ones. If no UI-SPEC.md exists, audits against abstract 6-pillar standards.
 
@@ -549,10 +549,10 @@ AI-generated frontends are visually inconsistent not because Claude Code is bad 
 | Setting                   | Default | Description                                                 |
 | ------------------------- | ------- | ----------------------------------------------------------- |
 | `workflow.ui_phase`       | `true`  | Generate UI design contracts for frontend phases            |
-| `workflow.ui_safety_gate` | `true`  | plan-phase prompts to run /gsd-ui-phase for frontend phases |
+| `workflow.ui_safety_gate` | `true`  | plan-phase prompts to run /vgsd-ui-phase for frontend phases |
 
 
-Both follow the absent=enabled pattern. Disable via `/gsd-settings`.
+Both follow the absent=enabled pattern. Disable via `/vgsd-settings`.
 
 ### shadcn Initialization
 
@@ -576,22 +576,22 @@ Controlled by `workflow.ui_safety_gate` config toggle.
 
 ### Screenshot Storage
 
-`/gsd-ui-review` captures screenshots via Playwright CLI to `.planning/ui-reviews/`. A `.gitignore` is created automatically to prevent binary files from reaching git. Screenshots are cleaned up during `/gsd-complete-milestone`.
+`/vgsd-ui-review` captures screenshots via Playwright CLI to `.planning/ui-reviews/`. A `.gitignore` is created automatically to prevent binary files from reaching git. Screenshots are cleaned up during `/vgsd-complete-milestone`.
 
 ---
 
 ## Spiking & Sketching
 
-Use `/gsd-spike` to validate technical feasibility before planning, and `/gsd-sketch` to explore visual direction before designing. Both store artifacts in `.planning/` and integrate with the project-skills system via their wrap-up companions.
+Use `/vgsd-spike` to validate technical feasibility before planning, and `/vgsd-sketch` to explore visual direction before designing. Both store artifacts in `.planning/` and integrate with the project-skills system via their wrap-up companions.
 
 ### When to Spike
 
 Spike when you're uncertain whether a technical approach is feasible or want to compare two implementations before committing a phase to one of them.
 
 ```
-/gsd-spike                              # Interactive intake — describes the question, you confirm
-/gsd-spike "can we stream LLM tokens through SSE"
-/gsd-spike --quick "websocket vs SSE latency"
+/vgsd-spike                              # Interactive intake — describes the question, you confirm
+/vgsd-spike "can we stream LLM tokens through SSE"
+/vgsd-spike --quick "websocket vs SSE latency"
 ```
 
 Each spike runs 2–5 experiments. Every experiment has:
@@ -601,34 +601,34 @@ Each spike runs 2–5 experiments. Every experiment has:
 
 Results land in `.planning/spikes/NNN-name/README.md` and are indexed in `.planning/spikes/MANIFEST.md`.
 
-Once you have signal, run `/gsd-spike --wrap-up` to package the findings into `.claude/skills/spike-findings-[project]/` — future sessions will load them automatically via project-skills discovery.
+Once you have signal, run `/vgsd-spike --wrap-up` to package the findings into `.claude/skills/spike-findings-[project]/` — future sessions will load them automatically via project-skills discovery.
 
 ### When to Sketch
 
 Sketch when you need to compare layout structures, interaction models, or visual treatments before writing any real component code.
 
 ```
-/gsd-sketch                             # Mood intake — explores feel, references, core action
-/gsd-sketch "dashboard layout"
-/gsd-sketch --quick "sidebar navigation"
-/gsd-sketch --text "onboarding flow"    # For non-Claude runtimes (Codex, Gemini, etc.)
+/vgsd-sketch                             # Mood intake — explores feel, references, core action
+/vgsd-sketch "dashboard layout"
+/vgsd-sketch --quick "sidebar navigation"
+/vgsd-sketch --text "onboarding flow"    # For non-Claude runtimes (Codex, Gemini, etc.)
 ```
 
 Each sketch answers **one design question** with 2–3 variants in a single `index.html` you open directly in a browser — no build step. Variants use tab navigation and shared CSS variables from `themes/default.css`. All interactive elements (hover, click, transitions) are functional.
 
-After picking a winner, run `/gsd-sketch --wrap-up` to capture the visual decisions into `.claude/skills/sketch-findings-[project]/`.
+After picking a winner, run `/vgsd-sketch --wrap-up` to capture the visual decisions into `.claude/skills/sketch-findings-[project]/`.
 
 ### Spike → Sketch → Phase Flow
 
 ```
-/gsd-spike "SSE vs WebSocket"     # Validate the approach
-/gsd-spike --wrap-up              # Package learnings
+/vgsd-spike "SSE vs WebSocket"     # Validate the approach
+/vgsd-spike --wrap-up              # Package learnings
 
-/gsd-sketch "real-time feed UI"   # Explore the design
-/gsd-sketch --wrap-up             # Package decisions
+/vgsd-sketch "real-time feed UI"   # Explore the design
+/vgsd-sketch --wrap-up             # Package decisions
 
-/gsd-discuss-phase N              # Lock in preferences (now informed by spike + sketch)
-/gsd-plan-phase N                 # Plan with confidence
+/vgsd-discuss-phase N              # Lock in preferences (now informed by spike + sketch)
+/vgsd-plan-phase N                 # Plan with confidence
 ```
 
 ---
@@ -640,23 +640,23 @@ After picking a winner, run `/gsd-sketch --wrap-up` to capture the visual decisi
 Ideas that aren't ready for active planning go into the backlog using 999.x numbering, keeping them outside the active phase sequence.
 
 ```
-/gsd-capture --backlog "GraphQL API layer"     # Creates 999.1-graphql-api-layer/
-/gsd-capture --backlog "Mobile responsive"     # Creates 999.2-mobile-responsive/
+/vgsd-capture --backlog "GraphQL API layer"     # Creates 999.1-graphql-api-layer/
+/vgsd-capture --backlog "Mobile responsive"     # Creates 999.2-mobile-responsive/
 ```
 
-Backlog items get full phase directories, so you can use `/gsd-discuss-phase 999.1` to explore an idea further or `/gsd-plan-phase 999.1` when it's ready.
+Backlog items get full phase directories, so you can use `/vgsd-discuss-phase 999.1` to explore an idea further or `/vgsd-plan-phase 999.1` when it's ready.
 
-**Review and promote** with `/gsd-review-backlog` — it shows all backlog items and lets you promote (move to active sequence), keep (leave in backlog), or remove (delete).
+**Review and promote** with `/vgsd-review-backlog` — it shows all backlog items and lets you promote (move to active sequence), keep (leave in backlog), or remove (delete).
 
 ### Seeds
 
 Seeds are forward-looking ideas with trigger conditions. Unlike backlog items, seeds surface automatically when the right milestone arrives.
 
 ```
-/gsd-capture --seed "Add real-time collab when WebSocket infra is in place"
+/vgsd-capture --seed "Add real-time collab when WebSocket infra is in place"
 ```
 
-Seeds preserve the full WHY and WHEN to surface. `/gsd-new-milestone` scans all seeds and presents matches.
+Seeds preserve the full WHY and WHEN to surface. `/vgsd-new-milestone` scans all seeds and presents matches.
 
 **Storage:** `.planning/seeds/SEED-NNN-slug.md`
 
@@ -665,14 +665,14 @@ Seeds preserve the full WHY and WHEN to surface. `/gsd-new-milestone` scans all 
 Threads are lightweight cross-session knowledge stores for work that spans multiple sessions but doesn't belong to any specific phase.
 
 ```
-/gsd-thread                              # List all threads
-/gsd-thread fix-deploy-key-auth          # Resume existing thread
-/gsd-thread "Investigate TCP timeout"    # Create new thread
+/vgsd-thread                              # List all threads
+/vgsd-thread fix-deploy-key-auth          # Resume existing thread
+/vgsd-thread "Investigate TCP timeout"    # Create new thread
 ```
 
-Threads are lighter weight than `/gsd-pause-work` — no phase state, no plan context. Each thread file includes Goal, Context, References, and Next Steps sections.
+Threads are lighter weight than `/vgsd-pause-work` — no phase state, no plan context. Each thread file includes Goal, Context, References, and Next Steps sections.
 
-Threads can be promoted to phases (`/gsd-phase`) or backlog items (`/gsd-capture --backlog`) when they mature.
+Threads can be promoted to phases (`/vgsd-phase`) or backlog items (`/vgsd-capture --backlog`) when they mature.
 
 **Storage:** `.planning/threads/{slug}.md`
 
@@ -689,17 +689,17 @@ Workstreams let you work on multiple milestone areas concurrently without state 
 
 | Command                            | Purpose                                              |
 | ---------------------------------- | ---------------------------------------------------- |
-| `/gsd-workstreams create <name>`   | Create a new workstream with isolated planning state |
-| `/gsd-workstreams switch <name>`   | Switch active context to a different workstream      |
-| `/gsd-workstreams list`            | Show all workstreams and which is active             |
-| `/gsd-workstreams complete <name>` | Mark a workstream as done and archive its state      |
+| `/vgsd-workstreams create <name>`   | Create a new workstream with isolated planning state |
+| `/vgsd-workstreams switch <name>`   | Switch active context to a different workstream      |
+| `/vgsd-workstreams list`            | Show all workstreams and which is active             |
+| `/vgsd-workstreams complete <name>` | Mark a workstream as done and archive its state      |
 
 
 ### How It Works
 
-Each workstream maintains its own `.planning/` directory subtree. When you switch workstreams, GSD swaps the active planning context so that `/gsd-progress`, `/gsd-discuss-phase`, `/gsd-plan-phase`, and other commands operate on that workstream's state. Active context is session-scoped when the runtime exposes a stable session identifier, which prevents one terminal or AI instance from repointing another instance's `STATE.md`.
+Each workstream maintains its own `.planning/` directory subtree. When you switch workstreams, GSD swaps the active planning context so that `/vgsd-progress`, `/vgsd-discuss-phase`, `/vgsd-plan-phase`, and other commands operate on that workstream's state. Active context is session-scoped when the runtime exposes a stable session identifier, which prevents one terminal or AI instance from repointing another instance's `STATE.md`.
 
-This is lighter weight than `/gsd-workspace --new` (which creates separate repo worktrees). Workstreams share the same codebase and git history but isolate planning artifacts.
+This is lighter weight than `/vgsd-workspace --new` (which creates separate repo worktrees). Workstreams share the same codebase and git history but isolate planning artifacts.
 
 ---
 
@@ -809,7 +809,7 @@ If `slopcheck` is ever unavailable or abandoned, GSD's `[ASSUMED]`-gate fallback
 ### Execution Wave Coordination
 
 ```
-  /gsd-execute-phase N
+  /vgsd-execute-phase N
          │
          ├── Analyze plan dependencies
          │
@@ -825,13 +825,13 @@ If `slopcheck` is ever unavailable or abandoned, GSD's `[ASSUMED]`-gate fallback
                ├── Test quality audit (disabled tests, circular patterns, assertion strength)
                │
                ├── PASS -> VERIFICATION.md (success)
-               └── FAIL -> Issues logged for /gsd-verify-work
+               └── FAIL -> Issues logged for /vgsd-verify-work
 ```
 
 ### Brownfield Workflow (Existing Codebase)
 
 ```
-  /gsd-map-codebase
+  /vgsd-map-codebase
          │
          ├── Stack Mapper     -> codebase/STACK.md
          ├── Arch Mapper      -> codebase/ARCHITECTURE.md
@@ -839,7 +839,7 @@ If `slopcheck` is ever unavailable or abandoned, GSD's `[ASSUMED]`-gate fallback
          └── Concern Mapper   -> codebase/CONCERNS.md
                 │
         ┌───────▼──────────┐
-        │ /gsd-new-project │  <- Questions focus on what you're ADDING
+        │ /vgsd-new-project │  <- Questions focus on what you're ADDING
         └──────────────────┘
 ```
 
@@ -852,15 +852,15 @@ If `slopcheck` is ever unavailable or abandoned, GSD's `[ASSUMED]`-gate fallback
 After executing a phase, run a structured code review before UAT:
 
 ```bash
-/gsd-code-review 3               # Review all changed files in phase 3
-/gsd-code-review 3 --depth=deep  # Deep cross-file review (import graphs, call chains)
+/vgsd-code-review 3               # Review all changed files in phase 3
+/vgsd-code-review 3 --depth=deep  # Deep cross-file review (import graphs, call chains)
 ```
 
 The reviewer scopes files automatically using SUMMARY.md (preferred) or git diff fallback. Findings are classified as Critical, Warning, or Info in `{phase}-REVIEW.md`.
 
 ```bash
-/gsd-code-review 3 --fix           # Fix Critical + Warning findings atomically
-/gsd-code-review 3 --fix --auto    # Fix and re-review until clean (max 3 iterations)
+/vgsd-code-review 3 --fix           # Fix Critical + Warning findings atomically
+/vgsd-code-review 3 --fix --auto    # Fix and re-review until clean (max 3 iterations)
 ```
 
 ### Autonomous Audit-to-Fix
@@ -868,8 +868,8 @@ The reviewer scopes files automatically using SUMMARY.md (preferred) or git diff
 To run an audit and fix all auto-fixable issues in one pass:
 
 ```bash
-/gsd-audit-fix                   # Audit + classify + fix (medium+ severity, max 5)
-/gsd-audit-fix --dry-run         # Preview classification without fixing
+/vgsd-audit-fix                   # Audit + classify + fix (medium+ severity, max 5)
+/vgsd-audit-fix --dry-run         # Preview classification without fixing
 ```
 
 ### Code Review in the Full Phase Lifecycle
@@ -877,7 +877,7 @@ To run an audit and fix all auto-fixable issues in one pass:
 The review step slots in after execution and before UAT:
 
 ```
-/gsd-execute-phase N   ->  /gsd-code-review N  ->  /gsd-code-review N --fix  ->  /gsd-verify-work N
+/vgsd-execute-phase N   ->  /vgsd-code-review N  ->  /vgsd-code-review N --fix  ->  /vgsd-verify-work N
 ```
 
 ---
@@ -886,11 +886,11 @@ The review step slots in after execution and before UAT:
 
 ### Socratic Exploration
 
-Before committing to a new phase or plan, use `/gsd-explore` to think through the idea:
+Before committing to a new phase or plan, use `/vgsd-explore` to think through the idea:
 
 ```bash
-/gsd-explore                           # Open-ended ideation
-/gsd-explore "caching strategy"        # Explore a specific topic
+/vgsd-explore                           # Open-ended ideation
+/vgsd-explore "caching strategy"        # Explore a specific topic
 ```
 
 The exploration session guides you through probing questions, optionally spawns a research agent, and routes output to the appropriate GSD artifact: note, todo, seed, research question, requirements update, or new phase.
@@ -906,22 +906,22 @@ For queryable codebase insights without reading the entire codebase, enable the 
 Then build the index:
 
 ```bash
-/gsd-map-codebase --query refresh             # Analyze codebase and write .planning/intel/ files
-/gsd-map-codebase --query auth               # Search for a term across all intel files
-/gsd-map-codebase --query status             # Check freshness of intel files
-/gsd-map-codebase --query diff               # See what changed since last snapshot
+/vgsd-map-codebase --query refresh             # Analyze codebase and write .planning/intel/ files
+/vgsd-map-codebase --query auth               # Search for a term across all intel files
+/vgsd-map-codebase --query status             # Check freshness of intel files
+/vgsd-map-codebase --query diff               # See what changed since last snapshot
 ```
 
 Intel files cover stack, API surface, dependency graph, file roles, and architecture decisions.
 
 ### Quick Scan
 
-For a focused assessment without full `/gsd-map-codebase` overhead:
+For a focused assessment without full `/vgsd-map-codebase` overhead:
 
 ```bash
-/gsd-map-codebase --fast                        # Quick tech + arch overview
-/gsd-map-codebase --fast --focus quality        # Quality and code health only
-/gsd-map-codebase --fast --focus concerns       # Risk areas and concerns
+/vgsd-map-codebase --fast                        # Quick tech + arch overview
+/vgsd-map-codebase --fast --focus quality        # Quality and code health only
+/vgsd-map-codebase --fast --focus concerns       # Risk areas and concerns
 ```
 
 ---
@@ -945,49 +945,49 @@ This guide intentionally does not re-document commands or config settings: maint
 
 ```bash
 claude --dangerously-skip-permissions
-/gsd-new-project            # Answer questions, configure, approve roadmap
+/vgsd-new-project            # Answer questions, configure, approve roadmap
 /clear
-/gsd-discuss-phase 1        # Lock in your preferences
-/gsd-ui-phase 1             # Design contract (frontend phases)
-/gsd-plan-phase 1           # Research + plan + verify
-/gsd-execute-phase 1        # Parallel execution
-/gsd-verify-work 1          # Manual UAT
-/gsd-ship 1                 # Create PR from verified work
-/gsd-ui-review 1            # Visual audit (frontend phases)
+/vgsd-discuss-phase 1        # Lock in your preferences
+/vgsd-ui-phase 1             # Design contract (frontend phases)
+/vgsd-plan-phase 1           # Research + plan + verify
+/vgsd-execute-phase 1        # Parallel execution
+/vgsd-verify-work 1          # Manual UAT
+/vgsd-ship 1                 # Create PR from verified work
+/vgsd-ui-review 1            # Visual audit (frontend phases)
 /clear
-/gsd-progress --next                   # Auto-detect and run next step
+/vgsd-progress --next                   # Auto-detect and run next step
 ...
-/gsd-audit-milestone        # Check everything shipped
-/gsd-complete-milestone     # Archive, tag, done
-/gsd-pause-work --report         # Generate session summary
+/vgsd-audit-milestone        # Check everything shipped
+/vgsd-complete-milestone     # Archive, tag, done
+/vgsd-pause-work --report         # Generate session summary
 ```
 
 ### New Project from Existing Document
 
 ```bash
-/gsd-new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
+/vgsd-new-project --auto @prd.md   # Auto-runs research/requirements/roadmap from your doc
 /clear
-/gsd-discuss-phase 1               # Normal flow from here
+/vgsd-discuss-phase 1               # Normal flow from here
 ```
 
 ### Existing Codebase
 
 ```bash
-/gsd-map-codebase           # Analyze what exists (parallel agents)
-/gsd-new-project            # Questions focus on what you're ADDING
+/vgsd-map-codebase           # Analyze what exists (parallel agents)
+/vgsd-new-project            # Questions focus on what you're ADDING
 # (normal phase workflow from here)
 ```
 
-**Post-execute drift detection (#2003).** After every `/gsd-execute-phase`,
+**Post-execute drift detection (#2003).** After every `/vgsd-execute-phase`,
 GSD checks whether the phase introduced enough structural change
 (new directories, barrel exports, migrations, or route modules) to make
 `.planning/codebase/STRUCTURE.md` stale. If it did, the default behavior is
-to print a one-shot warning suggesting the exact `/gsd-map-codebase --paths …`
+to print a one-shot warning suggesting the exact `/vgsd-map-codebase --paths …`
 invocation to refresh just the affected subtrees. Flip the behavior with:
 
 ```bash
-/gsd-settings workflow.drift_action auto-remap       # remap automatically
-/gsd-settings workflow.drift_threshold 5             # tune sensitivity
+/vgsd-settings workflow.drift_action auto-remap       # remap automatically
+/vgsd-settings workflow.drift_threshold 5             # tune sensitivity
 ```
 
 The gate is non-blocking: any internal failure logs and the phase continues.
@@ -995,23 +995,23 @@ The gate is non-blocking: any internal failure logs and the phase continues.
 ### Quick Bug Fix
 
 ```bash
-/gsd-quick
+/vgsd-quick
 > "Fix the login button not responding on mobile Safari"
 ```
 
 ### Resuming After a Break
 
 ```bash
-/gsd-progress               # See where you left off and what's next
+/vgsd-progress               # See where you left off and what's next
 # or
-/gsd-resume-work            # Full context restoration from last session
+/vgsd-resume-work            # Full context restoration from last session
 ```
 
 ### Preparing for Release
 
 ```bash
-/gsd-audit-milestone        # Check requirements coverage, detect stubs
-/gsd-complete-milestone     # Archive, tag, done
+/vgsd-audit-milestone        # Check requirements coverage, detect stubs
+/vgsd-complete-milestone     # Archive, tag, done
 ```
 
 ### Speed vs Quality Presets
@@ -1024,18 +1024,18 @@ The gate is non-blocking: any internal failure logs and the phase continues.
 | Production  | `interactive` | `fine`      | `quality`  | on       | on         | on       |
 
 
-**Skipping discuss-phase in autonomous mode:** When running in `yolo` mode with well-established preferences already captured in PROJECT.md, set `workflow.skip_discuss: true` via `/gsd-settings`. This bypasses the discuss-phase entirely and writes a minimal CONTEXT.md derived from the ROADMAP phase goal. Useful when your PROJECT.md and conventions are comprehensive enough that discussion adds no new information.
+**Skipping discuss-phase in autonomous mode:** When running in `yolo` mode with well-established preferences already captured in PROJECT.md, set `workflow.skip_discuss: true` via `/vgsd-settings`. This bypasses the discuss-phase entirely and writes a minimal CONTEXT.md derived from the ROADMAP phase goal. Useful when your PROJECT.md and conventions are comprehensive enough that discussion adds no new information.
 
 ### Mid-Milestone Scope Changes
 
 ```bash
-/gsd-phase                  # Append a new phase to the roadmap (default mode)
+/vgsd-phase                  # Append a new phase to the roadmap (default mode)
 # or
-/gsd-phase --insert 3       # Insert urgent work between phases 3 and 4
+/vgsd-phase --insert 3       # Insert urgent work between phases 3 and 4
 # or
-/gsd-phase --remove 7       # Descope phase 7 and renumber
+/vgsd-phase --remove 7       # Descope phase 7 and renumber
 # or
-/gsd-phase --edit 4         # Edit any field of phase 4 in place
+/vgsd-phase --edit 4         # Edit any field of phase 4 in place
 ```
 
 ### Multi-Project Workspaces
@@ -1044,18 +1044,18 @@ Work on multiple repos or features in parallel with isolated GSD state.
 
 ```bash
 # Create a workspace with repos from your monorepo
-/gsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
+/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
 
 # Feature branch isolation — worktree of current repo with its own .planning/
-/gsd-workspace --new --name feature-b --repos .
+/vgsd-workspace --new --name feature-b --repos .
 
 # Then cd into the workspace and initialize GSD
-cd ~/gsd-workspaces/feature-b
-/gsd-new-project
+cd ~/vgsd-workspaces/feature-b
+/vgsd-new-project
 
 # List and manage workspaces
-/gsd-workspace --list
-/gsd-workspace --remove feature-b
+/vgsd-workspace --list
+/vgsd-workspace --remove feature-b
 ```
 
 Each workspace gets:
@@ -1072,7 +1072,7 @@ Each workspace gets:
 
 For automation and copy-paste from docs, prefer **`gsd-sdk query`** with a registered subcommand (see [CLI-TOOLS.md — SDK and programmatic access](CLI-TOOLS.md#sdk-and-programmatic-access) and [QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md)). The legacy `node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs` CLI remains supported for dual-mode operation.
 
-**CLI-only (not in the query registry):** **graphify**, **from-gsd2** / **gsd2-import** — call `gsd-tools.cjs` (see [QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md)). **Two different `state` JSON shapes in the legacy CLI:** `state json` (frontmatter rebuild) vs `state load` (`config` + `state_raw` + flags). **`gsd-sdk query` today:** both `state.json` and `state.load` resolve to the frontmatter-rebuild handler — use `node …/gsd-tools.cjs state load` when you need the CJS `state load` shape. See [CLI-TOOLS.md](CLI-TOOLS.md#sdk-and-programmatic-access) and QUERY-HANDLERS.
+**CLI-only (not in the query registry):** **graphify**, **from-gsd2** / **gsd2-import** — call `gsd-tools.cjs` (see [QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md)). **Two different `state` JSON shapes in the legacy CLI:** `state json` (frontmatter rebuild) vs `state load` (`config` + `state_raw` + flags). **`gsd-sdk query` today:** both `state.json` and `state.load` resolve to the frontmatter-rebuild handler — use `node …/vgsd-tools.cjs state load` when you need the CJS `state load` shape. See [CLI-TOOLS.md](CLI-TOOLS.md#sdk-and-programmatic-access) and QUERY-HANDLERS.
 
 ### STATE.md Out of Sync
 
@@ -1097,21 +1097,21 @@ Always read a file before editing it. Never call Edit or Write on a file you hav
 
 ### "Project already initialized"
 
-You ran `/gsd-new-project` but `.planning/PROJECT.md` already exists. This is a safety check. If you want to start over, delete the `.planning/` directory first.
+You ran `/vgsd-new-project` but `.planning/PROJECT.md` already exists. This is a safety check. If you want to start over, delete the `.planning/` directory first.
 
 ### Context Degradation During Long Sessions
 
-Clear your context window between major commands: `/clear` in Claude Code. GSD is designed around fresh contexts -- every subagent gets a clean 200K window. If quality is dropping in the main session, clear and use `/gsd-resume-work` or `/gsd-progress` to restore state.
+Clear your context window between major commands: `/clear` in Claude Code. GSD is designed around fresh contexts -- every subagent gets a clean 200K window. If quality is dropping in the main session, clear and use `/vgsd-resume-work` or `/vgsd-progress` to restore state.
 
 ### Plans Seem Wrong or Misaligned
 
-Run `/gsd-discuss-phase [N]` before planning. Most plan quality issues come from Claude making assumptions that `CONTEXT.md` would have prevented. You can also run `/gsd-discuss-phase --assumptions [N]` to see what Claude intends to do before committing to a plan.
+Run `/vgsd-discuss-phase [N]` before planning. Most plan quality issues come from Claude making assumptions that `CONTEXT.md` would have prevented. You can also run `/vgsd-discuss-phase --assumptions [N]` to see what Claude intends to do before committing to a plan.
 
 ### Discuss-Phase Uses Technical Jargon I Don't Understand
 
-`/gsd-discuss-phase` adapts its language based on your `USER-PROFILE.md`. If the profile indicates a non-technical owner — `learning_style: guided`, `jargon` listed as a frustration trigger, or `explanation_depth: high-level` — gray area questions are automatically reframed in product-outcome language instead of implementation terminology.
+`/vgsd-discuss-phase` adapts its language based on your `USER-PROFILE.md`. If the profile indicates a non-technical owner — `learning_style: guided`, `jargon` listed as a frustration trigger, or `explanation_depth: high-level` — gray area questions are automatically reframed in product-outcome language instead of implementation terminology.
 
-To enable this: run `/gsd-profile-user` to generate your profile. The profile is stored at `~/.claude/get-shit-done/USER-PROFILE.md` and is read automatically on every `/gsd-discuss-phase` invocation. No other configuration is required.
+To enable this: run `/vgsd-profile-user` to generate your profile. The profile is stored at `~/.claude/get-shit-done/USER-PROFILE.md` and is read automatically on every `/vgsd-discuss-phase` invocation. No other configuration is required.
 
 ### Execution Fails or Produces Stubs
 
@@ -1119,15 +1119,15 @@ Check that the plan was not too ambitious. Plans should have 2-3 tasks maximum. 
 
 ### Lost Track of Where You Are
 
-Run `/gsd-progress`. It reads all state files and tells you exactly where you are and what to do next.
+Run `/vgsd-progress`. It reads all state files and tells you exactly where you are and what to do next.
 
 ### Need to Change Something After Execution
 
-Do not re-run `/gsd-execute-phase`. Use `/gsd-quick` for targeted fixes, or `/gsd-verify-work` to systematically identify and fix issues through UAT.
+Do not re-run `/vgsd-execute-phase`. Use `/vgsd-quick` for targeted fixes, or `/vgsd-verify-work` to systematically identify and fix issues through UAT.
 
 ### Model Costs Too High
 
-Switch to budget profile: `/gsd-config --profile budget`. Disable research and plan-check agents via `/gsd-settings` if the domain is familiar to you (or to Claude).
+Switch to budget profile: `/vgsd-config --profile budget`. Disable research and plan-check agents via `/vgsd-settings` if the domain is familiar to you (or to Claude).
 
 ### Tuning model cost by phase (`models`) — added in v1.40
 
@@ -1221,9 +1221,9 @@ For the full audit, harness reference, and the composition note with `model_prof
 
 > **Codex CLI minimum supported version: `0.130.0`** (issue [#3562](https://github.com/gsd-build/get-shit-done/issues/3562)).
 >
-> Codex CLI [0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From that version onward, Codex only discovers commands from `~/.codex/skills/<name>/SKILL.md` (user root), `<project>/.codex/skills/` (cwd root), and registered plugin roots. The GSD installer writes `~/.codex/skills/gsd-<name>/SKILL.md` directly so `$gsd-help`, `$gsd-new-project`, etc. are discoverable after restart.
+> Codex CLI [0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From that version onward, Codex only discovers commands from `~/.codex/skills/<name>/SKILL.md` (user root), `<project>/.codex/skills/` (cwd root), and registered plugin roots. The GSD installer writes `~/.codex/skills/gsd-<name>/SKILL.md` directly so `$vgsd-help`, `$vgsd-new-project`, etc. are discoverable after restart.
 >
-> **Earlier Codex CLI versions** (pre-0.130.0) had additional skill-root scanning that discovered the GSD agent/workflow files in alternate locations. GSD still installs the `~/.codex/skills/gsd-*` copies on those versions, which can show a duplicate listing alongside the legacy auto-discovered surface — restart Codex after install and either upgrade to ≥ 0.130.0 or accept the duplicate entries until you do.
+> **Earlier Codex CLI versions** (pre-0.130.0) had additional skill-root scanning that discovered the GSD agent/workflow files in alternate locations. GSD still installs the `~/.codex/skills/vgsd-*` copies on those versions, which can show a duplicate listing alongside the legacy auto-discovered surface — restart Codex after install and either upgrade to ≥ 0.130.0 or accept the duplicate entries until you do.
 
 If you installed GSD for a non-Claude runtime, the installer already configured model resolution so all agents use the runtime's default model. No manual setup is needed. Specifically, the installer sets `resolve_model_ids: "omit"` in your config, which tells GSD to skip Anthropic model ID resolution and let the runtime choose its own default model.
 
@@ -1279,7 +1279,7 @@ CodeBuddy uses a skills-based integration.
 npx @opengsd/get-shit-done-redux --codebuddy --global
 ```
 
-Skills are installed to `~/.codebuddy/skills/gsd-*/SKILL.md`.
+Skills are installed to `~/.codebuddy/skills/vgsd-*/SKILL.md`.
 
 ### Installing for Qwen Code
 
@@ -1289,7 +1289,7 @@ Qwen Code uses the same open skills standard as Claude Code 2.1.88+.
 npx @opengsd/get-shit-done-redux --qwen --global
 ```
 
-Skills are installed to `~/.qwen/skills/gsd-*/SKILL.md`. Use the `QWEN_CONFIG_DIR` environment variable to override the default install path.
+Skills are installed to `~/.qwen/skills/vgsd-*/SKILL.md`. Use the `QWEN_CONFIG_DIR` environment variable to override the default install path.
 
 ### Installing for Prerelease Editions (Next / Nightly / Insiders / Preview)
 
@@ -1328,15 +1328,15 @@ If your runtime's prerelease channel is not listed, point the matching env var a
 
 ### Using Claude Code with Non-Anthropic Providers (OpenRouter, Local)
 
-If GSD subagents call Anthropic models and you're paying through OpenRouter or a local provider, switch to the `inherit` profile: `/gsd-config --profile inherit`. This makes all agents use your current session model instead of specific Anthropic models. See also `/gsd-settings` → Model Profile → Inherit.
+If GSD subagents call Anthropic models and you're paying through OpenRouter or a local provider, switch to the `inherit` profile: `/vgsd-config --profile inherit`. This makes all agents use your current session model instead of specific Anthropic models. See also `/vgsd-settings` → Model Profile → Inherit.
 
 ### Working on a Sensitive/Private Project
 
-Set `commit_docs: false` during `/gsd-new-project` or via `/gsd-settings`. Add `.planning/` to your `.gitignore`. Planning artifacts stay local and never touch git.
+Set `commit_docs: false` during `/vgsd-new-project` or via `/vgsd-settings`. Add `.planning/` to your `.gitignore`. Planning artifacts stay local and never touch git.
 
 ### GSD Update Overwrote My Local Changes
 
-Since v1.17, the installer backs up locally modified files to `gsd-local-patches/`. Run `/gsd-update --reapply` to merge your changes back.
+Since v1.17, the installer backs up locally modified files to `gsd-local-patches/`. Run `/vgsd-update --reapply` to merge your changes back.
 
 ### Cannot Update via npm
 
@@ -1357,7 +1357,7 @@ Optional: GSD update banner
 Choose `2` (or type `y`/`yes`) and the installer registers `hooks/gsd-update-banner.js` as a `SessionStart` hook. From the next session onward, GSD prints a one-line `systemMessage` only when the cache reports an update available:
 
 ```text
-GSD update available: 1.39.0 → 1.40.0. Run /gsd-update.
+GSD update available: 1.39.0 → 1.40.0. Run /vgsd-update.
 ```
 
 The banner is silent when no update is available. If the cache file is corrupt, GSD emits one diagnostic line (`GSD update check failed.`) and stays silent for 24 hours so a broken cache does not nag every session.
@@ -1366,9 +1366,9 @@ The banner is silent when no update is available. If the cache file is corrupt, 
 
 The banner is not offered when GSD's statusline is installed — that channel already surfaces update info, so re-prompting would be noise.
 
-### Workflow Diagnostics (`/gsd-forensics`)
+### Workflow Diagnostics (`/vgsd-forensics`)
 
-When a workflow fails in a way that isn't obvious -- plans reference nonexistent files, execution produces unexpected results, or state seems corrupted -- run `/gsd-forensics` to generate a diagnostic report.
+When a workflow fails in a way that isn't obvious -- plans reference nonexistent files, execution produces unexpected results, or state seems corrupted -- run `/vgsd-forensics` to generate a diagnostic report.
 
 **What it checks:**
 
@@ -1481,7 +1481,7 @@ The patterns you need depend on your stack. Copy the block for your stack and ad
 
 **Per-project permissions (scoped to one repo):** If you prefer to allow these patterns for a single project rather than globally, add the same `permissions.allow` block to `.claude/settings.local.json` in your project root instead of `~/.claude/settings.json`. Claude Code checks project-local settings first.
 
-**Interactive guidance:** When an executor is blocked mid-phase, it will identify the exact pattern needed (e.g. `"Bash(bin/rails:*)"`) so you can add it and re-run `/gsd-execute-phase`.
+**Interactive guidance:** When an executor is blocked mid-phase, it will identify the exact pattern needed (e.g. `"Bash(bin/rails:*)"`) so you can add it and re-run `/vgsd-execute-phase`.
 
 ### Subagent Appears to Fail but Work Was Done
 
@@ -1496,7 +1496,7 @@ If you see pre-commit hook failures, cargo lock contention, or 30+ minute execut
 All subagent/executor commits MUST use `--no-verify`.
 ```
 
-To disable parallel execution entirely: `/gsd-settings` → set `parallelization.enabled` to `false`.
+To disable parallel execution entirely: `/vgsd-settings` → set `parallelization.enabled` to `false`.
 
 ### Windows: Installation Crashes on Protected Directories
 
@@ -1509,18 +1509,18 @@ If the installer crashes with `EPERM: operation not permitted, scandir` on Windo
 
 | Problem                              | Solution                                                                 |
 | ------------------------------------ | ------------------------------------------------------------------------ |
-| Lost context / new session           | `/gsd-resume-work` or `/gsd-progress`                                    |
+| Lost context / new session           | `/vgsd-resume-work` or `/vgsd-progress`                                    |
 | Phase went wrong                     | `git revert` the phase commits, then re-plan                             |
-| Need to change scope                 | `/gsd-phase` (default), `/gsd-phase --insert`, or `/gsd-phase --remove`  |
-| Something broke                      | `/gsd-debug "description"` (add `--diagnose` for analysis without fixes) |
+| Need to change scope                 | `/vgsd-phase` (default), `/vgsd-phase --insert`, or `/vgsd-phase --remove`  |
+| Something broke                      | `/vgsd-debug "description"` (add `--diagnose` for analysis without fixes) |
 | STATE.md out of sync                 | `state validate` then `state sync`                                       |
-| Workflow state seems corrupted       | `/gsd-forensics`                                                         |
-| Quick targeted fix                   | `/gsd-quick`                                                             |
-| Plan doesn't match your vision       | `/gsd-discuss-phase [N]` then re-plan                                    |
-| Costs running high                   | `/gsd-config --profile budget` and `/gsd-settings` to toggle agents off  |
-| Update broke local changes           | `/gsd-update --reapply`                                                  |
-| Want session summary for stakeholder | `/gsd-pause-work --report`                                                    |
-| Don't know what step is next         | `/gsd-progress --next`                                                              |
+| Workflow state seems corrupted       | `/vgsd-forensics`                                                         |
+| Quick targeted fix                   | `/vgsd-quick`                                                             |
+| Plan doesn't match your vision       | `/vgsd-discuss-phase [N]` then re-plan                                    |
+| Costs running high                   | `/vgsd-config --profile budget` and `/vgsd-settings` to toggle agents off  |
+| Update broke local changes           | `/vgsd-update --reapply`                                                  |
+| Want session summary for stakeholder | `/vgsd-pause-work --report`                                                    |
+| Don't know what step is next         | `/vgsd-progress --next`                                                              |
 | Parallel execution build errors      | Update GSD or set `parallelization.enabled: false`                       |
 
 
@@ -1538,23 +1538,23 @@ For reference, here is what GSD creates in your project:
   STATE.md                # Decisions, blockers, session memory
   config.json             # Workflow configuration
   MILESTONES.md           # Completed milestone archive
-  HANDOFF.json            # Structured session handoff (from /gsd-pause-work)
-  research/               # Domain research from /gsd-new-project
-  reports/                # Session reports (from /gsd-pause-work --report)
+  HANDOFF.json            # Structured session handoff (from /vgsd-pause-work)
+  research/               # Domain research from /vgsd-new-project
+  reports/                # Session reports (from /vgsd-pause-work --report)
   todos/
     pending/              # Captured ideas awaiting work
     done/                 # Completed todos
   debug/                  # Active debug sessions
     resolved/             # Archived debug sessions
-  spikes/                 # Feasibility experiments (from /gsd-spike)
+  spikes/                 # Feasibility experiments (from /vgsd-spike)
     NNN-name/             # Experiment code + README with verdict
     MANIFEST.md           # Index of all spikes
-  sketches/               # HTML mockups (from /gsd-sketch)
+  sketches/               # HTML mockups (from /vgsd-sketch)
     NNN-name/             # index.html (2-3 variants) + README
     themes/
       default.css         # Shared CSS variables for all sketches
     MANIFEST.md           # Index of all sketches with winners
-  codebase/               # Brownfield codebase mapping (from /gsd-map-codebase)
+  codebase/               # Brownfield codebase mapping (from /vgsd-map-codebase)
   phases/
     XX-phase-name/
       XX-YY-PLAN.md       # Atomic execution plans
@@ -1562,7 +1562,7 @@ For reference, here is what GSD creates in your project:
       CONTEXT.md          # Your implementation preferences
       RESEARCH.md         # Ecosystem research findings
       VERIFICATION.md     # Post-execution verification results
-      XX-UI-SPEC.md       # UI design contract (from /gsd-ui-phase)
-      XX-UI-REVIEW.md     # Visual audit scores (from /gsd-ui-review)
-  ui-reviews/             # Screenshots from /gsd-ui-review (gitignored)
+      XX-UI-SPEC.md       # UI design contract (from /vgsd-ui-phase)
+      XX-UI-REVIEW.md     # Visual audit scores (from /vgsd-ui-review)
+  ui-reviews/             # Screenshots from /vgsd-ui-review (gitignored)
 ```

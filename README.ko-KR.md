@@ -80,7 +80,7 @@ GSD가 그걸 고칩니다. Claude Code를 신뢰할 수 있게 만드는 컨텍
 전체 목록은 [v1.39.0 릴리스 노트](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0)를 참고하세요.
 
 - **`--minimal` 설치 프로파일** — 별칭 `--core-only`. 메인 루프 6개 스킬(`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `help`, `update`)만 설치하고 `gsd-*` 서브에이전트는 설치하지 않음. 콜드 스타트 시스템 프롬프트 오버헤드를 ~12k 토큰에서 ~700 토큰으로 축소(≥94% 감소). 32K–128K 컨텍스트의 로컬 LLM이나 토큰 과금 API에 유용.
-- **`/gsd-phase --edit`** — `ROADMAP.md`에 있는 기존 단계의 임의 필드를 그 자리에서 수정(번호와 위치는 변경되지 않음). `--force`는 확인 diff를 건너뛰고, `depends_on` 참조를 검증하며 쓰기 시 `STATE.md`도 갱신.
+- **`/vgsd-phase --edit`** — `ROADMAP.md`에 있는 기존 단계의 임의 필드를 그 자리에서 수정(번호와 위치는 변경되지 않음). `--force`는 확인 diff를 건너뛰고, `depends_on` 참조를 검증하며 쓰기 시 `STATE.md`도 갱신.
 - **머지 후 빌드 & 테스트 게이트** — `execute-phase` 5.6 단계가 `workflow.build_command` 설정을 우선 자동 감지하고, 없으면 Xcode(`.xcodeproj`), Makefile, Justfile, Cargo, Go, Python, npm 순으로 폴백. Xcode/iOS 프로젝트는 `xcodebuild build` 및 `xcodebuild test`를 자동 실행. 병렬·직렬 모드 모두에서 동작.
 - **런타임별 리뷰 모델 선택** — `review.models.<cli>`로 각 외부 리뷰 CLI(codex, gemini 등)가 플래너/실행 프로파일과 독립적으로 자체 모델을 선택할 수 있음.
 - **워크스트림 설정 상속** — `GSD_WORKSTREAM`이 설정되면 루트 `.planning/config.json`을 먼저 로드한 뒤 워크스트림 설정을 딥 머지(충돌 시 워크스트림 우선). 워크스트림 설정에서 명시적 `null`은 루트 값을 덮어씀.
@@ -100,9 +100,10 @@ npx get-shit-done-cc@latest
 2. **위치** — 전역 (모든 프로젝트) 또는 로컬 (현재 프로젝트만)
 
 설치가 됐는지 확인하려면:
-- Claude Code / Gemini / Copilot / Antigravity: `/gsd-help`
-- OpenCode / Kilo / Augment / Trae: `/gsd-help`
-- Codex: `$gsd-help`
+- Claude Code / Copilot / Antigravity: `/vgsd-help`
+- Gemini: `/vgsd:help`
+- OpenCode / Kilo / Augment / Trae: `/vgsd-help`
+- Codex: `$vgsd-help`
 - Cline: GSD는 `.clinerules`를 통해 설치 — `.clinerules` 존재 여부 확인
 
 > [!NOTE]
@@ -237,12 +238,12 @@ claude --dangerously-skip-permissions
 
 ## 작동 방식
 
-> **이미 코드가 있나요?** 먼저 `/gsd-map-codebase`를 실행하세요. 병렬 에이전트를 생성해 스택, 아키텍처, 컨벤션, 고려사항을 분석합니다. 그러면 `/gsd-new-project`가 코드베이스를 파악한 상태에서 시작되고 — 질문은 추가하는 것에 집중되고, 기획 시 자동으로 기존 패턴을 불러옵니다.
+> **이미 코드가 있나요?** 먼저 `/vgsd-map-codebase`를 실행하세요. 병렬 에이전트를 생성해 스택, 아키텍처, 컨벤션, 고려사항을 분석합니다. 그러면 `/vgsd-new-project`가 코드베이스를 파악한 상태에서 시작되고 — 질문은 추가하는 것에 집중되고, 기획 시 자동으로 기존 패턴을 불러옵니다.
 
 ### 1. 프로젝트 초기화
 
 ```
-/gsd-new-project
+/vgsd-new-project
 ```
 
 명령어 하나, 플로우 하나. 시스템이:
@@ -261,7 +262,7 @@ claude --dangerously-skip-permissions
 ### 2. 단계 논의
 
 ```
-/gsd-discuss-phase 1
+/vgsd-discuss-phase 1
 ```
 
 **여기서 구현을 직접 설계합니다.**
@@ -284,14 +285,14 @@ claude --dangerously-skip-permissions
 
 **생성 파일:** `{phase_num}-CONTEXT.md`
 
-> **가정 모드:** 질문보다 코드베이스 분석을 선호하나요? `/gsd-settings`에서 `workflow.discuss_mode`를 `assumptions`로 설정하세요. 시스템이 코드를 읽고 하려는 것과 이유를 제시한 다음 틀린 부분만 수정을 요청합니다. [논의 모드](docs/ko-KR/workflow-discuss-mode.md) 참조.
+> **가정 모드:** 질문보다 코드베이스 분석을 선호하나요? `/vgsd-settings`에서 `workflow.discuss_mode`를 `assumptions`로 설정하세요. 시스템이 코드를 읽고 하려는 것과 이유를 제시한 다음 틀린 부분만 수정을 요청합니다. [논의 모드](docs/ko-KR/workflow-discuss-mode.md) 참조.
 
 ---
 
 ### 3. 단계 기획
 
 ```
-/gsd-plan-phase 1
+/vgsd-plan-phase 1
 ```
 
 시스템이:
@@ -309,7 +310,7 @@ claude --dangerously-skip-permissions
 ### 4. 단계 실행
 
 ```
-/gsd-execute-phase 1
+/vgsd-execute-phase 1
 ```
 
 시스템이:
@@ -360,7 +361,7 @@ claude --dangerously-skip-permissions
 ### 5. 작업 검증
 
 ```
-/gsd-verify-work 1
+/vgsd-verify-work 1
 ```
 
 **여기서 실제로 작동하는지 확인합니다.**
@@ -374,7 +375,7 @@ claude --dangerously-skip-permissions
 3. **실패 자동 진단** — 근본 원인을 찾기 위해 디버그 에이전트 생성
 4. **검증된 수정 계획 생성** — 즉시 재실행 준비 완료
 
-모든 게 통과하면 다음으로 넘어갑니다. 뭔가 깨졌으면 직접 디버그하지 않아도 됩니다 — 생성된 수정 계획으로 `/gsd-execute-phase`만 다시 실행하면 됩니다.
+모든 게 통과하면 다음으로 넘어갑니다. 뭔가 깨졌으면 직접 디버그하지 않아도 됩니다 — 생성된 수정 계획으로 `/vgsd-execute-phase`만 다시 실행하면 됩니다.
 
 **생성 파일:** `{phase_num}-UAT.md`, 문제 발견 시 수정 계획
 
@@ -383,38 +384,38 @@ claude --dangerously-skip-permissions
 ### 6. 반복 → 출시 → 완료 → 다음 마일스톤
 
 ```
-/gsd-discuss-phase 2
-/gsd-plan-phase 2
-/gsd-execute-phase 2
-/gsd-verify-work 2
-/gsd-ship 2                  # 검증된 작업으로 PR 생성
+/vgsd-discuss-phase 2
+/vgsd-plan-phase 2
+/vgsd-execute-phase 2
+/vgsd-verify-work 2
+/vgsd-ship 2                  # 검증된 작업으로 PR 생성
 ...
-/gsd-complete-milestone
-/gsd-new-milestone
+/vgsd-complete-milestone
+/vgsd-new-milestone
 ```
 
 또는 GSD가 다음 단계를 자동으로 파악하게 합니다:
 
 ```
-/gsd-progress --next                    # 다음 단계 자동 감지 및 실행
+/vgsd-progress --next                    # 다음 단계 자동 감지 및 실행
 ```
 
 마일스톤이 완료될 때까지 **논의 → 기획 → 실행 → 검증 → 출시** 반복.
 
-논의 중에 더 빠르게 진행하고 싶다면 `/gsd-discuss-phase <n> --batch`를 사용해 하나씩이 아닌 소그룹으로 한 번에 답할 수 있습니다. `--chain`을 사용하면 논의에서 기획+실행까지 중간에 멈추지 않고 자동 체이닝됩니다.
+논의 중에 더 빠르게 진행하고 싶다면 `/vgsd-discuss-phase <n> --batch`를 사용해 하나씩이 아닌 소그룹으로 한 번에 답할 수 있습니다. `--chain`을 사용하면 논의에서 기획+실행까지 중간에 멈추지 않고 자동 체이닝됩니다.
 
 각 단계는 사용자 입력(논의), 적절한 리서치(기획), 깔끔한 실행(실행), 사람의 검증(검증)을 거칩니다. 컨텍스트는 새롭게 유지됩니다. 품질도 높게 유지됩니다.
 
-모든 단계가 끝나면 `/gsd-complete-milestone`이 마일스톤을 아카이브하고 릴리스에 태그를 답니다.
+모든 단계가 끝나면 `/vgsd-complete-milestone`이 마일스톤을 아카이브하고 릴리스에 태그를 답니다.
 
-그다음 `/gsd-new-milestone`으로 다음 버전을 시작합니다 — `new-project`와 같은 흐름이지만 기존 코드베이스를 위한 것입니다. 다음에 만들 것을 설명하면 시스템이 도메인을 리서치하고, 요구사항을 스코핑하고, 새 로드맵을 만듭니다. 각 마일스톤은 깔끔한 사이클입니다: 정의 → 구축 → 출시.
+그다음 `/vgsd-new-milestone`으로 다음 버전을 시작합니다 — `new-project`와 같은 흐름이지만 기존 코드베이스를 위한 것입니다. 다음에 만들 것을 설명하면 시스템이 도메인을 리서치하고, 요구사항을 스코핑하고, 새 로드맵을 만듭니다. 각 마일스톤은 깔끔한 사이클입니다: 정의 → 구축 → 출시.
 
 ---
 
 ### 빠른 모드
 
 ```
-/gsd-quick
+/vgsd-quick
 ```
 
 **전체 기획이 필요 없는 임시 작업용.**
@@ -436,7 +437,7 @@ claude --dangerously-skip-permissions
 플래그는 조합 가능합니다: `--discuss --research --validate`은 논의 + 리서치 + 계획 확인 + 검증을 제공합니다.
 
 ```
-/gsd-quick
+/vgsd-quick
 > 뭘 하고 싶으신가요? "설정에 다크 모드 토글 추가"
 ```
 
@@ -535,111 +536,111 @@ lmn012o feat(08-02): create registration endpoint
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-new-project [--auto]` | 전체 초기화: 질문 → 리서치 → 요구사항 → 로드맵 |
-| `/gsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | 기획 전 구현 결정 캡처 (`--analyze`는 트레이드오프 분석 추가, `--chain`은 기획+실행으로 자동 체이닝) |
-| `/gsd-plan-phase [N] [--auto] [--reviews]` | 단계에 대한 리서치 + 기획 + 검증 (`--reviews`는 코드베이스 리뷰 결과 로드) |
-| `/gsd-execute-phase <N>` | 병렬 웨이브로 모든 계획 실행, 완료 시 검증 |
-| `/gsd-verify-work [N]` | 수동 사용자 인수 테스트 ¹ |
-| `/gsd-ship [N] [--draft]` | 자동 생성된 본문으로 검증된 단계 작업에서 PR 생성 |
-| `/gsd-progress --next` | 다음 논리적 워크플로우 단계로 자동 진행 |
-| `/gsd-fast <text>` | 인라인 사소한 작업 — 기획 완전 건너뛰고 즉시 실행 |
-| `/gsd-audit-milestone` | 마일스톤이 완료 정의를 달성했는지 검증 |
-| `/gsd-complete-milestone` | 마일스톤 아카이브, 릴리스 태그 |
-| `/gsd-new-milestone [name]` | 다음 버전 시작: 질문 → 리서치 → 요구사항 → 로드맵 |
-| `/gsd-forensics [desc]` | 실패한 워크플로우 실행의 사후 조사 (막힌 루프, 누락된 아티팩트, git 이상 진단) |
-| `/gsd-milestone-summary [version]` | 팀 온보딩 및 리뷰를 위한 종합 프로젝트 요약 생성 |
+| `/vgsd-new-project [--auto]` | 전체 초기화: 질문 → 리서치 → 요구사항 → 로드맵 |
+| `/vgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | 기획 전 구현 결정 캡처 (`--analyze`는 트레이드오프 분석 추가, `--chain`은 기획+실행으로 자동 체이닝) |
+| `/vgsd-plan-phase [N] [--auto] [--reviews]` | 단계에 대한 리서치 + 기획 + 검증 (`--reviews`는 코드베이스 리뷰 결과 로드) |
+| `/vgsd-execute-phase <N>` | 병렬 웨이브로 모든 계획 실행, 완료 시 검증 |
+| `/vgsd-verify-work [N]` | 수동 사용자 인수 테스트 ¹ |
+| `/vgsd-ship [N] [--draft]` | 자동 생성된 본문으로 검증된 단계 작업에서 PR 생성 |
+| `/vgsd-progress --next` | 다음 논리적 워크플로우 단계로 자동 진행 |
+| `/vgsd-fast <text>` | 인라인 사소한 작업 — 기획 완전 건너뛰고 즉시 실행 |
+| `/vgsd-audit-milestone` | 마일스톤이 완료 정의를 달성했는지 검증 |
+| `/vgsd-complete-milestone` | 마일스톤 아카이브, 릴리스 태그 |
+| `/vgsd-new-milestone [name]` | 다음 버전 시작: 질문 → 리서치 → 요구사항 → 로드맵 |
+| `/vgsd-forensics [desc]` | 실패한 워크플로우 실행의 사후 조사 (막힌 루프, 누락된 아티팩트, git 이상 진단) |
+| `/vgsd-milestone-summary [version]` | 팀 온보딩 및 리뷰를 위한 종합 프로젝트 요약 생성 |
 
 ### 워크스트림
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-workstreams list` | 모든 워크스트림과 상태 표시 |
-| `/gsd-workstreams create <name>` | 병렬 마일스톤 작업을 위한 네임스페이스 워크스트림 생성 |
-| `/gsd-workstreams switch <name>` | 활성 워크스트림 전환 |
-| `/gsd-workstreams complete <name>` | 워크스트림 완료 및 병합 |
+| `/vgsd-workstreams list` | 모든 워크스트림과 상태 표시 |
+| `/vgsd-workstreams create <name>` | 병렬 마일스톤 작업을 위한 네임스페이스 워크스트림 생성 |
+| `/vgsd-workstreams switch <name>` | 활성 워크스트림 전환 |
+| `/vgsd-workstreams complete <name>` | 워크스트림 완료 및 병합 |
 
 ### 멀티 프로젝트 워크스페이스
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-workspace --new` | 저장소 복사본으로 격리된 워크스페이스 생성 (worktrees 또는 clones) |
-| `/gsd-workspace --list` | 모든 GSD 워크스페이스와 상태 표시 |
-| `/gsd-workspace --remove` | 워크스페이스 제거 및 worktree 정리 |
+| `/vgsd-workspace --new` | 저장소 복사본으로 격리된 워크스페이스 생성 (worktrees 또는 clones) |
+| `/vgsd-workspace --list` | 모든 GSD 워크스페이스와 상태 표시 |
+| `/vgsd-workspace --remove` | 워크스페이스 제거 및 worktree 정리 |
 
 ### UI 디자인
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-ui-phase [N]` | 프론트엔드 단계를 위한 UI 디자인 계약 (UI-SPEC.md) 생성 |
-| `/gsd-ui-review [N]` | 구현된 프론트엔드 코드의 소급적 6가지 기준 시각 감사 |
+| `/vgsd-ui-phase [N]` | 프론트엔드 단계를 위한 UI 디자인 계약 (UI-SPEC.md) 생성 |
+| `/vgsd-ui-review [N]` | 구현된 프론트엔드 코드의 소급적 6가지 기준 시각 감사 |
 
 ### 탐색
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-progress` | 지금 어디에 있나? 다음은? |
-| `/gsd-progress --next` | 상태 자동 감지 및 다음 단계 실행 |
-| `/gsd-help` | 모든 명령어와 사용 가이드 표시 |
-| `/gsd-update` | 변경 로그 미리보기와 함께 GSD 업데이트 |
-| `/gsd-manager` | 여러 단계 관리를 위한 대화형 커맨드 센터 |
+| `/vgsd-progress` | 지금 어디에 있나? 다음은? |
+| `/vgsd-progress --next` | 상태 자동 감지 및 다음 단계 실행 |
+| `/vgsd-help` | 모든 명령어와 사용 가이드 표시 |
+| `/vgsd-update` | 변경 로그 미리보기와 함께 GSD 업데이트 |
+| `/vgsd-manager` | 여러 단계 관리를 위한 대화형 커맨드 센터 |
 
 ### 브라운필드
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-map-codebase [area]` | new-project 전 기존 코드베이스 분석 |
+| `/vgsd-map-codebase [area]` | new-project 전 기존 코드베이스 분석 |
 
 ### 단계 관리
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-phase` | 로드맵에 단계 추가 |
-| `/gsd-phase --insert [N]` | 단계 사이에 긴급 작업 삽입 |
-| `/gsd-phase --edit [N] [--force]` | 기존 단계의 임의 필드를 그 자리에서 수정 — 번호와 위치는 그대로 |
-| `/gsd-phase --remove [N]` | 미래 단계 제거, 번호 재정렬 |
-| `/gsd-discuss-phase --assumptions [N]` | 기획 전 Claude의 의도된 접근 방식 확인 |
-| `/gsd-audit-milestone --fix` | 감사에서 발견된 갭을 해소하기 위한 단계 생성 |
+| `/vgsd-phase` | 로드맵에 단계 추가 |
+| `/vgsd-phase --insert [N]` | 단계 사이에 긴급 작업 삽입 |
+| `/vgsd-phase --edit [N] [--force]` | 기존 단계의 임의 필드를 그 자리에서 수정 — 번호와 위치는 그대로 |
+| `/vgsd-phase --remove [N]` | 미래 단계 제거, 번호 재정렬 |
+| `/vgsd-discuss-phase --assumptions [N]` | 기획 전 Claude의 의도된 접근 방식 확인 |
+| `/vgsd-audit-milestone --fix` | 감사에서 발견된 갭을 해소하기 위한 단계 생성 |
 
 ### 세션
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-pause-work` | 단계 중간에 멈출 때 핸드오프 생성 (HANDOFF.json 작성) |
-| `/gsd-resume-work` | 마지막 세션에서 복원 |
-| `/gsd-pause-work --report` | 수행한 작업과 결과가 담긴 세션 요약 생성 |
+| `/vgsd-pause-work` | 단계 중간에 멈출 때 핸드오프 생성 (HANDOFF.json 작성) |
+| `/vgsd-resume-work` | 마지막 세션에서 복원 |
+| `/vgsd-pause-work --report` | 수행한 작업과 결과가 담긴 세션 요약 생성 |
 
 ### 코드 품질
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-review` | 현재 단계 또는 브랜치의 Cross-AI 피어 리뷰 |
-| `/gsd-pr-branch` | `.planning/` 커밋을 필터링한 깔끔한 PR 브랜치 생성 |
-| `/gsd-audit-uat` | 검증 부채 감사 — UAT가 누락된 단계 찾기 |
+| `/vgsd-review` | 현재 단계 또는 브랜치의 Cross-AI 피어 리뷰 |
+| `/vgsd-pr-branch` | `.planning/` 커밋을 필터링한 깔끔한 PR 브랜치 생성 |
+| `/vgsd-audit-uat` | 검증 부채 감사 — UAT가 누락된 단계 찾기 |
 
 ### 백로그 및 스레드
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-capture --seed <idea>` | 트리거 조건이 있는 아이디어 저장 — 때가 되면 알아서 올라옴 |
-| `/gsd-capture --backlog <desc>` | 백로그 파킹 롯에 아이디어 추가 (999.x 번호 지정, 활성 시퀀스 외부) |
-| `/gsd-review-backlog` | 백로그 항목 리뷰 및 활성 마일스톤으로 승격하거나 오래된 항목 제거 |
-| `/gsd-thread [name]` | 지속적 컨텍스트 스레드 — 여러 세션에 걸친 작업을 위한 가벼운 크로스 세션 지식 |
+| `/vgsd-capture --seed <idea>` | 트리거 조건이 있는 아이디어 저장 — 때가 되면 알아서 올라옴 |
+| `/vgsd-capture --backlog <desc>` | 백로그 파킹 롯에 아이디어 추가 (999.x 번호 지정, 활성 시퀀스 외부) |
+| `/vgsd-review-backlog` | 백로그 항목 리뷰 및 활성 마일스톤으로 승격하거나 오래된 항목 제거 |
+| `/vgsd-thread [name]` | 지속적 컨텍스트 스레드 — 여러 세션에 걸친 작업을 위한 가벼운 크로스 세션 지식 |
 
 ### 유틸리티
 
 | 명령어 | 역할 |
 |---------|------------|
-| `/gsd-settings` | 모델 프로필 및 워크플로우 에이전트 설정 |
-| `/gsd-config --profile <profile>` | 모델 프로필 전환 (quality/balanced/budget/inherit) |
-| `/gsd-capture [desc]` | 나중을 위한 아이디어 캡처 |
-| `/gsd-capture --list` | 대기 중인 할 일 목록 |
-| `/gsd-debug [desc]` | 지속적 상태를 이용한 체계적 디버깅 |
+| `/vgsd-settings` | 모델 프로필 및 워크플로우 에이전트 설정 |
+| `/vgsd-config --profile <profile>` | 모델 프로필 전환 (quality/balanced/budget/inherit) |
+| `/vgsd-capture [desc]` | 나중을 위한 아이디어 캡처 |
+| `/vgsd-capture --list` | 대기 중인 할 일 목록 |
+| `/vgsd-debug [desc]` | 지속적 상태를 이용한 체계적 디버깅 |
 | `/gsd-do <text>` | 자유 형식 텍스트를 적절한 GSD 명령어로 자동 라우팅 |
 | `/gsd-note <text>` | 마찰 없는 아이디어 캡처 — 추가, 목록, 또는 할 일로 승격 |
-| `/gsd-quick [--full] [--discuss] [--research]` | GSD 보장과 함께 임시 작업 실행 (`--full`은 전체 단계 활성화, `--discuss`는 먼저 컨텍스트 수집, `--research`는 기획 전 접근법 조사) |
-| `/gsd-health [--repair]` | `.planning/` 디렉터리 무결성 검증, `--repair`로 자동 복구 |
-| `/gsd-stats` | 프로젝트 통계 표시 — 단계, 계획, 요구사항, git 지표 |
-| `/gsd-profile-user [--questionnaire] [--refresh]` | 개인화된 응답을 위해 세션 분석에서 개발자 행동 프로필 생성 |
+| `/vgsd-quick [--full] [--discuss] [--research]` | GSD 보장과 함께 임시 작업 실행 (`--full`은 전체 단계 활성화, `--discuss`는 먼저 컨텍스트 수집, `--research`는 기획 전 접근법 조사) |
+| `/vgsd-health [--repair]` | `.planning/` 디렉터리 무결성 검증, `--repair`로 자동 복구 |
+| `/vgsd-stats` | 프로젝트 통계 표시 — 단계, 계획, 요구사항, git 지표 |
+| `/vgsd-profile-user [--questionnaire] [--refresh]` | 개인화된 응답을 위해 세션 분석에서 개발자 행동 프로필 생성 |
 
 <sup>¹ reddit 유저 OracleGreyBeard 기여</sup>
 
@@ -647,7 +648,7 @@ lmn012o feat(08-02): create registration endpoint
 
 ## 설정
 
-GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-new-project` 중에 설정하거나 나중에 `/gsd-settings`로 업데이트할 수 있습니다. 전체 config 스키마, 워크플로우 토글, git 브랜칭 옵션, 에이전트별 모델 분석은 [사용자 가이드](docs/ko-KR/USER-GUIDE.md#configuration-reference)를 참조하세요.
+GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/vgsd-new-project` 중에 설정하거나 나중에 `/vgsd-settings`로 업데이트할 수 있습니다. 전체 config 스키마, 워크플로우 토글, git 브랜칭 옵션, 에이전트별 모델 분석은 [사용자 가이드](docs/ko-KR/USER-GUIDE.md#configuration-reference)를 참조하세요.
 
 ### 핵심 설정
 
@@ -669,12 +670,12 @@ GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-
 
 프로필 전환:
 ```
-/gsd-config --profile budget
+/vgsd-config --profile budget
 ```
 
 비-Anthropic 제공업체 (OpenRouter, 로컬 모델) 사용 시 또는 현재 런타임 모델 선택을 따를 때 (예: OpenCode `/model`) `inherit`를 사용하세요.
 
-또는 `/gsd-settings`를 통해 설정하세요.
+또는 `/vgsd-settings`를 통해 설정하세요.
 
 ### 워크플로우 에이전트
 
@@ -691,9 +692,9 @@ GSD는 프로젝트 설정을 `.planning/config.json`에 저장합니다. `/gsd-
 | `workflow.skip_discuss` | `false` | 자율 모드에서 discuss-phase 건너뛰기 |
 | `workflow.text_mode` | `false` | 원격 세션을 위한 텍스트 전용 모드 (TUI 메뉴 없음) |
 
-`/gsd-settings`로 토글하거나 호출별로 재정의하세요:
-- `/gsd-plan-phase --skip-research`
-- `/gsd-plan-phase --skip-verify`
+`/vgsd-settings`로 토글하거나 호출별로 재정의하세요:
+- `/vgsd-plan-phase --skip-research`
+- `/vgsd-plan-phase --skip-verify`
 
 ### 실행
 
@@ -775,7 +776,7 @@ GSD의 코드베이스 매핑 및 분석 명령어는 프로젝트를 이해하�
 - Codex의 경우 `~/.codex/skills/gsd-*/SKILL.md` (전역) 또는 `./.codex/skills/gsd-*/SKILL.md` (로컬)에 스킬이 있는지 확인하세요
 
 **명령어가 예상대로 작동하지 않나요?**
-- `/gsd-help`를 실행해 설치 확인
+- `/vgsd-help`를 실행해 설치 확인
 - `npx get-shit-done-cc`를 다시 실행해 재설치
 
 **최신 버전으로 업데이트하나요?**

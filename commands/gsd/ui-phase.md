@@ -1,5 +1,5 @@
 ---
-name: gsd:ui-phase
+name: vgsd:ui-phase
 description: Generate UI design contract (UI-SPEC.md) for frontend phases
 argument-hint: "[phase]"
 allowed-tools:

@@ -322,7 +322,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
   const phase_req_ids = (reqExtracted && reqExtracted !== 'TBD') ? reqExtracted : null;
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /gsd:plan-phase stays consistent with phase.add.
+  // the first-touch mkdir in /vgsd:plan-phase stays consistent with phase.add.
   const phaseDirPlan = phaseInfo?.directory || null;
   const phaseNumberPlan = phaseInfo?.phase_number || null;
   const phaseNamePlan = phaseInfo?.phase_name || null;
@@ -368,7 +368,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
     padded_phase: phaseNumberPlan ? normalizePhaseName(phaseNumberPlan) : null,
     phase_req_ids,
 
-    // #3569: surface phase lifecycle status so /gsd:plan-phase can short-circuit
+    // #3569: surface phase lifecycle status so /vgsd:plan-phase can short-circuit
     // on closed (Complete) phases instead of silently replanning over shipped
     // code. Reuses determinePhaseStatus — the project-wide vocabulary
     // (Pending | Planned | In Progress | Executed | Complete | Needs Review).
@@ -827,7 +827,7 @@ function cmdInitPhaseOp(cwd, phase, raw) {
   }
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /gsd:discuss-phase stays consistent with phase.add.
+  // the first-touch mkdir in /vgsd:discuss-phase stays consistent with phase.add.
   const phaseDir = phaseInfo?.directory || null;
   const phaseNumber = phaseInfo?.phase_number || null;
   const phaseName = phaseInfo?.phase_name || null;
@@ -1125,7 +1125,7 @@ function cmdInitManager(cwd, raw) {
   const milestone = getMilestoneInfo(cwd);
   // Resolve the runtime once so every emitted slash-command reference uses
   // the routable shape for this install (#3584). Hyphen form for skills-based
-  // runtimes, $gsd-<cmd> shell-var for codex.
+  // runtimes, $vgsd-<cmd> shell-var for codex.
   const _slashRuntime = resolveRuntime(cwd);
 
   // Use planningPaths for forward-compatibility with workstream scoping (#1268)
@@ -1924,6 +1924,12 @@ function buildSkillManifest(cwd, skillsDir = null) {
       scope: 'import-only',
       kind: 'skills',
       deprecated: true,
+    },
+    {
+      root: '.claude/commands/vgsd',
+      path: path.join(os.homedir(), '.claude', 'commands', 'vgsd'),
+      scope: 'global',
+      kind: 'commands',
     },
     {
       root: '.claude/commands/gsd',

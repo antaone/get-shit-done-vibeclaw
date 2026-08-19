@@ -1,10 +1,10 @@
 'use strict';
 /**
- * One-shot script + library: bidirectional GSD slash-command namespace normalizer.
+ * One-shot script + library: bidirectional Vibe GSD command namespace normalizer.
  *
- * - Default direction (transformContent): retired /gsd-<cmd> → /gsd:<cmd>
- *   (keeps monorepo sources, docs, and workflows in the active colon form).
- * - Reverse direction (transformContentToHyphen): /gsd:<cmd> / gsd:<cmd> → gsd-<cmd>
+ * - Default direction (transformContent): /gsd-<cmd> or /vgsd-<cmd> → /vgsd:<cmd>
+ *   (keeps monorepo sources, docs, and workflows in the active Vibe colon form).
+ * - Reverse direction (transformContentToHyphen): gsd:<cmd> or vgsd:<cmd> → vgsd-<cmd>
  *   (used during skill installation for runtimes that register skills under the
  *   canonical hyphen form established in #2808).
  *
@@ -44,30 +44,29 @@ function isTestFile(name) {
 }
 
 function buildPattern(cmdNames) {
-  // Empty input would compile `/gsd-()(?=[^a-zA-Z0-9_-]|$)/g`, which the regex
-  // engine still matches at any `/gsd-` token followed by a non-word boundary
-  // (e.g. EOL, whitespace, punctuation) — rewriting it to a stray `/gsd:`.
+  // Empty input would compile a namespace pattern that still matches an empty
+  // command token at a boundary and rewrites it to a stray `/vgsd:`.
   // Short-circuit so the caller can no-op on a missing/empty registry rather
   // than perform an unintended broad rewrite.
   if (!Array.isArray(cmdNames) || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length); // longest first to avoid partial matches
-  return new RegExp(`/gsd-(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  return new RegExp(`/(?:vgsd|gsd)-(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 }
 
 /**
- * Pure transform: rewrite retired `/gsd-<cmd>` to `/gsd:<cmd>` for the given command names.
+ * Pure transform: rewrite hyphen command references to `/vgsd:<cmd>` for the given command names.
  * Returns the rewritten string. Identifiers not in `cmdNames` (e.g. `/gsd-sdk`,
  * `/gsd-tools`) are left untouched.
  */
 function transformContent(src, cmdNames) {
   const pattern = buildPattern(cmdNames);
   if (!pattern) return src;
-  return src.replace(pattern, (_, cmd) => `/gsd:${cmd}`);
+  return src.replace(pattern, (_, cmd) => `/vgsd:${cmd}`);
 }
 
 /**
  * Build regex for the reverse direction (colon form → hyphen form).
- * Matches both "gsd:cmd" and "/gsd:cmd" (the leading / is preserved automatically
+ * Matches both legacy "gsd:cmd" and public "vgsd:cmd" forms (the leading / is preserved automatically
  * because it is not part of the match). Uses longest-first ordering plus
  * bidirectional word-boundary safety (negative lookbehind on the left, lookahead
  * on the right) so matches only occur at token boundaries.
@@ -75,11 +74,11 @@ function transformContent(src, cmdNames) {
 function buildColonPattern(cmdNames) {
   if (!Array.isArray(cmdNames) || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length);
-  return new RegExp(`(?<![a-zA-Z0-9_-])gsd:(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  return new RegExp(`(?<![a-zA-Z0-9_-])(?:vgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 }
 
 /**
- * Pure transform (reverse): rewrite `/gsd:<cmd>` / `gsd:<cmd>` to hyphen form
+ * Pure transform (reverse): rewrite colon command references to the public hyphen form
  * for known GSD commands.
  *
  * Non-command identifiers (e.g. gsd-sdk, gsd-tools) are left untouched, matching
@@ -88,7 +87,7 @@ function buildColonPattern(cmdNames) {
 function transformContentToHyphen(src, cmdNames) {
   const pattern = buildColonPattern(cmdNames);
   if (!pattern) return src;
-  return src.replace(pattern, (_, cmd) => `gsd-${cmd}`);
+  return src.replace(pattern, (_, cmd) => `vgsd-${cmd}`);
 }
 
 function readCmdNames() {

@@ -30,7 +30,7 @@ const FAMILIES = [
     name: 'commands',
     dir: path.join(ROOT, 'commands', 'gsd'),
     filter: (f) => f.endsWith('.md'),
-    toName: (f) => '/gsd-' + f.replace(/\.md$/, ''),
+    toName: (f) => '/vgsd-' + f.replace(/\.md$/, ''),
   },
   {
     name: 'workflows',

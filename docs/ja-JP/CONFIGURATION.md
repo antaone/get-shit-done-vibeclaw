@@ -6,7 +6,7 @@
 
 ## 設定ファイル
 
-GSD はプロジェクト設定を `.planning/config.json` に保存します。`/gsd-new-project` 実行時に作成され、`/gsd-settings` で更新できます。
+GSD はプロジェクト設定を `.planning/config.json` に保存します。`/vgsd-new-project` 実行時に作成され、`/vgsd-settings` で更新できます。
 
 ### 完全スキーマ
 
@@ -97,13 +97,13 @@ GSD はプロジェクト設定を `.planning/config.json` に保存します。
 | `workflow.auto_advance` | boolean | `false` | discuss → plan → execute を停止せずに自動連鎖 |
 | `workflow.nyquist_validation` | boolean | `true` | plan-phase のリサーチ中にテストカバレッジマッピングを実施 |
 | `workflow.ui_phase` | boolean | `true` | フロントエンドフェーズで UI デザインコントラクトを生成 |
-| `workflow.ui_safety_gate` | boolean | `true` | plan-phase 中にフロントエンドフェーズに対して /gsd-ui-phase の実行を促すプロンプトを表示 |
+| `workflow.ui_safety_gate` | boolean | `true` | plan-phase 中にフロントエンドフェーズに対して /vgsd-ui-phase の実行を促すプロンプトを表示 |
 | `workflow.node_repair` | boolean | `true` | 検証失敗時にタスクを自律的に修復 |
 | `workflow.node_repair_budget` | number | `2` | 失敗タスクあたりの最大修復試行回数 |
 | `workflow.research_before_questions` | boolean | `false` | ディスカッション質問の後ではなく前にリサーチを実行 |
 | `workflow.use_worktrees` | boolean | `true` | `false` の場合、git worktree 分離を無効化 (v1.31) |
-| `workflow.discuss_mode` | string | `'discuss'` | `/gsd-discuss-phase` のコンテキスト収集方法を制御。`'discuss'`（デフォルト）は質問を1つずつ行います。`'assumptions'` はまずコードベースを読み取り、信頼度レベル付きの構造化された仮説を生成し、誤っている点のみ修正を求めます。v1.28 で追加 |
-| `workflow.skip_discuss` | boolean | `false` | `true` の場合、`/gsd-autonomous` は discuss-phase を完全にスキップし、ROADMAP のフェーズ目標から最小限の CONTEXT.md を作成します。開発者の要望が PROJECT.md/REQUIREMENTS.md に十分に記載されているプロジェクトに適しています。v1.28 で追加 |
+| `workflow.discuss_mode` | string | `'discuss'` | `/vgsd-discuss-phase` のコンテキスト収集方法を制御。`'discuss'`（デフォルト）は質問を1つずつ行います。`'assumptions'` はまずコードベースを読み取り、信頼度レベル付きの構造化された仮説を生成し、誤っている点のみ修正を求めます。v1.28 で追加 |
+| `workflow.skip_discuss` | boolean | `false` | `true` の場合、`/vgsd-autonomous` は discuss-phase を完全にスキップし、ROADMAP のフェーズ目標から最小限の CONTEXT.md を作成します。開発者の要望が PROJECT.md/REQUIREMENTS.md に十分に記載されているプロジェクトに適しています。v1.28 で追加 |
 | `workflow.text_mode` | boolean | `false` | AskUserQuestion の TUI メニューをプレーンテキストの番号付きリストに置き換えます。TUI メニューが表示されない Claude Code リモートセッション（`/rc` モード）で必要です。discuss-phase で `--text` フラグを使用してセッションごとに設定することもできます。v1.28 で追加 |
 
 ### 推奨プリセット
@@ -134,7 +134,7 @@ GSD はプロジェクト設定を `.planning/config.json` に保存します。
 | 設定 | 型 | デフォルト | 説明 |
 |------|-----|-----------|------|
 | `hooks.context_warnings` | boolean | `true` | コンテキストモニターフックによるコンテキストウィンドウ使用量の警告を表示 |
-| `hooks.workflow_guard` | boolean | `false` | GSD ワークフローのコンテキスト外でファイル編集が行われた場合に警告（`/gsd-quick` または `/gsd-fast` の使用を推奨） |
+| `hooks.workflow_guard` | boolean | `false` | GSD ワークフローのコンテキスト外でファイル編集が行われた場合に警告（`/vgsd-quick` または `/vgsd-fast` の使用を推奨） |
 
 プロンプトインジェクションガードフック（`gsd-prompt-guard.js`）は常に有効であり、無効にすることはできません。これはワークフロートグルではなく、セキュリティ機能です。
 
@@ -170,7 +170,7 @@ GSD はプロジェクト設定を `.planning/config.json` に保存します。
 | `git.branching_strategy` | enum | `none` | `none`、`phase`、または `milestone` |
 | `git.phase_branch_template` | string | `gsd/phase-{phase}-{slug}` | phase 戦略のブランチ名テンプレート |
 | `git.milestone_branch_template` | string | `gsd/{milestone}-{slug}` | milestone 戦略のブランチ名テンプレート |
-| `git.quick_branch_template` | string or null | `null` | `/gsd-quick` タスク用のオプションのブランチ名テンプレート |
+| `git.quick_branch_template` | string or null | `null` | `/vgsd-quick` タスク用のオプションのブランチ名テンプレート |
 
 ### 戦略の比較
 
@@ -362,4 +362,4 @@ GSD が非 Claude ランタイム向けにインストールされると、イ�
 
 **保存場所:** `~/.gsd/defaults.json`
 
-`/gsd-new-project` が新しい `config.json` を作成する際、グローバルデフォルトを読み込み、初期設定としてマージします。プロジェクトごとの設定は常にグローバル設定を上書きします。
+`/vgsd-new-project` が新しい `config.json` を作成する際、グローバルデフォルトを読み込み、初期設定としてマージします。プロジェクトごとの設定は常にグローバル設定を上書きします。

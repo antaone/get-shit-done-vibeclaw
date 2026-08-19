@@ -803,7 +803,7 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
   // the runtime config dir. This writer was missed in the migration
   // (PR #1540 targeted GSD-shipped command files; dev-preferences is a
   // runtime-generated user artifact). Default now points at the skills/
-  // location so /gsd:profile-user --refresh stops re-creating the legacy
+  // location so /vgsd:profile-user --refresh stops re-creating the legacy
   // directory. The path is constructed via path.join (not a literal
   // string) so the cline-install leaked-path lint does not flag it.
   let outputPath = options.output;
@@ -815,7 +815,8 @@ function cmdGenerateDevPreferences(cwd, options, raw) {
     } catch {
       effectiveRuntime = process.env.GSD_RUNTIME || 'claude';
     }
-    const skillDir = getGlobalSkillDir(effectiveRuntime, 'gsd-dev-preferences');
+    const skillName = effectiveRuntime === 'hermes' ? 'dev-preferences' : 'vgsd-dev-preferences';
+    const skillDir = getGlobalSkillDir(effectiveRuntime, skillName);
     if (!skillDir) {
       error(`Runtime "${effectiveRuntime}" does not use a skills directory; pass --output to choose a path explicitly.`);
     }

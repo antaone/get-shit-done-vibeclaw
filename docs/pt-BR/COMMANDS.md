@@ -9,65 +9,65 @@ Para detalhes completos de flags avançadas e mudanças recentes, consulte tamb�
 
 | Comando | Finalidade | Quando usar |
 |---------|------------|-------------|
-| `/gsd-new-project` | Inicialização completa: perguntas, pesquisa, requisitos e roadmap | Início de projeto |
-| `/gsd-discuss-phase [N]` | Captura decisões de implementação (`--chain`, `--power`) | Antes do planejamento |
-| `/gsd-ui-phase [N]` | Gera contrato de UI (`UI-SPEC.md`) | Fases com frontend |
-| `/gsd-plan-phase [N]` | Pesquisa + planejamento + verificação | Antes de executar uma fase |
-| `/gsd-execute-phase <N>` | Executa planos em ondas paralelas | Após planejamento aprovado |
-| `/gsd-verify-work [N]` | UAT manual com diagnóstico automático | Após execução |
-| `/gsd-ship [N]` | Cria PR da fase validada | Ao concluir a fase |
-| `/gsd-progress --next` | Detecta e executa o próximo passo lógico | Qualquer momento |
-| `/gsd-fast <texto>` | Tarefa curta sem planejamento completo | Ajustes triviais |
+| `/vgsd-new-project` | Inicialização completa: perguntas, pesquisa, requisitos e roadmap | Início de projeto |
+| `/vgsd-discuss-phase [N]` | Captura decisões de implementação (`--chain`, `--power`) | Antes do planejamento |
+| `/vgsd-ui-phase [N]` | Gera contrato de UI (`UI-SPEC.md`) | Fases com frontend |
+| `/vgsd-plan-phase [N]` | Pesquisa + planejamento + verificação | Antes de executar uma fase |
+| `/vgsd-execute-phase <N>` | Executa planos em ondas paralelas | Após planejamento aprovado |
+| `/vgsd-verify-work [N]` | UAT manual com diagnóstico automático | Após execução |
+| `/vgsd-ship [N]` | Cria PR da fase validada | Ao concluir a fase |
+| `/vgsd-progress --next` | Detecta e executa o próximo passo lógico | Qualquer momento |
+| `/vgsd-fast <texto>` | Tarefa curta sem planejamento completo | Ajustes triviais |
 
 ## Navegação e Sessão
 
 | Comando | Finalidade |
 |---------|------------|
-| `/gsd-progress` | Mostra status atual e próximos passos |
-| `/gsd-resume-work` | Retoma contexto da sessão anterior |
-| `/gsd-pause-work` | Salva handoff estruturado |
-| `/gsd-pause-work --report` | Gera resumo da sessão |
-| `/gsd-autonomous` | Executa todas as fases restantes de forma autônoma (`--from N`, `--to N`, `--only N`) |
-| `/gsd-help` | Lista comandos e uso |
-| `/gsd-update` | Atualiza o GSD |
+| `/vgsd-progress` | Mostra status atual e próximos passos |
+| `/vgsd-resume-work` | Retoma contexto da sessão anterior |
+| `/vgsd-pause-work` | Salva handoff estruturado |
+| `/vgsd-pause-work --report` | Gera resumo da sessão |
+| `/vgsd-autonomous` | Executa todas as fases restantes de forma autônoma (`--from N`, `--to N`, `--only N`) |
+| `/vgsd-help` | Lista comandos e uso |
+| `/vgsd-update` | Atualiza o GSD |
 
 ## Gestão de Fases
 
 | Comando | Finalidade |
 |---------|------------|
-| `/gsd-phase` | Adiciona fase no roadmap |
-| `/gsd-phase --insert [N]` | Insere trabalho urgente entre fases |
-| `/gsd-phase --remove [N]` | Remove fase futura e reenumera |
-| `/gsd-discuss-phase --assumptions [N]` | Mostra abordagem assumida pelo Claude |
+| `/vgsd-phase` | Adiciona fase no roadmap |
+| `/vgsd-phase --insert [N]` | Insere trabalho urgente entre fases |
+| `/vgsd-phase --remove [N]` | Remove fase futura e reenumera |
+| `/vgsd-discuss-phase --assumptions [N]` | Mostra abordagem assumida pelo Claude |
 
 ## Brownfield e Utilidades
 
 | Comando | Finalidade |
 |---------|------------|
-| `/gsd-map-codebase` | Mapeia base existente antes de novo projeto |
-| `/gsd-quick` | Tarefas ad-hoc com garantias do GSD |
-| `/gsd-debug [desc]` | Debug sistemático com estado persistente (`--diagnose` para modo diagnóstico) |
-| `/gsd-manager --analyze-deps` | Detecta dependências entre fases e sugere `Depends on` no ROADMAP.md (v1.32) |
-| `/gsd-forensics` | Diagnóstico de falhas no workflow |
-| `/gsd-settings` | Configuração de agentes, perfil e toggles |
-| `/gsd-config --profile <perfil>` | Troca rápida de perfil de modelo |
+| `/vgsd-map-codebase` | Mapeia base existente antes de novo projeto |
+| `/vgsd-quick` | Tarefas ad-hoc com garantias do GSD |
+| `/vgsd-debug [desc]` | Debug sistemático com estado persistente (`--diagnose` para modo diagnóstico) |
+| `/vgsd-manager --analyze-deps` | Detecta dependências entre fases e sugere `Depends on` no ROADMAP.md (v1.32) |
+| `/vgsd-forensics` | Diagnóstico de falhas no workflow |
+| `/vgsd-settings` | Configuração de agentes, perfil e toggles |
+| `/vgsd-config --profile <perfil>` | Troca rápida de perfil de modelo |
 
 ## Qualidade de Código
 
 | Comando | Finalidade |
 |---------|------------|
-| `/gsd-review` | Peer review com múltiplas IAs |
-| `/gsd-pr-branch` | Cria branch limpa sem commits de planejamento |
-| `/gsd-audit-uat` | Audita dívida de validação/UAT |
+| `/vgsd-review` | Peer review com múltiplas IAs |
+| `/vgsd-pr-branch` | Cria branch limpa sem commits de planejamento |
+| `/vgsd-audit-uat` | Audita dívida de validação/UAT |
 
 ## Backlog e Threads
 
 | Comando | Finalidade |
 |---------|------------|
-| `/gsd-capture --backlog <desc>` | Adiciona item no backlog (999.x) |
-| `/gsd-review-backlog` | Promove, mantém ou remove itens |
-| `/gsd-capture --seed <ideia>` | Registra ideia com gatilho futuro |
-| `/gsd-thread [nome]` | Gerencia threads persistentes |
+| `/vgsd-capture --backlog <desc>` | Adiciona item no backlog (999.x) |
+| `/vgsd-review-backlog` | Promove, mantém ou remove itens |
+| `/vgsd-capture --seed <ideia>` | Registra ideia com gatilho futuro |
+| `/vgsd-thread [nome]` | Gerencia threads persistentes |
 
 ## Gerenciamento de Estado
 
@@ -89,10 +89,10 @@ node gsd-tools.cjs state sync              # Reconstruir STATE.md a partir do di
 ## Exemplo rápido
 
 ```bash
-/gsd-new-project
-/gsd-discuss-phase 1
-/gsd-plan-phase 1
-/gsd-execute-phase 1
-/gsd-verify-work 1
-/gsd-ship 1
+/vgsd-new-project
+/vgsd-discuss-phase 1
+/vgsd-plan-phase 1
+/vgsd-execute-phase 1
+/vgsd-verify-work 1
+/vgsd-ship 1
 ```

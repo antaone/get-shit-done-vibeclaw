@@ -1,12 +1,12 @@
 'use strict';
 
 // Resolution environment variable surface for #3541 — when the installer
-// runs without a TTY (typical /gsd:update path via Claude Code or any
+// runs without a TTY (typical /vgsd:update path via Claude Code or any
 // scripted update), prompt-user migration actions cannot be answered
 // interactively. We resolve them by classification:
-//   - Stale SDK build artifacts (get-shit-done/sdk/{dist,src}/gsd-*):
+//   - Stale SDK build artifacts (get-shit-done/sdk/{dist,src}/vgsd-*):
 //     default `remove`. Fresh install supplies replacements.
-//   - User-facing skill anchors (skills/gsd-*/SKILL.md): default `keep`.
+//   - User-facing skill anchors (skills/vgsd-*/SKILL.md): default `keep`.
 //     User-owned content is preserved.
 // Anything else: fall through to the hard assertion with an improved,
 // grouped, actionable error message.
@@ -138,7 +138,7 @@ function classifyPromptUserAction(action) {
   if (/^get-shit-done\/sdk\/(dist|src)\//.test(relPath)) {
     return { category: 'stale-sdk-build-artifact', choice: 'remove' };
   }
-  if (/^skills\/gsd-[^/]+\/SKILL\.md$/.test(relPath)) {
+  if (/^skills\/(?:vgsd|gsd)-[^/]+\/SKILL\.md$/.test(relPath)) {
     return { category: 'user-facing-skill', choice: 'keep' };
   }
   // #3610 / #3628: bundled GSD hooks shipped under `hooks/`. The whitelist

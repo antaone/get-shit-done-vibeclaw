@@ -1,4 +1,4 @@
-# PRD — `review.default_reviewers` config key for `/gsd-review` reviewer selection
+# PRD — `review.default_reviewers` config key for `/vgsd-review` reviewer selection
 
 - **Status:** Draft
 - **Date:** 2026-05-13
@@ -9,20 +9,20 @@
 
 ## TL;DR
 
-`/gsd-review` with no flags fans out to **every** detected CLI reviewer (Claude, Codex, Cursor, Gemini, OpenCode, plus local model servers such as ollama, lm-studio, llama.cpp). For users with many backends installed, this wastes wall-clock on timeouts and burns tokens on reviewers they don't want for routine work. Add a `review.default_reviewers` key under the existing `review.*` namespace in `.planning/config.json` that scopes the no-flag default to a user-chosen subset. Absent key preserves today's behavior. `--all` and individual flags continue to work unchanged. Follows GSD's **absent = enabled** convention.
+`/vgsd-review` with no flags fans out to **every** detected CLI reviewer (Claude, Codex, Cursor, Gemini, OpenCode, plus local model servers such as ollama, lm-studio, llama.cpp). For users with many backends installed, this wastes wall-clock on timeouts and burns tokens on reviewers they don't want for routine work. Add a `review.default_reviewers` key under the existing `review.*` namespace in `.planning/config.json` that scopes the no-flag default to a user-chosen subset. Absent key preserves today's behavior. `--all` and individual flags continue to work unchanged. Follows GSD's **absent = enabled** convention.
 
 ## Problem Statement
 
-GSD's `/gsd-review` workflow treats "no flags" as "invoke every CLI we can detect" (`workflows/review.md` line 52). That default is fine at install time — it makes the feature discoverable — but it's the wrong default for any user who has accumulated multiple reviewer CLIs plus local model servers. Each review probes up to ~10 backends, including ones that are slow, expensive, redundant for the change at hand, or not actually running (timeout waits on ollama, lm-studio, llama.cpp when the daemon is off).
+GSD's `/vgsd-review` workflow treats "no flags" as "invoke every CLI we can detect" (`workflows/review.md` line 52). That default is fine at install time — it makes the feature discoverable — but it's the wrong default for any user who has accumulated multiple reviewer CLIs plus local model servers. Each review probes up to ~10 backends, including ones that are slow, expensive, redundant for the change at hand, or not actually running (timeout waits on ollama, lm-studio, llama.cpp when the daemon is off).
 
-The only existing workaround is editing `workflows/review.md` in place. That patch gets clobbered on every `/gsd-update`, requiring `/gsd-update --reapply` to restore. There is no machine-readable record of the user's intent — every machine the user works on needs the same patch reapplied. The issue reporter (`#3079`) and presumably others are paying a "tax" on every review that is purely a default-selection problem.
+The only existing workaround is editing `workflows/review.md` in place. That patch gets clobbered on every `/vgsd-update`, requiring `/vgsd-update --reapply` to restore. There is no machine-readable record of the user's intent — every machine the user works on needs the same patch reapplied. The issue reporter (`#3079`) and presumably others are paying a "tax" on every review that is purely a default-selection problem.
 
 This is a small change with broad reach: it lands in a hot-path workflow that power users run many times per day.
 
 ## Goals
 
 - Eliminate the recurring local-patch tax for multi-CLI users. A user who consistently wants only Gemini + Codex for routine reviews should be able to set that once and forget it.
-- Cut median wall-clock time of a no-flag `/gsd-review` on multi-CLI machines (target: ≥40% reduction for users with ≥4 detected CLIs).
+- Cut median wall-clock time of a no-flag `/vgsd-review` on multi-CLI machines (target: ≥40% reduction for users with ≥4 detected CLIs).
 - Keep the change non-breaking. Absent config = today's behavior; nothing changes for the install-day experience.
 - Match GSD's established config conventions (`review.models.*`, `review.*_host`, **absent = enabled**, namespacing under `review.*`) so users don't have to learn a new pattern.
 - Stay one-line-shaped. The implementation should be a config read plus an intersection with the detected set — no new commands, no schema overhaul, no migration.
@@ -34,17 +34,17 @@ This is a small change with broad reach: it lands in a hot-path workflow that po
 - **Auto-detecting the "best" default reviewers based on usage history.** Out of scope; we want explicit user intent, not silent behavior drift.
 - **Changing the `--all` semantics or the individual flag set** (`--gemini`, `--codex`, `--cursor`, …). They keep their current meaning.
 - **A new top-level config namespace.** Reviewers belong under the existing `review.*` namespace.
-- **GUI / TUI editing of the key in v1.** Editing the JSON file directly (or via `/gsd-settings` / `/gsd-config --integrations` if maintainers choose to support it later) is sufficient.
+- **GUI / TUI editing of the key in v1.** Editing the JSON file directly (or via `/vgsd-settings` / `/vgsd-config --integrations` if maintainers choose to support it later) is sufficient.
 
 ## Users & Use Cases
 
 ### Primary persona: "Multi-CLI power user"
 
-A developer who has installed multiple coding CLIs (e.g., Claude Code, Codex, Gemini CLI, Cursor, OpenCode, Kilo) plus one or more local inference servers. They run `/gsd-review` frequently — sometimes dozens of times per day during a sprint — and have a stable mental model of which 1–3 reviewers actually add signal for their day-to-day work.
+A developer who has installed multiple coding CLIs (e.g., Claude Code, Codex, Gemini CLI, Cursor, OpenCode, Kilo) plus one or more local inference servers. They run `/vgsd-review` frequently — sometimes dozens of times per day during a sprint — and have a stable mental model of which 1–3 reviewers actually add signal for their day-to-day work.
 
 ### Secondary persona: "Single-CLI user with a sometimes-on local server"
 
-Has Claude + ollama installed. Wants reviews from Claude every time, and from ollama only when explicitly asked. Today, every `/gsd-review` pays the ollama timeout cost when ollama isn't running.
+Has Claude + ollama installed. Wants reviews from Claude every time, and from ollama only when explicitly asked. Today, every `/vgsd-review` pays the ollama timeout cost when ollama isn't running.
 
 ### Secondary persona: "Cost-sensitive team lead"
 
@@ -55,7 +55,7 @@ Routine reviews should hit cheap/local reviewers; pre-merge reviews should hit t
 - "I only want Gemini + Codex for routine reviews." → set `review.default_reviewers: ["gemini", "codex"]`.
 - "I want Claude only by default, and I'll opt into the others with flags." → set `["claude"]`.
 - "I want today's behavior." → leave the key absent.
-- "I want today's behavior just this once" on a configured project → `/gsd-review --all`.
+- "I want today's behavior just this once" on a configured project → `/vgsd-review --all`.
 
 ## User Stories
 
@@ -63,8 +63,8 @@ Grouped by persona, ordered roughly by frequency.
 
 **Multi-CLI power user**
 
-- As a multi-CLI user, I want to declare which reviewers run by default so that `/gsd-review` doesn't probe backends I don't use.
-- As a multi-CLI user, I want my preference to survive `/gsd-update` so I don't have to keep re-patching `workflows/review.md`.
+- As a multi-CLI user, I want to declare which reviewers run by default so that `/vgsd-review` doesn't probe backends I don't use.
+- As a multi-CLI user, I want my preference to survive `/vgsd-update` so I don't have to keep re-patching `workflows/review.md`.
 - As a multi-CLI user, I want `--all` to still work so I can opt into a full review pre-merge without un-setting my config.
 - As a multi-CLI user, I want individual flags (`--gemini`, `--cursor`, …) to keep working regardless of my default so ad-hoc runs aren't constrained by the default.
 
@@ -91,19 +91,19 @@ Grouped by persona, ordered roughly by frequency.
 ### Must-Have (P0)
 
 - **P0-1. New config key.** `review.default_reviewers` is `string[]`. Each element validates against the existing slug pattern `^[a-zA-Z0-9_-]+$`. Schema parser accepts the key; rejects non-array or non-string-element values with a clear error. Empty array `[]` behavior is decided per Q-1.
-- **P0-2. No-flag honors the key.** Given the key is `["gemini", "codex"]` and both are detected, running `/gsd-review` invokes only Gemini and Codex.
-- **P0-3. Absent key preserves current behavior.** Given the key is unset, running `/gsd-review` runs every detected reviewer, identical to today.
-- **P0-4. `--all` overrides the config.** Given the key is `["gemini"]`, running `/gsd-review --all` invokes every detected reviewer. Verbose mode shows which reviewers came from `--all` vs. the default.
-- **P0-5. Individual flags override the config.** Given the key is `["gemini"]`, running `/gsd-review --cursor` invokes only Cursor. Running `/gsd-review --gemini --codex` invokes exactly those two regardless of the default.
+- **P0-2. No-flag honors the key.** Given the key is `["gemini", "codex"]` and both are detected, running `/vgsd-review` invokes only Gemini and Codex.
+- **P0-3. Absent key preserves current behavior.** Given the key is unset, running `/vgsd-review` runs every detected reviewer, identical to today.
+- **P0-4. `--all` overrides the config.** Given the key is `["gemini"]`, running `/vgsd-review --all` invokes every detected reviewer. Verbose mode shows which reviewers came from `--all` vs. the default.
+- **P0-5. Individual flags override the config.** Given the key is `["gemini"]`, running `/vgsd-review --cursor` invokes only Cursor. Running `/vgsd-review --gemini --codex` invokes exactly those two regardless of the default.
 - **P0-6. Graceful slug handling.** Unknown slug → start-of-run warning naming the offending slug; run continues with valid entries. Known slug but undetected → info-level note; run continues. Zero post-filter selections → error per Q-1.
 - **P0-7. Docs updated.** `docs/CONFIGURATION.md` gets a `review.*` subsection (or an extension of an existing one) covering the new key. `workflows/review.md` references the key in the no-flag branch. Schema example at the top of `docs/CONFIGURATION.md` includes the key.
 - **P0-8. Tests.** Unit and integration coverage per the test list in the ADR's **Tests expected to move with the seam** section.
 
 ### Nice-to-Have (P1)
 
-- **P1-1.** `/gsd-config --integrations` extends to set `review.default_reviewers` interactively, aligning with the existing interactive config flow for reviewers.
+- **P1-1.** `/vgsd-config --integrations` extends to set `review.default_reviewers` interactively, aligning with the existing interactive config flow for reviewers.
 - **P1-2.** `--no-default` flag that runs the full detected set without `--all` semantics — slightly different intent expression. Drop if equivalent to `--all` (Q-2).
-- **P1-3.** Verbose-mode "selection source" line in `/gsd-review` output: `Running reviewers (default): gemini, codex (set in .planning/config.json)`.
+- **P1-3.** Verbose-mode "selection source" line in `/vgsd-review` output: `Running reviewers (default): gemini, codex (set in .planning/config.json)`.
 - **P1-4.** Per-command override env var (`GSD_REVIEW_DEFAULT=...`) for CI scenarios where mutating `config.json` is undesirable.
 
 ### Future Considerations (P2)
@@ -152,7 +152,7 @@ else:
 
 ### Logging
 
-- One line per `/gsd-review` start identifying the source of selection (default config / `--all` / explicit flags / no config). Surfaced under `--verbose` per Q-5.
+- One line per `/vgsd-review` start identifying the source of selection (default config / `--all` / explicit flags / no config). Surfaced under `--verbose` per Q-5.
 - Slug warnings/infos as described in P0-6.
 
 ## Success Metrics
@@ -165,7 +165,7 @@ else:
 
 ### Lagging indicators (1–3 months post-release)
 
-- **Median wall-clock per `/gsd-review`** on machines with ≥4 detected CLIs (self-reported or telemetry). Target: ≥40% reduction for users who opt in.
+- **Median wall-clock per `/vgsd-review`** on machines with ≥4 detected CLIs (self-reported or telemetry). Target: ≥40% reduction for users who opt in.
 - **User-perceived signal-to-noise** on review output (qualitative; gather via GitHub Discussions or a single follow-up question on the issue).
 
 ### Measurement notes
@@ -188,7 +188,7 @@ GSD doesn't ship usage telemetry today. Most of these metrics rely on qualitativ
 
 - **Q-1. Empty-array semantics.** Should `review.default_reviewers: []` be a schema error, or should it fall back to "all detected"? *Proposal: schema error.* **Blocking.** Affects schema validation and tests.
 - **Q-2. `--no-default` flag.** Is this meaningfully different from `--all`? *Proposal: drop unless implementation surfaces a concrete difference.*
-- **Q-3. `/gsd-config --integrations` integration.** Land in this pass or as a fast follow? *Proposal: fast follow; depends on contributor bandwidth.*
+- **Q-3. `/vgsd-config --integrations` integration.** Land in this pass or as a fast follow? *Proposal: fast follow; depends on contributor bandwidth.*
 - **Q-4. Slug case handling.** Lowercase-on-read (proposed) or exact-match enforcement at the schema layer?
 - **Q-5. Verbose-mode "selection source" line.** Always-on or only under `--verbose`? *Proposal: `--verbose` only.*
 - **Q-6. Cross-runtime sanity.** Any cross-runtime concerns for Codex, OpenCode, Gemini CLI, or Kilo given the existing `resolve_model_ids: "omit"` pattern? *Proposal: none expected — the change operates on detection, not runtime; add at least one non-Claude integration test to confirm.*
@@ -202,7 +202,7 @@ This is a small, additive, non-breaking change. No migration is required.
 3. **Release** in the next minor version (no semver-major bump needed — additive).
 4. **Changelog & announcement** — call out in release notes; link to `#3079`; show the two-line config example.
 5. **Monitor** `#3079` and any new issues mentioning "default reviewers" or "review.md patch" for 60 days.
-6. **Optional fast follow** — P1-1 (`/gsd-config --integrations` integration) if there's contributor bandwidth.
+6. **Optional fast follow** — P1-1 (`/vgsd-config --integrations` integration) if there's contributor bandwidth.
 
 ## Timeline Considerations
 
@@ -229,7 +229,7 @@ This is a small, additive, non-breaking change. No migration is required.
 }
 ```
 
-With this config, `/gsd-review` invokes only Gemini and Codex. `/gsd-review --all` invokes every detected reviewer. `/gsd-review --cursor` invokes only Cursor.
+With this config, `/vgsd-review` invokes only Gemini and Codex. `/vgsd-review --all` invokes every detected reviewer. `/vgsd-review --cursor` invokes only Cursor.
 
 ## Appendix B: Glossary
 

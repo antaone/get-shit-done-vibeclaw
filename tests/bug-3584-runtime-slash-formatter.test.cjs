@@ -4,9 +4,9 @@
  * Runtime/user-facing strings emitted by get-shit-done/bin/lib/*.cjs hardcoded
  * the deprecated `/gsd:<cmd>` colon form (16 files, ~50 occurrences). After
  * #2808 unified GSD installs to register skills under the hyphen form
- * (`name: gsd-execute-phase`), pasting the emitted `/gsd:execute-phase` into
- * Claude Code yields `Unknown command: /gsd:execute-phase. Did you mean
- * /gsd-execute-phase?`. Codex installs require `$gsd-<cmd>` (shell-var) form.
+ * (`name: vgsd-execute-phase`), pasting the emitted `/vgsd:execute-phase` into
+ * Claude Code yields `Unknown command: /vgsd:execute-phase. Did you mean
+ * /vgsd-execute-phase?`. Codex installs require `$gsd-<cmd>` (shell-var) form.
  *
  * Fix: a runtime-aware slash formatter (`runtime-slash.cjs`) is now the single
  * source of truth for emitting `/gsd-<cmd>` (hyphen) for skills-based runtimes
@@ -29,43 +29,43 @@ const { formatGsdSlash, resolveRuntime } = require(
 describe('formatGsdSlash — runtime-aware slash command formatter', () => {
   describe('hyphen-form runtimes (claude, cursor, opencode, kilo, etc.)', () => {
     test('emits /gsd-<cmd> for claude', () => {
-      assert.strictEqual(formatGsdSlash('execute-phase', 'claude'), '/gsd-execute-phase');
+      assert.strictEqual(formatGsdSlash('execute-phase', 'claude'), '/vgsd-execute-phase');
     });
 
     test('emits /gsd-<cmd> for cursor', () => {
-      assert.strictEqual(formatGsdSlash('plan-phase', 'cursor'), '/gsd-plan-phase');
+      assert.strictEqual(formatGsdSlash('plan-phase', 'cursor'), '/vgsd-plan-phase');
     });
 
     test('emits /gsd-<cmd> for opencode', () => {
-      assert.strictEqual(formatGsdSlash('discuss-phase', 'opencode'), '/gsd-discuss-phase');
+      assert.strictEqual(formatGsdSlash('discuss-phase', 'opencode'), '/vgsd-discuss-phase');
     });
 
     test('emits /gsd-<cmd> for kilo', () => {
-      assert.strictEqual(formatGsdSlash('health', 'kilo'), '/gsd-health');
+      assert.strictEqual(formatGsdSlash('health', 'kilo'), '/vgsd-health');
     });
 
     test('unknown runtime defaults to hyphen form', () => {
       assert.strictEqual(
         formatGsdSlash('new-project', 'some-future-runtime'),
-        '/gsd-new-project',
+        '/vgsd-new-project',
       );
     });
 
     test('null/undefined runtime defaults to hyphen form (claude)', () => {
-      assert.strictEqual(formatGsdSlash('new-milestone', null), '/gsd-new-milestone');
-      assert.strictEqual(formatGsdSlash('new-milestone', undefined), '/gsd-new-milestone');
+      assert.strictEqual(formatGsdSlash('new-milestone', null), '/vgsd-new-milestone');
+      assert.strictEqual(formatGsdSlash('new-milestone', undefined), '/vgsd-new-milestone');
     });
   });
 
   describe('codex shell-var form', () => {
     test('emits $gsd-<cmd> for codex', () => {
-      assert.strictEqual(formatGsdSlash('execute-phase', 'codex'), '$gsd-execute-phase');
+      assert.strictEqual(formatGsdSlash('execute-phase', 'codex'), '$vgsd-execute-phase');
     });
 
     test('codex output is lowercased', () => {
       assert.strictEqual(
         formatGsdSlash('Execute-Phase', 'codex'),
-        '$gsd-execute-phase',
+        '$vgsd-execute-phase',
       );
     });
   });
@@ -73,43 +73,43 @@ describe('formatGsdSlash — runtime-aware slash command formatter', () => {
   describe('input normalization', () => {
     test('strips existing /gsd: colon prefix', () => {
       assert.strictEqual(
-        formatGsdSlash('/gsd:execute-phase', 'claude'),
-        '/gsd-execute-phase',
+        formatGsdSlash('/vgsd:execute-phase', 'claude'),
+        '/vgsd-execute-phase',
       );
     });
 
     test('strips existing /gsd- hyphen prefix (idempotent)', () => {
       assert.strictEqual(
-        formatGsdSlash('/gsd-plan-phase', 'claude'),
-        '/gsd-plan-phase',
+        formatGsdSlash('/vgsd-plan-phase', 'claude'),
+        '/vgsd-plan-phase',
       );
     });
 
     test('strips bare gsd: prefix without leading slash', () => {
       assert.strictEqual(
-        formatGsdSlash('gsd:new-project', 'claude'),
-        '/gsd-new-project',
+        formatGsdSlash('vgsd:new-project', 'claude'),
+        '/vgsd-new-project',
       );
     });
 
     test('strips existing $gsd- shell prefix (codex idempotent)', () => {
       assert.strictEqual(
-        formatGsdSlash('$gsd-execute-phase', 'codex'),
-        '$gsd-execute-phase',
+        formatGsdSlash('$vgsd-execute-phase', 'codex'),
+        '$vgsd-execute-phase',
       );
     });
 
-    test('runtime swap: /gsd:execute-phase + codex → $gsd-execute-phase', () => {
+    test('runtime swap: /vgsd:execute-phase + codex → $vgsd-execute-phase', () => {
       assert.strictEqual(
-        formatGsdSlash('/gsd:execute-phase', 'codex'),
-        '$gsd-execute-phase',
+        formatGsdSlash('/vgsd:execute-phase', 'codex'),
+        '$vgsd-execute-phase',
       );
     });
 
     test('case-insensitive prefix stripping', () => {
       assert.strictEqual(
         formatGsdSlash('GSD:execute-phase', 'claude'),
-        '/gsd-execute-phase',
+        '/vgsd-execute-phase',
       );
     });
   });
@@ -150,11 +150,11 @@ describe('formatGsdSlash — runtime-aware slash command formatter', () => {
       // belongs to the caller.
       assert.strictEqual(
         formatGsdSlash('execute-phase 03', 'claude'),
-        '/gsd-execute-phase 03',
+        '/vgsd-execute-phase 03',
       );
       assert.strictEqual(
-        formatGsdSlash('/gsd:execute-phase 03', 'claude'),
-        '/gsd-execute-phase 03',
+        formatGsdSlash('/vgsd:execute-phase 03', 'claude'),
+        '/vgsd-execute-phase 03',
       );
     });
 
@@ -164,11 +164,11 @@ describe('formatGsdSlash — runtime-aware slash command formatter', () => {
       // Windows paths and case-sensitive flag values passed as args.
       assert.strictEqual(
         formatGsdSlash('Map-Codebase --paths C:\\Users\\Me\\Project', 'codex'),
-        '$gsd-map-codebase --paths C:\\Users\\Me\\Project',
+        '$vgsd-map-codebase --paths C:\\Users\\Me\\Project',
       );
       assert.strictEqual(
         formatGsdSlash('execute-phase 03 --Name FooBar', 'codex'),
-        '$gsd-execute-phase 03 --Name FooBar',
+        '$vgsd-execute-phase 03 --Name FooBar',
       );
     });
 
@@ -177,7 +177,7 @@ describe('formatGsdSlash — runtime-aware slash command formatter', () => {
       // runtimes preserve whatever case the caller supplied for the token.
       assert.strictEqual(
         formatGsdSlash('Plan-Phase 03', 'claude'),
-        '/gsd-Plan-Phase 03',
+        '/vgsd-Plan-Phase 03',
       );
     });
   });

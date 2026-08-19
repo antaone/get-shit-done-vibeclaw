@@ -46,7 +46,7 @@ The catalog stores a `golden` alias per agent. `quality` is defined as the golde
 - `sdk/src/query/helpers.ts` runtime list comes from the catalog, fixing drift like the missing `hermes` runtime
 - `sdk/src/session-runner.ts` uses the catalog's Claude runtime tier defaults instead of a private hardcoded profile map
 - tests validate:
-  - every `agents/gsd-*.md` file exists in the catalog
+  - every `agents/vgsd-*.md` file exists in the catalog
   - SDK and CJS resolve the same aliases for all known agents
   - unknown-agent fallback follows profile semantics (`quality`→`opus`, `budget`→`haiku`, etc.), not a hardcoded `sonnet`
   - docs/runtime tables stay aligned with the catalog

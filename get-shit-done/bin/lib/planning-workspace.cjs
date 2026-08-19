@@ -374,7 +374,7 @@ function setActiveWorkstream(cwd, name) {
 /**
  * Locate the CONTEXT.md file in a phase directory, handling both the bare
  * form (`CONTEXT.md`) and the padded-prefix convention (`NN-CONTEXT.md`,
- * `NN.N-CONTEXT.md`, etc.) used by gsd-discuss-phase output.
+ * `NN.N-CONTEXT.md`, etc.) used by vgsd-discuss-phase output.
  *
  * Returns the filename (not the full path) of the first match, or null if
  * no CONTEXT.md exists in the directory.

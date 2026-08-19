@@ -4,7 +4,7 @@
 
 ## Why this exists
 
-The graph at `.planning/graphs/graph.json` is consumed automatically (every `gsd-planner` and `gsd-phase-researcher` step) but produced manually (`/gsd:graphify build` per session at best). Without auto-update, the producer-consumer gap silently widens with every commit. The existing `stale: true` annotation tells the consumer the mtime is old; it cannot tell the consumer whether the auto-build hook has been running, just failed, or is in flight.
+The graph at `.planning/graphs/graph.json` is consumed automatically (every `gsd-planner` and `gsd-phase-researcher` step) but produced manually (`/vgsd:graphify build` per session at best). Without auto-update, the producer-consumer gap silently widens with every commit. The existing `stale: true` annotation tells the consumer the mtime is old; it cannot tell the consumer whether the auto-build hook has been running, just failed, or is in flight.
 
 When `graphify.auto_update: true`, the bundled `hooks/gsd-graphify-update.sh` PostToolUse hook fires after HEAD-advancing git operations on the default branch and dispatches `graphify update .` in a detached subprocess. The hook writes a status file synchronously before detach; the detached process rewrites it on completion.
 

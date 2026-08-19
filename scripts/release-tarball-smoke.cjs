@@ -38,7 +38,7 @@
  *   - Calls `gsd-sdk "query" state.json --project-dir <fixtureDir>` to verify
  *     the SDK binary is callable and produces parseable JSON (SDK_BINARY_NOT_CALLABLE).
  *   - Scans all installed get-shit-done/workflows/*.md for:
- *     (a) /gsd:<known-cmd> colon-namespace leaks (WORKFLOW_BODY_COLON_LEAK)
+ *     (a) legacy/current colon-namespace leaks (WORKFLOW_BODY_COLON_LEAK)
  *     (b) bare `gsd-sdk` query invocations in shell fences without a `command -v gsd-sdk`
  *         guard in the same fence (WORKFLOW_MISSING_SDK_FALLBACK — #3668).
  *   Both checks populate result.details with counters but do NOT return a failure
@@ -186,18 +186,19 @@ function readInstalledCmdNames(pkg) {
 }
 
 /**
- * Scan a single workflow .md file for /gsd:<cmd> colon-namespace leaks.
+ * Scan a single workflow .md file for colon-namespace leaks in a runtime that
+ * should receive hyphen-form commands.
  *
  * Uses the word-boundary-safe regex shape from scripts/fix-slash-commands.cjs:
- *   /gsd-(<cmd1>|<cmd2>|...)(?=[^a-zA-Z0-9_-]|$)/g  — forward
- * We check the colon form: /gsd:<cmd> leaking in installed workflow bodies.
+ * We check both the current `/vgsd:<cmd>` source form and legacy
+ * `/gsd:<cmd>` references leaking into installed workflow bodies.
  *
  * Returns the first leaking { line, lineNumber } or null.
  */
 function scanWorkflowColonLeak(filePath, cmdNames) {
   if (!cmdNames || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length);
-  const pattern = new RegExp(`/gsd:(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  const pattern = new RegExp(`/(?:vgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split(/\r?\n/);
@@ -584,7 +585,7 @@ function runSmoke({
   if (firstMissingFallback) details.firstMissingFallback = firstMissingFallback;
 
   // NOTE: colonLeakCount and missingFallbackCount are informational here.
-  // They will be non-zero against current main per #3668 and the /gsd: leak
+  // They will be non-zero against current main per #3668 and colon-form leaks
   // backlog. Once those issues are fixed, a future enforcement mode can be
   // enabled (e.g. SMOKE_ENFORCE_WORKFLOW_BODY=1) to fail here.
 

@@ -31,7 +31,7 @@ GSD is a **meta-prompting framework** that sits between the user and AI coding a
 ```
 ┌──────────────────────────────────────────────────────┐
 │                      USER                            │
-│            /gsd-command [args]                        │
+│            /vgsd-command [args]                        │
 └─────────────────────┬────────────────────────────────┘
                       │
 ┌─────────────────────▼────────────────────────────────┐
@@ -111,18 +111,18 @@ Multiple layers prevent common failure modes:
 
 User-facing entry points. Each file contains YAML frontmatter (name, description, allowed-tools) and a prompt body that bootstraps the workflow. Commands are installed as:
 
-- **Claude Code:** Custom slash commands (hyphen form, `/gsd-command-name`)
-- **OpenCode / Kilo:** Slash commands (hyphen form, `/gsd-command-name`)
-- **Codex:** Skills (`$gsd-command-name`)
-- **Copilot:** Slash commands (hyphen form, `/gsd-command-name`)
-- **Gemini CLI:** Slash commands under the `gsd:` namespace (colon form, `/gsd:command-name`) — Gemini namespaces all custom commands under their plugin id, so the install path rewrites every body-text reference to colon form
+- **Claude Code:** Custom slash commands (hyphen form, `/vgsd-command-name`)
+- **OpenCode / Kilo:** Slash commands (hyphen form, `/vgsd-command-name`)
+- **Codex:** Skills (`$vgsd-command-name`)
+- **Copilot:** Slash commands (hyphen form, `/vgsd-command-name`)
+- **Gemini CLI:** Slash commands under the `gsd:` namespace (colon form, `/vgsd:command-name`) — Gemini namespaces all custom commands under their plugin id, so the install path rewrites every body-text reference to colon form
 - **Antigravity:** Skills
 
 **Total commands:** see [`docs/INVENTORY.md`](INVENTORY.md#commands) for the authoritative count and full roster.
 
 #### Two-stage hierarchical routing (v1.40, [#2792](https://github.com/gsd-build/get-shit-done/issues/2792))
 
-To keep the eager skill-listing token cost low, v1.40 introduces six namespace **meta-skills** (`gsd-workflow`, `gsd-project`, `gsd-quality`, `gsd-context`, `gsd-manage`, `gsd-ideate` — sourced from `commands/gsd/ns-*.md`, but the invocable `name:` is the bare form shown here) layered above the concrete sub-skills. The model sees 6 namespace routers (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens), selects a namespace, then routes to the concrete sub-skill via a routing table embedded in the namespace router's body. Namespace skills are **additive** — every concrete command is still directly invocable.
+To keep the eager skill-listing token cost low, v1.40 introduces six namespace **meta-skills** (`vgsd-workflow`, `vgsd-project`, `vgsd-quality`, `vgsd-context`, `vgsd-manage`, `vgsd-ideate` — sourced from `commands/gsd/ns-*.md`, but the invocable `name:` is the bare form shown here) layered above the concrete sub-skills. The model sees 6 namespace routers (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens), selects a namespace, then routes to the concrete sub-skill via a routing table embedded in the namespace router's body. Namespace skills are **additive** — every concrete command is still directly invocable.
 
 The router descriptions use pipe-separated keyword tags (≤ 60 chars) per the Tool Attention research showing keyword-dense tags outperform prose for routing at ~40 % the token cost.
 
@@ -145,7 +145,7 @@ Orchestration logic that commands reference. Contains the step-by-step process i
 #### Progressive disclosure for workflows
 
 Workflow files are loaded verbatim into Claude's context every time the
-corresponding `/gsd-*` command is invoked. To keep that cost bounded, the
+corresponding `/vgsd-*` command is invoked. To keep that cost bounded, the
 workflow size budget enforced by `tests/workflow-size-budget.test.cjs`
 mirrors the agent budget from #2361:
 
@@ -231,7 +231,7 @@ References for integrating thinking-class models (o3, o4-mini, Gemini 2.5 Pro) i
 The planner agent (`agents/gsd-planner.md`) was decomposed from a single monolithic file into a core agent plus reference modules to stay under the 50K character limit imposed by some runtimes:
 
 - `planner-gap-closure.md` — Gap closure mode behavior (reads VERIFICATION.md, targeted replanning)
-- `planner-reviews.md` — Cross-AI review integration (reads REVIEWS.md from `/gsd-review`)
+- `planner-reviews.md` — Cross-AI review integration (reads REVIEWS.md from `/vgsd-review`)
 - `planner-revision.md` — Plan revision patterns for iterative refinement
 
 ### Templates (`get-shit-done/templates/`)
@@ -488,7 +488,7 @@ UI-SPEC.md (per phase) ───────────────────
 
 ```
 ~/.claude/                          # Claude Code (global install)
-├── skills/gsd-*/SKILL.md           # Global skills (authoritative roster: docs/INVENTORY.md)
+├── skills/vgsd-*/SKILL.md           # Global skills (authoritative roster: docs/INVENTORY.md)
 ├── commands/gsd/*.md               # Local Claude installs use slash commands instead of global skills
 ├── get-shit-done/
 │   ├── bin/gsd-tools.cjs           # CLI utility
@@ -530,13 +530,13 @@ Equivalent paths for other runtimes:
 ├── STATE.md                # Living memory: position, decisions, blockers, metrics
 ├── config.json             # Workflow configuration
 ├── MILESTONES.md           # Completed milestone archive
-├── research/               # Domain research from /gsd-new-project
+├── research/               # Domain research from /vgsd-new-project
 │   ├── SUMMARY.md
 │   ├── STACK.md
 │   ├── FEATURES.md
 │   ├── ARCHITECTURE.md
 │   └── PITFALLS.md
-├── codebase/               # Brownfield mapping (from /gsd-map-codebase)
+├── codebase/               # Brownfield mapping (from /vgsd-map-codebase)
 │   ├── STACK.md            # YAML frontmatter carries `last_mapped_commit`
 │   ├── ARCHITECTURE.md     # for the post-execute drift gate (#2003)
 │   ├── CONVENTIONS.md
@@ -562,19 +562,19 @@ Equivalent paths for other runtimes:
 ├── todos/
 │   ├── pending/            # Captured ideas
 │   └── done/               # Completed todos
-├── threads/               # Persistent context threads (from /gsd-thread)
-├── seeds/                 # Forward-looking ideas (from /gsd-capture --seed)
+├── threads/               # Persistent context threads (from /vgsd-thread)
+├── seeds/                 # Forward-looking ideas (from /vgsd-capture --seed)
 ├── debug/                  # Active debug sessions
 │   ├── *.md                # Active sessions
 │   ├── resolved/           # Archived sessions
 │   └── knowledge-base.md   # Persistent debug learnings
-├── ui-reviews/             # Screenshots from /gsd-ui-review (gitignored)
+├── ui-reviews/             # Screenshots from /vgsd-ui-review (gitignored)
 └── continue-here.md        # Context handoff (from pause-work)
 ```
 
 ### Post-Execute Codebase Drift Gate (#2003)
 
-After the last wave of `/gsd-execute-phase` commits, the workflow runs a
+After the last wave of `/vgsd-execute-phase` commits, the workflow runs a
 non-blocking `codebase_drift_gate` step (between `schema_drift_gate` and
 `verify_phase_goal`). It compares the diff `last_mapped_commit..HEAD`
 against `.planning/codebase/STRUCTURE.md` and counts four kinds of
@@ -586,7 +586,7 @@ structural elements:
 4. New route modules under `routes/` or `api/`
 
 If the count meets `workflow.drift_threshold` (default 3), the gate either
-**warns** (default) with the suggested `/gsd-map-codebase --paths …` command,
+**warns** (default) with the suggested `/vgsd-map-codebase --paths …` command,
 or **auto-remaps** (`workflow.drift_action = auto-remap`) by spawning
 `gsd-codebase-mapper` scoped to the affected paths. Any error in detection
 or remap is logged and the phase continues — drift detection cannot fail
@@ -623,7 +623,7 @@ The installer (`bin/install.js`, ~10,700 lines) handles:
   - Augment Code: Skills-first with full skill conversion and config management
 5. **Path normalization** — Replaces `~/.claude/` paths with runtime-specific paths
 6. **Settings integration** — Registers hooks in runtime's `settings.json`
-7. **Patch backup** — Since v1.17, backs up locally modified files to `gsd-local-patches/` for `/gsd-update --reapply`
+7. **Patch backup** — Since v1.17, backs up locally modified files to `gsd-local-patches/` for `/vgsd-update --reapply`
 8. **Manifest tracking** — Writes `gsd-file-manifest.json` for clean uninstall
 9. **Uninstall mode** — `--uninstall` removes all GSD files, hooks, and settings
 
@@ -719,8 +719,8 @@ The researcher → planner → executor pipeline includes a supply-chain gate ag
 **Workflow Guard** (`gsd-workflow-guard.js`):
 
 - Triggers on Write/Edit to non-`.planning/` files
-- Detects edits outside GSD workflow context (no active `/gsd-` command or Task subagent)
-- Advises using `/gsd-quick` or `/gsd-fast` for state-tracked changes
+- Detects edits outside GSD workflow context (no active `/vgsd-` command or Task subagent)
+- Advises using `/vgsd-quick` or `/vgsd-fast` for state-tracked changes
 - Opt-in via `hooks.workflow_guard: true` (default: false)
 
 ---
@@ -737,20 +737,20 @@ The migration-specific ownership and source snapshots live in
 
 | Runtime | Global root | Local root | Invocation surface | Agent surface | Config and hooks |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code | `~/.claude` | `./.claude` | Global `skills/gsd-*/SKILL.md`; local `commands/gsd/*.md` | `agents/gsd-*.md` | `settings.json` hook and statusLine entries |
-| OpenCode | `~/.config/opencode` | `./.opencode` | `command/gsd-*.md` | `agents/gsd-*.md` | `opencode.json` or `opencode.jsonc`; no GSD hooks |
-| Kilo | `~/.config/kilo` | `./.kilo` | `command/gsd-*.md` | `agents/gsd-*.md` | `kilo.json` or `kilo.jsonc`; no GSD hooks |
-| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/gsd/*.toml` | `agents/gsd-*.md` | `settings.json` feature flag, hooks, and statusline |
-| Codex | `~/.codex` | `./.codex` | `skills/gsd-*/SKILL.md` | `agents/` source markdown plus per-agent TOML | `config.toml` `[agents.gsd-*]`, `[features].hooks` (canonical; legacy alias `codex_hooks` is recognized and migrated forward on reinstall, #3566), and hook tables |
-| GitHub Copilot | `~/.copilot` | `./.github` | `skills/gsd-*/SKILL.md` and `copilot-instructions.md` | `.agent.md` files | No GSD hooks or statusline |
-| Antigravity | `~/.gemini/antigravity` | `./.agent` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Gemini-style `settings.json` hook entries when installed by GSD |
-| Cursor | `~/.cursor` | `./.cursor` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Windsurf | `~/.codeium/windsurf` | `./.windsurf` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Augment Code | `~/.augment` | `./.augment` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | No GSD hooks or statusline |
-| Trae | `~/.trae` | `./.trae` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Qwen Code | `~/.qwen` | `./.qwen` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Common GSD settings and hook entries where supported |
-| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/gsd/DESCRIPTION.md` plus `skills/gsd/gsd-*/SKILL.md` | `agents/gsd-*.md` | Common GSD settings and hook entries where supported |
-| CodeBuddy | `~/.codebuddy` | `./.codebuddy` | `skills/gsd-*/SKILL.md` | `agents/gsd-*.md` | Common GSD settings and hook entries where supported |
+| Claude Code | `~/.claude` | `./.claude` | Global `skills/vgsd-*/SKILL.md`; local `commands/gsd/*.md` | `agents/vgsd-*.md` | `settings.json` hook and statusLine entries |
+| OpenCode | `~/.config/opencode` | `./.opencode` | `command/vgsd-*.md` | `agents/vgsd-*.md` | `opencode.json` or `opencode.jsonc`; no GSD hooks |
+| Kilo | `~/.config/kilo` | `./.kilo` | `command/vgsd-*.md` | `agents/vgsd-*.md` | `kilo.json` or `kilo.jsonc`; no GSD hooks |
+| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/gsd/*.toml` | `agents/vgsd-*.md` | `settings.json` feature flag, hooks, and statusline |
+| Codex | `~/.codex` | `./.codex` | `skills/vgsd-*/SKILL.md` | `agents/` source markdown plus per-agent TOML | `config.toml` `[agents.gsd-*]`, `[features].hooks` (canonical; legacy alias `codex_hooks` is recognized and migrated forward on reinstall, #3566), and hook tables |
+| GitHub Copilot | `~/.copilot` | `./.github` | `skills/vgsd-*/SKILL.md` and `copilot-instructions.md` | `.agent.md` files | No GSD hooks or statusline |
+| Antigravity | `~/.gemini/antigravity` | `./.agent` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Gemini-style `settings.json` hook entries when installed by GSD |
+| Cursor | `~/.cursor` | `./.cursor` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Windsurf | `~/.codeium/windsurf` | `./.windsurf` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Augment Code | `~/.augment` | `./.augment` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | No GSD hooks or statusline |
+| Trae | `~/.trae` | `./.trae` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Qwen Code | `~/.qwen` | `./.qwen` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
+| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/gsd/DESCRIPTION.md` plus `skills/gsd/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
+| CodeBuddy | `~/.codebuddy` | `./.codebuddy` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
 | Cline | `~/.cline` | project root | `.clinerules` | Rules only | No GSD hooks or statusline |
 
 ### Upstream Contract Sources

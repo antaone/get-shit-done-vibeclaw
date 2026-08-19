@@ -1,5 +1,5 @@
 ---
-name: gsd:stats
+name: vgsd:stats
 description: Display project statistics — phases, plans, requirements, git metrics, and timeline
 allowed-tools:
   - Read

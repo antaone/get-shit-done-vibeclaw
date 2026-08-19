@@ -20,11 +20,11 @@ Documentação abrangente do framework Get Shit Done (GSD) — um sistema de met
 
 ## Novidades v1.39
 
-Perfil de instalação `--minimal` (≥94% de redução no cold-start), `/gsd-phase --edit`, build & test gate pós-merge, `review.models.<cli>` para escolha de modelo de review por runtime, herança de configuração de workstream, workflow manual de canary release, consolidação de skills (86 → 59).
+Perfil de instalação `--minimal` (≥94% de redução no cold-start), `/vgsd-phase --edit`, build & test gate pós-merge, `review.models.<cli>` para escolha de modelo de review por runtime, herança de configuração de workstream, workflow manual de canary release, consolidação de skills (86 → 59).
 
 ## Links rápidos
 
-- **Começar rápido:** [README principal](../../README.pt-BR.md) -> instalação -> `/gsd-new-project`
+- **Começar rápido:** [README principal](../../README.pt-BR.md) -> instalação -> `/vgsd-new-project`
 - **Fluxo completo:** [Guia do usuário](USER-GUIDE.md)
 - **Comandos:** [Referência de comandos](COMMANDS.md)
 - **Configuração:** [Referência de configuração](CONFIGURATION.md)

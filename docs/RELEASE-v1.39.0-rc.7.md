@@ -43,16 +43,16 @@ reaches the registry.
   query registry now respects the `GSD_WORKSTREAM` env var; `gsd-tools` bin alias
   added. ([#2791](https://github.com/gsd-build/get-shit-done/issues/2791))
 - **`OpenCode` agents embed `model_profile_overrides.opencode.<tier>`** — per-tier
-  model overrides set via `/gsd-settings-advanced` are now propagated into generated
+  model overrides set via `/vgsd-settings-advanced` are now propagated into generated
   agent files. ([#2794](https://github.com/gsd-build/get-shit-done/issues/2794))
 - **`roadmap update-plan-progress` accepts `--phase` flag form** — SDK arg-parsing
   regression in v0.1.0 silently dropped `--phase`/`--name`/`--plans` flags, causing
   STATE.md corruption. ([#2796](https://github.com/gsd-build/get-shit-done/issues/2796))
 - **`context_window` added to `VALID_CONFIG_KEYS` allowlist** —
-  `/gsd-settings-advanced` could not set `context_window` because the key was missing
+  `/vgsd-settings-advanced` could not set `context_window` because the key was missing
   from the allowlist used by `config-set` validation.
   ([#2798](https://github.com/gsd-build/get-shit-done/issues/2798))
-- **`gsd-tools init` dispatches `ingest-docs` handler** — `/gsd-ingest-docs` was
+- **`gsd-tools init` dispatches `ingest-docs` handler** — `/vgsd-ingest-docs` was
   broken in v1.38.5 because the workflow called the new tool but no `ingest-docs`
   init handler was registered. ([#2801](https://github.com/gsd-build/get-shit-done/issues/2801))
 - **`config-get` honors `--default <value>` flag** — fallback for missing keys
@@ -62,7 +62,7 @@ reaches the registry.
   archived prior-milestone directory instead of `null`, causing wrong-phase work.
   ([#2805](https://github.com/gsd-build/get-shit-done/issues/2805))
 - **SKILL.md frontmatter `name:` migrated to hyphen form** — files that still used
-  the deprecated colon form (`gsd:cmd`) caused autocomplete to suggest `/gsd:command`.
+  the deprecated colon form (`gsd:cmd`) caused autocomplete to suggest `/vgsd:command`.
   ([#2808](https://github.com/gsd-build/get-shit-done/issues/2808))
 - **`gsd-sdk` resolvable in local-mode installs** — the previous `isLocal`
   short-circuit returned before the PATH probe + self-link could run. When
@@ -92,7 +92,7 @@ reaches the registry.
   `.planning/` was excluded; the worktree was then deleted with the SUMMARY.
   Replaced with filesystem-level `find` + idempotent `cp`.
   ([#2838](https://github.com/gsd-build/get-shit-done/issues/2838))
-- **`/gsd-code-review-fix` cleanup tail is transactional** — JSON recovery sentinel
+- **`/vgsd-code-review-fix` cleanup tail is transactional** — JSON recovery sentinel
   at `${phase_dir}/.review-fix-recovery-pending.json` is written after `git worktree
   add` succeeds and removed only after `git worktree remove` returns. New runs that
   find a pre-existing sentinel force-remove the orphan worktree, making the agent
@@ -128,7 +128,7 @@ nested schema migration path, discovered across five rounds of code review:
 | `buildNestedBlock` unconditionally emitted `[[hooks.TYPE.hooks]]` even when no handler fields were present, producing an entry with `type = "command"` but no `command` | Added guard: matcher-only / handler-field-free sections emit only the event-entry block |
 | `legacyMapSections` filter used `section.path.startsWith('hooks.')` without checking the segment count, so three-segment tables like `[hooks.SessionStart.hooks]` were misclassified as event entries and re-emitted as bogus nested events | Now uses `section.segments.length === 2` (same fix previously applied to `staleNamespacedAotSections`) |
 | No regression test for quoted event names containing dots — `[[hooks."before.tool"]]` has a 2-segment path but 3 dot-parts, and a `split('.')` check would misclassify it | Regression test added; quoted-dot names are correctly treated as a single two-segment namespace |
-| Handler command path assertion in install tests used a regex (`/gsd-check-update\.js/`) rather than the exact absolute path | Strengthened to `assert.strictEqual` with `path.join(codexHome, 'hooks', 'gsd-check-update.js')` |
+| Handler command path assertion in install tests used a regex (`/vgsd-check-update\.js/`) rather than the exact absolute path | Strengthened to `assert.strictEqual` with `path.join(codexHome, 'hooks', 'gsd-check-update.js')` |
 
 ---
 

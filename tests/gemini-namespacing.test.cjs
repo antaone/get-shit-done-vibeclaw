@@ -45,8 +45,8 @@ function parseGeminiCommandToml(toml) {
 
 describe('Gemini Slash Command Namespacing (Regex)', () => {
   test('converts simple slash commands', () => {
-    const input = 'Run /gsd-plan-phase to start.';
-    const expected = 'Run /gsd:plan-phase to start.';
+    const input = 'Run /vgsd-plan-phase to start.';
+    const expected = 'Run /vgsd:plan-phase to start.';
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), expected);
   });
 
@@ -55,12 +55,12 @@ describe('Gemini Slash Command Namespacing (Regex)', () => {
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), input);
   });
 
-  // The roster check is the safety property: a token like /gsd-plan-phase IS
+  // The roster check is the safety property: a token like /vgsd-plan-phase IS
   // a known command name, but when it appears inside a URL path it must NOT
   // be converted. This pins that the roster check actually fires — a regex-only
   // approach without a roster would convert this incorrectly.
   test('preserves URLs even when path contains a KNOWN command name', () => {
-    const input = 'See https://example.com/gsd-plan-phase for context.';
+    const input = 'See https://example.com/vgsd-plan-phase for context.';
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), input);
   });
 
@@ -70,10 +70,10 @@ describe('Gemini Slash Command Namespacing (Regex)', () => {
   });
 
   test('preserves sub-paths even when leaf is a KNOWN command name', () => {
-    // bin/gsd-plan-phase looks like a known command but is a file path.
+    // bin/vgsd-plan-phase looks like a known command but is a file path.
     // The leading / on a sub-path follows a non-slash char so the regex
     // boundary is the safety net here, not the roster.
-    const input = 'Reference bin/gsd-plan-phase for details.';
+    const input = 'Reference bin/vgsd-plan-phase for details.';
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), input);
   });
 
@@ -88,8 +88,8 @@ describe('Gemini Slash Command Namespacing (Regex)', () => {
   });
 
   test('converts commands in backticks', () => {
-    const input = 'Run `/gsd-new-project` in a terminal.';
-    const expected = 'Run `/gsd:new-project` in a terminal.';
+    const input = 'Run `/vgsd-new-project` in a terminal.';
+    const expected = 'Run `/vgsd:new-project` in a terminal.';
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), expected);
   });
 
@@ -98,8 +98,8 @@ describe('Gemini Slash Command Namespacing (Regex)', () => {
     // the roster gets consolidated (cf. #2790, which removed `scan`). `help`
     // and `health` are both bedrock; if either ever gets removed, swap to
     // any other entry currently in commands/gsd/.
-    const input = 'Run /gsd-help. Or /gsd-health!';
-    const expected = 'Run /gsd:help. Or /gsd:health!';
+    const input = 'Run /vgsd-help. Or /vgsd-health!';
+    const expected = 'Run /vgsd:help. Or /vgsd:health!';
     assert.strictEqual(convertSlashCommandsToGeminiMentions(input), expected);
   });
 
@@ -108,30 +108,30 @@ describe('Gemini Slash Command Namespacing (Regex)', () => {
     // First conversion call lazily populates the roster. If it returned an
     // empty Set (because commands/gsd/ was not found), every conversion
     // becomes a no-op — exactly the bug this code exists to prevent.
-    const result = convertSlashCommandsToGeminiMentions('Run /gsd-plan-phase.');
-    assert.strictEqual(result, 'Run /gsd:plan-phase.',
+    const result = convertSlashCommandsToGeminiMentions('Run /vgsd-plan-phase.');
+    assert.strictEqual(result, 'Run /vgsd:plan-phase.',
       'Roster failed to load — all /gsd- conversions would silently no-op');
   });
 });
 
 describe('Gemini Markdown Processor', () => {
   test('handles command to TOML conversion', () => {
-    const input = '---\ndescription: Test\n---\nRun /gsd-help.';
+    const input = '---\ndescription: Test\n---\nRun /vgsd-help.';
     const result = convertClaudeToGeminiMarkdown(input, { isCommand: true });
     const parsed = parseGeminiCommandToml(result);
     assert.equal(parsed.description, 'Test', 'description must round-trip through TOML');
-    assert.match(parsed.prompt, /\/gsd:help/, 'prompt must contain namespaced command');
-    assert.doesNotMatch(parsed.prompt, /\/gsd-help/, 'prompt must not retain hyphen form');
+    assert.match(parsed.prompt, /\/vgsd:help/, 'prompt must contain namespaced command');
+    assert.doesNotMatch(parsed.prompt, /\/vgsd-help/, 'prompt must not retain hyphen form');
   });
 
   test('strips <sub> tags from Gemini markdown output (#2768 regression)', () => {
     // The pre-refactor command path called stripSubTags before TOML conversion.
     // After centralizing through convertClaudeToGeminiMarkdown, sub tags must
     // still be stripped — terminals can't render HTML subscript.
-    const input = 'Run <sub>tiny</sub> /gsd-help now.';
+    const input = 'Run <sub>tiny</sub> /vgsd-help now.';
     const result = convertClaudeToGeminiMarkdown(input, { isCommand: false });
     assert.doesNotMatch(result, /<sub>|<\/sub>/, '<sub> tags must be stripped');
-    assert.match(result, /\/gsd:help/, 'slash command must still be converted');
+    assert.match(result, /\/vgsd:help/, 'slash command must still be converted');
   });
 
   test('removes AskUserQuestion and ask_user from Gemini agent tools and body (#3362)', () => {
@@ -195,7 +195,7 @@ describe('Gemini Install (Behavioral)', () => {
       console.log = oldLog;
     }
 
-    const commandsDir = path.join(tmpDir, '.gemini', 'commands', 'gsd');
+    const commandsDir = path.join(tmpDir, '.gemini', 'commands', 'vgsd');
     assert.ok(fs.existsSync(commandsDir), `Commands should be in ${commandsDir}`);
     const agentsDir = path.join(tmpDir, '.gemini', 'agents');
     assert.ok(fs.existsSync(agentsDir), 'Agents should be installed');
@@ -209,9 +209,9 @@ describe('Gemini Install (Behavioral)', () => {
     assert.equal(typeof parsed.prompt, 'string', 'plan-phase.toml must have a prompt');
     // The plan-phase prompt cross-references other GSD commands; pin that at
     // least one of those references survived as a colon-namespaced mention.
-    assert.match(parsed.prompt, /\/gsd:[a-z][a-z0-9-]*/,
-      'installed plan-phase.toml prompt must contain at least one /gsd: reference');
-    assert.doesNotMatch(parsed.prompt, /(?<![A-Za-z0-9./])\/gsd-plan-phase\b/,
-      'installed plan-phase.toml prompt must not retain unconverted /gsd-plan-phase');
+    assert.match(parsed.prompt, /\/vgsd:[a-z][a-z0-9-]*/,
+      'installed plan-phase.toml prompt must contain at least one /vgsd: reference');
+    assert.doesNotMatch(parsed.prompt, /(?<![A-Za-z0-9./])\/vgsd-plan-phase\b/,
+      'installed plan-phase.toml prompt must not retain unconverted /vgsd-plan-phase');
   });
 });

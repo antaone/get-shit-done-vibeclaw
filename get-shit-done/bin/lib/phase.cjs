@@ -1154,7 +1154,7 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
       // Update plan count in phase section.
       // Use direct .replace() rather than replaceInCurrentMilestone() so this
       // works when the current milestone section is itself inside a <details>
-      // block (the standard /gsd:new-project layout). replaceInCurrentMilestone
+      // block (the standard /vgsd:new-project layout). replaceInCurrentMilestone
       // scopes to content after the last </details>, which misses content inside
       // the current milestone's own <details> wrapper (#2005).
       // The phase-scoped heading pattern is specific enough to avoid matching

@@ -141,7 +141,7 @@ Contributor requirements (summary):
 
 ```bash
 npm run changeset -- --type Fixed --pr <YOUR_PR_NUMBER> \
-  --body "**\`/gsd-foo\` no longer drops trailing slashes** — explain the user-visible change."
+  --body "**\`/vgsd-foo\` no longer drops trailing slashes** — explain the user-visible change."
 ```
 
 This writes `.changeset/<adjective>-<noun>-<noun>.md`. Three random words → concurrent PRs never collide. Allowed `type:` values follow [Keep a Changelog](https://keepachangelog.com/): `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
@@ -780,7 +780,7 @@ Only `agents/` at the repo root is tracked by git. The following directories may
 |------|-----------|------------|
 | `.claude/agents/` | Yes (`.gitignore:9`) | Local Claude Code runtime sync |
 | `.cursor/agents/` | Yes (`.gitignore:12`) | Local Cursor IDE bundle |
-| `.github/agents/gsd-*` | Yes (`.gitignore:37`) | Local CI-surface bundle |
+| `.github/agents/vgsd-*` | Yes (`.gitignore:37`) | Local CI-surface bundle |
 
 If you find that `.claude/agents/` has drifted from `agents/` (e.g., after a branch change), re-run `bin/install.js` to re-sync from the canonical source. Always edit `agents/` — never the derivative directories.
 

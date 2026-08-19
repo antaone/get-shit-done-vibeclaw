@@ -25,9 +25,9 @@
  *  - mostRestrictiveProfile: resolve multi-runtime disagreement to smallest set
  *
  * Companion module (Phase 2): get-shit-done/bin/lib/surface.cjs owns the
- * runtime /gsd:surface command. It reuses stageSkillsForProfile and
+ * runtime /vgsd:surface command. It reuses stageSkillsForProfile and
  * stageAgentsForProfile from this module for cluster-level enable/disable
- * without reinstall, persisting state in <runtimeConfigDir>/.gsd-surface.json.
+ * without reinstall, persisting state in <runtimeConfigDir>/.vgsd-surface.json.
  *
  * Legacy back-compat exports (deprecated, kept for existing callers):
  *  - MINIMAL_SKILL_ALLOWLIST — derived from PROFILES.core

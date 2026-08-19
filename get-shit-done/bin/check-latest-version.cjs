@@ -2,9 +2,9 @@
 'use strict';
 
 /**
- * Deterministic latest-version check for /gsd-update (#2992).
+ * Deterministic latest-version check for /vgsd-update (#2992).
  *
- * The /gsd-update workflow's check_latest_version step was previously
+ * The /vgsd-update workflow's check_latest_version step was previously
  * prescribed in LLM-driven prose ("run `npm view get-shit-done-cc
  * version`"). The executing model could shortcut the prescription and
  * invent npm queries against wrong-shaped names (`@get-shit-done/cli`,
@@ -43,7 +43,7 @@ function checkLatestVersion(opts = {}) {
   // Windows shell-flag policy and timeout default). The injection point
   // remains spawnSync-shaped for test compatibility — the adapter below
   // translates { exitCode } → { status } so the consumer logic is unchanged.
-  // Bounded at 15s so a hung registry doesn't block /gsd-update (#2993 CR).
+  // Bounded at 15s so a hung registry doesn't block /vgsd-update (#2993 CR).
   const defaultSpawn = () => {
     const r = execNpm(['view', PACKAGE_NAME, 'version'], { timeout: 15_000 });
     return {

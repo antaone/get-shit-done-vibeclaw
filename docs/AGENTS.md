@@ -38,7 +38,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-new-project`, `/gsd-new-milestone` |
+| **Spawned by** | `/vgsd-new-project`, `/vgsd-new-milestone` |
 | **Parallelism** | 4 instances (stack, features, architecture, pitfalls) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -57,7 +57,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-plan-phase` |
+| **Spawned by** | `/vgsd-plan-phase` |
 | **Parallelism** | 4 instances (same focus areas as project researcher) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -76,7 +76,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ui-phase` |
+| **Spawned by** | `/vgsd-ui-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -142,7 +142,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-new-project` (after 4 researchers complete) |
+| **Spawned by** | `/vgsd-new-project` (after 4 researchers complete) |
 | **Parallelism** | Single instance (sequential after researchers) |
 | **Tools** | Read, Write, Bash |
 | **Model (balanced)** | Sonnet |
@@ -157,7 +157,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-plan-phase`, `/gsd-quick` |
+| **Spawned by** | `/vgsd-plan-phase`, `/vgsd-quick` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **Model (balanced)** | Opus |
@@ -180,7 +180,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-new-project` |
+| **Spawned by** | `/vgsd-new-project` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -201,7 +201,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-execute-phase`, `/gsd-quick` |
+| **Spawned by** | `/vgsd-execute-phase`, `/vgsd-quick` |
 | **Parallelism** | Multiple (parallel within waves, sequential across waves) |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -224,7 +224,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-plan-phase` (verification loop, max 3 iterations) |
+| **Spawned by** | `/vgsd-plan-phase` (verification loop, max 3 iterations) |
 | **Parallelism** | Single instance (iterative) |
 | **Tools** | Read, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -249,7 +249,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-audit-milestone` |
+| **Spawned by** | `/vgsd-audit-milestone` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -264,7 +264,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ui-phase` (validation loop, max 2 iterations) |
+| **Spawned by** | `/vgsd-ui-phase` (validation loop, max 2 iterations) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -279,7 +279,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-execute-phase` (after all executors complete) |
+| **Spawned by** | `/vgsd-execute-phase` (after all executors complete) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -289,7 +289,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 **Key behaviors:**
 - Checks codebase against phase goals, not just task completion
 - PASS/FAIL with specific evidence
-- Logs issues for `/gsd-verify-work` to address
+- Logs issues for `/vgsd-verify-work` to address
 - Milestone scope filtering: gaps addressed in later phases are marked as "deferred", not reported as failures (v1.32)
 - **Test quality audit** (v1.32): verifies that tests prove what they claim by checking for disabled/skipped tests on requirements, circular test patterns (system generating its own expected values), assertion strength (existence vs. value vs. behavioral), and expected value provenance. Blockers from test quality audit override an otherwise passing verification
 
@@ -301,7 +301,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-validate-phase` |
+| **Spawned by** | `/vgsd-validate-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -320,7 +320,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ui-review` |
+| **Spawned by** | `/vgsd-ui-review` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -343,7 +343,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-map-codebase`, post-execute drift gate in `/gsd-execute-phase` |
+| **Spawned by** | `/vgsd-map-codebase`, post-execute drift gate in `/vgsd-execute-phase` |
 | **Parallelism** | 4 instances (tech, architecture, quality, concerns) |
 | **Tools** | Read, Bash, Grep, Glob, Write |
 | **Model (balanced)** | Haiku |
@@ -371,7 +371,7 @@ runs its default whole-repo scan.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-debug`, `/gsd-verify-work` (for failures) |
+| **Spawned by** | `/vgsd-debug`, `/vgsd-verify-work` (for failures) |
 | **Parallelism** | Single instance (interactive) |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **Model (balanced)** | Sonnet |
@@ -396,7 +396,7 @@ runs its default whole-repo scan.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-profile-user` |
+| **Spawned by** | `/vgsd-profile-user` |
 | **Parallelism** | Single instance |
 | **Tools** | Read |
 | **Model (balanced)** | Sonnet |
@@ -419,7 +419,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-docs-update` |
+| **Spawned by** | `/vgsd-docs-update` |
 | **Parallelism** | Multiple instances (one per doc type) |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -441,7 +441,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-docs-update` (after doc-writer completes) |
+| **Spawned by** | `/vgsd-docs-update` (after doc-writer completes) |
 | **Parallelism** | Multiple instances (one per doc file) |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -462,7 +462,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-secure-phase` |
+| **Spawned by** | `/vgsd-secure-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Edit, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -480,7 +480,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ## Advanced and Specialized Agents
 
-Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty workflows (`/gsd-ai-integration-phase`, `/gsd-eval-review`, `/gsd-code-review`, `/gsd-code-review --fix`, `/gsd-debug`, `/gsd-map-codebase --query`, `/gsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
+Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty workflows (`/vgsd-ai-integration-phase`, `/vgsd-eval-review`, `/vgsd-code-review`, `/vgsd-code-review --fix`, `/vgsd-debug`, `/vgsd-map-codebase --query`, `/vgsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
 
 ### gsd-pattern-mapper
 
@@ -488,7 +488,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-plan-phase` (between research and planning) |
+| **Spawned by** | `/vgsd-plan-phase` (between research and planning) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Glob, Grep, Write |
 | **Model (balanced)** | Sonnet |
@@ -504,11 +504,11 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 ### gsd-debug-session-manager
 
-**Role:** Runs the full `/gsd-debug` checkpoint-and-continuation loop in an isolated context so the orchestrator's main context stays lean; spawns `gsd-debugger` agents, dispatches specialist skills, and handles user checkpoints via AskUserQuestion.
+**Role:** Runs the full `/vgsd-debug` checkpoint-and-continuation loop in an isolated context so the orchestrator's main context stays lean; spawns `gsd-debugger` agents, dispatches specialist skills, and handles user checkpoints via AskUserQuestion.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-debug` |
+| **Spawned by** | `/vgsd-debug` |
 | **Parallelism** | Single instance (interactive, stateful) |
 | **Tools** | Read, Write, Bash, Grep, Glob, Task, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -528,7 +528,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-code-review` |
+| **Spawned by** | `/vgsd-code-review` |
 | **Parallelism** | Typically single instance per review scope |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -548,7 +548,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-code-review --fix` |
+| **Spawned by** | `/vgsd-code-review --fix` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Edit, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -568,7 +568,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ai-integration-phase` |
+| **Spawned by** | `/vgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (sequential with domain-researcher / eval-planner) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebFetch, WebSearch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -587,7 +587,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ai-integration-phase` |
+| **Spawned by** | `/vgsd-ai-integration-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -606,7 +606,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ai-integration-phase` |
+| **Spawned by** | `/vgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (sequential after domain-researcher) |
 | **Tools** | Read, Write, Bash, Grep, Glob, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -627,7 +627,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-eval-review` |
+| **Spawned by** | `/vgsd-eval-review` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -648,7 +648,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ai-integration-phase` |
+| **Spawned by** | `/vgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (interactive) |
 | **Tools** | Read, Bash, Grep, Glob, WebSearch, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -669,7 +669,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-map-codebase --query` (refresh / update flows) |
+| **Spawned by** | `/vgsd-map-codebase --query` (refresh / update flows) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -688,7 +688,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ingest-docs` (parallel fan-out over the doc corpus) |
+| **Spawned by** | `/vgsd-ingest-docs` (parallel fan-out over the doc corpus) |
 | **Parallelism** | One instance per input document |
 | **Tools** | Read, Write, Grep, Glob |
 | **Model (balanced)** | Haiku |
@@ -707,7 +707,7 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/gsd-ingest-docs` (after classifier fan-in) |
+| **Spawned by** | `/vgsd-ingest-docs` (after classifier fan-in) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Grep, Glob, Bash |
 | **Model (balanced)** | Sonnet |
@@ -716,13 +716,13 @@ Twelve additional agents ship under `agents/gsd-*.md` and are used by specialty 
 
 **Key behaviors:**
 - Hard-blocks on LOCKED-vs-LOCKED ADR contradictions instead of silently picking a winner
-- Follows the `references/doc-conflict-engine.md` contract so `/gsd-import` and `/gsd-ingest-docs` produce consistent conflict reports
+- Follows the `references/doc-conflict-engine.md` contract so `/vgsd-import` and `/vgsd-ingest-docs` produce consistent conflict reports
 
 ---
 
 ## Agent Tool Permissions Summary
 
-> **Scope:** this table covers the 21 primary agents only. The 12 advanced/specialized agents listed above carry their own tool surfaces in their `agents/gsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
+> **Scope:** this table covers the 21 primary agents only. The 12 advanced/specialized agents listed above carry their own tool surfaces in their `agents/vgsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
 
 | Agent | Read | Write | Edit | Bash | Grep | Glob | WebSearch | WebFetch | MCP |
 |-------|------|-------|------|------|------|------|-----------|----------|-----|

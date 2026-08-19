@@ -50,7 +50,7 @@ The installer performs a clean wipe-and-replace of GSD-managed directories only:
 
 - `~/.claude/get-shit-done/` — workflows, references, templates
 - `~/.claude/commands/gsd/` — slash commands
-- `~/.claude/agents/gsd-*.md` — GSD agents
+- `~/.claude/agents/vgsd-*.md` — GSD agents
 - `~/.claude/hooks/dist/` — compiled hooks
 
 **What is preserved:**
@@ -59,4 +59,4 @@ The installer performs a clean wipe-and-replace of GSD-managed directories only:
 - Your `CLAUDE.md` files
 - Custom hooks
 
-Locally modified GSD files are automatically backed up to `gsd-local-patches/` before the install. Run `/gsd-update --reapply` after updating to merge your modifications back in.
+Locally modified GSD files are automatically backed up to `gsd-local-patches/` before the install. Run `/vgsd-update --reapply` after updating to merge your modifications back in.

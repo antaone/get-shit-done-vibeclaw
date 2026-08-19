@@ -54,15 +54,15 @@ A user-story format guard at the top of `extract_tests` will halt verification i
 The MVP slice closes out with read-side surfaces:
 
 - **`/gsd new-project`** prompts up front for **Vertical MVP** vs **Horizontal Layers** mode and seeds the milestone accordingly
-- **`/gsd-progress`** emits a "User-flow next up" panel for MVP-mode phases, surfacing user-visible task names ahead of internal scaffolding
-- **`/gsd-stats`** adds an "MVP phases: N" summary line when the roadmap contains any
-- **`/gsd-graphify`** visually differentiates MVP-mode phase nodes from horizontal-layer phases in the rendered graph
+- **`/vgsd-progress`** emits a "User-flow next up" panel for MVP-mode phases, surfacing user-visible task names ahead of internal scaffolding
+- **`/vgsd-stats`** adds an "MVP phases: N" summary line when the roadmap contains any
+- **`/vgsd-graphify`** visually differentiates MVP-mode phase nodes from horizontal-layer phases in the rendered graph
 
 ---
 
 ## Bonus fixes also in this canary
 
-- **`/gsd-progress` no longer cites stale CLAUDE.md project blocks** as the source for the "Next Up" section ([#2912](https://github.com/gsd-build/get-shit-done/issues/2912)) — explicit context-authority directive added to the report step.
+- **`/vgsd-progress` no longer cites stale CLAUDE.md project blocks** as the source for the "Next Up" section ([#2912](https://github.com/gsd-build/get-shit-done/issues/2912)) — explicit context-authority directive added to the report step.
 
 (Other recent main-stream fixes — agent-skills CLI JSON wrap, audit-open ReferenceError, execute-phase branching, Hermes runtime — target the `next` stream and will arrive in the canary when they land in `dev`.)
 

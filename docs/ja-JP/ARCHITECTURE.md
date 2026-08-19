@@ -31,7 +31,7 @@ GSDは、ユーザーとAIコーディングエージェント（Claude Code、G
 ```
 ┌──────────────────────────────────────────────────────┐
 │                      USER                            │
-│            /gsd-command [args]                        │
+│            /vgsd-command [args]                        │
 └─────────────────────┬────────────────────────────────┘
                       │
 ┌─────────────────────▼────────────────────────────────┐
@@ -107,10 +107,10 @@ GSDは、ユーザーとAIコーディングエージェント（Claude Code、G
 ### コマンド（`commands/gsd/*.md`）
 
 ユーザー向けのエントリーポイントです。各ファイルにはYAMLフロントマター（name、description、allowed-tools）とワークフローをブートストラップするプロンプト本文が含まれています。コマンドは以下の形式でインストールされます：
-- **Claude Code:** カスタムスラッシュコマンド（`/gsd-command-name`）
-- **OpenCode / Kilo:** スラッシュコマンド（`/gsd-command-name`）
-- **Codex:** スキル（`$gsd-command-name`）
-- **Copilot:** スラッシュコマンド（`/gsd-command-name`）
+- **Claude Code:** カスタムスラッシュコマンド（`/vgsd-command-name`）
+- **OpenCode / Kilo:** スラッシュコマンド（`/vgsd-command-name`）
+- **Codex:** スキル（`$vgsd-command-name`）
+- **Copilot:** スラッシュコマンド（`/vgsd-command-name`）
 - **Antigravity:** スキル
 
 **コマンド総数:** 44
@@ -378,13 +378,13 @@ UI-SPEC.md (per phase) ───────────────────
 ├── STATE.md                # 生きたメモリ：位置、決定事項、ブロッカー、メトリクス
 ├── config.json             # ワークフロー設定
 ├── MILESTONES.md           # 完了済みマイルストーンのアーカイブ
-├── research/               # /gsd-new-project によるドメインリサーチ
+├── research/               # /vgsd-new-project によるドメインリサーチ
 │   ├── SUMMARY.md
 │   ├── STACK.md
 │   ├── FEATURES.md
 │   ├── ARCHITECTURE.md
 │   └── PITFALLS.md
-├── codebase/               # ブラウンフィールドマッピング（/gsd-map-codebase から）
+├── codebase/               # ブラウンフィールドマッピング（/vgsd-map-codebase から）
 │   ├── STACK.md
 │   ├── ARCHITECTURE.md
 │   ├── CONVENTIONS.md
@@ -410,13 +410,13 @@ UI-SPEC.md (per phase) ───────────────────
 ├── todos/
 │   ├── pending/            # キャプチャされたアイデア
 │   └── done/               # 完了済みtodo
-├── threads/               # 永続コンテキストスレッド（/gsd-thread から）
-├── seeds/                 # 将来に向けたアイデア（/gsd-capture --seed から）
+├── threads/               # 永続コンテキストスレッド（/vgsd-thread から）
+├── seeds/                 # 将来に向けたアイデア（/vgsd-capture --seed から）
 ├── debug/                  # アクティブなデバッグセッション
 │   ├── *.md                # アクティブセッション
 │   ├── resolved/           # アーカイブ済みセッション
 │   └── knowledge-base.md   # 永続的なデバッグ知見
-├── ui-reviews/             # /gsd-ui-review からのスクリーンショット（gitignore対象）
+├── ui-reviews/             # /vgsd-ui-review からのスクリーンショット（gitignore対象）
 └── continue-here.md        # コンテキスト引き継ぎ（pause-work から）
 ```
 
@@ -439,7 +439,7 @@ UI-SPEC.md (per phase) ───────────────────
    - Antigravity: Googleモデル同等品によるスキルファースト
 5. **パス正規化** — `~/.claude/` パスをランタイム固有のパスに置換
 6. **設定統合** — ランタイムの `settings.json` にフックを登録
-7. **パッチバックアップ** — v1.17以降、ローカルで変更されたファイルを `/gsd-update --reapply` 用に `gsd-local-patches/` へバックアップ
+7. **パッチバックアップ** — v1.17以降、ローカルで変更されたファイルを `/vgsd-update --reapply` 用に `gsd-local-patches/` へバックアップ
 8. **マニフェスト追跡** — クリーンアンインストールのために `gsd-file-manifest.json` を書き込み
 9. **アンインストールモード** — `--uninstall` ですべてのGSDファイル、フック、設定を削除
 
@@ -499,8 +499,8 @@ Runtime Engine (Claude Code / Gemini CLI)
 
 **Workflow Guard**（`gsd-workflow-guard.js`）：
 - `.planning/` 以外のファイルへのWrite/Edit時にトリガー
-- GSDワークフローコンテキスト外での編集を検出（アクティブな `/gsd-` コマンドやTaskサブエージェントがない場合）
-- 状態追跡される変更には `/gsd-quick` や `/gsd-fast` の使用をアドバイス
+- GSDワークフローコンテキスト外での編集を検出（アクティブな `/vgsd-` コマンドやTaskサブエージェントがない場合）
+- 状態追跡される変更には `/vgsd-quick` や `/vgsd-fast` の使用をアドバイス
 - `hooks.workflow_guard: true` によるオプトイン（デフォルト: false）
 
 ---
@@ -511,12 +511,12 @@ GSDは統一されたコマンド/ワークフローアーキテクチャを通�
 
 | ランタイム | コマンド形式 | エージェントシステム | 設定場所 |
 |---------|---------------|--------------|-----------------|
-| Claude Code | `/gsd-command` | Task起動 | `~/.claude/` |
-| OpenCode | `/gsd-command` | サブエージェントモード | `~/.config/opencode/` |
-| Kilo | `/gsd-command` | サブエージェントモード | `~/.config/kilo/` |
-| Gemini CLI | `/gsd-command` | Task起動 | `~/.gemini/` |
-| Codex | `$gsd-command` | スキル | `~/.codex/` |
-| Copilot | `/gsd-command` | エージェント委譲 | `~/.github/` |
+| Claude Code | `/vgsd-command` | Task起動 | `~/.claude/` |
+| OpenCode | `/vgsd-command` | サブエージェントモード | `~/.config/opencode/` |
+| Kilo | `/vgsd-command` | サブエージェントモード | `~/.config/kilo/` |
+| Gemini CLI | `/vgsd-command` | Task起動 | `~/.gemini/` |
+| Codex | `$vgsd-command` | スキル | `~/.codex/` |
+| Copilot | `/vgsd-command` | エージェント委譲 | `~/.github/` |
 | Antigravity | スキル | スキル | `~/.gemini/antigravity/` |
 
 ### 抽象化ポイント

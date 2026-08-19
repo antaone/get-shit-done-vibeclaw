@@ -1,5 +1,5 @@
 ---
-name: gsd:surface
+name: vgsd:surface
 description: Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall
 argument-hint: "[list|status|profile <name>|disable <cluster>|enable <cluster>|reset]"
 allowed-tools:
@@ -10,9 +10,9 @@ requires: [config, update]
 ---
 
 <objective>
-Manage the runtime skill surface without reinstall. Reads/writes `~/.claude/.gsd-surface.json`
+Manage the runtime skill surface without reinstall. Reads/writes `~/.claude/.vgsd-surface.json`
 (sibling to `~/.claude/.gsd-profile`) and re-stages the active skills directory in place.
-Skill dirs live at `~/.claude/skills/gsd-*/`.
+Skill dirs live at `~/.claude/skills/vgsd-*/`.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -29,7 +29,7 @@ Parse the first token of $ARGUMENTS:
 | `profile <n1>,<n2>` | Composed profiles (comma-separated, no spaces) |
 | `disable <cluster>` | Add cluster to `disabledClusters`, re-stage |
 | `enable <cluster>` | Remove cluster from `disabledClusters`, re-stage |
-| `reset` | Delete `.gsd-surface.json`, return to install-time profile |
+| `reset` | Delete `.vgsd-surface.json`, return to install-time profile |
 | *(none)* | Treat as `list` |
 
 ---
@@ -54,7 +54,7 @@ Token cost: ~T (budget cap ~500 tokens for 200k context @ 1%)
 For `status` also append:
 
 ```
-Base profile:   standard  (from .gsd-surface.json)
+Base profile:   standard  (from .vgsd-surface.json)
 Install profile: standard  (from .gsd-profile)
 ```
 
@@ -106,7 +106,7 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 ## reset
 
-1. Check if `.gsd-surface.json` exists.
+1. Check if `.vgsd-surface.json` exists.
 2. Delete it.
 3. Re-apply using only `readActiveProfile(runtimeConfigDir)` (install-time profile).
 4. Confirm: "Surface reset to install-time profile `<name>`."
@@ -120,7 +120,7 @@ The `runtimeConfigDir` for `applySurface` is the **base Claude config directory*
 
 This matches `installRuntimeArtifacts` and `uninstallRuntimeArtifacts`, which also
 receive `~/.claude` as `configDir`. The skill dirs themselves live at
-`~/.claude/skills/gsd-*/` because the `claude global` layout has `destSubpath =
+`~/.claude/skills/vgsd-*/` because the `claude global` layout has `destSubpath =
 'skills'` — they are derived from `configDir`, not the root for it.
 
 ```bash
@@ -133,8 +133,8 @@ SCOPE="global"
 # then applySurface(RUNTIME_CONFIG_DIR, layout, manifest, CLUSTERS)
 ```
 
-Surface state is stored at `${RUNTIME_CONFIG_DIR}/.gsd-surface.json`
-(i.e. `~/.claude/.gsd-surface.json`).
+Surface state is stored at `${RUNTIME_CONFIG_DIR}/.vgsd-surface.json`
+(i.e. `~/.claude/.vgsd-surface.json`).
 
 All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 
@@ -147,9 +147,9 @@ All paths can be overridden by reading the `CLAUDE_CONFIG_DIR` env var if set.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Surface state file: `~/.claude/.gsd-surface.json`
+Surface state file: `~/.claude/.vgsd-surface.json`
 Install profile marker: `~/.claude/.gsd-profile`
-Skill dirs: `~/.claude/skills/gsd-*/`
+Skill dirs: `~/.claude/skills/vgsd-*/`
 Engine module: `~/.claude/get-shit-done/bin/lib/surface.cjs`
 Cluster definitions: `~/.claude/get-shit-done/bin/lib/clusters.cjs`
 </execution_context>

@@ -34,7 +34,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-new-project`, `/gsd-new-milestone` |
+| **スポーン元** | `/vgsd-new-project`, `/vgsd-new-milestone` |
 | **並列数** | 4インスタンス（stack, features, architecture, pitfalls） |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -53,7 +53,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-plan-phase` |
+| **スポーン元** | `/vgsd-plan-phase` |
 | **並列数** | 4インスタンス（project-researcher と同じフォーカスエリア） |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -72,7 +72,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-ui-phase` |
+| **スポーン元** | `/vgsd-ui-phase` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -138,7 +138,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-new-project`（4つのリサーチャー完了後） |
+| **スポーン元** | `/vgsd-new-project`（4つのリサーチャー完了後） |
 | **並列数** | 単一インスタンス（リサーチャー後に順次実行） |
 | **ツール** | Read, Write, Bash |
 | **モデル (balanced)** | Sonnet |
@@ -153,7 +153,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-plan-phase`, `/gsd-quick` |
+| **スポーン元** | `/vgsd-plan-phase`, `/vgsd-quick` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Opus |
@@ -175,7 +175,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-new-project` |
+| **スポーン元** | `/vgsd-new-project` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -196,7 +196,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-execute-phase`, `/gsd-quick` |
+| **スポーン元** | `/vgsd-execute-phase`, `/vgsd-quick` |
 | **並列数** | 複数（ウェーブ内は並列、ウェーブ間は順次） |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -219,7 +219,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-plan-phase`（検証ループ、最大3回の反復） |
+| **スポーン元** | `/vgsd-plan-phase`（検証ループ、最大3回の反復） |
 | **並列数** | 単一インスタンス（反復型） |
 | **ツール** | Read, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -244,7 +244,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-audit-milestone` |
+| **スポーン元** | `/vgsd-audit-milestone` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -259,7 +259,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-ui-phase`（検証ループ、最大2回の反復） |
+| **スポーン元** | `/vgsd-ui-phase`（検証ループ、最大2回の反復） |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -274,7 +274,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-execute-phase`（すべてのエグゼキューター完了後） |
+| **スポーン元** | `/vgsd-execute-phase`（すべてのエグゼキューター完了後） |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -284,7 +284,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 **主な動作:**
 - タスク完了だけでなく、フェーズ目標に対してコードベースを検証
 - 具体的なエビデンス付きの PASS/FAIL 判定
-- `/gsd-verify-work` で対処すべき問題をログに記録
+- `/vgsd-verify-work` で対処すべき問題をログに記録
 
 ---
 
@@ -294,7 +294,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-validate-phase` |
+| **スポーン元** | `/vgsd-validate-phase` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -313,7 +313,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-ui-review` |
+| **スポーン元** | `/vgsd-ui-review` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -336,7 +336,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-map-codebase` |
+| **スポーン元** | `/vgsd-map-codebase` |
 | **並列数** | 4インスタンス（tech, architecture, quality, concerns） |
 | **ツール** | Read, Bash, Grep, Glob, Write |
 | **モデル (balanced)** | Haiku |
@@ -356,7 +356,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-debug`, `/gsd-verify-work`（失敗時） |
+| **スポーン元** | `/vgsd-debug`, `/vgsd-verify-work`（失敗時） |
 | **並列数** | 単一インスタンス（インタラクティブ） |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **モデル (balanced)** | Sonnet |
@@ -381,7 +381,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/gsd-profile-user` |
+| **スポーン元** | `/vgsd-profile-user` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read |
 | **モデル (balanced)** | Sonnet |

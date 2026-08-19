@@ -74,9 +74,9 @@ function writeCommandEntry(destDir, prefix, stem) {
   fs.writeFileSync(path.join(destDir, `${prefix}${stem}.md`), `# ${stem}\n`);
 }
 
-describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill dirs', () => {
+describe('installRuntimeArtifacts — skills runtimes write vgsd-prefixed skill dirs', () => {
   for (const runtime of SKILLS_RUNTIMES_LAYOUT) {
-    test(`${runtime}: gsd-prefixed skill dirs in skills/`, (t) => {
+    test(`${runtime}: vgsd-prefixed skill dirs in skills/`, (t) => {
       const configDir = createTempDir(`gsd-ial-${runtime}-`);
       t.after(() => cleanup(configDir));
 
@@ -95,7 +95,7 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
       );
 
       if (RESOLVED_CORE.skills !== '*') {
-        const prefixedCount = countPrefixedEntries(destDir, skillsKind.prefix || 'gsd-');
+        const prefixedCount = countPrefixedEntries(destDir, skillsKind.prefix || 'vgsd-');
         assert.strictEqual(prefixedCount, RESOLVED_CORE.skills.size,
           `${runtime}: installed skill count must match profile`);
       }
@@ -104,29 +104,29 @@ describe('installRuntimeArtifacts — skills runtimes write gsd-prefixed skill d
 });
 
 describe('installRuntimeArtifacts — hermes nested layout', () => {
-  test('hermes: skills/gsd/<stem>/SKILL.md, no gsd- prefix in name', (t) => {
+  test('hermes: skills/vgsd/<stem>/SKILL.md, no vgsd- prefix in name', (t) => {
     const configDir = createTempDir('gsd-ial-hermes-');
     t.after(() => cleanup(configDir));
 
     installRuntimeArtifacts('hermes', configDir, 'global', RESOLVED_CORE);
 
-    const nestedDir = path.join(configDir, 'skills', 'gsd');
+    const nestedDir = path.join(configDir, 'skills', 'vgsd');
     assert.ok(fs.existsSync(nestedDir));
     assert.ok(fs.existsSync(path.join(nestedDir, 'help', 'SKILL.md')));
-    assert.ok(!fs.existsSync(path.join(nestedDir, 'gsd-help')),
-      'hermes must NOT have gsd-help prefix');
+    assert.ok(!fs.existsSync(path.join(nestedDir, 'vgsd-help')),
+      'hermes must NOT have vgsd-help prefix');
   });
 });
 
 describe('installRuntimeArtifacts — gemini commands layout', () => {
-  test('gemini: commands/gsd/ created, no skills/', (t) => {
+  test('gemini: commands/vgsd/ created, no skills/', (t) => {
     const configDir = createTempDir('gsd-ial-gemini-');
     t.after(() => cleanup(configDir));
 
     installRuntimeArtifacts('gemini', configDir, 'global', RESOLVED_CORE);
 
-    assert.ok(fs.existsSync(path.join(configDir, 'commands', 'gsd')));
-    assert.ok(fs.existsSync(path.join(configDir, 'commands', 'gsd', 'help.md')));
+    assert.ok(fs.existsSync(path.join(configDir, 'commands', 'vgsd')));
+    assert.ok(fs.existsSync(path.join(configDir, 'commands', 'vgsd', 'help.md')));
     assert.ok(!fs.existsSync(path.join(configDir, 'skills')));
   });
 });
@@ -144,7 +144,7 @@ describe('installRuntimeArtifacts — cline no-op', () => {
 
 describe('installRuntimeArtifacts — opencode / kilo flat commands', () => {
   for (const runtime of ['opencode', 'kilo']) {
-    test(`${runtime}: command/gsd-help.md exists`, (t) => {
+    test(`${runtime}: command/vgsd-help.md exists`, (t) => {
       const configDir = createTempDir(`gsd-ial-${runtime}-`);
       t.after(() => cleanup(configDir));
 
@@ -152,7 +152,7 @@ describe('installRuntimeArtifacts — opencode / kilo flat commands', () => {
 
       const commandDir = path.join(configDir, 'command');
       assert.ok(fs.existsSync(commandDir));
-      assert.ok(fs.existsSync(path.join(commandDir, 'gsd-help.md')));
+      assert.ok(fs.existsSync(path.join(commandDir, 'vgsd-help.md')));
     });
   }
 });
@@ -275,11 +275,11 @@ describe('installRuntimeArtifacts — legacy migrations run before layout copy',
     installRuntimeArtifacts('claude', configDir, 'global', RESOLVED_CORE);
 
     assert.ok(!fs.existsSync(legacyDir));
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'gsd-dev-preferences', 'SKILL.md')));
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'gsd-help', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'vgsd-dev-preferences', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'vgsd-help', 'SKILL.md')));
   });
 
-  test('hermes: legacy flat skills/gsd-*/ migrated AND new nested skills/gsd/<stem>/ written', (t) => {
+  test('hermes: legacy flat skills/gsd-*/ removed AND new nested skills/vgsd/<stem>/ written', (t) => {
     const configDir = createTempDir('gsd-legacy-hermes-install-');
     t.after(() => cleanup(configDir));
 
@@ -290,7 +290,7 @@ describe('installRuntimeArtifacts — legacy migrations run before layout copy',
     installRuntimeArtifacts('hermes', configDir, 'global', RESOLVED_CORE);
 
     assert.ok(!fs.existsSync(legacyFlatHelp));
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'gsd', 'help', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'vgsd', 'help', 'SKILL.md')));
   });
 });
 

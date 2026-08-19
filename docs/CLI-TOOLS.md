@@ -40,7 +40,7 @@ Use this when authoring workflows, not when you only need the command list below
 
 **1. CLI — `gsd-sdk query <argv…>`**
 
-- Resolves argv with the same **longest-prefix** rules as the typed registry (`resolveQueryArgv` in `sdk/src/query/registry.ts`). Unregistered commands **fail fast** — use `node …/gsd-tools.cjs` only for handlers not in the registry.
+- Resolves argv with the same **longest-prefix** rules as the typed registry (`resolveQueryArgv` in `sdk/src/query/registry.ts`). Unregistered commands **fail fast** — use `node …/vgsd-tools.cjs` only for handlers not in the registry.
 - Full matrix (CJS command → registry key, CLI-only tools, aliases, golden tiers): [sdk/src/query/QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md).
 
 **2. TypeScript — `@gsd-build/sdk` (`GSDTools`, `createRegistry`)**
@@ -262,7 +262,7 @@ node gsd-tools.cjs validate context
 
 `validate context` emits a structured envelope with `utilization`, `status`
 (`ok` / `warn` / `critical` at the 60 % / 70 % thresholds), and a
-`suggestion` string. The same data backs `/gsd-health --context`.
+`suggestion` string. The same data backs `/vgsd-health --context`.
 
 ---
 
@@ -420,7 +420,7 @@ node gsd-tools.cjs audit-uat
 # Cross-artifact audit queue — scan `.planning/` for unresolved audit items
 node gsd-tools.cjs audit-open [--json]
 
-# Reverse-migrate a GSD-2 project into the current structure (backs `/gsd-import --from-gsd2`)
+# Reverse-migrate a GSD-2 project into the current structure (backs `/vgsd-import --from-gsd2`)
 node gsd-tools.cjs from-gsd2 [--path <dir>] [--force] [--dry-run]
 
 # Git commit with config checks
@@ -457,7 +457,7 @@ node gsd-tools.cjs graphify diff
 node gsd-tools.cjs graphify snapshot [name]
 ```
 
-User-facing entry point: `/gsd-graphify` (see [Command Reference](COMMANDS.md#gsd-graphify)).
+User-facing entry point: `/vgsd-graphify` (see [Command Reference](COMMANDS.md#vgsd-graphify)).
 
 ---
 
@@ -481,17 +481,17 @@ User-facing entry point: `/gsd-graphify` (see [Command Reference](COMMANDS.md#gs
 | UAT | `lib/uat.cjs` | Cross-phase UAT/verification audit |
 | Profile Output | `lib/profile-output.cjs` | Developer profile formatting |
 | Profile Pipeline | `lib/profile-pipeline.cjs` | Session analysis pipeline |
-| Graphify | `lib/graphify.cjs` | Knowledge graph build/query/status/diff/snapshot (backs `/gsd-graphify`) |
-| Learnings | `lib/learnings.cjs` | Extract learnings from phases/SUMMARY artifacts (backs `/gsd-extract-learnings`) |
+| Graphify | `lib/graphify.cjs` | Knowledge graph build/query/status/diff/snapshot (backs `/vgsd-graphify`) |
+| Learnings | `lib/learnings.cjs` | Extract learnings from phases/SUMMARY artifacts (backs `/vgsd-extract-learnings`) |
 | Audit | `lib/audit.cjs` | Phase/milestone audit queue handlers; `audit-open` helper |
-| GSD2 Import | `lib/gsd2-import.cjs` | Reverse-migration importer from GSD-2 projects (backs `/gsd-import --from-gsd2`) |
-| Intel | `lib/intel.cjs` | Queryable codebase intelligence index (backs `/gsd-map-codebase --query`) |
+| GSD2 Import | `lib/gsd2-import.cjs` | Reverse-migration importer from GSD-2 projects (backs `/vgsd-import --from-gsd2`) |
+| Intel | `lib/intel.cjs` | Queryable codebase intelligence index (backs `/vgsd-map-codebase --query`) |
 
 ---
 
 ## Reviewer CLI Routing
 
-`review.models.<cli>` maps a reviewer flavor to a shell command invoked by the code-review workflow. Set via [`/gsd-config --integrations`](COMMANDS.md#gsd-config) or directly:
+`review.models.<cli>` maps a reviewer flavor to a shell command invoked by the code-review workflow. Set via [`/vgsd-config --integrations`](COMMANDS.md#vgsd-config) or directly:
 
 ```bash
 gsd-sdk query config-set review.models.codex    "codex exec --model gpt-5"
@@ -504,7 +504,7 @@ Slugs are validated against `[a-zA-Z0-9_-]+`; empty or path-containing slugs are
 
 ## Secret Handling
 
-API keys configured via `/gsd-settings` (`brave_search`, `firecrawl`, `exa_search`) are written plaintext to `.planning/config.json` but are masked (`****<last-4>`) in every `config-set` / `config-get` output, confirmation table, and interactive prompt. See `get-shit-done/bin/lib/secrets.cjs` for the masking implementation. The `config.json` file itself is the security boundary — protect it with filesystem permissions and keep it out of git (`.planning/` is gitignored by default).
+API keys configured via `/vgsd-settings` (`brave_search`, `firecrawl`, `exa_search`) are written plaintext to `.planning/config.json` but are masked (`****<last-4>`) in every `config-set` / `config-get` output, confirmation table, and interactive prompt. See `get-shit-done/bin/lib/secrets.cjs` for the masking implementation. The `config.json` file itself is the security boundary — protect it with filesystem permissions and keep it out of git (`.planning/` is gitignored by default).
 
 ---
 
@@ -512,4 +512,4 @@ API keys configured via `/gsd-settings` (`brave_search`, `firecrawl`, `exa_searc
 
 - [sdk/src/query/QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md) — registry matrix, routing, golden parity, intentional CJS differences
 - [Architecture](ARCHITECTURE.md) — where `gsd-sdk query` fits in orchestration
-- [Command Reference](COMMANDS.md) — user-facing `/gsd-` commands
+- [Command Reference](COMMANDS.md) — user-facing `/vgsd-` commands

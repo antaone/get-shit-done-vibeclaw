@@ -36,7 +36,7 @@ A three-layer defense across the research → plan → execute pipeline. Before 
 
 **Graceful degradation.** When `slopcheck` is unavailable at research time, every recommended package is tagged `[ASSUMED]` and gated with a checkpoint, so the protective behavior degrades safely instead of bypassing the gate.
 
-**Documentation.** `docs/USER-GUIDE.md` has a new "Package Legitimacy Gate" subsection in the Security section; `docs/COMMANDS.md` notes the gate on `/gsd-plan-phase`; `docs/ARCHITECTURE.md` documents the gate before the Security Hooks section and updates the plan-phase pipeline diagram with the gate steps.
+**Documentation.** `docs/USER-GUIDE.md` has a new "Package Legitimacy Gate" subsection in the Security section; `docs/COMMANDS.md` notes the gate on `/vgsd-plan-phase`; `docs/ARCHITECTURE.md` documents the gate before the Security Hooks section and updates the plan-phase pipeline diagram with the gate steps.
 
 Closes [#2827](https://github.com/gsd-build/get-shit-done/issues/2827).
 
@@ -74,7 +74,7 @@ Closes [#3270](https://github.com/gsd-build/get-shit-done/issues/3270).
 ## What was in 1.41.x
 
 - **[v1.41.1](https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.1)** — 14-fix hotfix: phase-plan-index DAG correctness, state-snapshot YAML frontmatter precedence, code-review SUMMARY parser hardening (`BL-` / `blocker:` accepted as Critical-tier), Codex install TOML floats + idempotent rollback, persistent SDK reachability probe, shared model-catalog source of truth (ADR-0003), and more.
-- **[v1.41.0](https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.0)** — six namespace meta-skills, `/gsd-health --context` utilization guard, `--minimal` install flag, `/gsd-edit-phase`, post-merge build & test gate, manual canary release workflow, and 25+ correctness fixes. See [`RELEASE-v1.41.0.md`](RELEASE-v1.41.0.md).
+- **[v1.41.0](https://github.com/gsd-build/get-shit-done/releases/tag/v1.41.0)** — six namespace meta-skills, `/vgsd-health --context` utilization guard, `--minimal` install flag, `/vgsd-edit-phase`, post-merge build & test gate, manual canary release workflow, and 25+ correctness fixes. See [`RELEASE-v1.41.0.md`](RELEASE-v1.41.0.md).
 
 ---
 

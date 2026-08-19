@@ -13,8 +13,8 @@ npx get-shit-done-cc@latest
 1.42.1 is a safety and control-surface release. The headline additions are the
 **package legitimacy gate**, **skill-surface budgeting**, and the **installer migration
 framework** — three changes that make GSD safer to install, safer to update, and easier
-to run in constrained contexts. The release also ships configurable `/gsd-ship` PR body
-sections, `/gsd-review` reviewer defaults, optional fallow structural review, and
+to run in constrained contexts. The release also ships configurable `/vgsd-ship` PR body
+sections, `/vgsd-review` reviewer defaults, optional fallow structural review, and
 quota-aware execution recovery. Underneath that, 30+ correctness fixes cover
 `project_code` phase directories, phase completion, nested git detection, Codex
 install migration, SDK readiness, and decimal-phase dependencies.
@@ -29,7 +29,7 @@ install migration, SDK readiness, and decimal-phase dependencies.
   ([#3215](https://github.com/gsd-build/get-shit-done/pull/3215))
 
 - **Skill surface budgeting** — install with `--profile=core`, `--profile=standard`,
-  or the default `full`; profiles persist in `.gsd-profile`. Use `/gsd:surface` to
+  or the default `full`; profiles persist in `.gsd-profile`. Use `/vgsd:surface` to
   list, enable, disable, reset, or switch skill clusters without reinstalling.
   `--minimal` and `--core-only` remain aliases for `--profile=core`.
   ([#3408](https://github.com/gsd-build/get-shit-done/pull/3456))
@@ -43,17 +43,17 @@ install migration, SDK readiness, and decimal-phase dependencies.
   [#3402](https://github.com/gsd-build/get-shit-done/pull/3402),
   [#3404](https://github.com/gsd-build/get-shit-done/pull/3404))
 
-- **Configurable `/gsd-ship` PR body sections** — `ship.pr_body_sections` appends
+- **Configurable `/vgsd-ship` PR body sections** — `ship.pr_body_sections` appends
   project-specific PRD-style sections while preserving the required `Summary`,
   `Changes`, `Requirements Addressed`, `Verification`, and `Key Decisions` sections.
   ([#3391](https://github.com/gsd-build/get-shit-done/pull/3391))
 
-- **`review.default_reviewers`** — no-flag `/gsd-review` can default to a configured
+- **`review.default_reviewers`** — no-flag `/vgsd-review` can default to a configured
   reviewer subset. Explicit reviewer flags and `--all` still take precedence.
   ([#3464](https://github.com/gsd-build/get-shit-done/pull/3464))
 
 - **Optional fallow structural review pre-pass** — `code_quality.fallow.*` runs a
-  structural pass before `/gsd-code-review`, writes `FALLOW.json`, and embeds
+  structural pass before `/vgsd-code-review`, writes `FALLOW.json`, and embeds
   structural findings in `REVIEW.md`.
   ([#3424](https://github.com/gsd-build/get-shit-done/pull/3486))
 
@@ -103,7 +103,7 @@ install migration, SDK readiness, and decimal-phase dependencies.
 ### Fixed
 
 - **`project_code` phase directory prefixes apply consistently** — first-touch
-  `/gsd-discuss-phase`, `/gsd-plan-phase`, import, gap-planning, and backlog creation
+  `/vgsd-discuss-phase`, `/vgsd-plan-phase`, import, gap-planning, and backlog creation
   paths now create prefixed phase directories consistently.
   ([#3287](https://github.com/gsd-build/get-shit-done/pull/3292),
   [#3298](https://github.com/gsd-build/get-shit-done/pull/3306))
@@ -114,7 +114,7 @@ install migration, SDK readiness, and decimal-phase dependencies.
   ([#3489](https://github.com/gsd-build/get-shit-done/pull/3499),
   [#3517](https://github.com/gsd-build/get-shit-done/pull/3520))
 
-- **Nested git worktrees are detected** — `/gsd-new-project` and ingest flows avoid
+- **Nested git worktrees are detected** — `/vgsd-new-project` and ingest flows avoid
   creating nested `.git` directories when run inside an existing repository or
   worktree.
   ([#3491](https://github.com/gsd-build/get-shit-done/pull/3502))

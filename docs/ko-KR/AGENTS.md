@@ -34,7 +34,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-new-project`, `/gsd-new-milestone` |
+| **생성 주체** | `/vgsd-new-project`, `/vgsd-new-milestone` |
 | **병렬성** | 4개 인스턴스 (stack, features, architecture, pitfalls) |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -53,7 +53,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-plan-phase` |
+| **생성 주체** | `/vgsd-plan-phase` |
 | **병렬성** | 4개 인스턴스 (project-researcher와 동일한 집중 영역) |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -72,7 +72,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-ui-phase` |
+| **생성 주체** | `/vgsd-ui-phase` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -138,7 +138,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-new-project` (4개 조사자 완료 후) |
+| **생성 주체** | `/vgsd-new-project` (4개 조사자 완료 후) |
 | **병렬성** | 단일 인스턴스 (조사자 이후 순차적) |
 | **도구** | Read, Write, Bash |
 | **모델 (balanced)** | Sonnet |
@@ -153,7 +153,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-plan-phase`, `/gsd-quick` |
+| **생성 주체** | `/vgsd-plan-phase`, `/vgsd-quick` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Opus |
@@ -175,7 +175,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-new-project` |
+| **생성 주체** | `/vgsd-new-project` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -196,7 +196,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-execute-phase`, `/gsd-quick` |
+| **생성 주체** | `/vgsd-execute-phase`, `/vgsd-quick` |
 | **병렬성** | 복수 (웨이브 내 병렬, 웨이브 간 순차적) |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -219,7 +219,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-plan-phase` (검증 루프, 최대 3회 반복) |
+| **생성 주체** | `/vgsd-plan-phase` (검증 루프, 최대 3회 반복) |
 | **병렬성** | 단일 인스턴스 (반복적) |
 | **도구** | Read, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -244,7 +244,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-audit-milestone` |
+| **생성 주체** | `/vgsd-audit-milestone` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -259,7 +259,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-ui-phase` (검증 루프, 최대 2회 반복) |
+| **생성 주체** | `/vgsd-ui-phase` (검증 루프, 최대 2회 반복) |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -274,7 +274,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-execute-phase` (모든 executor 완료 후) |
+| **생성 주체** | `/vgsd-execute-phase` (모든 executor 완료 후) |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -284,7 +284,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 **핵심 동작.**
 - 작업 완료 여부가 아닌 단계 목표에 대해 코드베이스를 확인합니다
 - 구체적인 증거를 포함한 PASS/FAIL 결과를 제공합니다
-- `/gsd-verify-work`가 처리할 문제를 기록합니다
+- `/vgsd-verify-work`가 처리할 문제를 기록합니다
 
 ---
 
@@ -294,7 +294,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-validate-phase` |
+| **생성 주체** | `/vgsd-validate-phase` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -313,7 +313,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-ui-review` |
+| **생성 주체** | `/vgsd-ui-review` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -336,7 +336,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-map-codebase` |
+| **생성 주체** | `/vgsd-map-codebase` |
 | **병렬성** | 4개 인스턴스 (tech, architecture, quality, concerns) |
 | **도구** | Read, Bash, Grep, Glob, Write |
 | **모델 (balanced)** | Haiku |
@@ -356,7 +356,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-debug`, `/gsd-verify-work` (실패 시) |
+| **생성 주체** | `/vgsd-debug`, `/vgsd-verify-work` (실패 시) |
 | **병렬성** | 단일 인스턴스 (대화형) |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **모델 (balanced)** | Sonnet |
@@ -381,7 +381,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/gsd-profile-user` |
+| **생성 주체** | `/vgsd-profile-user` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read |
 | **모델 (balanced)** | Sonnet |

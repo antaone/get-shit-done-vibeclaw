@@ -1,4 +1,4 @@
-# マルチプロジェクトワークスペース (`/gsd-workspace --new`)
+# マルチプロジェクトワークスペース (`/vgsd-workspace --new`)
 
 **Issue:** #1241
 **Date:** 2026-03-20
@@ -18,13 +18,13 @@ GSD は作業ディレクトリごとに1つの `.planning/` ディレクトリ�
 
 ## コマンド
 
-### `/gsd-workspace --new`
+### `/vgsd-workspace --new`
 
 リポジトリのコピーと独自の `.planning/` を持つワークスペースディレクトリを作成します。
 
 ```bash
-/gsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI --path ~/workspaces/feature-b
-/gsd-workspace --new --name feature-b --repos . --strategy worktree   # same-repo isolation
+/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI --path ~/workspaces/feature-b
+/vgsd-workspace --new --name feature-b --repos . --strategy worktree   # same-repo isolation
 ```
 
 **引数:**
@@ -33,26 +33,26 @@ GSD は作業ディレクトリごとに1つの `.planning/` ディレクトリ�
 |------|----------|---------|-------------|
 | `--name` | はい | — | ワークスペース名 |
 | `--repos` | いいえ | 対話的な選択 | カンマ区切りのリポジトリパスまたは名前 |
-| `--path` | いいえ | `~/gsd-workspaces/<name>` | 出力先ディレクトリ |
+| `--path` | いいえ | `~/vgsd-workspaces/<name>` | 出力先ディレクトリ |
 | `--strategy` | いいえ | `worktree` | `worktree`（軽量、.git を共有）または `clone`（完全に独立） |
 | `--branch` | いいえ | `workspace/<name>` | チェックアウトするブランチ |
 | `--auto` | いいえ | false | 対話的な質問をスキップし、デフォルト値を使用 |
 
-### `/gsd-workspace --list`
+### `/vgsd-workspace --list`
 
-`~/gsd-workspaces/*/WORKSPACE.md` をスキャンしてワークスペースマニフェストを検索します。名前、パス、リポジトリ数、GSD ステータス（PROJECT.md の有無、現在のフェーズ）をテーブル形式で表示します。
+`~/vgsd-workspaces/*/WORKSPACE.md` をスキャンしてワークスペースマニフェストを検索します。名前、パス、リポジトリ数、GSD ステータス（PROJECT.md の有無、現在のフェーズ）をテーブル形式で表示します。
 
-### `/gsd-workspace --remove`
+### `/vgsd-workspace --remove`
 
 確認後にワークスペースディレクトリを削除します。worktree 戦略の場合、まず各メンバーリポジトリに対して `git worktree remove` を実行します。コミットされていない変更があるリポジトリがある場合は削除を拒否します。
 
 ## ディレクトリ構造
 
 ```
-~/gsd-workspaces/feature-b/          # workspace root
+~/vgsd-workspaces/feature-b/          # workspace root
 ├── WORKSPACE.md                      # manifest
 ├── .planning/                        # independent GSD planning directory
-│   ├── PROJECT.md                    # (if user ran /gsd-new-project)
+│   ├── PROJECT.md                    # (if user ran /vgsd-new-project)
 │   ├── STATE.md
 │   └── config.json
 ├── hr-ui/                            # git worktree of source repo
@@ -89,7 +89,7 @@ Strategy: worktree
 
 ## ワークフロー
 
-### `/gsd-workspace --new` のワークフロー手順
+### `/vgsd-workspace --new` のワークフロー手順
 
 1. **セットアップ** — `init new-workspace` を呼び出し、JSON コンテキストを解析する
 2. **入力の収集** — `--name`/`--repos`/`--path` が指定されていない場合、対話的に質問する。リポジトリの選択時は、カレントディレクトリ内の子 `.git` ディレクトリを選択肢として表示する
@@ -100,7 +100,7 @@ Strategy: worktree
    - Clone: `git clone <source> <workspace>/<repo-name>`
 6. **WORKSPACE.md の書き込み** — ソースパス、戦略、ブランチを含むマニフェスト
 7. **.planning/ の初期化** — `mkdir -p <workspace>/.planning`
-8. **/gsd-new-project の提案** — 新しいワークスペースでプロジェクト初期化を実行するか確認する
+8. **/vgsd-new-project の提案** — 新しいワークスペースでプロジェクト初期化を実行するか確認する
 9. **コミット** — commit_docs が有効な場合、WORKSPACE.md のアトミックコミット
 10. **完了** — ワークスペースのパスと次のステップを表示する
 
@@ -111,7 +111,7 @@ Strategy: worktree
 - 出力先パスが既に存在するかどうか
 - ソースリポジトリにコミットされていない変更があるかどうか
 - `git worktree` が利用可能かどうか
-- デフォルトのワークスペースベースディレクトリ (`~/gsd-workspaces/`)
+- デフォルトのワークスペースベースディレクトリ (`~/vgsd-workspaces/`)
 
 ワークフローの分岐制御用フラグを含む JSON を返します。
 
@@ -137,7 +137,7 @@ Strategy: worktree
 
 ### List-Workspaces のエッジケース
 
-- **`~/gsd-workspaces/` が存在しない場合** — 「ワークスペースが見つかりません」
+- **`~/vgsd-workspaces/` が存在しない場合** — 「ワークスペースが見つかりません」
 - **WORKSPACE.md は存在するが、内部のリポジトリがなくなっている場合** — ワークスペースを表示し、リポジトリを欠落としてマークする
 
 ## テスト
@@ -182,4 +182,4 @@ Strategy: worktree
 | `.planning/` をワークスペースルートに配置 | 個々のリポジトリの planning から完全に分離できる。各ワークスペースは独立した GSD プロジェクトとなる |
 | 中央レジストリを使用しない | 状態の乖離を回避する。`list-workspaces` はファイルシステムを直接スキャンする |
 | ケース B を A の特殊ケースとする | `--repos .` で同じ仕組みを再利用し、フィーチャーブランチ専用のコードが不要 |
-| デフォルトパスを `~/gsd-workspaces/<name>` とする | `list-workspaces` がスキャンしやすい予測可能な場所に配置し、ワークスペースをソースリポジトリの外に保つ |
+| デフォルトパスを `~/vgsd-workspaces/<name>` とする | `list-workspaces` がスキャンしやすい予測可能な場所に配置し、ワークスペースをソースリポジトリの外に保つ |

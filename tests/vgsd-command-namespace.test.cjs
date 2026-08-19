@@ -1,0 +1,117 @@
+'use strict';
+
+process.env.GSD_TEST_MODE = '1';
+
+const { describe, test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const { createTempDir, cleanup } = require('./helpers.cjs');
+const {
+  convertClaudeCommandToCodexSkill,
+  convertClaudeToCliineMarkdown,
+  convertClaudeToOpencodeFrontmatter,
+  convertSlashCommandsToGeminiMentions,
+  installRuntimeArtifacts,
+} = require('../bin/install.js');
+const { resolveRuntimeArtifactLayout } = require('../get-shit-done/bin/lib/runtime-artifact-layout.cjs');
+const { loadSkillsManifest, resolveProfile } = require('../get-shit-done/bin/lib/install-profiles.cjs');
+const { formatGsdSlash } = require('../get-shit-done/bin/lib/runtime-slash.cjs');
+
+const ROOT = path.join(__dirname, '..');
+const COMMANDS_DIR = path.join(ROOT, 'commands', 'gsd');
+const PROFILE = resolveProfile({ modes: ['core'], manifest: loadSkillsManifest(COMMANDS_DIR) });
+
+describe('VibeClaw public command namespace', () => {
+  test('runtime formatter emits vgsd in each runtime-native shape', () => {
+    assert.equal(formatGsdSlash('plan-phase 1', 'claude'), '/vgsd-plan-phase 1');
+    assert.equal(formatGsdSlash('plan-phase 1', 'gemini'), '/vgsd:plan-phase 1');
+    assert.equal(formatGsdSlash('plan-phase 1', 'codex'), '$vgsd-plan-phase 1');
+    assert.equal(formatGsdSlash('/gsd:plan-phase 1', 'claude'), '/vgsd-plan-phase 1');
+    assert.equal(formatGsdSlash('$gsd-plan-phase 1', 'codex'), '$vgsd-plan-phase 1');
+  });
+
+  test('every public artifact layout uses vgsd while agent roles keep gsd', () => {
+    const runtimes = [
+      'claude', 'cursor', 'gemini', 'codex', 'copilot', 'antigravity',
+      'windsurf', 'augment', 'trae', 'qwen', 'hermes', 'codebuddy',
+      'cline', 'opencode', 'kilo',
+    ];
+
+    for (const runtime of runtimes) {
+      const scope = runtime === 'claude' ? 'local' : 'global';
+      const layout = resolveRuntimeArtifactLayout(runtime, '/tmp/vgsd-layout', scope);
+      for (const kind of layout.kinds) {
+        if (kind.kind === 'agents') {
+          assert.equal(kind.prefix, 'gsd-');
+          continue;
+        }
+        assert.ok(
+          kind.prefix === 'vgsd-' || kind.destSubpath.endsWith('/vgsd'),
+          `${runtime}/${kind.kind} must use vgsd: ${JSON.stringify(kind)}`,
+        );
+      }
+    }
+  });
+
+  test('legacy command references convert to vgsd for Gemini, Codex, OpenCode, and Cline', () => {
+    assert.equal(convertSlashCommandsToGeminiMentions('Run /gsd-plan-phase 1'), 'Run /vgsd:plan-phase 1');
+
+    const source = [
+      '---',
+      'name: gsd:plan-phase',
+      'description: Plan',
+      '---',
+      '',
+      'Run /gsd:execute-phase 1.',
+    ].join('\n');
+    const codex = convertClaudeCommandToCodexSkill(source, 'vgsd-plan-phase');
+    assert.match(codex, /\$vgsd-execute-phase 1/);
+    assert.doesNotMatch(codex, /\$gsd-|\/gsd[:-]/);
+
+    const opencode = convertClaudeToOpencodeFrontmatter(source);
+    assert.match(opencode, /\/vgsd-execute-phase 1/);
+    assert.doesNotMatch(opencode, /\/gsd[:-]/);
+
+    const cline = convertClaudeToCliineMarkdown(source);
+    assert.match(cline, /\/vgsd-execute-phase 1/);
+    assert.doesNotMatch(cline, /\/gsd[:-]/);
+  });
+
+  test('canonical command metadata and references no longer emit the legacy namespace', () => {
+    const commandNames = fs.readdirSync(COMMANDS_DIR)
+      .filter((file) => file.endsWith('.md'))
+      .map((file) => file.slice(0, -3));
+    const commandAlternation = commandNames
+      .sort((a, b) => b.length - a.length)
+      .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    const legacyReference = new RegExp(`(?<![A-Za-z0-9_-])gsd[:-](?:${commandAlternation})(?=[^A-Za-z0-9_-]|$)`);
+
+    for (const file of fs.readdirSync(COMMANDS_DIR).filter((name) => name.endsWith('.md'))) {
+      const content = fs.readFileSync(path.join(COMMANDS_DIR, file), 'utf8');
+      assert.match(content, /^name: vgsd[:-]/m, `${file} must declare a vgsd command name`);
+      assert.doesNotMatch(content, legacyReference, `${file} contains a legacy GSD command reference`);
+    }
+  });
+
+  test('reinstall removes legacy public artifacts and preserves dev preferences under vgsd', (t) => {
+    const configDir = createTempDir('vgsd-upgrade-');
+    t.after(() => cleanup(configDir));
+
+    const legacyCommands = path.join(configDir, 'commands', 'gsd');
+    fs.mkdirSync(legacyCommands, { recursive: true });
+    fs.writeFileSync(path.join(legacyCommands, 'help.md'), '# old help\n');
+    fs.writeFileSync(path.join(legacyCommands, 'dev-preferences.md'), '# preferences\n');
+
+    installRuntimeArtifacts('gemini', configDir, 'global', PROFILE);
+
+    assert.ok(!fs.existsSync(legacyCommands));
+    assert.ok(fs.existsSync(path.join(configDir, 'commands', 'vgsd', 'help.md')));
+    assert.equal(
+      fs.readFileSync(path.join(configDir, 'commands', 'vgsd', 'dev-preferences.md'), 'utf8'),
+      '# preferences\n',
+    );
+  });
+});

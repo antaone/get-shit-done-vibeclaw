@@ -29,31 +29,31 @@ Test body
 </objective>
 `;
 
-    const result = convertClaudeCommandToWindsurfSkill(input, 'gsd-quick');
+    const result = convertClaudeCommandToWindsurfSkill(input, 'vgsd-quick');
     const nameMatch = result.match(/^name:\s*(.+)$/m);
 
     assert.ok(nameMatch, 'frontmatter contains name field');
-    assert.strictEqual(nameMatch[1], 'gsd-quick', 'skill name is plain scalar');
-    assert.ok(!result.includes('name: "gsd-quick"'), 'quoted skill name is not emitted');
+    assert.strictEqual(nameMatch[1], 'vgsd-quick', 'skill name is plain scalar');
+    assert.ok(!result.includes('name: "vgsd-quick"'), 'quoted skill name is not emitted');
   });
 
   test('preserves slash for slash commands in markdown body', () => {
     const input = `---
-name: gsd:plan-phase
+name: vgsd:plan-phase
 description: Plan a phase
 ---
 
 Next:
-/gsd:execute-phase 17
-/gsd-help
-gsd:progress
+/vgsd:execute-phase 17
+/vgsd-help
+vgsd:progress
 `;
 
-    const result = convertClaudeCommandToWindsurfSkill(input, 'gsd-plan-phase');
-    // Slash commands: /gsd:execute-phase -> /gsd-execute-phase
-    assert.ok(result.includes('/gsd-execute-phase 17'), 'slash command gsd: -> gsd-');
-    assert.ok(result.includes('/gsd-help'), '/gsd-help preserved');
-    assert.ok(result.includes('gsd-progress'), 'bare gsd: -> gsd-');
+    const result = convertClaudeCommandToWindsurfSkill(input, 'vgsd-plan-phase');
+    // Slash commands: /vgsd:execute-phase -> /vgsd-execute-phase
+    assert.ok(result.includes('/vgsd-execute-phase 17'), 'slash command gsd: -> gsd-');
+    assert.ok(result.includes('/vgsd-help'), '/vgsd-help preserved');
+    assert.ok(result.includes('vgsd-progress'), 'bare gsd: -> gsd-');
   });
 
   test('includes windsurf_skill_adapter block', () => {

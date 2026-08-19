@@ -23,14 +23,14 @@ gates.
 ## Why this exists
 
 GSD has the building blocks for issue-driven AI development —
-`/gsd-workspace --new`, `/gsd-manager`, `/gsd-autonomous`, `/gsd-verify-work`,
-`/gsd-review`, `/gsd-ship`, plus `STATE.md` and the phase artifact suite
+`/vgsd-workspace --new`, `/vgsd-manager`, `/vgsd-autonomous`, `/vgsd-verify-work`,
+`/vgsd-review`, `/vgsd-ship`, plus `STATE.md` and the phase artifact suite
 — but no guide that walks through how to drive them from a single tracker
 issue without writing custom orchestration scripts. Without that guide
 the failure modes are:
 
 - Underuse: developers run discuss/plan/execute manually and never reach
-  for `/gsd-manager` or `/gsd-autonomous` even when their work pattern
+  for `/vgsd-manager` or `/vgsd-autonomous` even when their work pattern
   fits.
 - Workaround scripts: developers wire ad-hoc shell loops between their
   tracker and `claude` invocations, bypassing `STATE.md`, the phase
@@ -47,13 +47,13 @@ Symphony docs, blog posts, or third-party orchestration write-ups.
 | Symphony concept | GSD primitive |
 |---|---|
 | `WORKFLOW.md` (top-level intent) | `ROADMAP.md` (project intent), `STATE.md` (live status), phase `CONTEXT.md` (per-phase scope), phase `PLAN.md` (executable steps) |
-| One isolated agent workspace per task | `/gsd-workspace --new --strategy worktree` |
-| Agent dispatch and concurrency | `/gsd-manager` (interactive dashboard), `/gsd-autonomous` (unattended) |
-| Per-phase plan and discuss steps | `/gsd-discuss-phase` → `/gsd-plan-phase` → `/gsd-execute-phase` |
-| Proof-of-work / test evidence | `/gsd-verify-work` (UAT.md persisted across `/clear`) |
-| Adversarial review | `/gsd-review` (cross-AI peer review of plans) |
-| Human merge gate | `/gsd-ship` (creates PR, optional code review, prepares merge) |
-| Follow-up capture | `/gsd-capture`, `/gsd-capture --seed`, `/gsd-new-milestone`, or a manually opened tracker issue |
+| One isolated agent workspace per task | `/vgsd-workspace --new --strategy worktree` |
+| Agent dispatch and concurrency | `/vgsd-manager` (interactive dashboard), `/vgsd-autonomous` (unattended) |
+| Per-phase plan and discuss steps | `/vgsd-discuss-phase` → `/vgsd-plan-phase` → `/vgsd-execute-phase` |
+| Proof-of-work / test evidence | `/vgsd-verify-work` (UAT.md persisted across `/clear`) |
+| Adversarial review | `/vgsd-review` (cross-AI peer review of plans) |
+| Human merge gate | `/vgsd-ship` (creates PR, optional code review, prepares merge) |
+| Follow-up capture | `/vgsd-capture`, `/vgsd-capture --seed`, `/vgsd-new-milestone`, or a manually opened tracker issue |
 | Concurrency control | Manager / background-agent semantics (no always-on poller) |
 
 The mapping is one-way: GSD owns the safety gates (verification, human
@@ -71,35 +71,35 @@ tracker issue end-to-end. Replace bracketed placeholders before running.
    — bounded scope, observable acceptance criteria, no upstream
    dependencies that block execution.
 2. **Map to a GSD phase.** If the issue maps onto an existing phase in
-   `ROADMAP.md`, select it. If not, run `/gsd-new-milestone` (for a new
-   milestone of related issues) or open a phase via `/gsd-phase` /
-   `/gsd-phase --insert`. Capture the tracker issue URL in the phase's
+   `ROADMAP.md`, select it. If not, run `/vgsd-new-milestone` (for a new
+   milestone of related issues) or open a phase via `/vgsd-phase` /
+   `/vgsd-phase --insert`. Capture the tracker issue URL in the phase's
    `CONTEXT.md` so traceability survives compaction.
 3. **Create an isolated workspace.** Run
-   `/gsd-workspace --new --strategy worktree <slug>` to spin up a git
+   `/vgsd-workspace --new --strategy worktree <slug>` to spin up a git
    worktree with an independent `.planning/` directory. The worktree is
    the safety boundary: any exploration, partial commits, or aborted
    plans stay outside `main`.
 4. **Run discuss → plan → execute through GSD.** From inside the
-   workspace, run `/gsd-discuss-phase` to clarify ambiguities,
-   `/gsd-plan-phase` to produce `PLAN.md`, and either `/gsd-manager`
-   (interactive dashboard) or `/gsd-execute-phase` / `/gsd-autonomous`
+   workspace, run `/vgsd-discuss-phase` to clarify ambiguities,
+   `/vgsd-plan-phase` to produce `PLAN.md`, and either `/vgsd-manager`
+   (interactive dashboard) or `/vgsd-execute-phase` / `/vgsd-autonomous`
    (unattended) to implement. Avoid driving raw `claude` invocations
    from outside GSD — that bypasses `STATE.md` updates and the phase
    manifest.
-5. **Demand proof-of-work.** Run `/gsd-verify-work` to walk the user
+5. **Demand proof-of-work.** Run `/vgsd-verify-work` to walk the user
    through UAT against the phase's acceptance criteria. Tests,
    screenshots, log captures, and config diffs are all recorded in
    `UAT.md`, which persists across `/clear` and feeds gaps into
-   `/gsd-plan-phase --gaps` when verification surfaces missed scope.
-6. **Pass through the review and ship gates.** Run `/gsd-review` to get
+   `/vgsd-plan-phase --gaps` when verification surfaces missed scope.
+6. **Pass through the review and ship gates.** Run `/vgsd-review` to get
    adversarial peer review of the plan from independent AI CLIs (catches
-   blind spots model-by-model), then `/gsd-ship` to open the PR with a
+   blind spots model-by-model), then `/vgsd-ship` to open the PR with a
    rich body assembled from the planning artifacts. Both gates require a
    human decision before anything reaches the remote.
-7. **Capture follow-up work explicitly.** Use `/gsd-capture` for inline
-   notes, `/gsd-capture --seed` for ideas worth a future phase, or
-   `/gsd-new-milestone` for a coherent group of follow-ups. Creating a
+7. **Capture follow-up work explicitly.** Use `/vgsd-capture` for inline
+   notes, `/vgsd-capture --seed` for ideas worth a future phase, or
+   `/vgsd-new-milestone` for a coherent group of follow-ups. Creating a
    tracker issue from a discovered follow-up requires explicit user
    confirmation — GSD does not post to remote trackers automatically.
 
@@ -110,11 +110,11 @@ When the PR merges, the loop closes. Auto-close keywords in the PR body
 
 The loop is safe because four invariants hold by construction:
 
-- **Isolated worktrees.** Every issue runs in a `/gsd-workspace --new`
+- **Isolated worktrees.** Every issue runs in a `/vgsd-workspace --new`
   worktree, so partial work, aborted plans, and exploratory commits
   never touch `main`. `gsd-local-patches/` is the recovery surface if a
   worktree's hand-edits need to come back across an update.
-- **Explicit human review.** `/gsd-review` and `/gsd-ship` both stop for
+- **Explicit human review.** `/vgsd-review` and `/vgsd-ship` both stop for
   human approval. There is no auto-merge and no auto-PR-from-execution
   path. If you want to remove the human gate for a specific repository,
   that is your branch-protection / merge-queue policy decision, not
@@ -123,14 +123,14 @@ The loop is safe because four invariants hold by construction:
   closes a tracker issue without an explicit user-initiated command.
   Follow-up capture defaults to local artifacts (notes, seeds,
   milestones); pushing back to the tracker is a separate manual step.
-- **Verification before ship.** `/gsd-verify-work`'s UAT.md must record
-  evidence before `/gsd-ship` is run. The recommended discipline is to
+- **Verification before ship.** `/vgsd-verify-work`'s UAT.md must record
+  evidence before `/vgsd-ship` is run. The recommended discipline is to
   treat `verification_failed` as a blocker even when the implementation
   looks correct — the failure usually surfaces a missed acceptance
   criterion, not a flaky test.
 
 If any of these invariants is bypassed (e.g. running `claude` directly
-against the worktree, skipping `/gsd-verify-work`, or scripting issue
+against the worktree, skipping `/vgsd-verify-work`, or scripting issue
 creation through the tracker API without user confirmation), the
 guarantees of this guide do not apply.
 
@@ -151,7 +151,7 @@ review:
   the URL goes into `CONTEXT.md`. GSD has no opinion about which
   tracker you use, or whether you use one at all.
 - **No bypass of verification, review, or human decision gates.** Even
-  when running `/gsd-autonomous`, the verification and review gates
+  when running `/vgsd-autonomous`, the verification and review gates
   still fire. The "autonomous" label refers to phase-to-phase
   progression, not to skipping human approval.
 - **No expansion of the default skill / command surface.** Every
@@ -165,7 +165,7 @@ approved-enhancement could later add a *minimal* tracker bridge:
 
 - Importing one GitHub or Linear issue into a GSD workspace / phase.
 - Exporting `UAT.md` evidence as a comment on the source issue.
-- Generating follow-up tracker issues from `/gsd-capture --seed` output.
+- Generating follow-up tracker issues from `/vgsd-capture --seed` output.
 
 Each of those would be its own enhancement proposal because each adds
 integration surface and ongoing maintenance burden. They are out of
@@ -175,7 +175,7 @@ scope for this guide.
 
 - [docs/USER-GUIDE.md](USER-GUIDE.md) — task-oriented walkthroughs of
   individual commands referenced above.
-- [docs/COMMANDS.md](COMMANDS.md) — full reference for `/gsd-*`
+- [docs/COMMANDS.md](COMMANDS.md) — full reference for `/vgsd-*`
   commands.
 - [docs/FEATURES.md](FEATURES.md) — feature-level capability matrix
   (workspaces, manager, autonomous, verify, review, ship).

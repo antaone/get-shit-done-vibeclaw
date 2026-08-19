@@ -1,5 +1,5 @@
 ---
-name: gsd:thread
+name: vgsd:thread
 description: Manage persistent context threads for cross-session work
 argument-hint: "[list [--open | --resolved] | close <slug> | status <slug> | name | description]"
 allowed-tools:

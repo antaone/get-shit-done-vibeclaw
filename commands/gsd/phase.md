@@ -1,5 +1,5 @@
 ---
-name: gsd:phase
+name: vgsd:phase
 description: CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases
 argument-hint: "[--insert | --remove | --edit] <phase-name-or-number>"
 allowed-tools:

@@ -1388,6 +1388,7 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
       const GSD_MANAGED_DIRS = [
         'get-shit-done',
         'agents',
+        path.join('commands', 'vgsd'),
         path.join('commands', 'gsd'),
         'hooks',
         'skills',
@@ -1437,7 +1438,7 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
     // ─── Prompt Budget ────────────────────────────────────────────────────
     //
     // Assemble and deterministically trim review prompt sections to fit a
-    // token budget. Used by the /gsd-review workflow before dispatching to
+    // token budget. Used by the /vgsd-review workflow before dispatching to
     // small-context local model servers (Ollama, llama.cpp, LM Studio).
     //
     // Required flags:

@@ -72,7 +72,7 @@ function routeValidateCommand({ verify, args, cwd, raw, parseNamedArgs, output: 
         () => verify.cmdValidateConsistency(cwd, raw),
       ),
       // Keep health on CJS for now so fix hints are rendered via runtime-slash
-      // helpers (codex expects $gsd-* command shape).
+      // helpers (codex expects $vgsd-* command shape).
       health: () => {
         const repairFlag = args.includes('--repair');
         const backfillFlag = args.includes('--backfill');

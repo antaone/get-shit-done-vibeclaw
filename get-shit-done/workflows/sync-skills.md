@@ -1,8 +1,8 @@
 # sync-skills — Cross-Runtime GSD Skill Sync
 
-**Command:** `/gsd-sync-skills`
+**Command:** `/vgsd-sync-skills`
 
-Sync managed `gsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `gsd-update` on one runtime.
+Sync managed `gsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `vgsd-update` on one runtime.
 
 ---
 
@@ -113,14 +113,14 @@ sync source: <runtime> (<src_skills_root>)
 sync targets: <dest1>, <dest2>
 
 == <dest1> (<dest1_skills_root>) ==
-CREATE: gsd-help
-UPDATE: gsd-update
+CREATE: vgsd-help
+UPDATE: vgsd-update
 REMOVE: gsd-old-command
-SKIP:   gsd-plan-phase (up to date)
+SKIP:   vgsd-plan-phase (up to date)
 (N changes)
 
 == <dest2> (<dest2_skills_root>) ==
-CREATE: gsd-help
+CREATE: vgsd-help
 (N changes)
 
 dry-run only. use --apply to execute.    ← omit this line if --apply
@@ -170,7 +170,7 @@ Sync complete: <N> skills synced to <M> runtime(s).
 
 1. **Only `gsd-*` directories** are created, updated, or removed. Any directory not starting with `gsd-` in a destination root is untouched.
 2. **Dry-run is the default.** `--apply` must be passed explicitly to write anything.
-3. **Source root must exist.** Never create the source root; it must have been created by a prior `gsd-update` or installer run.
+3. **Source root must exist.** Never create the source root; it must have been created by a prior `vgsd-update` or installer run.
 4. **No cross-runtime content transformation.** Sync copies files verbatim. It does not apply runtime-specific content transformations (those happen at install time). If a runtime requires transformed content (e.g. Augment's format differs), the developer should run the installer for that runtime instead of using sync.
 
 ---

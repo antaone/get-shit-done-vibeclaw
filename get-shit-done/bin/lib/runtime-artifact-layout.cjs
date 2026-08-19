@@ -227,56 +227,56 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
     case 'claude':
       if (scope === 'local') {
         kinds = [
-          commandsKind('commands/gsd', 'gsd-', configDir),
+          commandsKind('commands/vgsd', 'vgsd-', configDir),
           agentsKind('agents', 'gsd-', configDir),
         ];
       } else {
-        kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
+        kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
       }
       break;
 
     case 'cursor':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
       break;
 
     case 'gemini':
-      kinds = [commandsKind('commands/gsd', 'gsd-', configDir)];
+      kinds = [commandsKind('commands/vgsd', 'vgsd-', configDir)];
       break;
 
     case 'codex':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
       break;
 
     case 'copilot':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
       break;
 
     case 'antigravity':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
       break;
 
     case 'windsurf':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
       break;
 
     case 'augment':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
       break;
 
     case 'trae':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
       break;
 
     case 'qwen':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
       break;
 
     case 'hermes':
-      kinds = [skillsKind('skills/gsd', '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
+      kinds = [skillsKind('skills/vgsd', '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
       break;
 
     case 'codebuddy':
-      kinds = [skillsKind('skills', 'gsd-', 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
+      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
       break;
 
     case 'cline':
@@ -284,11 +284,11 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
       break;
 
     case 'opencode':
-      kinds = [commandsKind('command', 'gsd-', configDir)];
+      kinds = [commandsKind('command', 'vgsd-', configDir)];
       break;
 
     case 'kilo':
-      kinds = [commandsKind('command', 'gsd-', configDir)];
+      kinds = [commandsKind('command', 'vgsd-', configDir)];
       break;
 
     default:

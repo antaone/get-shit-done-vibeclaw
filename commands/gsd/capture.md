@@ -1,5 +1,5 @@
 ---
-name: gsd:capture
+name: vgsd:capture
 description: Capture ideas, tasks, notes, and seeds to their destination
 argument-hint: "[--note | --backlog | --seed | --list] [text]"
 allowed-tools:

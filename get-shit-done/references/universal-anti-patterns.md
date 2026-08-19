@@ -34,7 +34,7 @@ Reference: `references/questioning.md` for the full anti-pattern list.
 
 ## State Management Anti-Patterns
 
-15. **No direct Write/Edit to STATE.md or ROADMAP.md for mutations.** Always use `gsd-sdk query` for registered state/roadmap handlers (e.g. `state.update`, `state.advance-plan`, `roadmap.update-plan-progress`), or legacy `node …/gsd-tools.cjs` for CLI-only commands. Direct Write tool usage bypasses safe update logic and is unsafe in multi-session environments. Exception: first-time creation of STATE.md from template is allowed.
+15. **No direct Write/Edit to STATE.md or ROADMAP.md for mutations.** Always use `gsd-sdk query` for registered state/roadmap handlers (e.g. `state.update`, `state.advance-plan`, `roadmap.update-plan-progress`), or legacy `node …/vgsd-tools.cjs` for CLI-only commands. Direct Write tool usage bypasses safe update logic and is unsafe in multi-session environments. Exception: first-time creation of STATE.md from template is allowed.
 
 ## Behavioral Rules
 

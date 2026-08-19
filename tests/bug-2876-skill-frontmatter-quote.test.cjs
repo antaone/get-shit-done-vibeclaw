@@ -35,7 +35,7 @@ const install = require(installPath);
 // any naive single-quoting to also escape correctly — the canonical
 // safe form is `JSON.stringify(...)` (used by yamlQuote).
 const REPORTER_DESCRIPTION =
-  "[BETA] Offload plan phase to Claude Code's ultraplan cloud — drafts remotely while terminal stays free, review in browser with inline comments, import back via /gsd-import. Claude Code only.";
+  "[BETA] Offload plan phase to Claude Code's ultraplan cloud — drafts remotely while terminal stays free, review in browser with inline comments, import back via /vgsd-import. Claude Code only.";
 
 // Use unquoted description in the source frontmatter — that's exactly the
 // shape that ships in commands/gsd/*.md when authors paste a description
@@ -47,7 +47,7 @@ const REPORTER_DESCRIPTION =
 function buildClaudeCommand(description) {
   return [
     '---',
-    'name: gsd:ultraplan-phase',
+    'name: vgsd:ultraplan-phase',
     `description: ${description}`,
     'argument-hint: "[phase-number]"',
     'allowed-tools:',
@@ -63,7 +63,7 @@ function buildClaudeCommand(description) {
 function buildClaudeAgent(description) {
   return [
     '---',
-    'name: gsd-extract-learnings',
+    'name: vgsd-extract-learnings',
     `description: ${description}`,
     'tools: Read, Bash',
     '---',
@@ -132,10 +132,10 @@ function assertDescriptionRoundTrips(emitted, expected, label) {
 }
 
 const COMMAND_CONVERTERS = [
-  { label: 'convertClaudeCommandToCopilotSkill', fn: (src) => install.convertClaudeCommandToCopilotSkill(src, 'gsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToAntigravitySkill', fn: (src) => install.convertClaudeCommandToAntigravitySkill(src, 'gsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToTraeSkill', fn: (src) => install.convertClaudeCommandToTraeSkill(src, 'gsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToCodebuddySkill', fn: (src) => install.convertClaudeCommandToCodebuddySkill(src, 'gsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToCopilotSkill', fn: (src) => install.convertClaudeCommandToCopilotSkill(src, 'vgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToAntigravitySkill', fn: (src) => install.convertClaudeCommandToAntigravitySkill(src, 'vgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToTraeSkill', fn: (src) => install.convertClaudeCommandToTraeSkill(src, 'vgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToCodebuddySkill', fn: (src) => install.convertClaudeCommandToCodebuddySkill(src, 'vgsd-ultraplan-phase') },
 ];
 
 const AGENT_CONVERTERS = [

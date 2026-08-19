@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Context-utilization classifier for `gsd-health --context`.
+ * Context-utilization classifier for `vgsd-health --context`.
  *
  * Pure function. Callers pass tokensUsed + contextWindow; the
  * classifier returns the percent and one of three states. Recommendation

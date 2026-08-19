@@ -26,7 +26,7 @@ The Phase 2 decision, previously listed as an open question, is recorded here as
 
 ### Decision
 
-- Add a `/gsd:surface` slash command with the following sub-commands:
+- Add a `/vgsd:surface` slash command with the following sub-commands:
   - `list` — show all clusters and their enabled/disabled status for the active runtime
   - `status` — show the active profile, effective skill count, and any dropped-description warnings
   - `profile <name>` — switch the active profile and re-stage skills/agents for the current runtime
@@ -34,10 +34,10 @@ The Phase 2 decision, previously listed as an open question, is recorded here as
   - `enable <cluster>` — mark a cluster enabled; re-stage to add its skills back
   - `reset` — clear surface state and re-apply the active profile from `.gsd-profile`
 - Implement the runtime surface engine in `get-shit-done/bin/lib/surface.cjs`, consuming `stageSkillsForProfile` and `stageAgentsForProfile` from the Phase 1 module without duplicating staging logic.
-- Persist per-runtime surface state in `<runtimeConfigDir>/.gsd-surface.json`, independent from `.gsd-profile`. The profile marker owns install-time identity; the surface JSON owns session-scope cluster toggles.
+- Persist per-runtime surface state in `<runtimeConfigDir>/.vgsd-surface.json`, independent from `.gsd-profile`. The profile marker owns install-time identity; the surface JSON owns session-scope cluster toggles.
 - Source cluster taxonomy from the research memo §3.2 (2026-05-12-skill-surface-budget.md). Define clusters in `get-shit-done/bin/lib/clusters.cjs` — a separate module so the surface engine and future SDK callers can import cluster definitions without loading the full profile module.
 - Cluster taxonomy: `core_loop`, `audit_review`, `milestone`, `research_ideate`, `workspace_state`, `docs`, `ui`, `ai_eval`, `ns_meta`, `utility`. Membership may overlap; every installed skill stem must appear in at least one cluster (enforced by `tests/surface-clusters.test.cjs`).
-- Relationship to Anthropic platform asks: Asks D (native per-skill toggle API) and E (budget-fraction negotiation) remain filed separately. The `/gsd:surface` command is a unilateral GSD-side workaround that does not depend on those platform changes.
+- Relationship to Anthropic platform asks: Asks D (native per-skill toggle API) and E (budget-fraction negotiation) remain filed separately. The `/vgsd:surface` command is a unilateral GSD-side workaround that does not depend on those platform changes.
 
 ## Status — Phase 1 shipped
 
@@ -51,21 +51,21 @@ Phase 1 artifacts landed on `feat/3408-skills-description-dropped-due-to-size`:
 
 Phase 2 shipped on the same branch:
 
-- `commands/gsd/surface.md` — `/gsd:surface` slash command runbook (sub-commands: `list`, `status`, `profile <name>`, `disable <cluster>`, `enable <cluster>`, `reset`)
+- `commands/gsd/surface.md` — `/vgsd:surface` slash command runbook (sub-commands: `list`, `status`, `profile <name>`, `disable <cluster>`, `enable <cluster>`, `reset`)
 - `get-shit-done/bin/lib/surface.cjs` — runtime engine (`readSurface`, `writeSurface`, `resolveSurface`, `applySurface`, `listSurface`); reuses `stageSkillsForProfile` / `stageAgentsForProfile` from Phase 1
 - `get-shit-done/bin/lib/clusters.cjs` — 10-cluster taxonomy covering all installed skill stems
 - Tests: `tests/surface-state.test.cjs`, `tests/surface-clusters.test.cjs`, `tests/surface-resolve.test.cjs`, `tests/surface-apply.test.cjs`, `tests/surface-list.test.cjs`
-- Persistent surface state: `<runtimeConfigDir>/.gsd-surface.json` (independent from `.gsd-profile`)
+- Persistent surface state: `<runtimeConfigDir>/.vgsd-surface.json` (independent from `.gsd-profile`)
 
 ## Open questions
 
-- Whether the `requires:` field should also be consumed by `/gsd:help` to annotate dependency chains in help output (follow-up).
+- Whether the `requires:` field should also be consumed by `/vgsd:help` to annotate dependency chains in help output (follow-up).
 - Whether telemetry (per-profile install counts, cluster-disable events) should be added to the surface engine or deferred.
 - Whether Anthropic platform asks D and E (native skill toggle API, budget-fraction negotiation) should block any future work in this module.
 
 ## Consequences
 
-- Users with constrained context budgets can install `--profile=core` and expand incrementally via `/gsd:surface enable <cluster>` without a full reinstall.
+- Users with constrained context budgets can install `--profile=core` and expand incrementally via `/vgsd:surface enable <cluster>` without a full reinstall.
 - The `requires:` closure ensures partial installs never silently break skill cross-references.
 - Future skills must declare `requires:` dependencies to participate in profile resolution; the lint gate enforces this at CI time.
 - `CONTEXT.md` gains a canonical **Skill Surface Budget Module** entry; future architecture reviews should treat out-of-seam skill staging as drift.
