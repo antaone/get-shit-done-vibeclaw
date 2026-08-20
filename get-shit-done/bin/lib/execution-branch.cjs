@@ -248,7 +248,7 @@ function inspectVibeCandidate(store, repo, runtime, env) {
       message: candidates.length > 1
         ? 'More than one Vibe candidate matches this branch; execution is ambiguous.'
         : 'VibeClaw is initialized, but this worktree is not a prepared Vibe candidate.',
-      hint: 'Prepare and launch the stage with `vibe stage prepare` and `vibe stage launch`, then run the vgsd command inside that candidate worktree.',
+      hint: 'Run the installed `vgsd-vibe` command for this workflow to choose one or more tools and prepare candidate worktrees.',
     };
   }
 
@@ -295,6 +295,228 @@ function inspectVibeCandidate(store, repo, runtime, env) {
     runtime: candidateRuntime || runtime,
     dirty_count: repo.dirty.length,
     message: `Verified Vibe candidate '${candidate.id}' on '${repo.branch}'.`,
+  };
+}
+
+function parseHandoffBranch(branch) {
+  if (typeof branch !== 'string') return null;
+  const parts = branch.split('/');
+  if (parts.length !== 4 || parts[0] !== 'vibe') return null;
+  const [, run, stage, suffix] = parts;
+  if (![run, stage, suffix].every((value) => /^[a-z0-9][a-z0-9-]*$/.test(value))) return null;
+  const match = suffix.match(/^(.+)-(\d{3})$/);
+  if (!match) return null;
+  return {
+    run,
+    stage,
+    suffix,
+    tool: normalizeRuntime(match[1]),
+    candidate_id: `${run}-${stage}-${suffix}`,
+  };
+}
+
+function parseRemoteLines(output) {
+  return String(output || '')
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const [commit, ref] = line.trim().split(/\s+/, 2);
+      return { commit, ref };
+    })
+    .filter((item) => /^[0-9a-f]{40,64}$/i.test(item.commit || '') && item.ref);
+}
+
+function inspectGitHandoff(repo, runtime, command, options = {}) {
+  const parsed = parseHandoffBranch(repo.branch);
+  if (!parsed) return null;
+  const upstreamResult = invokeGit([
+    'for-each-ref', '--format=%(upstream:short)', `refs/heads/${repo.branch}`,
+  ], repo.root, options);
+  const upstream = upstreamResult.exitCode === 0 ? upstreamResult.stdout.trim() : '';
+  if (!upstream || !upstream.endsWith(`/${repo.branch}`)) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_upstream_required',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Multi-machine candidate '${repo.branch}' must track its published remote branch.`,
+      hint: `Fetch the coordinator remote and check out '${repo.branch}' with --track before running vgsd.`,
+    };
+  }
+  const remote = upstream.slice(0, -(repo.branch.length + 1));
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(remote)) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_remote_invalid',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Candidate upstream '${upstream}' does not use a supported Git remote name.`,
+    };
+  }
+
+  const identityPattern = `refs/tags/vibe-handoff/${parsed.candidate_id}/*`;
+  const identityResult = invokeGit(['ls-remote', '--exit-code', '--tags', remote, identityPattern], repo.root, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  if (identityResult.exitCode !== 0) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: identityResult.exitCode === 2 ? 'handoff_identity_missing' : 'handoff_remote_unavailable',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: identityResult.exitCode === 2
+        ? `Remote '${remote}' has no Vibe handoff identity for '${parsed.candidate_id}'.`
+        : `Could not verify Vibe handoff '${parsed.candidate_id}' against remote '${remote}'.`,
+      hint: identityResult.stderr || 'Fetch the published handoff or restore remote access before running vgsd.',
+    };
+  }
+  const identities = parseRemoteLines(identityResult.stdout)
+    .filter((item) => item.ref.startsWith(`refs/tags/vibe-handoff/${parsed.candidate_id}/`));
+  if (identities.length !== 1) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_identity_ambiguous',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Remote '${remote}' returned ${identities.length} handoff identities for '${parsed.candidate_id}'.`,
+    };
+  }
+  const identity = identities[0];
+  const assignedCommand = identity.ref.slice(`refs/tags/vibe-handoff/${parsed.candidate_id}/`.length);
+  if (!/^[a-z][a-z0-9-]*$/.test(assignedCommand) || assignedCommand !== command) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_command_mismatch',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `This handoff is assigned to '${assignedCommand || 'unknown'}', not '${command}'.`,
+    };
+  }
+  if (runtime === 'unknown') {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_runtime_required',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Multi-machine handoff '${parsed.candidate_id}' requires an explicit vgsd runtime identity.`,
+    };
+  }
+  if (runtime !== 'unknown' && parsed.tool !== runtime) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_tool_mismatch',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `This handoff belongs to '${parsed.tool}', but the current vgsd runtime is '${runtime}'.`,
+    };
+  }
+
+  const completionRef = `refs/tags/vibe-complete/${parsed.candidate_id}`;
+  const completionResult = invokeGit(['ls-remote', '--exit-code', '--tags', remote, completionRef], repo.root, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  if (completionResult.exitCode === 0 && parseRemoteLines(completionResult.stdout).some((item) => item.ref === completionRef)) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_already_completed',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Multi-machine candidate '${parsed.candidate_id}' is already completed and cannot be executed again.`,
+    };
+  }
+  if (![0, 2].includes(completionResult.exitCode)) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_remote_unavailable',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Could not verify completion state for '${parsed.candidate_id}' on '${remote}'.`,
+      hint: completionResult.stderr || null,
+    };
+  }
+
+  const remoteBranchRef = `refs/heads/${repo.branch}`;
+  const branchResult = invokeGit(['ls-remote', '--exit-code', '--heads', remote, remoteBranchRef], repo.root, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  if (branchResult.exitCode !== 0) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: branchResult.exitCode === 2 ? 'handoff_remote_branch_missing' : 'handoff_remote_unavailable',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Could not verify published candidate branch '${repo.branch}' on '${remote}'.`,
+      hint: branchResult.stderr || null,
+    };
+  }
+  const remoteBranches = parseRemoteLines(branchResult.stdout).filter((item) => item.ref === remoteBranchRef);
+  if (remoteBranches.length !== 1) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_remote_branch_invalid',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Remote candidate branch '${repo.branch}' is ambiguous.`,
+    };
+  }
+  const remoteHead = remoteBranches[0].commit;
+  const baseCommit = identity.commit;
+  const baseAncestor = invokeGit(['merge-base', '--is-ancestor', baseCommit, repo.head], repo.root, options);
+  if (baseAncestor.exitCode !== 0) {
+    return {
+      allowed: false,
+      mode: 'vibe-git-handoff',
+      reason: 'handoff_base_diverged',
+      branch: repo.branch,
+      candidate_id: parsed.candidate_id,
+      message: `Current branch is not descended from the published handoff base ${baseCommit}.`,
+    };
+  }
+  if (remoteHead !== repo.head) {
+    const remoteAncestor = invokeGit(['merge-base', '--is-ancestor', remoteHead, repo.head], repo.root, options);
+    if (remoteAncestor.exitCode !== 0) {
+      const localAncestor = invokeGit(['merge-base', '--is-ancestor', repo.head, remoteHead], repo.root, options);
+      return {
+        allowed: false,
+        mode: 'vibe-git-handoff',
+        reason: localAncestor.exitCode === 0 ? 'handoff_worker_behind' : 'handoff_worker_diverged',
+        branch: repo.branch,
+        candidate_id: parsed.candidate_id,
+        message: localAncestor.exitCode === 0
+          ? `Worker branch is behind '${remote}/${repo.branch}'; fetch and fast-forward before running vgsd.`
+          : `Worker branch has diverged from '${remote}/${repo.branch}'.`,
+      };
+    }
+  }
+
+  return {
+    allowed: true,
+    action: 'reused',
+    mode: 'vibe-git-handoff',
+    reason: 'handoff_candidate_verified',
+    branch: repo.branch,
+    candidate_id: parsed.candidate_id,
+    run_id: parsed.run,
+    runtime: parsed.tool,
+    remote,
+    base_commit: baseCommit,
+    remote_commit: remoteHead,
+    dirty_count: repo.dirty.length,
+    message: `Verified multi-machine Vibe handoff '${parsed.candidate_id}' against '${remote}'.`,
   };
 }
 
@@ -395,12 +617,32 @@ function inspectExecutionBranch(options = {}) {
     };
   }
 
+  if (store && options.readOnly) {
+    return {
+      allowed: true,
+      action: 'inspected',
+      mode: 'vibe-inspection',
+      reason: 'vibe_read_only_allowed',
+      branch: repo.branch,
+      command,
+      runtime,
+      dirty_count: repo.dirty.length,
+      message: `Inspected VibeClaw state from '${repo.branch || '(detached)'}' without creating an execution branch.`,
+    };
+  }
+
   if (store) {
     const result = inspectVibeCandidate(store, repo, runtime, env);
+    if (!result.allowed && repo.branch && repo.branch.startsWith('vibe/')) {
+      const handoff = inspectGitHandoff(repo, runtime, command, options.gitOptions || options);
+      if (handoff) return { action: handoff.allowed ? handoff.action : 'blocked', command, runtime, ...handoff };
+    }
     return { action: result.allowed ? result.action : 'blocked', mode: result.mode || 'vibe-managed', command, runtime, ...result };
   }
 
   if (repo.branch && repo.branch.startsWith('vibe/')) {
+    const handoff = inspectGitHandoff(repo, runtime, command, options.gitOptions || options);
+    if (handoff) return { action: handoff.allowed ? handoff.action : 'blocked', command, runtime, ...handoff };
     return {
       allowed: false,
       action: 'blocked',

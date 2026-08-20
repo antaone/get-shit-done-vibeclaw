@@ -70,6 +70,10 @@ describe('VibeClaw orchestration core', () => {
       flags: ['one', 'two'],
     };
     assert.deepEqual(parseYaml(stringifyYaml(input)), input);
+    assert.deepEqual(parseYaml(stringifyYaml({ empty_list: [], empty_map: {} })), {
+      empty_list: [],
+      empty_map: {},
+    });
   });
 
   test('loads, selects, and validates routes while allowing explicit tool overrides', () => {

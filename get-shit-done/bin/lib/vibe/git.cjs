@@ -37,6 +37,236 @@ function branchHead(cwd, branch, options = {}) {
   return result.exitCode === 0 ? result.stdout : null;
 }
 
+function tagHead(cwd, tag, options = {}) {
+  const result = invoke(['show-ref', '--verify', '--hash', `refs/tags/${tag}`], cwd, options);
+  return result.exitCode === 0 ? result.stdout : null;
+}
+
+function validateRemoteName(remote) {
+  const value = String(remote || '').trim();
+  invariant(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(value), 'GIT_REMOTE_INVALID', `Invalid Git remote name '${remote || ''}'`);
+  return value;
+}
+
+function ensureRemote(cwd, remote, options = {}) {
+  const name = validateRemoteName(remote);
+  const url = requireGit(['remote', 'get-url', name], cwd, 'GIT_REMOTE_REQUIRED', `Git remote '${name}' is not configured`, options);
+  return { name, url };
+}
+
+function parseLsRemote(output) {
+  return String(output || '')
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const [commit, ref] = line.trim().split(/\s+/, 2);
+      return { commit, ref };
+    })
+    .filter((item) => /^[0-9a-f]{40,64}$/i.test(item.commit || '') && item.ref);
+}
+
+function remoteRefHead(cwd, remote, ref, options = {}) {
+  const name = validateRemoteName(remote);
+  const result = invoke(['ls-remote', '--exit-code', name, ref], cwd, { ...options, timeout: options.remoteTimeout ?? 30000 });
+  if (result.exitCode === 2) return null;
+  if (result.exitCode !== 0) {
+    throw new VibeError('GIT_REMOTE_UNAVAILABLE', `Could not inspect '${ref}' on Git remote '${name}'`, {
+      remote: name,
+      ref,
+      stderr: result.stderr,
+      exit_code: result.exitCode,
+    });
+  }
+  const matches = parseLsRemote(result.stdout).filter((item) => item.ref === ref);
+  invariant(matches.length === 1, 'GIT_REMOTE_REF_INVALID', `Git remote '${name}' returned an ambiguous ref '${ref}'`);
+  return matches[0].commit;
+}
+
+function normalizeHandoffCommand(candidate) {
+  let command = String(candidate.contract && candidate.contract.gsd && candidate.contract.gsd.command || '').trim().toLowerCase();
+  command = command.replace(/^\$/, '').replace(/^\//, '').replace(/^vgsd(?::|-)/, '');
+  invariant(/^[a-z][a-z0-9-]*$/.test(command), 'HANDOFF_COMMAND_INVALID', `Candidate '${candidate.id}' has no portable vgsd command`);
+  return command;
+}
+
+function handoffTag(candidate) {
+  return `vibe-handoff/${candidate.id}/${normalizeHandoffCommand(candidate)}`;
+}
+
+function completionTag(candidate) {
+  return `vibe-complete/${candidate.id}`;
+}
+
+function ensureLightweightTag(cwd, tag, commit, options = {}) {
+  const existing = tagHead(cwd, tag, options);
+  if (existing) {
+    invariant(existing === commit, 'HANDOFF_TAG_CONFLICT', `Tag '${tag}' already points to a different commit`, {
+      expected: commit,
+      actual: existing,
+    });
+    return false;
+  }
+  requireGit(['tag', tag, commit], cwd, 'HANDOFF_TAG_CREATE_FAILED', `Could not create Git handoff tag '${tag}'`, options);
+  return true;
+}
+
+function publishCandidateHandoff({ projectRoot, run, candidate, remote }, options = {}) {
+  const repoRoot = ensureRepository(projectRoot, options);
+  const remoteInfo = ensureRemote(repoRoot, remote, options);
+  const tag = handoffTag(candidate);
+  const baseCommit = resolveCommit(repoRoot, candidate.git.base_commit, options);
+  invariant(branchHead(repoRoot, candidate.git.branch, options) === baseCommit, 'HANDOFF_BRANCH_ADVANCED', `Candidate branch '${candidate.git.branch}' must still be at its base before handoff`);
+  const createdTag = ensureLightweightTag(repoRoot, tag, baseCommit, options);
+  try {
+    requireGit([
+      'push', '--atomic', remoteInfo.name,
+      `refs/heads/${run.integration_branch}:refs/heads/${run.integration_branch}`,
+      `refs/heads/${candidate.git.branch}:refs/heads/${candidate.git.branch}`,
+      `refs/tags/${tag}:refs/tags/${tag}`,
+    ], repoRoot, 'HANDOFF_PUSH_FAILED', `Could not atomically publish candidate '${candidate.id}' to '${remoteInfo.name}'`, {
+      ...options,
+      timeout: options.remoteTimeout ?? 30000,
+    });
+    const remoteBranch = remoteRefHead(repoRoot, remoteInfo.name, `refs/heads/${candidate.git.branch}`, options);
+    const remoteTag = remoteRefHead(repoRoot, remoteInfo.name, `refs/tags/${tag}`, options);
+    invariant(remoteBranch === baseCommit && remoteTag === baseCommit, 'HANDOFF_PUSH_UNVERIFIED', `Remote handoff for '${candidate.id}' does not match its reviewed base`, {
+      base_commit: baseCommit,
+      remote_branch: remoteBranch,
+      remote_tag: remoteTag,
+    });
+    return {
+      mode: 'multi-machine',
+      remote: remoteInfo.name,
+      tag,
+      completion_tag: completionTag(candidate),
+      published_commit: baseCommit,
+      published_at: new Date().toISOString(),
+    };
+  } catch (error) {
+    if (createdTag) invoke(['tag', '-d', tag], repoRoot, options);
+    throw error;
+  }
+}
+
+function rollbackPublishedHandoff(candidate, options = {}) {
+  const handoff = candidate.git && candidate.git.handoff;
+  if (!handoff || handoff.mode !== 'multi-machine') return { remote_deleted: false, tag_deleted: false };
+  const repoRoot = ensureRepository(candidate.project_root, options);
+  const remoteBranch = remoteRefHead(repoRoot, handoff.remote, `refs/heads/${candidate.git.branch}`, options);
+  const remoteTag = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${handoff.tag}`, options);
+  let remoteDeleted = false;
+  if (remoteBranch === candidate.git.base_commit && remoteTag === candidate.git.base_commit) {
+    requireGit([
+      'push', '--atomic', handoff.remote,
+      `:refs/heads/${candidate.git.branch}`,
+      `:refs/tags/${handoff.tag}`,
+    ], repoRoot, 'HANDOFF_ROLLBACK_FAILED', `Could not roll back remote handoff '${candidate.id}'`, {
+      ...options,
+      timeout: options.remoteTimeout ?? 30000,
+    });
+    remoteDeleted = true;
+  }
+  const localTag = tagHead(repoRoot, handoff.tag, options);
+  if (localTag === candidate.git.base_commit) invoke(['tag', '-d', handoff.tag], repoRoot, options);
+  return { remote_deleted: remoteDeleted, tag_deleted: localTag === candidate.git.base_commit };
+}
+
+function receiveCandidateHandoff(candidate, options = {}) {
+  const handoff = candidate.git && candidate.git.handoff;
+  invariant(handoff && handoff.mode === 'multi-machine', 'HANDOFF_NOT_ENABLED', `Candidate '${candidate.id}' is not a multi-machine handoff`);
+  const repoRoot = ensureRepository(candidate.project_root, options);
+  ensureRemote(repoRoot, handoff.remote, options);
+  const remoteTag = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${handoff.tag}`, options);
+  invariant(remoteTag === candidate.git.base_commit, 'HANDOFF_IDENTITY_MISMATCH', `Remote handoff identity for '${candidate.id}' changed`, {
+    expected: candidate.git.base_commit,
+    actual: remoteTag,
+  });
+  const trackingRef = `refs/remotes/${handoff.remote}/${candidate.git.branch}`;
+  requireGit([
+    'fetch', '--no-tags', handoff.remote,
+    `+refs/heads/${candidate.git.branch}:${trackingRef}`,
+  ], repoRoot, 'HANDOFF_FETCH_FAILED', `Could not fetch candidate '${candidate.id}' from '${handoff.remote}'`, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  const remoteHead = resolveCommit(repoRoot, trackingRef, options);
+  invariant(isAncestor(repoRoot, candidate.git.base_commit, remoteHead, options), 'BASE_DIVERGED', `Remote candidate '${candidate.id}' is not descended from its recorded base`);
+  invariant(remoteHead !== candidate.git.base_commit, 'HANDOFF_RESULT_COMMIT_REQUIRED', `Multi-machine candidate '${candidate.id}' must push at least one result commit`);
+  invariant(candidate.git.worktree && fs.existsSync(candidate.git.worktree), 'WORKTREE_MISSING', `Coordinator worktree is missing: ${candidate.git.worktree}`);
+  const dirty = worktreeDirty(candidate.git.worktree, options);
+  invariant(dirty.length === 0, 'WORKTREE_DIRTY', `Coordinator worktree for '${candidate.id}' has uncommitted changes`, { files: dirty });
+  const actualBranch = currentBranch(candidate.git.worktree, options);
+  invariant(actualBranch === candidate.git.branch, 'BRANCH_MISMATCH', `Coordinator worktree is on '${actualBranch}', expected '${candidate.git.branch}'`);
+  const localHead = resolveCommit(candidate.git.worktree, 'HEAD', options);
+  invariant(isAncestor(repoRoot, localHead, remoteHead, options), 'HANDOFF_DIVERGED', `Coordinator branch '${candidate.git.branch}' cannot fast-forward to the pushed worker result`, {
+    local_commit: localHead,
+    remote_commit: remoteHead,
+  });
+  if (localHead !== remoteHead) {
+    requireGit(['merge', '--ff-only', trackingRef], candidate.git.worktree, 'HANDOFF_FAST_FORWARD_FAILED', `Could not fast-forward coordinator candidate '${candidate.id}'`, options);
+  }
+  const received = resolveCommit(candidate.git.worktree, 'HEAD', options);
+  invariant(received === remoteHead, 'HANDOFF_RECEIVE_UNVERIFIED', `Coordinator did not receive the exact pushed result for '${candidate.id}'`);
+  return { remote: handoff.remote, remote_commit: remoteHead, received_commit: received };
+}
+
+function publishCompletionHandoff(candidate, resultCommit, options = {}) {
+  const handoff = candidate.git && candidate.git.handoff;
+  if (!handoff || handoff.mode !== 'multi-machine') return null;
+  const repoRoot = ensureRepository(candidate.project_root, options);
+  const remoteHead = remoteRefHead(repoRoot, handoff.remote, `refs/heads/${candidate.git.branch}`, options);
+  invariant(remoteHead === resultCommit, 'HANDOFF_PUSH_REQUIRED', `Push candidate '${candidate.git.branch}' to '${handoff.remote}' before completion`, {
+    expected: resultCommit,
+    remote_commit: remoteHead,
+  });
+  const tag = handoff.completion_tag || completionTag(candidate);
+  const existingRemote = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${tag}`, options);
+  if (existingRemote) {
+    invariant(existingRemote === resultCommit, 'HANDOFF_COMPLETION_CONFLICT', `Remote completion marker '${tag}' points to a different commit`);
+    return { tag, commit: resultCommit, already_published: true };
+  }
+  ensureLightweightTag(repoRoot, tag, resultCommit, options);
+  requireGit(['push', handoff.remote, `refs/tags/${tag}:refs/tags/${tag}`], repoRoot, 'HANDOFF_COMPLETION_PUSH_FAILED', `Could not publish completion marker for '${candidate.id}'`, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  const published = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${tag}`, options);
+  invariant(published === resultCommit, 'HANDOFF_COMPLETION_UNVERIFIED', `Completion marker for '${candidate.id}' was not published exactly`);
+  return { tag, commit: resultCommit, already_published: false };
+}
+
+function validatePublishedHandoff(candidate, options = {}) {
+  const handoff = candidate.git && candidate.git.handoff;
+  if (!handoff || handoff.mode !== 'multi-machine') return null;
+  const repoRoot = ensureRepository(candidate.project_root, options);
+  const remoteHead = remoteRefHead(repoRoot, handoff.remote, `refs/heads/${candidate.git.branch}`, options);
+  const identity = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${handoff.tag}`, options);
+  const completed = remoteRefHead(repoRoot, handoff.remote, `refs/tags/${handoff.completion_tag || completionTag(candidate)}`, options);
+  invariant(remoteHead === candidate.git.result_commit, 'HANDOFF_REMOTE_ADVANCED', `Remote candidate branch '${candidate.git.branch}' does not match the completed result`, {
+    expected: candidate.git.result_commit,
+    actual: remoteHead,
+  });
+  invariant(identity === candidate.git.base_commit, 'HANDOFF_IDENTITY_MISMATCH', `Remote handoff identity for '${candidate.id}' changed`);
+  invariant(completed === candidate.git.result_commit, 'HANDOFF_COMPLETION_REQUIRED', `Remote completion marker for '${candidate.id}' is missing or stale`);
+  return { remote: handoff.remote, remote_commit: remoteHead, completion_commit: completed };
+}
+
+function pushIntegrationHandoff(run, candidate, integrationCommit, options = {}) {
+  const handoff = candidate.git && candidate.git.handoff;
+  if (!handoff || handoff.mode !== 'multi-machine') return null;
+  const repoRoot = ensureRepository(candidate.project_root, options);
+  requireGit([
+    'push', handoff.remote,
+    `refs/heads/${run.integration_branch}:refs/heads/${run.integration_branch}`,
+  ], repoRoot, 'HANDOFF_INTEGRATION_PUSH_FAILED', `Promotion succeeded locally but '${run.integration_branch}' could not be pushed to '${handoff.remote}'`, {
+    ...options,
+    timeout: options.remoteTimeout ?? 30000,
+  });
+  const remoteHead = remoteRefHead(repoRoot, handoff.remote, `refs/heads/${run.integration_branch}`, options);
+  invariant(remoteHead === integrationCommit, 'HANDOFF_INTEGRATION_UNVERIFIED', `Remote integration branch '${run.integration_branch}' does not match the promoted commit`);
+  return { remote: handoff.remote, remote_commit: remoteHead };
+}
+
 function isAncestor(cwd, ancestor, descendant, options = {}) {
   return invoke(['merge-base', '--is-ancestor', ancestor, descendant], cwd, options).exitCode === 0;
 }
@@ -146,7 +376,7 @@ function completeCandidateGit(candidate, options = {}) {
       .filter((file) => file !== '.planning' && !file.startsWith('.planning/'));
     invariant(sourcePaths.length === 0, 'SOURCE_MUTATION_FORBIDDEN', `Stage '${candidate.stage}' does not allow source mutation`, { files: sourcePaths });
   }
-  if (candidate.contract.mutates_source) {
+  if (candidate.contract.requires_result_commit || options.requireResultCommit === true) {
     invariant(resultCommit !== git.base_commit, 'RESULT_COMMIT_REQUIRED', `Stage '${candidate.stage}' requires a source result commit`);
   }
   return resultCommit;
@@ -204,6 +434,7 @@ function createExactTreeIntegrationCommit(projectRoot, candidate, currentHead, o
 
 function promoteCandidateGit({ projectRoot, run, candidate, currentPromotion, replace = false }, options = {}) {
   const repoRoot = ensureRepository(projectRoot, options);
+  validatePublishedHandoff(candidate, options);
   validateCandidateBranch(candidate, options);
   const branch = currentBranch(repoRoot, options);
   invariant(branch === run.integration_branch, 'INTEGRATION_BRANCH_MISMATCH', `Promotion must run from integration branch '${run.integration_branch}', not '${branch}'`);
@@ -236,7 +467,8 @@ function promoteCandidateGit({ projectRoot, run, candidate, currentPromotion, re
     requireGit(['merge', '--ff-only', target], repoRoot, 'PROMOTION_GIT_FAILED', `Could not advance '${run.integration_branch}' to promoted candidate`, options);
   }
   const integrationCommit = resolveCommit(repoRoot, 'HEAD', options);
-  return { strategy, previous_integration_commit: currentHead, integration_commit: integrationCommit };
+  const handoffPush = pushIntegrationHandoff(run, candidate, integrationCommit, options);
+  return { strategy, previous_integration_commit: currentHead, integration_commit: integrationCommit, handoff_push: handoffPush };
 }
 
 function cleanupCandidateWorktree(candidate, { deleteBranch = false, ...options } = {}) {
@@ -296,7 +528,18 @@ module.exports = {
   resolveCommit,
   currentBranch,
   branchHead,
+  tagHead,
   isAncestor,
+  ensureRemote,
+  remoteRefHead,
+  handoffTag,
+  completionTag,
+  publishCandidateHandoff,
+  rollbackPublishedHandoff,
+  receiveCandidateHandoff,
+  publishCompletionHandoff,
+  validatePublishedHandoff,
+  pushIntegrationHandoff,
   prepareCandidateWorktree,
   rollbackPreparedWorktree,
   completeCandidateGit,

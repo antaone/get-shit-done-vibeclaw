@@ -147,12 +147,12 @@ function manifestSkillSet(manifest) {
   const out = new Set();
   for (const key of Object.keys(manifest.files)) {
     if (key.startsWith('skills/')) {
-      const seg = key.split('/')[1].replace(/^gsd-/, '').replace(/\.md$/, '');
+      const seg = key.split('/')[1].replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, '');
       out.add(seg);
     } else if (key.startsWith('command/')) {
       const file = key.split('/')[1];
-      out.add(file.replace(/^gsd-/, '').replace(/\.md$/, ''));
-    } else if (key.startsWith('commands/gsd/')) {
+      out.add(file.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
+    } else if (key.startsWith('commands/gsd/') || key.startsWith('commands/vgsd/')) {
       const file = key.split('/')[2];
       out.add(file.replace(/\.(md|toml)$/, ''));
     }
@@ -170,26 +170,28 @@ function collectSkillBasenamesOnDisk(configDir) {
   const skillsDir = path.join(configDir, 'skills');
   if (fs.existsSync(skillsDir)) {
     for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
-      if (entry.isDirectory() && entry.name.startsWith('gsd-')) {
-        out.add(entry.name.replace(/^gsd-/, ''));
-      } else if (entry.isFile() && entry.name.startsWith('gsd-') && entry.name.endsWith('.md')) {
-        out.add(entry.name.replace(/^gsd-/, '').replace(/\.md$/, ''));
+      if (entry.isDirectory() && /^(?:vgsd|gsd)-/.test(entry.name)) {
+        out.add(entry.name.replace(/^(?:vgsd|gsd)-/, ''));
+      } else if (entry.isFile() && /^(?:vgsd|gsd)-/.test(entry.name) && entry.name.endsWith('.md')) {
+        out.add(entry.name.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
       }
     }
   }
   const commandDir = path.join(configDir, 'command');
   if (fs.existsSync(commandDir)) {
     for (const file of fs.readdirSync(commandDir)) {
-      if (file.startsWith('gsd-') && file.endsWith('.md')) {
-        out.add(file.replace(/^gsd-/, '').replace(/\.md$/, ''));
+      if (/^(?:vgsd|gsd)-/.test(file) && file.endsWith('.md')) {
+        out.add(file.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
       }
     }
   }
-  const commandsGsdDir = path.join(configDir, 'commands', 'gsd');
-  if (fs.existsSync(commandsGsdDir)) {
-    for (const file of fs.readdirSync(commandsGsdDir)) {
-      if (file.endsWith('.md') || file.endsWith('.toml')) {
-        out.add(file.replace(/\.(md|toml)$/, ''));
+  for (const namespace of ['vgsd', 'gsd']) {
+    const commandsGsdDir = path.join(configDir, 'commands', namespace);
+    if (fs.existsSync(commandsGsdDir)) {
+      for (const file of fs.readdirSync(commandsGsdDir)) {
+        if (file.endsWith('.md') || file.endsWith('.toml')) {
+          out.add(file.replace(/\.(md|toml)$/, ''));
+        }
       }
     }
   }

@@ -180,7 +180,7 @@ describe('vgsd execution branch guard', () => {
     assert.equal(result.action, 'blocked');
     assert.equal(result.mode, 'vibe-managed');
     assert.equal(result.reason, 'vibe_candidate_required');
-    assert.match(result.hint, /vibe stage prepare/);
+    assert.match(result.hint, /vgsd-vibe/);
     assert.doesNotMatch(git(root, 'branch', '--show-current'), /^vgsd\//);
   });
 
@@ -251,7 +251,7 @@ describe('public vgsd command guard coverage', () => {
     for (const name of files) {
       const command = name.slice(0, -3);
       const content = fs.readFileSync(path.join(commandDir, name), 'utf8');
-      const expectedAction = command === 'help' ? 'inspect' : 'ensure';
+      const expectedAction = command === 'help' || command === 'vibe' ? 'inspect' : 'ensure';
       assert.match(content, /<execution_branch_guard>/, `${name} is missing the guard`);
       assert.ok(
         content.includes(`execution-branch ${expectedAction} "${command}" --runtime __VGSD_RUNTIME__`),
@@ -299,6 +299,16 @@ describe('public vgsd command guard coverage', () => {
       if (runtime !== 'claude') {
         assert.doesNotMatch(surface, /(?:~|\$HOME)\/\.claude\b/);
       }
+
+      const vibePath = runtime === 'gemini'
+        ? path.join(configDir, 'commands', 'vgsd', 'vibe.md')
+        : runtime === 'opencode'
+          ? path.join(configDir, 'command', 'vgsd-vibe.md')
+          : path.join(configDir, 'skills', 'vgsd-vibe', 'SKILL.md');
+      assert.ok(fs.existsSync(vibePath), `${runtime} did not install its vgsd-vibe control surface`);
+      const vibeSkill = fs.readFileSync(vibePath, 'utf8');
+      assert.match(vibeSkill, /entry prepare/);
+      assert.ok(vibeSkill.includes(`--runtime ${runtime}`), `${runtime} Vibe guard lost its runtime identity`);
     }
   });
 });

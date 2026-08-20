@@ -54,7 +54,7 @@ Full roster at `agents/vgsd-*.md`. The "Primary doc" column flags whether [`docs
 
 ---
 
-## Commands (67 shipped)
+## Commands (68 shipped)
 
 Full roster at `commands/gsd/*.md`. The groupings below mirror `docs/COMMANDS.md` section order; each row carries the command name, a one-line role derived from the command's frontmatter `description:`, and a link to the source file. `tests/command-count-sync.test.cjs` locks the count against the filesystem.
 
@@ -159,6 +159,7 @@ These six routers are descriptor-only entries that the model picks first; the bo
 | `/vgsd-config` | Configure GSD settings — workflow toggles (default), advanced knobs (`--advanced`), integrations (`--integrations`), or model profile (`--profile`). | [commands/gsd/config.md](../commands/gsd/config.md) |
 | `/vgsd-pr-branch` | Create a clean PR branch by filtering out `.planning/` commits. | [commands/gsd/pr-branch.md](../commands/gsd/pr-branch.md) |
 | `/vgsd-surface` | Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall. | [commands/gsd/surface.md](../commands/gsd/surface.md) |
+| `/vgsd-vibe` | Route any public workflow through one or more isolated Vibe candidates, including quick, fast, debug, phase, and milestone flows. | [commands/gsd/vibe.md](../commands/gsd/vibe.md) |
 | `/vgsd-update` | Update GSD to latest version; use `--sync` to sync skills across runtimes or `--reapply` to reapply local patches. | [commands/gsd/update.md](../commands/gsd/update.md) |
 | `/vgsd-help` | Show available GSD commands and usage guide. | [commands/gsd/help.md](../commands/gsd/help.md) |
 
@@ -361,7 +362,7 @@ The `gsd-planner` agent is decomposed into a core agent plus reference modules t
 
 ---
 
-## CLI Modules (74 shipped)
+## CLI Modules (75 shipped)
 
 Full listing: `get-shit-done/bin/lib/*.cjs`.
 
@@ -387,6 +388,7 @@ Full listing: `get-shit-done/bin/lib/*.cjs`.
 | `decisions.generated.cjs` | GENERATED — CJS artifact emitted from `sdk/src/query/decisions.ts` via `sdk/scripts/gen-decisions.mjs`; parses CONTEXT.md `<decisions>` blocks, accepts numeric (D-42) and alphanumeric (D-INFRA-01) IDs, returns `{id, text, category, tags, trackable}`; do not edit directly |
 | `docs.cjs` | Docs-update workflow init, Markdown scanning, monorepo detection |
 | `drift.cjs` | Post-execute codebase structural drift detector (#2003): classifies file changes into new-dir/barrel/migration/route categories and round-trips `last_mapped_commit` frontmatter |
+| `execution-branch.cjs` | Shared standalone/Vibe execution-branch inspection and safety guard used by every installed public command |
 | `fallow-runner.cjs` | Fallow audit adapter for `/vgsd-code-review`: binary resolution (`PATH` then `node_modules/.bin`), actionable missing-binary errors, and structural findings normalization |
 | `frontmatter.cjs` | YAML frontmatter CRUD operations |
 | `gap-checker.cjs` | Post-planning gap analysis (#2493): unified REQUIREMENTS.md + CONTEXT.md decisions vs PLAN.md coverage report (`gsd-tools gap-analysis`) |

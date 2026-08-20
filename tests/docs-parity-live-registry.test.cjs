@@ -175,8 +175,8 @@ function extractCommandTokens(content) {
   const stripped = stripHtmlComments(content);
 
   function isInternal(token) {
-    // Strip the /gsd- or /gsd: or $gsd- prefix to get the slug
-    const slug = token.replace(/^(?:\/gsd[:-]|\$gsd-)/, '');
+    // Strip the /vgsd- or /vgsd: or $vgsd- prefix to get the slug
+    const slug = token.replace(/^(?:\/vgsd[:-]|\$vgsd-)/, '');
     // Exact match OR prefix match for 'init-' (which ends with a dash)
     if (INTERNAL_COMPONENT_SLUGS.has(slug)) return true;
     for (const s of INTERNAL_COMPONENT_SLUGS) {
@@ -185,9 +185,9 @@ function extractCommandTokens(content) {
     return false;
   }
 
-  const allSlash = (stripped.match(/\/gsd-[a-z0-9][a-z0-9-]*/g) || []);
-  const allColon = (stripped.match(/\/gsd:[a-z0-9][a-z0-9-]*/g) || []);
-  const allDollar = (stripped.match(/\$gsd-[a-z0-9][a-z0-9-]*/g) || []);
+  const allSlash = (stripped.match(/\/vgsd-[a-z0-9][a-z0-9-]*/g) || []);
+  const allColon = (stripped.match(/\/vgsd:[a-z0-9][a-z0-9-]*/g) || []);
+  const allDollar = (stripped.match(/\$vgsd-[a-z0-9][a-z0-9-]*/g) || []);
 
   const slash = new Set(allSlash.filter(t => !isInternal(t)));
   const colon = new Set(allColon.filter(t => !isInternal(t)));
@@ -252,43 +252,43 @@ describe('getLiveCommandTokens() — helper contract', () => {
     assert.ok(result.size > 0, 'live registry must contain at least one token');
   });
 
-  test('contains /gsd-help (from commands/gsd/help.md name: gsd:help)', () => {
+  test('contains /vgsd-help (from commands/gsd/help.md name: vgsd:help)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/gsd-help'), 'registry must contain /gsd-help');
+    assert.ok(result.has('/vgsd-help'), 'registry must contain /vgsd-help');
   });
 
-  test('contains /gsd:help (Gemini form)', () => {
+  test('contains /vgsd:help (Gemini form)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/gsd:help'), 'registry must contain /gsd:help');
+    assert.ok(result.has('/vgsd:help'), 'registry must contain /vgsd:help');
   });
 
-  test('contains $gsd-help (Codex form)', () => {
+  test('contains $vgsd-help (Codex form)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('$gsd-help'), 'registry must contain $gsd-help');
+    assert.ok(result.has('$vgsd-help'), 'registry must contain $vgsd-help');
   });
 
-  test('contains /gsd-plan-phase (from commands/gsd/plan-phase.md)', () => {
+  test('contains /vgsd-plan-phase (from commands/gsd/plan-phase.md)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/gsd-plan-phase'), 'registry must contain /gsd-plan-phase');
+    assert.ok(result.has('/vgsd-plan-phase'), 'registry must contain /vgsd-plan-phase');
   });
 
   test('contains exactly 3 tokens per slug (slash, colon, dollar)', () => {
     const result = getLiveCommandTokens();
-    // Every /gsd-slug should have a matching /gsd:slug and $gsd-slug
+    // Every /vgsd-slug should have a matching /vgsd:slug and $vgsd-slug
     let tokenCount = 0;
     for (const token of result) {
-      if (token.startsWith('/gsd-')) tokenCount++;
+      if (token.startsWith('/vgsd-')) tokenCount++;
     }
-    const slashTokens = [...result].filter(t => t.startsWith('/gsd-'));
+    const slashTokens = [...result].filter(t => t.startsWith('/vgsd-'));
     for (const slash of slashTokens) {
-      const slug = slash.slice('/gsd-'.length);
+      const slug = slash.slice('/vgsd-'.length);
       assert.ok(
-        result.has(`/gsd:${slug}`),
-        `registry must contain Gemini form /gsd:${slug} for slash form ${slash}`
+        result.has(`/vgsd:${slug}`),
+        `registry must contain Gemini form /vgsd:${slug} for slash form ${slash}`
       );
       assert.ok(
-        result.has(`$gsd-${slug}`),
-        `registry must contain Codex form $gsd-${slug} for slash form ${slash}`
+        result.has(`$vgsd-${slug}`),
+        `registry must contain Codex form $vgsd-${slug} for slash form ${slash}`
       );
     }
   });
@@ -318,26 +318,26 @@ describe('getLiveCommandTokens() — helper contract', () => {
 // ─── Fixture-based helper tests ───────────────────────────────────────────────
 
 describe('getLiveCommandTokens() — fixture contract', () => {
-  test('parses gsd:foo frontmatter and emits 3 canonical tokens', () => {
+  test('parses vgsd:foo frontmatter and emits 3 canonical tokens', () => {
     // This test validates the parsing logic against a known-good fixture
-    // by inspecting the live registry for commands/gsd/help.md (name: gsd:help).
+    // by inspecting the live registry for commands/gsd/help.md (name: vgsd:help).
     // Fixture file tests are done inline since the helper reads commands/gsd/ only.
     // The canonical token contract:
-    //   name: gsd:foo → /gsd-foo, /gsd:foo, $gsd-foo
+    //   name: vgsd:foo → /vgsd-foo, /vgsd:foo, $vgsd-foo
     const registry = getLiveCommandTokens();
-    // We know help.md has name: gsd:help
+    // We know help.md has name: vgsd:help
     const slug = 'help';
-    assert.ok(registry.has(`/gsd-${slug}`), `must have /gsd-${slug}`);
-    assert.ok(registry.has(`/gsd:${slug}`), `must have /gsd:${slug}`);
-    assert.ok(registry.has(`$gsd-${slug}`), `must have $gsd-${slug}`);
+    assert.ok(registry.has(`/vgsd-${slug}`), `must have /vgsd-${slug}`);
+    assert.ok(registry.has(`/vgsd:${slug}`), `must have /vgsd:${slug}`);
+    assert.ok(registry.has(`$vgsd-${slug}`), `must have $vgsd-${slug}`);
   });
 
-  test('parses gsd-slug frontmatter (ns-* commands) and emits 3 tokens', () => {
-    // ns-context.md has name: gsd-context (dash-style, no colon)
+  test('parses vgsd-slug frontmatter (ns-* commands) and emits 3 tokens', () => {
+    // ns-context.md has name: vgsd-context (dash-style, no colon)
     const registry = getLiveCommandTokens();
-    assert.ok(registry.has('/gsd-context'), 'must have /gsd-context (from ns-context.md)');
-    assert.ok(registry.has('/gsd:context'), 'must have /gsd:context (Gemini form)');
-    assert.ok(registry.has('$gsd-context'), 'must have $gsd-context (Codex form)');
+    assert.ok(registry.has('/vgsd-context'), 'must have /vgsd-context (from ns-context.md)');
+    assert.ok(registry.has('/vgsd:context'), 'must have /vgsd:context (Gemini form)');
+    assert.ok(registry.has('$vgsd-context'), 'must have $vgsd-context (Codex form)');
   });
 });
 
@@ -440,15 +440,15 @@ for (const locale of LOCALES) {
 
 describe('adversarial: polarity inversion catches drift deny-list misses', () => {
   test('renaming a live command without updating docs would fail this test (demonstrated via token absence)', () => {
-    // If /gsd-progress were renamed to /gsd-status-new, the old /gsd-progress
+    // If /vgsd-progress were renamed to /vgsd-status-new, the old /vgsd-progress
     // token would not appear in the live registry, and any doc referencing
-    // /gsd-progress would fail. The deny-list shape would have passed silently
+    // /vgsd-progress would fail. The deny-list shape would have passed silently
     // (it only checks for specific known-bad tokens).
     // We can't simulate an actual rename in a live test, but we can assert
     // that the registry correctly contains the live name (progress, not status):
     const registry = getLiveCommandTokens();
-    assert.ok(registry.has('/gsd-progress'), '/gsd-progress must be live (not renamed to /gsd-status)');
-    assert.ok(!registry.has('/gsd-status'), '/gsd-status must be absent (was deleted, replaced by /gsd-progress)');
+    assert.ok(registry.has('/vgsd-progress'), '/vgsd-progress must be live (not renamed to /vgsd-status)');
+    assert.ok(!registry.has('/vgsd-status'), '/vgsd-status must be absent (was deleted, replaced by /vgsd-progress)');
   });
 
   test('freshly-deleted command /gsd-check-todos is absent from registry', () => {

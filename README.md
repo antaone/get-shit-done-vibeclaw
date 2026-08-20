@@ -51,6 +51,11 @@ npm install
 npm link
 ```
 
+The first `npm install` now installs and builds the nested SDK automatically
+when `sdk/dist/cli.js` is missing. A separate `cd sdk && npm run build` step is
+not required. To troubleshoot or rebuild it explicitly, run
+`npm run build:sdk` from the repository root.
+
 `npm link` exposes the `vibe`, `get-shit-done-cc`, `gsd-tools`, and `gsd-sdk` commands locally. You can also run VibeClaw without linking:
 
 ```bash
@@ -105,6 +110,23 @@ upstream GSD without ambiguous or duplicate commands. Gemini renders the same
 namespace with a colon because its command loader derives namespaces from
 directories; the workflow and persisted artifacts are otherwise identical.
 
+### Which command comes first?
+
+For orchestrated work, run the installed `vgsd-vibe` gateway from the
+integration worktree first. It discovers the repository state, offers direct,
+single-candidate, or multi-candidate execution, and prepares the branches and
+local worktrees or remote handoffs. Run the printed target `vgsd` command only
+after entering its local candidate worktree or tracked worker branch.
+
+```text
+vgsd-vibe for the target -> local worktree or Git handoff -> target vgsd command
+```
+
+Running the target command first is still valid when you intentionally want
+simple direct work. Before Vibe initialization it creates a protected
+standalone branch. After Vibe initialization, mutating target commands on the
+integration worktree stop and direct you back through `vgsd-vibe`.
+
 ### Automatic execution branches
 
 Every installed `vgsd` command runs a Git preflight before it reads workflow
@@ -113,7 +135,7 @@ context or changes project state. The result depends on the current project:
 | Current context | Result |
 | --- | --- |
 | Valid Vibe candidate worktree | Reuse its `vibe/<run>/<stage>/<tool>-NNN` branch |
-| Vibe initialized, but not in a candidate | Stop and require `vibe stage prepare` / `vibe stage launch` |
+| Vibe initialized, but not in a candidate | Stop the mutating command and route through the installed `vgsd-vibe` entry surface |
 | No Vibe setup | Create `vgsd/<runtime>/<command>/<execution-id>` |
 | Existing matching `vgsd/...` branch | Reuse it; a different command gets a new execution branch |
 | Existing branch owned by another runtime | Stop instead of mixing tool results |
@@ -131,8 +153,8 @@ This makes direct usage safe too. For example, Codex running
 vgsd/codex/new-project/20260819-123456-a1b2c3d4-e5f607
 ```
 
-The one read-only exception is `vgsd help`: it inspects branch state but never
-creates a branch.
+The read-only exceptions are `vgsd help` and `vgsd vibe`: they inspect branch
+and orchestration state but never create a standalone execution branch.
 
 ### Core GSD workflow
 
@@ -181,12 +203,52 @@ For the full methodology, see the [GSD User Guide](docs/USER-GUIDE.md), [Command
 
 ## VibeClaw quick start
 
-For the full Gemini + Codex + Claude Code flow—from a new project through later milestones and phase execution—follow the [Multi-Tool Project-to-Milestone Walkthrough](docs/MULTI-TOOL-WALKTHROUGH.md).
+For greenfield, brownfield, same-host, and multi-machine guidance, start with
+the [VibeClaw guide](docs/VIBECLAW.md#command-order-vibe-first-workflow-second).
+For the full Gemini + Codex + Claude Code flow—from a new project through later
+milestones and phase execution—follow the
+[Multi-Tool Project-to-Milestone Walkthrough](docs/MULTI-TOOL-WALKTHROUGH.md).
 
-Run these commands inside a Git repository with an initial commit:
+The installed `vgsd-vibe` command is the AI-facing entry point. It can route
+project creation, milestones, phase stages, `quick`, `fast`, `debug`, reviews,
+audits, and other public `vgsd` commands through one or more candidates:
+
+```text
+/vgsd-vibe quick --tool codex --tool claude
+/vgsd-vibe debug --tool codex
+/vgsd-vibe execute-phase --tool opencode --tool claude
+```
+
+Use `/vgsd:vibe ...` in Gemini CLI and `$vgsd-vibe ...` in Codex. The skill
+uses the Vibe CLI copied into the same runtime installation as `vgsd`, so it
+does not depend on a separate terminal `vibe` command being on `PATH`.
+
+For greenfield work, invoke `vgsd-vibe` in the new project directory. It can
+inspect the files, initialize Git, and ask for approval before creating the
+required baseline commit. For brownfield work, invoke it from the existing
+repository's integration branch. In either case, it can initialize Vibe and
+prepare the selected candidates without making you translate the flow into
+terminal commands.
+
+Local mode uses one coordinator checkout and path-bound worktrees. Opt-in
+multi-machine mode publishes guarded Git handoffs so assigned tools can execute
+from independent clones:
+
+```text
+/vgsd-vibe quick --multi-machine --remote origin --tool codex --tool claude
+```
+
+The coordinator atomically publishes candidate branches and identity tags.
+Workers must use tracked branches, the assigned runtime and command, commit
+every result, and push it. Coordinator completion fetches and verifies the
+pushed commit; promotion rechecks the remote markers and pushes the integration
+branch. See [Multi-machine Git handoffs](docs/VIBECLAW.md#execution-modes-local-worktrees-and-multi-machine-git-handoffs).
+
+The equivalent lower-level CLI path, useful for automation and operators, is:
 
 ```bash
 vibe init
+vibe mode multi-machine --remote origin  # optional; default is local
 vibe route list
 vibe route use cheap
 vibe run start feature-development --id feature-014
@@ -293,7 +355,9 @@ VibeClaw keeps orchestration separate from GSD planning documents:
 .vibe/worktrees/           Ignored candidate worktrees
 ```
 
-Another tool entering the repository can reconstruct its run, stage, route, input, base commit, branch, worktree, expected output, and promotion status without previous chat history.
+Another tool entering a candidate through the same coordinator checkout can
+reconstruct its run, stage, route, input, base commit, branch, worktree,
+expected output, and promotion status without previous chat history.
 
 ## Safe Git promotion
 
@@ -309,6 +373,7 @@ Candidate branches are not promoted project state until the operator runs `vibe 
 
 ```text
 vibe init
+vibe mode show|local|multi-machine [--remote <name>]
 vibe route list|show|use
 vibe run start|resume|show|list
 vibe status

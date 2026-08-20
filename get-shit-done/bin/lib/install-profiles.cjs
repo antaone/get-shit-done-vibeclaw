@@ -4,12 +4,12 @@
  *
  * Background: every installed `gsd-*` skill costs eager system-prompt tokens
  * because runtimes (Claude Code, opencode, etc.) enumerate skill descriptions
- * in `<available_skills>` on every turn. With 66 skills + 33 agents GSD alone
+ * in `<available_skills>` on every turn. With 68 skills + 33 agents GSD alone
  * consumes ~60% of the default 1%-of-context skill-listing budget, causing
  * dropped skills when users stack multiple plugins (#3408).
  *
  * Profile model: three named profiles replace the old minimal/full binary:
- *  - core     — eight skills covering the main project loop (includes surface for ADR-0011 expand contract)
+ *  - core     — nine skills covering the main project loop and Vibe entry surface
  *  - standard — core + phase management and workspace skills
  *  - full     — all skills (previous default, '*' sentinel)
  * Profiles compose: --profile=core,audit resolves to union(closure(core), closure(audit)).
@@ -65,6 +65,7 @@ const PROFILES = Object.freeze({
     'help',
     'update',
     'surface',
+    'vibe',
   ]),
   standard: Object.freeze([
     // Core loop
@@ -75,6 +76,7 @@ const PROFILES = Object.freeze({
     'help',
     'update',
     'surface',
+    'vibe',
     // Phase management (hot nodes from audit — required by 38+ skills)
     'phase',
     'review',

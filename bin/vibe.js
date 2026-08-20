@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 'use strict';
 
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
+const sourceCore = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'vibe', 'index.cjs');
+const installedCore = path.resolve(__dirname, 'lib', 'vibe', 'index.cjs');
 const {
   VibeOrchestrator,
   VibeError,
   createDefaultRegistry,
-} = require('../get-shit-done/bin/lib/vibe/index.cjs');
+  inspectVibeEntry,
+  prepareVibeEntry,
+} = require(fs.existsSync(sourceCore) ? sourceCore : installedCore);
 
 function takeFlag(tokens, name) {
   const index = tokens.indexOf(name);
@@ -52,6 +57,9 @@ function help() {
 
 Usage:
   vibe init [--project <dir>] [--json]
+  vibe entry inspect <vgsd-command>
+  vibe entry prepare <vgsd-command> [--tool <tool> ...] [--run <run>] [--id <run>] [--multi-machine --remote <name>]
+  vibe mode show|local|multi-machine [--remote <name>]
   vibe route list|show <name>|use <name>
   vibe run start <workflow> [--id <run>] [--route <route>] [--base <commit>]
   vibe run resume <run> | show [run] | list
@@ -78,6 +86,7 @@ function prettyStatus(status) {
     `Workflow: ${status.run.workflow}`,
     `Route: ${status.run.route}`,
     `Integration: ${status.run.integration_branch} @ ${status.run.integration_commit.slice(0, 12)}`,
+    `Coordination: ${status.run.coordination.mode}${status.run.coordination.mode === 'multi-machine' ? ` via ${status.run.coordination.remote}` : ''}`,
     '',
   ];
   for (const stage of status.stages) {
@@ -110,6 +119,7 @@ function prettyCandidate(candidate) {
     `Base: ${candidate.git.base_commit}`,
     `Branch: ${candidate.git.branch || 'none'}`,
     `Worktree: ${candidate.git.worktree || candidate.project_root}`,
+    `Coordination: ${candidate.git.handoff && candidate.git.handoff.mode === 'multi-machine' ? `multi-machine via ${candidate.git.handoff.remote}` : 'local'}`,
   ].join('\n');
 }
 
@@ -135,6 +145,68 @@ function main(argv = process.argv.slice(2)) {
   }
 
   const command = tokens.shift();
+  if (command === 'entry') {
+    const action = tokens.shift();
+    const vgsdCommand = tokens.shift();
+    if (!vgsdCommand) throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|prepare <vgsd-command>');
+    const cwd = path.resolve(project || process.cwd());
+    if (action === 'inspect') {
+      assertNoArgs(tokens);
+      const result = inspectVibeEntry({ cwd, command: vgsdCommand });
+      emit(result, json, (value) => [
+        `Command: /vgsd:${value.command}`,
+        `Action: ${value.action}`,
+        `Reason: ${value.reason}`,
+        value.workflow ? `Workflow: ${value.workflow}` : null,
+        value.stage ? `Stage: ${value.stage}` : null,
+        value.message,
+      ].filter(Boolean).join('\n'));
+      return 0;
+    }
+    if (action === 'prepare') {
+      const tools = takeOption(tokens, '--tool', { repeat: true });
+      const runId = takeOption(tokens, '--run');
+      const id = takeOption(tokens, '--id');
+      const route = takeOption(tokens, '--route');
+      const base = takeOption(tokens, '--base');
+      const multiMachine = takeFlag(tokens, '--multi-machine');
+      const local = takeFlag(tokens, '--local');
+      if (multiMachine && local) throw new VibeError('ARGUMENT_INVALID', '--multi-machine and --local are mutually exclusive');
+      const remote = takeOption(tokens, '--remote');
+      assertNoArgs(tokens);
+      const result = prepareVibeEntry({
+        cwd,
+        command: vgsdCommand,
+        tools,
+        runId,
+        id,
+        route,
+        base,
+        coordinationMode: multiMachine ? 'multi-machine' : local ? 'local' : null,
+        remote,
+      });
+      emit(result, json, (value) => [
+        `Run: ${value.run.id}`,
+        `Workflow: ${value.workflow}`,
+        `Stage: ${value.stage}`,
+        ...value.candidates.flatMap((candidate) => [
+          '',
+          `Candidate: ${candidate.id}`,
+          `Tool: ${candidate.tool}`,
+          `Worktree: ${candidate.worktree}`,
+          candidate.handoff && candidate.handoff.mode === 'multi-machine' ? `Handoff: ${candidate.handoff.remote} / ${candidate.handoff.tag}` : null,
+          candidate.handoff && candidate.handoff.mode === 'multi-machine' ? `Fetch: ${candidate.handoff.fetch_command}` : null,
+          candidate.handoff && candidate.handoff.mode === 'multi-machine' ? `Checkout: ${candidate.handoff.checkout_command}` : null,
+          `Command: ${candidate.invocation}`,
+          `Context: ${candidate.context}`,
+        ].filter(Boolean)),
+        '',
+        value.next_action,
+      ].join('\n'));
+      return 0;
+    }
+    throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|prepare <vgsd-command>');
+  }
   const orchestrator = createOrchestrator(project, command === 'init');
   let result;
 
@@ -145,6 +217,17 @@ function main(argv = process.argv.slice(2)) {
       const count = value.standalone_executions ? value.standalone_executions.length : 0;
       return `VibeClaw initialized at ${value.state_root}${value.already_initialized ? ' (already initialized)' : ''}\nStandalone vgsd executions discovered: ${count}`;
     });
+    return 0;
+  }
+
+  if (command === 'mode') {
+    const action = tokens.shift() || 'show';
+    const remote = takeOption(tokens, '--remote');
+    assertNoArgs(tokens);
+    if (action === 'show') result = orchestrator.mode();
+    else if (action === 'local' || action === 'multi-machine') result = orchestrator.setMode(action, { remote });
+    else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe mode show|local|multi-machine [--remote <name>]');
+    emit(result, json, (value) => `Coordination mode: ${value.mode}\nRemote: ${value.remote}`);
     return 0;
   }
 

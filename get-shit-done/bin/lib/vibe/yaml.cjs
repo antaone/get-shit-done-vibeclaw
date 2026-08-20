@@ -23,6 +23,7 @@ function parseScalar(raw) {
   if (value === 'null' || value === '~') return null;
   if (value === 'true') return true;
   if (value === 'false') return false;
+  if (value === '{}') return {};
   if (/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value)) return Number(value);
   if (value.startsWith('"') && value.endsWith('"')) {
     try { return JSON.parse(value); } catch (error) {
@@ -155,8 +156,14 @@ function stringifyYaml(value) {
     }
     for (const [key, item] of Object.entries(node || {})) {
       if (item && typeof item === 'object') {
-        lines.push(`${' '.repeat(indent)}${key}:`);
-        emit(item, indent + 2);
+        if (Array.isArray(item) && item.length === 0) {
+          lines.push(`${' '.repeat(indent)}${key}: []`);
+        } else if (!Array.isArray(item) && Object.keys(item).length === 0) {
+          lines.push(`${' '.repeat(indent)}${key}: {}`);
+        } else {
+          lines.push(`${' '.repeat(indent)}${key}:`);
+          emit(item, indent + 2);
+        }
       } else {
         lines.push(`${' '.repeat(indent)}${key}: ${scalarToYaml(item)}`);
       }
@@ -167,4 +174,3 @@ function stringifyYaml(value) {
 }
 
 module.exports = { parseYaml, stringifyYaml };
-

@@ -26,7 +26,7 @@ npx get-shit-done-cc@canary
 npm install -g get-shit-done-cc@canary
 
 # Pin to an exact canary version
-npm install -g get-shit-done-cc@1.50.0-canary.1
+npm install -g get-shit-done-cc@1.50.0-canary.3
 ```
 
 The CC installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
@@ -61,6 +61,6 @@ File against the [issue tracker](https://github.com/gsd-build/get-shit-done/issu
 
 ## Where to look next
 
-- Active canary release notes: [`docs/RELEASE-v1.50.0-canary.1.md`](RELEASE-v1.50.0-canary.1.md)
+- Active canary release notes: [`docs/RELEASE-v1.50.0-canary.3.md`](RELEASE-v1.50.0-canary.3.md)
 - Stable release notes: [`CHANGELOG.md`](../CHANGELOG.md)
 - Stream architecture rationale: discussed across [#2727](https://github.com/gsd-build/get-shit-done/issues/2727), [#2773](https://github.com/gsd-build/get-shit-done/issues/2773) (codex schema-break and the resulting promotion bottleneck that motivated explicit stream isolation)

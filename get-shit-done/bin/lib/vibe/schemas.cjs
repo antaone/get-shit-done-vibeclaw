@@ -32,6 +32,9 @@ function normalizeConfig(value) {
   );
   const promotionStrategy = String(git.promotion_strategy || 'fast-forward');
   invariant(promotionStrategy === 'fast-forward', 'SCHEMA_INVALID', 'Only fast-forward promotion is supported in schema version 1');
+  const multiMachine = git.multi_machine === true;
+  const remote = String(git.remote || 'origin').trim();
+  invariant(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(remote), 'SCHEMA_INVALID', 'config.git.remote must be a simple Git remote name');
   const promotion = value.promotion || {};
   assertObject(promotion, 'config.promotion');
   invariant((promotion.mode ?? 'manual') === 'manual', 'SCHEMA_INVALID', 'Only manual promotion is supported in schema version 1');
@@ -44,6 +47,8 @@ function normalizeConfig(value) {
       worktrees,
       worktree_root: worktreeRoot,
       promotion_strategy: promotionStrategy,
+      multi_machine: multiMachine,
+      remote,
     },
     promotion: { mode: 'manual' },
   };
@@ -89,6 +94,9 @@ function normalizeWorkflow(value) {
       description: String(raw.description || ''),
       optional: raw.optional === true,
       mutates_source: raw.mutates_source === true,
+      requires_result_commit: raw.requires_result_commit === undefined
+        ? raw.mutates_source === true
+        : raw.requires_result_commit === true,
       requires_git_candidate: raw.requires_git_candidate !== false,
       input: {
         required: input.required !== false && promotedStages.length > 0,

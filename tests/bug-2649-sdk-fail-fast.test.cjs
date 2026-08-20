@@ -176,7 +176,7 @@ describe('installer SDK dist-missing fail-fast (#2649)', () => {
       // fix command (not the global-install one).
       const ir = installer.buildSdkFailFastReport(sdkDir, path.join(sdkDir, 'dist', 'cli.js'));
       assert.strictEqual(ir.context, 'dev-clone');
-      assert.strictEqual(ir.fix_command, 'cd sdk && npm install && npm run build');
+      assert.strictEqual(ir.fix_command, 'npm run build:sdk');
       assert.strictEqual(ir.attempted_nested_install, false);
 
       const nestedInstall = result.spawnCalls.find((c) => {

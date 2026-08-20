@@ -69,7 +69,7 @@ describe('install-profiles: MINIMAL_SKILL_ALLOWLIST', () => {
   test('contains exactly the main-loop core (frozen)', () => {
     assert.deepStrictEqual(
       [...MINIMAL_SKILL_ALLOWLIST].sort(),
-      ['discuss-phase', 'execute-phase', 'help', 'new-project', 'phase', 'plan-phase', 'surface', 'update'],
+      ['discuss-phase', 'execute-phase', 'help', 'new-project', 'phase', 'plan-phase', 'surface', 'update', 'vibe'],
     );
     assert.ok(Object.isFrozen(MINIMAL_SKILL_ALLOWLIST));
   });
@@ -128,7 +128,7 @@ describe('install-profiles: stageSkillsForMode', () => {
   function createFixtureSkillsDir() {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-fixture-'));
     for (const name of ['plan-phase', 'execute-phase', 'autonomous', 'do', 'help',
-      'new-project', 'phase', 'discuss-phase', 'update', 'progress', 'surface']) {
+      'new-project', 'phase', 'discuss-phase', 'update', 'progress', 'surface', 'vibe']) {
       fs.writeFileSync(path.join(tmp, `${name}.md`), `# ${name}\n`);
     }
     return tmp;
@@ -152,7 +152,7 @@ describe('install-profiles: stageSkillsForMode', () => {
       assert.deepStrictEqual(
         fs.readdirSync(staged).sort(),
         ['discuss-phase.md', 'execute-phase.md', 'help.md', 'new-project.md',
-          'phase.md', 'plan-phase.md', 'surface.md', 'update.md'],
+          'phase.md', 'plan-phase.md', 'surface.md', 'update.md', 'vibe.md'],
       );
     } finally {
       fs.rmSync(src, { recursive: true, force: true });
@@ -395,23 +395,23 @@ describe('install: manifest records mode for both profiles', () => {
     assert.ok(r.agentCount > 0);
   });
 
-  test('--minimal records mode: "minimal" with exactly 8 skills and 0 agents', () => {
+  test('--minimal records mode: "minimal" with exactly 9 skills and 0 agents', () => {
     const r = manifestModeAfterInstall(['--minimal']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 8);
+    assert.strictEqual(r.skillCount, 9);
     assert.strictEqual(r.agentCount, 0);
   });
 
   test('--core-only is an alias for --minimal', () => {
     const r = manifestModeAfterInstall(['--core-only']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 8);
+    assert.strictEqual(r.skillCount, 9);
     assert.strictEqual(r.agentCount, 0);
   });
 });
 
 describe('install-minimal-backcompat: PROFILES.core matches MINIMAL_SKILL_ALLOWLIST', () => {
-  test('PROFILES.core contains the same 8 skills as MINIMAL_SKILL_ALLOWLIST', () => {
+  test('PROFILES.core contains the same 9 skills as MINIMAL_SKILL_ALLOWLIST', () => {
     assert.deepStrictEqual(
       [...PROFILES.core].sort(),
       [...MINIMAL_SKILL_ALLOWLIST].sort(),
@@ -442,10 +442,10 @@ describe('install-minimal-backcompat: --minimal and --profile=core produce same 
     }
   }
 
-  test('--minimal produces mode "minimal" with exactly 8 skills', () => {
+  test('--minimal produces mode "minimal" with exactly 9 skills', () => {
     const r = installAndGetManifest(['--minimal']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 8);
+    assert.strictEqual(r.skillCount, 9);
   });
 
   test('--minimal writes .gsd-profile marker "core"', () => {
@@ -516,6 +516,12 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
         assert.ok(config.includes('model = "gpt-5"'));
       }
       assert.ok(fs.existsSync(configPath));
+
+      const installedVibe = path.join(targetDir, 'get-shit-done', 'bin', 'vibe.cjs');
+      assert.ok(fs.existsSync(installedVibe), 'installed vgsd surface should include its local Vibe CLI');
+      const vibeHelp = spawnSync(process.execPath, [installedVibe, '--help'], { encoding: 'utf8' });
+      assert.strictEqual(vibeHelp.status, 0, vibeHelp.stderr);
+      assert.match(vibeHelp.stdout, /vibe entry inspect/);
     } finally {
       fs.rmSync(targetDir, { recursive: true, force: true });
     }

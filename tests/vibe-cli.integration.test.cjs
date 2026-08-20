@@ -65,5 +65,26 @@ describe('vibe CLI machine-readable surface', () => {
     assert.equal(error.error, 'TOOL_UNKNOWN');
     assert.match(error.message, /Unknown tool/);
   });
-});
 
+  test('routes quick and debug commands through generated entry workflows', () => {
+    const project = createTempGitProject('vibe-cli-entry-');
+    projects.push(project);
+
+    const inspected = JSON.parse(run(project, ['entry', 'inspect', 'quick']));
+    assert.equal(inspected.action, 'choose-mode');
+    assert.equal(inspected.workflow, 'quick-workflow');
+
+    const prepared = JSON.parse(run(project, [
+      'entry', 'prepare', 'quick', '--id', 'quick-cli', '--tool', 'codex', '--tool', 'claude',
+    ]));
+    assert.equal(prepared.run.id, 'quick-cli');
+    assert.equal(prepared.candidates.length, 2);
+    assert.deepEqual(prepared.candidates.map((candidate) => candidate.tool), ['codex', 'claude']);
+
+    const debug = JSON.parse(run(project, [
+      'entry', 'prepare', 'debug', '--id', 'debug-cli', '--tool', 'codex',
+    ]));
+    assert.equal(debug.workflow, 'debug-workflow');
+    assert.equal(debug.candidates[0].invocation, '$vgsd-debug');
+  });
+});

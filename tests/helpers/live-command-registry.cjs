@@ -9,13 +9,13 @@
  * registry: commands/gsd/*.md (one file per registered command).
  *
  * Each command file has YAML frontmatter with a `name:` field:
- *   name: gsd:slug    (colon-style — most commands)
- *   name: gsd-slug    (dash-style — ns-* namespace commands)
+ *   name: vgsd:slug    (colon-style — most commands)
+ *   name: vgsd-slug    (dash-style — ns-* namespace commands)
  *
  * For each slug, three canonical token forms are emitted:
- *   /gsd-slug   — Claude / non-Gemini runtimes
- *   /gsd:slug   — Gemini runtime
- *   $gsd-slug   — Codex runtime
+ *   /vgsd-slug   — Claude / non-Gemini runtimes
+ *   /vgsd:slug   — Gemini runtime
+ *   $vgsd-slug   — Codex runtime
  *
  * The result is memoized per process — a single fs walk is amortized across
  * all test files that import this helper. The cache is intentionally not
@@ -46,10 +46,10 @@ let _cache = null;
  * introducing a YAML parser dependency would be disproportionate.
  *
  * Supported name forms:
- *   name: gsd:slug     → slug = "slug"
- *   name: gsd-slug     → slug = "slug"
- *   name: "gsd:slug"   → slug = "slug"  (quoted)
- *   name: "gsd-slug"   → slug = "slug"  (quoted)
+ *   name: vgsd:slug     → slug = "slug"
+ *   name: vgsd-slug     → slug = "slug"
+ *   name: "vgsd:slug"   → slug = "slug"  (quoted)
+ *   name: "vgsd-slug"   → slug = "slug"  (quoted)
  */
 function parseSlug(content, filePath) {
   // Frontmatter must start with '---' on the very first line.
@@ -70,17 +70,17 @@ function parseSlug(content, filePath) {
   const frontmatter = content.slice(0, closingIdx);
 
   // Match `name:` line, allowing optional quotes around the value.
-  // The value must be one of: gsd:<slug> or gsd-<slug>
+  // The value may use the VibeClaw namespace or the legacy upstream namespace.
   // where slug = [a-z0-9][a-z0-9-]*
-  const nameMatch = frontmatter.match(/^name:\s*"?(gsd[:‑-])([a-z0-9][a-z0-9-]*)"?\s*$/m);
+  const nameMatch = frontmatter.match(/^name:\s*"?(?:vgsd|gsd)[:‑-]([a-z0-9][a-z0-9-]*)"?\s*$/m);
   if (!nameMatch) {
     throw new Error(
       `[live-command-registry] ${filePath}: could not extract slug from frontmatter ` +
-      `(expected "name: gsd:<slug>" or "name: gsd-<slug>")`
+      `(expected "name: vgsd:<slug>" or "name: vgsd-<slug>")`
     );
   }
 
-  return nameMatch[2]; // the slug after "gsd:" or "gsd-"
+  return nameMatch[1];
 }
 
 /**
@@ -120,9 +120,9 @@ function getLiveCommandTokens() {
     const slug = parseSlug(content, filePath);
 
     // Emit all three canonical token forms per slug.
-    tokens.add(`/gsd-${slug}`);   // Claude / non-Gemini
-    tokens.add(`/gsd:${slug}`);   // Gemini
-    tokens.add(`$gsd-${slug}`);   // Codex
+    tokens.add(`/vgsd-${slug}`);   // Claude / non-Gemini
+    tokens.add(`/vgsd:${slug}`);   // Gemini
+    tokens.add(`$vgsd-${slug}`);   // Codex
   }
 
   _cache = tokens;

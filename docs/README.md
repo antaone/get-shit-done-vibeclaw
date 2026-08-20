@@ -23,6 +23,7 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 | [Issue-Driven Orchestration](issue-driven-orchestration.md) | All users | Recipe for driving GSD from a tracker issue (GitHub / Linear / Jira) using existing primitives — no new commands or daemon |
 | [VibeClaw Multi-Tool Orchestration](VIBECLAW.md) | Operators, integrators | Repository-backed routes, workflow runs, competing tool candidates, Git isolation, explicit promotion, and JSON interfaces |
 | [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md) | Operators | Exact Gemini + Codex + Claude Code commands for project bootstrap, milestone bootstrap, phase planning, implementation, comparison, and promotion to `main` |
+| [v1.50.0-canary.3 Release Notes](RELEASE-v1.50.0-canary.3.md) | Contributors, early adopters | VibeClaw gateway, guarded execution branches, multi-tool candidates, and multi-machine Git handoffs |
 | [Context Monitor](context-monitor.md) | All users | Context window monitoring hook architecture |
 | [Discuss Mode](workflow-discuss-mode.md) | All users | Assumptions vs interview mode for discuss-phase |
 | [Canary Stream](CANARY.md) | Contributors, early adopters | `dev` → `@canary` dist-tag policy, when to install, rollback path |
@@ -30,7 +31,7 @@ Language versions: [English](README.md) · [Português (pt-BR)](pt-BR/README.md)
 ## Quick Links
 
 - **What's new:** see [v1.42.3 Release Notes](RELEASE-v1.42.3.md) (latest hotfix), [v1.42.1 Release Notes](RELEASE-v1.42.1.md), [CHANGELOG](../CHANGELOG.md), and upstream [README](../README.md) for release highlights
-- **Canary preview:** [`docs/CANARY.md`](CANARY.md) — opt into the early-preview stream from `dev`. Active cut: [`v1.50.0-canary.1`](RELEASE-v1.50.0-canary.1.md)
+- **Canary preview:** [`docs/CANARY.md`](CANARY.md) — opt into the early-preview stream from `dev`. Active cut: [`v1.50.0-canary.3`](RELEASE-v1.50.0-canary.3.md)
 - **Getting started:** [README](../README.md) → install → `/vgsd-new-project`
 - **Full workflow walkthrough:** [User Guide](USER-GUIDE.md)
 - **All commands at a glance:** [Command Reference](COMMANDS.md)

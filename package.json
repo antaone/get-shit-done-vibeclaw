@@ -1,6 +1,6 @@
 {
   "name": "get-shit-done-cc",
-  "version": "1.50.0-canary.0",
+  "version": "1.50.0-canary.3",
   "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, Gemini and Codex by TÂCHES.",
   "bin": {
     "get-shit-done-cc": "bin/install.js",
@@ -61,6 +61,7 @@
   "scripts": {
     "build:hooks": "node scripts/build-hooks.js",
     "build:sdk": "cd sdk && npm ci && npm run build",
+    "prepare": "node scripts/ensure-local-sdk.cjs",
     "check:alias-drift": "cd sdk && npm run check:alias-drift",
     "check:state-document-fresh": "cd sdk && npm run check:state-document-fresh",
     "check:configuration-fresh": "cd sdk && npm run check:configuration-fresh",

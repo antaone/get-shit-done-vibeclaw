@@ -3,7 +3,7 @@
 This guide shows the repeatable VibeClaw operating pattern:
 
 ```text
-prepare Gemini + Codex + Claude Code from one commit
+prepare Gemini + Codex + Claude Code from one coordinator commit
                          ↓
 run each in its own branch and worktree
                          ↓
@@ -24,12 +24,91 @@ The examples use three tool IDs:
 
 Claude Code Router is a separate adapter with the ID `claude-router` and executable `ccr`.
 
+## Choose the execution mode
+
+One coordinator checkout owns the run, comparisons, and promotion. Candidate
+execution can use either mode:
+
+- `local` is the default. Gemini, Codex, and Claude run in the absolute
+  candidate worktrees under the coordinator checkout. Separate terminals, SSH,
+  remote IDEs, and shared-path containers are supported.
+- `multi-machine` publishes each candidate as a guarded Git handoff. Gemini,
+  Codex, and Claude may run in independent clones on different machines, while
+  the coordinator receives their pushed commits and remains the only promotion
+  owner.
+
+Enable the second mode before starting the run:
+
+```bash
+vibe mode multi-machine --remote origin
+```
+
+Multi-machine preparation atomically publishes the integration branch,
+candidate branch, and a command-specific identity tag. Each worker must track
+its published branch, pass the assigned runtime/command guard, commit all
+results, and push. Coordinator completion fetches the exact remote result and
+publishes a completion marker; promotion revalidates the handoff and pushes the
+integration branch. See [Multi-machine Git handoffs](VIBECLAW.md#execution-modes-local-worktrees-and-multi-machine-git-handoffs).
+
+## Recommended order: `vgsd-vibe` first
+
+For normal interactive use, do not begin with the terminal sequence later in
+this guide. Begin on the integration worktree with the installed AI gateway:
+
+```text
+/vgsd-vibe new-project --tool gemini --tool codex --tool claude
+```
+
+When the three tools will run in independent clones, make the mode explicit:
+
+```text
+/vgsd-vibe new-project --multi-machine --remote origin --tool gemini --tool codex --tool claude
+```
+
+Use `/vgsd:vibe ...` in Gemini CLI or `$vgsd-vibe ...` in Codex. The gateway
+inspects Git and planning state, initializes Git when needed, requests approval
+for a reviewed baseline commit, initializes Vibe, and prepares all requested
+candidates from the same commit.
+
+It then prints a branch, coordinator worktree, context path, and native target
+command for each candidate. In local mode open each printed worktree; in
+multi-machine mode fetch and track each printed branch from its assigned worker.
+Run only the matching command:
+
+```text
+Gemini candidate: /vgsd:new-project
+Codex candidate:  $vgsd-new-project
+Claude candidate: /vgsd-new-project
+```
+
+Return to the integration worktree to complete, compare, and promote. The
+manual `vibe init`, `vibe run start`, and `vibe stage prepare` commands below
+are the lower-level equivalent for operators and automation.
+
+The same order applies to brownfield workflows. Examples include:
+
+```text
+/vgsd-vibe map-codebase --tool codex --tool claude
+/vgsd-vibe new-milestone --tool codex --tool claude
+/vgsd-vibe execute-phase --tool codex --tool opencode
+/vgsd-vibe quick --tool codex
+/vgsd-vibe debug --tool codex --tool claude
+```
+
+Finish and promote one run before starting a different workflow, or explicitly
+resolve the active run when the gateway reports a conflict. See the
+[greenfield and brownfield scenario cookbook](VIBECLAW.md#greenfield-and-brownfield-scenarios)
+for additional starting states.
+
 ## The two kinds of initialization
 
 `vibe init` and GSD project initialization are different operations:
 
 - `vibe init` runs once. It creates `.planning-vibe/`, routes, workflows, and the orchestration state store.
 - The `project-bootstrap` workflow runs GSD project initialization as competing Gemini, Codex, and Claude candidates. The winning candidate creates the promoted `.planning/` foundation.
+
+`vgsd-vibe new-project` coordinates both operations in the correct order. You
+only need to distinguish them when using the lower-level CLI manually.
 
 VibeClaw always promotes to the integration branch that was checked out when `vibe run start` ran. If the winner must land on `main`, start every run from a clean `main` branch.
 
@@ -38,9 +117,12 @@ VibeClaw always promotes to the integration branch that was checked out when `vi
 Every `vgsd` command checks its branch before starting:
 
 - The three candidates in this guide already have Vibe-created branches and
-  worktrees, so their commands verify the candidate manifest and continue.
-- Running a `vgsd` command directly on `main` after `vibe init` stops. Prepare
-  and launch a candidate instead; this prevents accidental edits on the
+  worktrees, so their commands verify the candidate manifest and continue. In
+  multi-machine mode, the equivalent check uses the live remote handoff tag,
+  tracked branch, assigned command/tool, base ancestry, and completion marker.
+- Running a mutating `vgsd` command directly on `main` after `vibe init` stops.
+  Return to `main`, invoke `vgsd-vibe` for that target, and then run the target
+  inside the prepared candidate; this prevents accidental edits on the
   integration branch.
 - Running `vgsd` before any Vibe setup creates a standalone branch named
   `vgsd/<runtime>/<command>/<execution-id>`.
@@ -66,7 +148,10 @@ Codex runs $vgsd-new-project
 
 ## Prerequisites
 
-Install VibeClaw and GSD for all three tools, then confirm the adapters are available:
+For the local walkthrough below, install VibeClaw and GSD for all three tools
+on the coordinator host, then confirm the adapters are available there. In
+multi-machine mode, each worker only needs its assigned runtime installation;
+the coordinator needs VibeClaw and authenticated access to the shared remote.
 
 ```bash
 get-shit-done-cc --gemini --global
@@ -80,7 +165,11 @@ codex --version
 claude --version
 ```
 
-The repository must already have a `main` branch and at least one commit. For a brand-new repository, add a committed `PROJECT-BRIEF.md` describing the product, users, constraints, and desired first release.
+The lower-level terminal walkthrough below assumes that the repository already
+has a `main` branch and at least one commit. For a brand-new repository, the
+recommended `vgsd-vibe new-project` path can initialize Git and request approval
+for the baseline. If preparing it manually, add a committed `PROJECT-BRIEF.md`
+describing the product, users, constraints, and desired first release.
 
 ```bash
 git init -b main
@@ -88,9 +177,10 @@ git add PROJECT-BRIEF.md
 git commit -m "docs: add project brief"
 ```
 
-## 1. Initialize VibeClaw once
+## 1. Manual equivalent: initialize VibeClaw once
 
-Run this from the repository root:
+Skip this section when `vgsd-vibe` already initialized the project. For the
+lower-level path, run this from the repository root:
 
 ```bash
 git switch main

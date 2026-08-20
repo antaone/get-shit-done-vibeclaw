@@ -19,7 +19,7 @@ The orchestration implementation lives under `get-shit-done/bin/lib/vibe/` and i
 - `schemas.cjs`: validation and normalization for configuration, routes, workflows, runs, and candidates.
 - `store.cjs`: `.planning-vibe/` paths, atomic JSON writes, append-only history, promotion records, and stale-lock recovery.
 - `adapters.cjs`: registry-backed tool adapters and explicit/environment/marker detection.
-- `git.cjs`: exact-base branch/worktree creation, completion validation, safe promotion, and cleanup.
+- `git.cjs`: exact-base branch/worktree creation, atomic remote handoff publication, worker-result receipt, completion validation, safe promotion/push, and cleanup.
 - `orchestrator.cjs`: route, run, candidate, context, completion, promotion, and status use cases.
 - `index.cjs`: public library surface.
 - `bin/vibe.js`: thin argument/output adapter.
@@ -55,7 +55,10 @@ Core state transitions return data or throw typed errors. Terminal formatting an
 
 Configuration, routes, and workflow contracts use human-authored YAML. Mutable manifests use canonical JSON to avoid lossy YAML mutation. History is append-only JSON Lines. Every mutable document includes a schema version.
 
-Candidate provenance records the run, workflow, stage, adapter/tool, route, promoted input, exact base commit, branch, worktree, result commit, timestamps, outputs, metrics, completion state, and promotion state. Unknown metrics remain `null`.
+Candidate provenance records the run, workflow, stage, adapter/tool, route,
+promoted input, exact base commit, branch, coordinator worktree, optional remote
+handoff identity, result commit, timestamps, outputs, metrics, completion state,
+and promotion state. Unknown metrics remain `null`.
 
 ## 4. Git model
 
@@ -68,6 +71,21 @@ A run records its integration branch and base commit when it starts. Run creatio
 Every contract with `requires_git_candidate: true` receives a branch named `vibe/<run>/<stage>/<tool>-NNN` and an isolated worktree under `.vibe/worktrees/<candidate-id>`. This includes planning stages that persist GSD artifacts through Git, even when they do not mutate application source.
 
 Completion requires a clean candidate worktree, verifies that the branch still points at the recorded result, verifies ancestry from the recorded base, and rejects candidate commits that modify `.planning-vibe/` or `.vibe/`. Candidate metadata remains centralized in the main repository state and is discovered from linked worktrees through Git's common worktree metadata.
+
+Runs snapshot either `local` or `multi-machine` coordination. Local candidates
+retain the absolute-path identity above. Multi-machine preparation also pushes
+the integration branch, candidate branch, and a lightweight
+`vibe-handoff/<candidate-id>/<command>` tag in one atomic remote transaction.
+The worker guard derives the candidate identity from its tracked branch and
+verifies the live remote tag, exact command, assigned runtime, base ancestry,
+remote relationship, and lack of a completion marker.
+
+The worker is not an orchestration-state writer. It commits and pushes the
+candidate result. Coordinator completion fetches that remote ref into the local
+candidate worktree, requires at least one result commit, applies the normal
+contract/protected-path validation, and publishes
+`vibe-complete/<candidate-id>` at the accepted commit. Promotion verifies the
+remote branch and both tags before advancing and pushing the integration branch.
 
 ## 5. Promotion model
 
@@ -85,6 +103,7 @@ The separate `vibe` executable keeps orchestration distinct from `/vgsd:*` metho
 
 ```text
 vibe init
+vibe mode show|local|multi-machine [--remote <name>]
 vibe route list|show|use
 vibe run start|resume|show|list
 vibe status
@@ -118,6 +137,11 @@ Selection precedence is:
 
 An explicit assignment always wins. The adapter registry avoids tool-condition ladders in orchestration logic and exposes detection, prompt construction, launch command construction, non-interactive support, resume support, and environment data.
 
+`config.git.multi_machine` defaults to `false`; `config.git.remote` defaults to
+`origin`. Enabling multi-machine mode validates the named remote and is rejected
+while a differently configured run is active. Each run snapshots the mode and
+remote so later configuration changes cannot weaken its handoff policy.
+
 ## 9. Concurrency and recovery
 
 One atomic orchestration lock protects counters and multi-file state transitions. Lock files contain PID, host, and acquisition time. A lock is recoverable when its owner is no longer alive or its age exceeds the stale threshold; a live lock times out without being deleted. JSON writes use a same-directory temporary file and atomic rename, so a partial write cannot replace the last valid manifest.
@@ -145,3 +169,8 @@ There is no automatic migration. Existing `.planning/`, `.gsd/`, commands, SDK c
 - **Runtime CLI drift:** managed launch is adapter-scoped and optional; printed context/manual launch is always available.
 - **GSD semantic duplication:** workflow contracts reference canonical GSD commands instead of copying workflow bodies.
 - **Orchestration metadata contaminating candidates:** candidate commits are rejected if they touch `.planning-vibe/` or `.vibe/`.
+- **Forged or stale remote worker state:** live remote identity/completion tags,
+  assigned runtime/command checks, ancestry checks, atomic publication, exact
+  pushed-result receipt, and integration push rejection fail closed.
+- **Credential leakage through remote URLs:** remote names are persisted, but
+  remote URLs are never written into candidate or orchestration state.

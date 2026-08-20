@@ -6,11 +6,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased](https://github.com/gsd-build/get-shit-done/compare/v1.42.1...HEAD)
 
+## [1.50.0-canary.3] - 2026-08-20
+
 ### Added
 
 - **Optional VibeClaw repository orchestration layer** — adds the separate `vibe` CLI, `.planning-vibe/` route/run/candidate/promotion state, normalized JSON/Markdown stage context, exact-base candidate branches and worktrees, explicit fast-forward or history-preserving replacement promotion, adapter-backed manual/managed launch, JSON output, durable provenance/metrics/history, recovery-aware locks, documentation, and temporary-repository tests. Existing `.planning/` methodology and artifact formats remain compatible.
 - **Project-to-milestone multi-tool workflow guide and bootstrap templates** — adds bundled `project-bootstrap` and `milestone-bootstrap` workflows plus an operator walkthrough for comparing Gemini, Codex, and Claude Code candidates across project initialization, later milestones, phase planning, implementation, verification, and review.
 - **Runtime-aware `vgsd` execution branch guard** — every public command now verifies its Git context before workflow work begins. Active Vibe candidates are reused, Vibe-managed integration branches fail closed, and direct non-Vibe use creates `vgsd/<runtime>/<command>/<execution-id>` branches with Git-local provenance. A later `vibe init` imports standalone executions into `.planning-vibe/state/standalone-executions.json`.
+- **Opt-in multi-machine Vibe Git handoffs** — `vibe mode multi-machine --remote <name>` and `vgsd-vibe --multi-machine` publish exact-base candidate branches with portable identity tags so assigned runtimes can work from independent clones. Live worker guards enforce the remote branch, command, tool, ancestry, and completion state; coordinator completion requires a committed pushed result, and promotion revalidates the handoff before pushing the integration branch.
 
 ### Changed
 

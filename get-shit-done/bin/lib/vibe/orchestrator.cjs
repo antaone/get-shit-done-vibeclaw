@@ -67,6 +67,8 @@ class VibeOrchestrator {
             worktrees: 'auto',
             worktree_root: '.vibe/worktrees',
             promotion_strategy: 'fast-forward',
+            multi_machine: false,
+            remote: 'origin',
           },
           promotion: { mode: 'manual' },
         });
@@ -133,6 +135,38 @@ class VibeOrchestrator {
     return normalizeConfig(this.store.readYaml(this.store.paths.config, 'VibeClaw config'));
   }
 
+  mode() {
+    const config = this.loadConfig();
+    return {
+      mode: config.git.multi_machine ? 'multi-machine' : 'local',
+      multi_machine: config.git.multi_machine,
+      remote: config.git.remote,
+    };
+  }
+
+  setMode(mode, options = {}) {
+    invariant(['local', 'multi-machine'].includes(mode), 'MODE_INVALID', "Mode must be 'local' or 'multi-machine'");
+    return this.store.withLock('orchestration', () => {
+      const config = this.loadConfig();
+      const nextMultiMachine = mode === 'multi-machine';
+      const nextRemote = String(options.remote || config.git.remote || 'origin');
+      const currentMode = config.git.multi_machine ? 'multi-machine' : 'local';
+      const activeRunId = this.store.loadActiveRunId();
+      if (activeRunId) {
+        const activeRun = this.loadRun(activeRunId);
+        const changesMode = currentMode !== mode || (nextMultiMachine && config.git.remote !== nextRemote);
+        invariant(!(activeRun.status === 'active' && changesMode), 'MODE_ACTIVE_RUN', `Finish active run '${activeRun.id}' before changing the Vibe coordination mode`);
+      }
+      if (nextMultiMachine) git.ensureRemote(this.projectRoot, nextRemote, this.gitOptions);
+      config.git.multi_machine = nextMultiMachine;
+      config.git.remote = nextRemote;
+      this.store.writeYaml(this.store.paths.config, config);
+      const result = { mode, multi_machine: nextMultiMachine, remote: nextRemote };
+      this.store.appendEvent(this.event('coordination.mode-selected', result));
+      return result;
+    });
+  }
+
   routePath(name) {
     assertId(name, 'route name');
     return path.join(this.store.paths.routes, `${name}.yaml`);
@@ -196,6 +230,9 @@ class VibeOrchestrator {
     const workflow = this.loadWorkflow(workflowName);
     const config = this.loadConfig();
     const route = this.loadRoute(options.route || config.default_route);
+    const stageOrder = Object.keys(workflow.stages);
+    const entryIndex = options.entryStage ? stageOrder.indexOf(options.entryStage) : 0;
+    invariant(entryIndex >= 0, 'STAGE_UNKNOWN', `Workflow '${workflow.name}' has no entry stage '${options.entryStage}'`);
     return this.store.withLock('orchestration', () => {
       const id = options.id || this.nextRunId(workflow.name);
       assertId(id, 'run id');
@@ -213,7 +250,13 @@ class VibeOrchestrator {
       );
       const timestamp = iso(this.now());
       const stages = {};
-      for (const stage of Object.keys(workflow.stages)) stages[stage] = { candidates: [], promoted_candidate_id: null };
+      for (const [index, stage] of stageOrder.entries()) {
+        stages[stage] = { candidates: [], promoted_candidate_id: null };
+        if (options.entryStage && index < entryIndex) {
+          stages[stage].skipped = true;
+          stages[stage].skip_reason = `run entered at '${options.entryStage}'`;
+        }
+      }
       const run = {
         schema_version: 1,
         id,
@@ -224,12 +267,17 @@ class VibeOrchestrator {
         status: 'active',
         base_commit: baseCommit,
         integration_branch: integrationBranch,
+        coordination: {
+          mode: config.git.multi_machine ? 'multi-machine' : 'local',
+          remote: config.git.remote,
+        },
         created_at: timestamp,
         updated_at: timestamp,
         stage_counters: {},
         stages,
         promotions: {},
       };
+      if (options.entryStage) run.entry_stage = options.entryStage;
       this.store.saveRun(run);
       this.store.setActiveRun(id);
       this.store.appendEvent(this.event('run.started', {
@@ -238,6 +286,9 @@ class VibeOrchestrator {
         route: route.name,
         base_commit: baseCommit,
         integration_branch: integrationBranch,
+        coordination_mode: run.coordination.mode,
+        remote: run.coordination.remote,
+        entry_stage: options.entryStage || null,
       }));
       return run;
     });
@@ -263,7 +314,7 @@ class VibeOrchestrator {
     return this.store.listRunIds().map((id) => assertRun(this.store.loadRun(id)));
   }
 
-  resolveInput(run, stage) {
+  resolveInput(run, stage, options = {}) {
     const contract = run.workflow_snapshot.stages[stage];
     const order = Object.keys(run.workflow_snapshot.stages);
     const stageIndex = order.indexOf(stage);
@@ -277,7 +328,7 @@ class VibeOrchestrator {
         break;
       }
     }
-    if (contract.input.required && !selected) {
+    if (contract.input.required && !selected && options.allowUnpromoted !== true) {
       throw new VibeError('INPUT_NOT_PROMOTED', `Stage '${stage}' requires a promoted input from: ${[...allowed].join(', ')}`);
     }
     if (!selected) return null;
@@ -308,7 +359,7 @@ class VibeOrchestrator {
       const contract = run.workflow_snapshot.stages[stage];
       invariant(contract, 'STAGE_UNKNOWN', `Workflow '${run.workflow}' has no stage '${stage}'`);
       const toolSelection = this.resolveTool(run, stage, options.tool, options.env || process.env);
-      const input = this.resolveInput(run, stage);
+      const input = this.resolveInput(run, stage, { allowUnpromoted: options.allowUnpromotedInput });
       const baseCommit = input ? input.commit : run.base_commit;
       const sequence = (run.stage_counters[stage] || 0) + 1;
       const suffix = `${toolSelection.tool}-${String(sequence).padStart(3, '0')}`;
@@ -317,6 +368,10 @@ class VibeOrchestrator {
       invariant(!fs.existsSync(this.store.candidatePath(candidateId)), 'CANDIDATE_EXISTS', `Candidate '${candidateId}' already exists`);
       const branch = `vibe/${run.id}/${stage}/${suffix}`;
       const config = this.loadConfig();
+      const coordination = run.coordination || {
+        mode: config.git.multi_machine ? 'multi-machine' : 'local',
+        remote: config.git.remote,
+      };
       invariant(
         !(contract.requires_git_candidate && config.git.worktrees === 'never'),
         'WORKTREE_REQUIRED_BY_CONTRACT',
@@ -344,6 +399,7 @@ class VibeOrchestrator {
           worktree,
           result_commit: null,
           integration_commit: null,
+          handoff: null,
         },
         status: 'prepared',
         prepared_at: timestamp,
@@ -363,8 +419,13 @@ class VibeOrchestrator {
       };
 
       let preparedGit = null;
+      let preparedHandoff = null;
       try {
         if (contract.requires_git_candidate) {
+          if (coordination.mode === 'multi-machine') {
+            const dirty = git.sourceDirty(this.projectRoot, this.gitOptions);
+            invariant(dirty.length === 0, 'INTEGRATION_DIRTY', 'Multi-machine handoff requires a clean committed integration tree before candidates are published', { files: dirty });
+          }
           preparedGit = git.prepareCandidateWorktree({
             projectRoot: this.projectRoot,
             baseCommit,
@@ -373,6 +434,15 @@ class VibeOrchestrator {
           }, this.gitOptions);
           candidate.git.base_commit = preparedGit.base_commit;
           candidate.git.worktree = preparedGit.worktree;
+          if (coordination.mode === 'multi-machine') {
+            preparedHandoff = git.publishCandidateHandoff({
+              projectRoot: this.projectRoot,
+              run,
+              candidate,
+              remote: coordination.remote,
+            }, this.gitOptions);
+            candidate.git.handoff = preparedHandoff;
+          }
         }
         this.store.saveCandidate(candidate);
         const context = this.buildContext(candidate, run);
@@ -389,9 +459,13 @@ class VibeOrchestrator {
           base_commit: candidate.git.base_commit,
           branch: candidate.git.branch,
           worktree: candidate.git.worktree,
+          handoff: candidate.git.handoff,
         }));
         return { candidate, context };
       } catch (error) {
+        if (preparedHandoff) {
+          try { git.rollbackPublishedHandoff(candidate, this.gitOptions); } catch { /* preserve the preparation error */ }
+        }
         if (preparedGit) {
           git.rollbackPreparedWorktree({
             projectRoot: this.projectRoot,
@@ -410,6 +484,16 @@ class VibeOrchestrator {
     const contextPath = this.store.contextPath(candidate.id, 'markdown');
     const summaryPath = path.join(this.store.candidateDir(candidate.id), 'summary.md');
     const gsdCommand = candidate.contract.gsd.command || null;
+    const handoff = candidate.git.handoff && candidate.git.handoff.mode === 'multi-machine'
+      ? {
+        ...candidate.git.handoff,
+        branch: candidate.git.branch,
+        fetch_command: `git fetch ${candidate.git.handoff.remote} --tags`,
+        checkout_command: `git switch --track -c ${candidate.git.branch} ${candidate.git.handoff.remote}/${candidate.git.branch}`,
+        push_command: `git push ${candidate.git.handoff.remote} HEAD:${candidate.git.branch}`,
+        receive_command: `vibe stage complete ${candidate.id}`,
+      }
+      : { mode: 'local' };
     return {
       schema_version: 1,
       project: {
@@ -429,6 +513,8 @@ class VibeOrchestrator {
       base_commit: candidate.git.base_commit,
       branch: candidate.git.branch,
       worktree: candidate.git.worktree,
+      coordination: run.coordination || { mode: handoff.mode, remote: handoff.remote || null },
+      handoff,
       expected_outputs: candidate.contract.output,
       completion_requirements: candidate.contract.completion,
       gsd: {
@@ -455,6 +541,16 @@ class VibeOrchestrator {
     const artifacts = context.input && context.input.artifacts.length
       ? context.input.artifacts.map((item) => `- ${item.stored_path}`).join('\n')
       : '- none';
+    const handoff = context.handoff && context.handoff.mode === 'multi-machine'
+      ? `## Multi-machine Git handoff\n\n` +
+        `Remote: ${context.handoff.remote}\n` +
+        `Identity tag: ${context.handoff.tag}\n` +
+        `Fetch: ${context.handoff.fetch_command}\n` +
+        `Checkout: ${context.handoff.checkout_command}\n` +
+        `Push result: ${context.handoff.push_command}\n` +
+        `Coordinator receive/complete: ${context.handoff.receive_command}\n\n` +
+        `The worker must commit every result, keep the branch descended from the recorded base, and push it before coordinator completion. Do not run promotion from the worker clone.\n\n`
+      : '';
     return `# VibeClaw Stage Context\n\n` +
       `Project: ${context.project.name}\n` +
       `Project root: ${context.project.root}\n` +
@@ -469,6 +565,7 @@ class VibeOrchestrator {
       `Base commit: ${context.base_commit}\n` +
       `Branch: ${context.branch || 'none'}\n` +
       `Worktree: ${context.worktree || context.project.root}\n\n` +
+      handoff +
       `## Assignment\n\n${context.stage.contract.description || 'Follow the stage contract below.'}\n\n` +
       `## Existing GSD action\n\n${context.gsd.invocation || 'No canonical GSD command is assigned.'}\n\n` +
       `## Promoted input artifacts\n\n${artifacts}\n\n` +
@@ -571,6 +668,8 @@ class VibeOrchestrator {
     return this.store.withLock('orchestration', () => {
       const candidate = this.loadCandidate(candidateId);
       invariant(['prepared', 'running'].includes(candidate.status), 'CANDIDATE_NOT_COMPLETABLE', `Candidate '${candidate.id}' is ${candidate.status}`);
+      const multiMachine = candidate.git && candidate.git.handoff && candidate.git.handoff.mode === 'multi-machine';
+      const receivedHandoff = multiMachine ? git.receiveCandidateHandoff(candidate, this.gitOptions) : null;
       const artifactPaths = options.artifacts || [];
       const sourceRoot = candidate.git.worktree || this.projectRoot;
       const allowedDirtyPaths = artifactPaths.map((artifactPath) => {
@@ -587,7 +686,11 @@ class VibeOrchestrator {
       });
       let resultCommit = candidate.git.base_commit;
       if (candidate.git.required) {
-        resultCommit = git.completeCandidateGit(candidate, { ...this.gitOptions, allowedDirtyPaths });
+        resultCommit = git.completeCandidateGit(candidate, {
+          ...this.gitOptions,
+          allowedDirtyPaths,
+          requireResultCommit: multiMachine,
+        });
       }
 
       const summaryPath = path.join(this.store.candidateDir(candidate.id), 'summary.md');
@@ -598,8 +701,14 @@ class VibeOrchestrator {
 
       const artifacts = [];
       for (const artifact of artifactPaths) artifacts.push(this.copyArtifact(candidate, artifact));
+      const completionHandoff = multiMachine ? git.publishCompletionHandoff(candidate, resultCommit, this.gitOptions) : null;
       const completedAt = this.now();
       candidate.git.result_commit = resultCommit;
+      if (multiMachine) {
+        candidate.git.handoff.received_commit = receivedHandoff.received_commit;
+        candidate.git.handoff.completed_commit = completionHandoff.commit;
+        candidate.git.handoff.completed_at = iso(completedAt);
+      }
       candidate.outputs.summary = toPosix(path.relative(this.projectRoot, summaryPath));
       candidate.outputs.artifacts.push(...artifacts);
       candidate.started_at = candidate.started_at || candidate.prepared_at;
@@ -622,6 +731,7 @@ class VibeOrchestrator {
         stage: candidate.stage,
         candidate_id: candidate.id,
         result_commit: resultCommit,
+        handoff: candidate.git.handoff,
         artifacts: candidate.outputs.artifacts,
         metrics: candidate.metrics,
       }));
@@ -783,6 +893,7 @@ class VibeOrchestrator {
         base_commit: run.base_commit,
         integration_branch: run.integration_branch,
         integration_commit: latestPromotion ? latestPromotion.integration_commit : run.base_commit,
+        coordination: run.coordination || { mode: 'local', remote: this.loadConfig().git.remote },
       },
       stages,
     };
@@ -791,6 +902,7 @@ class VibeOrchestrator {
   next(runId = null) {
     const run = this.loadRun(runId);
     for (const stage of Object.keys(run.workflow_snapshot.stages)) {
+      if (run.stages[stage].skipped === true) continue;
       if (!run.promotions[stage]) {
         const contract = run.workflow_snapshot.stages[stage];
         const existingIds = run.stages[stage].candidates;
