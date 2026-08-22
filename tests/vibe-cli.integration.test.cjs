@@ -2,6 +2,7 @@
 
 const { describe, test, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 const { createTempGitProject, cleanup } = require('./helpers.cjs');
@@ -86,5 +87,28 @@ describe('vibe CLI machine-readable surface', () => {
     ]));
     assert.equal(debug.workflow, 'debug-workflow');
     assert.equal(debug.candidates[0].invocation, '$vgsd-debug');
+  });
+
+  test('previews and migrates brownfield planning commands for the selected runtime', () => {
+    const project = createTempGitProject('vibe-cli-legacy-planning-');
+    projects.push(project);
+    const statePath = path.join(project, '.planning', 'STATE.md');
+    fs.writeFileSync(statePath, '# State\n\nNext: /gsd-plan-phase 2\n', 'utf8');
+
+    const preview = JSON.parse(run(project, [
+      'entry', 'migrate', 'plan-phase', '--runtime', 'gemini', '--dry-run',
+    ]));
+    assert.equal(preview.command, 'plan-phase');
+    assert.equal(preview.runtime, 'gemini');
+    assert.equal(preview.total_references, 1);
+    assert.equal(preview.migrated, false);
+    assert.match(fs.readFileSync(statePath, 'utf8'), /\/gsd-plan-phase/);
+
+    const migrated = JSON.parse(run(project, [
+      'entry', 'migrate', 'plan-phase', '--runtime', 'gemini',
+    ]));
+    assert.equal(migrated.migrated, true);
+    assert.equal(migrated.affected_files[0].references[0].replacement, '/vgsd:plan-phase');
+    assert.match(fs.readFileSync(statePath, 'utf8'), /\/vgsd:plan-phase/);
   });
 });

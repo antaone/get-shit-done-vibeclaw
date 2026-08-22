@@ -11,6 +11,8 @@ const {
   normalizeCommand,
   resolveCommandEntry,
   commandWorkflow,
+  inspectLegacyPlanningCommands,
+  migrateLegacyPlanningCommands,
   inspectVibeEntry,
   prepareVibeEntry,
 } = require('./entry-router.cjs');
@@ -30,6 +32,8 @@ module.exports = {
   normalizeCommand,
   resolveCommandEntry,
   commandWorkflow,
+  inspectLegacyPlanningCommands,
+  migrateLegacyPlanningCommands,
   inspectVibeEntry,
   prepareVibeEntry,
 };

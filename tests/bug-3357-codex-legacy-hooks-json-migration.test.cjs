@@ -89,10 +89,19 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
     withCodexHome(codexHome, () => install(true, 'codex'));
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
-    const commands = hooksJson.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
+    const commands = hooksJson.hooks.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
     const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('gsd-check-update'));
+    assert.equal(Object.hasOwn(hooksJson, 'SessionStart'), false);
     assert.equal(managed.length, 1);
     assert.equal(tomlGsdHookCount(codexHome), 0);
+  });
+
+  test('fresh install writes the current nested hooks.json schema', () => {
+    withCodexHome(codexHome, () => install(true, 'codex'));
+
+    const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
+    assert.equal(Object.hasOwn(hooksJson, 'SessionStart'), false);
+    assert.ok(hooksJson.hooks && Array.isArray(hooksJson.hooks.SessionStart));
   });
 
   test('preserves user hooks.json entries while removing the legacy GSD hook', () => {
@@ -104,14 +113,22 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
     };
     fs.writeFileSync(
       path.join(codexHome, 'hooks.json'),
-      JSON.stringify({ SessionStart: [legacyGsdHook(codexHome), userHook(), userOwnedSameBasenameHook] }, null, 2),
+      JSON.stringify({
+        description: 'keep user metadata',
+        SessionStart: [legacyGsdHook(codexHome), userHook(), userOwnedSameBasenameHook],
+        Stop: [userHook()],
+      }, null, 2),
     );
 
     withCodexHome(codexHome, () => install(true, 'codex'));
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
-    const commands = hooksJson.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
+    const commands = hooksJson.hooks.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
     const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('gsd-check-update'));
+    assert.equal(Object.hasOwn(hooksJson, 'SessionStart'), false);
+    assert.equal(Object.hasOwn(hooksJson, 'Stop'), false);
+    assert.equal(hooksJson.description, 'keep user metadata');
+    assert.equal(hooksJson.hooks.Stop[0].hooks[0].command, 'node "/Users/example/bin/user-hook.js"');
     assert.equal(commands.includes('node "/Users/example/bin/user-hook.js"'), true);
     assert.equal(commands.includes('node "/Users/example/bin/gsd-check-update.js"'), true);
     assert.equal(managed.length, 2);

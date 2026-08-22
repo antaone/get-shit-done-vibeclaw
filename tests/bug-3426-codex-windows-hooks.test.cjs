@@ -57,6 +57,16 @@ const {
 
 const { projectManagedHookCommand } = PROJECTION;
 
+function readSessionStartCommands(hooksJson) {
+  const sessionStart = hooksJson.hooks && Array.isArray(hooksJson.hooks.SessionStart)
+    ? hooksJson.hooks.SessionStart
+    : [];
+  return sessionStart
+    .flatMap((entry) => (Array.isArray(entry.hooks) ? entry.hooks : []))
+    .map((hook) => hook && hook.command)
+    .filter((command) => typeof command === 'string');
+}
+
 // ─── Step 1: Export surface check ────────────────────────────────────────────
 
 describe('#3426 — export surface: buildCodexHookWindowsShimIR must be exported', () => {
@@ -255,10 +265,7 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
     assert.ok(fs.existsSync(hooksJsonPath), 'hooks.json must exist after install');
 
     const hooksJson = JSON.parse(fs.readFileSync(hooksJsonPath, 'utf8'));
-    const commands = (hooksJson.SessionStart || [])
-      .flatMap((e) => (Array.isArray(e.hooks) ? e.hooks : []))
-      .map((h) => h && h.command)
-      .filter((c) => typeof c === 'string');
+    const commands = readSessionStartCommands(hooksJson);
 
     assert.ok(commands.length > 0, 'must have at least one SessionStart hook command');
 
@@ -307,10 +314,7 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
     const hooksJson = JSON.parse(
       fs.readFileSync(path.join(tmpDir, 'hooks.json'), 'utf8'),
     );
-    const commands = (hooksJson.SessionStart || [])
-      .flatMap((e) => (Array.isArray(e.hooks) ? e.hooks : []))
-      .map((h) => h && h.command)
-      .filter((c) => typeof c === 'string');
+    const commands = readSessionStartCommands(hooksJson);
 
     const cmd = commands.find((c) => c.includes('gsd-check-update'));
     assert.ok(cmd, 'must have a gsd-check-update hook command on darwin');
@@ -344,10 +348,7 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
     const hooksJson = JSON.parse(
       fs.readFileSync(path.join(tmpDir, 'hooks.json'), 'utf8'),
     );
-    const commands = (hooksJson.SessionStart || [])
-      .flatMap((e) => (Array.isArray(e.hooks) ? e.hooks : []))
-      .map((h) => h && h.command)
-      .filter((c) => typeof c === 'string');
+    const commands = readSessionStartCommands(hooksJson);
 
     const cmd = commands.find((c) => c.includes('gsd-check-update'));
     assert.ok(cmd, 'linux must have a gsd-check-update hook command');
@@ -440,10 +441,7 @@ describe('#3426 upgrade: reinstall on win32 migrates existing "node script.js" t
     });
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(tmpDir, 'hooks.json'), 'utf8'));
-    const commands = (hooksJson.SessionStart || [])
-      .flatMap((e) => (Array.isArray(e.hooks) ? e.hooks : []))
-      .map((h) => h && h.command)
-      .filter((c) => typeof c === 'string');
+    const commands = readSessionStartCommands(hooksJson);
 
     const gsdCmds = commands.filter((c) => c.includes('gsd-check-update'));
     // Exactly one managed hook after migration — no duplicates

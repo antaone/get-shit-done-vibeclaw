@@ -150,7 +150,7 @@ Candidate IDs and branches are allocated while holding the lock. Failed worktree
 
 ## 10. Migration and compatibility
 
-There is no automatic migration. Existing `.planning/`, `.gsd/`, commands, SDK consumers, runtime installs, workstreams, and GSD worktrees continue unchanged. `vibe init` is idempotent for an existing valid store and only creates missing orchestration templates/directories plus the private `.vibe/` Git exclude.
+There is no silent automatic migration. Existing `.planning/`, `.gsd/`, commands, SDK consumers, runtime installs, workstreams, and GSD worktrees continue unchanged when `vibe init` runs. Entry inspection separately detects legacy public command references in brownfield `.planning/**/*.md`; candidate preparation fails closed until the operator explicitly applies, reviews, and commits the runtime-aware namespace migration. Internal `gsd-tools`/`gsd-sdk` names and non-Markdown artifacts are outside that migration. `vibe init` remains idempotent for an existing valid store and only creates missing orchestration templates/directories plus the private `.vibe/` Git exclude.
 
 ## 11. Implementation phases
 

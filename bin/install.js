@@ -937,9 +937,24 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
 
-  const usesNestedHooksObject =
-    parsed.hooks && typeof parsed.hooks === 'object' && !Array.isArray(parsed.hooks);
-  const hookTable = usesNestedHooksObject ? parsed.hooks : parsed;
+  // Current Codex accepts only top-level metadata plus a nested `hooks`
+  // object. Older GSD releases wrote event arrays directly at the root,
+  // which current Codex rejects with "unknown field SessionStart". Accept
+  // that legacy form as migration input, but always emit the current schema.
+  const hookTable =
+    parsed.hooks && typeof parsed.hooks === 'object' && !Array.isArray(parsed.hooks)
+      ? { ...parsed.hooks }
+      : {};
+  for (const [key, value] of Object.entries(parsed)) {
+    if (key === 'hooks' || !Array.isArray(value)) continue;
+    const looksLikeHookEvent =
+      key === 'SessionStart' ||
+      value.some((entry) => entry && typeof entry === 'object' && Array.isArray(entry.hooks));
+    if (!looksLikeHookEvent) continue;
+    const nestedEntries = Array.isArray(hookTable[key]) ? hookTable[key] : [];
+    hookTable[key] = [...value, ...nestedEntries];
+    delete parsed[key];
+  }
   const sessionStart = Array.isArray(hookTable.SessionStart) ? hookTable.SessionStart : [];
 
   let removedLegacy = false;
@@ -956,11 +971,11 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
         const managed = isManagedHookCommand(cmd, {
           surface: 'codex-hooks-json',
           includeLegacyAliases: true,
-        configDir: targetDir,
+          configDir: targetDir,
+        });
+        if (managed) removedLegacy = true;
+        return !managed;
       });
-      if (managed) removedLegacy = true;
-      return !managed;
-    });
     if (keptHooks.length === 0) continue;
     const nextEntry = { ...entry, hooks: keptHooks };
     sanitizedSessionStart.push(nextEntry);
@@ -982,7 +997,8 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
   } else {
     delete hookTable.SessionStart;
   }
-  if (usesNestedHooksObject) parsed.hooks = hookTable;
+  if (Object.keys(hookTable).length > 0) parsed.hooks = hookTable;
+  else delete parsed.hooks;
 
   const nextContent = `${JSON.stringify(parsed, null, 2)}\n`;
   const changed = currentContent !== nextContent;
@@ -1071,9 +1087,8 @@ function buildCodexHookWindowsShimIR(scriptAbsPath, absoluteRunnerToken) {
  * the managed SessionStart hook in hooks.json and keeps config.toml for
  * feature flags / agent metadata only.
  *
- * Supports both known hooks.json shapes:
- *   1) { "SessionStart": [...] }
- *   2) { "hooks": { "SessionStart": [...] } }
+ * Accepts the legacy top-level event shape as migration input, but always
+ * writes the current shape: { "hooks": { "SessionStart": [...] } }.
  *
  * On Windows, writes a .cmd shim alongside the .js hook file and uses the
  * .cmd path as the hook command to avoid the `bash.exe: cannot execute binary

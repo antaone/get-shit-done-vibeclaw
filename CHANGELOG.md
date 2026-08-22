@@ -4,7 +4,13 @@ All notable changes to GSD will be documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased](https://github.com/gsd-build/get-shit-done/compare/v1.42.1...HEAD)
+## [Unreleased](https://github.com/gsd-build/get-shit-done/compare/v1.51.0...HEAD)
+
+## [1.51.0](https://github.com/gsd-build/get-shit-done/compare/v1.50.0-canary.3...v1.51.0) - 2026-08-22
+
+### Fixed
+
+- **VibeClaw brownfield onboarding now detects stale public `gsd` commands in `.planning/`** — entry inspection reports exact Markdown references and runtime-native replacements, explicit migration rewrites them transactionally, and candidate preparation fails closed until the focused migration is reviewed and committed. Internal `gsd-tools`/`gsd-sdk` names, URLs, non-Markdown artifacts, and unrelated text remain untouched.
 
 ## [1.50.0-canary.3] - 2026-08-20
 

@@ -3,8 +3,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { VibeOrchestrator } = require('./orchestrator.cjs');
-const { VibeStore } = require('./store.cjs');
+const { VibeStore, atomicWrite } = require('./store.cjs');
 const { VibeError, invariant } = require('./errors.cjs');
+const { formatGsdSlash } = require('../runtime-slash.cjs');
 const git = require('./git.cjs');
 
 const LIFECYCLE_ENTRIES = Object.freeze({
@@ -44,6 +45,126 @@ const COMMAND_DESCRIPTIONS = Object.freeze({
   forensics: 'Investigate workflow failures and persist a forensic report.',
   'add-tests': 'Add focused test coverage in an isolated candidate.',
 });
+
+const LEGACY_COMMAND_REFERENCE = /(?<![A-Za-z0-9_:/-])([/$])gsd([:-])([a-z][a-z0-9-]*)(?=$|[^A-Za-z0-9_-])/gi;
+const LEGACY_NON_COMMAND_TOKENS = new Set(['sdk', 'tools']);
+
+function normalizeRuntime(value) {
+  return String(value || process.env.GSD_RUNTIME || 'claude').trim().toLowerCase() || 'claude';
+}
+
+function planningMarkdownFiles(projectRoot) {
+  const planningRoot = path.join(path.resolve(projectRoot), '.planning');
+  if (!fs.existsSync(planningRoot)) return [];
+  invariant(!fs.lstatSync(planningRoot).isSymbolicLink(), 'PLANNING_PATH_UNSAFE', 'Legacy command migration will not traverse a symbolic-link .planning directory', {
+    path: planningRoot,
+  });
+
+  const files = [];
+  const pending = [planningRoot];
+  while (pending.length > 0) {
+    const directory = pending.pop();
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const target = path.join(directory, entry.name);
+      if (entry.isSymbolicLink()) continue;
+      if (entry.isDirectory()) pending.push(target);
+      else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) files.push(target);
+    }
+  }
+  return files.sort((left, right) => left.localeCompare(right));
+}
+
+function lineAndColumn(content, offset) {
+  const before = content.slice(0, offset);
+  const lines = before.split(/\r?\n/);
+  return { line: lines.length, column: lines[lines.length - 1].length + 1 };
+}
+
+function rewriteLegacyCommandReferences(content, runtime) {
+  const references = [];
+  const rewritten = String(content).replace(
+    LEGACY_COMMAND_REFERENCE,
+    (legacy, _sigil, _separator, command, offset) => {
+      const normalizedCommand = command.toLowerCase();
+      if (LEGACY_NON_COMMAND_TOKENS.has(normalizedCommand)) return legacy;
+      const replacement = formatGsdSlash(normalizedCommand, runtime);
+      const position = lineAndColumn(content, offset);
+      references.push({
+        ...position,
+        command: normalizedCommand,
+        legacy,
+        replacement,
+      });
+      return replacement;
+    },
+  );
+  return { content: rewritten, references };
+}
+
+function planLegacyPlanningCommandMigration(projectRoot, runtime) {
+  const root = path.resolve(projectRoot);
+  const effectiveRuntime = normalizeRuntime(runtime);
+  const files = planningMarkdownFiles(root);
+  const changes = [];
+  for (const file of files) {
+    const before = fs.readFileSync(file, 'utf8');
+    const rewritten = rewriteLegacyCommandReferences(before, effectiveRuntime);
+    if (rewritten.references.length === 0) continue;
+    changes.push({
+      path: file,
+      relative_path: path.relative(root, file).split(path.sep).join('/'),
+      before,
+      after: rewritten.content,
+      references: rewritten.references,
+    });
+  }
+  return { root, runtime: effectiveRuntime, scanned_files: files.length, changes };
+}
+
+function publicMigrationReport(plan, migrated = false) {
+  return {
+    schema_version: 1,
+    runtime: plan.runtime,
+    planning_dir: path.join(plan.root, '.planning'),
+    scanned_files: plan.scanned_files,
+    affected_files: plan.changes.map((change) => ({
+      path: change.relative_path,
+      reference_count: change.references.length,
+      references: change.references,
+    })),
+    total_references: plan.changes.reduce((total, change) => total + change.references.length, 0),
+    migrated,
+  };
+}
+
+function inspectLegacyPlanningCommands(projectRoot, options = {}) {
+  return publicMigrationReport(planLegacyPlanningCommandMigration(projectRoot, options.runtime));
+}
+
+function migrateLegacyPlanningCommands(projectRoot, options = {}) {
+  const plan = planLegacyPlanningCommandMigration(projectRoot, options.runtime);
+  if (options.dryRun || plan.changes.length === 0) return publicMigrationReport(plan, false);
+  const writeFile = options.writeFile || atomicWrite;
+  const written = [];
+  try {
+    for (const change of plan.changes) {
+      writeFile(change.path, change.after);
+      written.push(change);
+    }
+  } catch (error) {
+    const rollbackFailures = [];
+    for (const change of written.reverse()) {
+      try { writeFile(change.path, change.before); } catch (rollbackError) {
+        rollbackFailures.push({ path: change.relative_path, message: rollbackError.message });
+      }
+    }
+    throw new VibeError('PLANNING_COMMAND_MIGRATION_FAILED', 'Could not migrate legacy command references; previously written files were rolled back', {
+      cause: error.message,
+      rollback_failures: rollbackFailures,
+    });
+  }
+  return publicMigrationReport(plan, true);
+}
 
 function normalizeCommand(value) {
   let command = String(value || '').trim().toLowerCase();
@@ -202,6 +323,17 @@ function inspectVibeEntry(options = {}) {
 
   const store = findStore(cwd);
   if (!store) {
+    const legacyPlanningCommands = inspectLegacyPlanningCommands(repository.root, { runtime: options.runtime });
+    if (repository.dirty.length === 0 && legacyPlanningCommands.total_references > 0) {
+      return {
+        ...entry,
+        action: 'migrate-planning-commands',
+        reason: 'legacy_planning_command_namespace',
+        repository,
+        legacy_planning_commands: legacyPlanningCommands,
+        message: `Found ${legacyPlanningCommands.total_references} legacy GSD command reference(s) in ${legacyPlanningCommands.affected_files.length} committed planning file(s). Review and migrate them before preparing Vibe candidates.`,
+      };
+    }
     return {
       ...entry,
       action: 'choose-mode',
@@ -257,6 +389,20 @@ function inspectVibeEntry(options = {}) {
     };
   }
 
+  const legacyPlanningCommands = inspectLegacyPlanningCommands(repository.root, { runtime: options.runtime });
+  if (legacyPlanningCommands.total_references > 0) {
+    return {
+      ...entry,
+      action: 'migrate-planning-commands',
+      reason: 'legacy_planning_command_namespace',
+      repository,
+      coordination,
+      project_root: store.projectRoot,
+      legacy_planning_commands: legacyPlanningCommands,
+      message: `Found ${legacyPlanningCommands.total_references} legacy GSD command reference(s) in ${legacyPlanningCommands.affected_files.length} committed planning file(s). Review and migrate them before preparing Vibe candidates.`,
+    };
+  }
+
   let activeRun = null;
   const activeRunId = store.loadActiveRunId();
   if (activeRunId) activeRun = orchestrator.loadRun(activeRunId);
@@ -309,6 +455,16 @@ function prepareVibeEntry(options = {}) {
   invariant(repository.dirty.length === 0, 'INTEGRATION_DIRTY', 'Review and commit or otherwise resolve integration-worktree changes before preparing Vibe candidates', {
     files: repository.dirty,
   });
+  const legacyPlanningCommands = inspectLegacyPlanningCommands(repository.root, { runtime: options.runtime });
+  invariant(
+    legacyPlanningCommands.total_references === 0,
+    'LEGACY_PLANNING_COMMANDS',
+    `Migrate ${legacyPlanningCommands.total_references} legacy GSD command reference(s) before preparing Vibe candidates`,
+    {
+      legacy_planning_commands: legacyPlanningCommands,
+      hint: `Run vibe entry migrate ${entry.command} --runtime ${legacyPlanningCommands.runtime}, review the diff, and commit the migration.`,
+    },
+  );
 
   let store = findStore(cwd);
   let orchestrator;
@@ -409,6 +565,8 @@ module.exports = {
   normalizeCommand,
   resolveCommandEntry,
   commandWorkflow,
+  inspectLegacyPlanningCommands,
+  migrateLegacyPlanningCommands,
   inspectVibeEntry,
   prepareVibeEntry,
 };

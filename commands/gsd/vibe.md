@@ -53,7 +53,7 @@ User request: `$ARGUMENTS`
 2. Inspect before changing state:
 
    ```bash
-   node "$HOME/.claude/get-shit-done/bin/vibe.cjs" entry inspect "<command>" --json
+   node "$HOME/.claude/get-shit-done/bin/vibe.cjs" entry inspect "<command>" --runtime __VGSD_RUNTIME__ --json
    ```
 
 3. Follow the returned action:
@@ -69,6 +69,18 @@ User request: `$ARGUMENTS`
      candidates. Direct mode invokes the requested `vgsd` command normally. If
      `vibe_requires_baseline` is true and a Vibe mode is selected, review the
      pending files and obtain approval before creating the baseline commit.
+   - `migrate-planning-commands`: show the affected `.planning/` files and the
+     exact legacy-to-`vgsd` replacements returned by inspection. Obtain approval
+     before changing these committed project artifacts, then run:
+
+     ```bash
+     node "$HOME/.claude/get-shit-done/bin/vibe.cjs" entry migrate "<command>" --runtime __VGSD_RUNTIME__ --json
+     ```
+
+     Review the resulting diff, obtain approval for the migration commit, commit
+     only the reviewed `.planning/` changes, and inspect again before preparing
+     candidates. Never rewrite `gsd-tools`, `gsd-sdk`, URLs, unknown file types,
+     or non-command prose.
    - `continue-candidate`: invoke the assigned command in the current candidate.
    - `return-integration`: do not prepare from the current candidate. Show the
      returned `project_root` and continue orchestration from that integration
@@ -108,7 +120,7 @@ User request: `$ARGUMENTS`
 5. Prepare every selected tool in one operation. Repeat `--tool` for N runs:
 
    ```bash
-   node "$HOME/.claude/get-shit-done/bin/vibe.cjs" entry prepare "<command>" --tool codex --tool claude --json
+   node "$HOME/.claude/get-shit-done/bin/vibe.cjs" entry prepare "<command>" --runtime __VGSD_RUNTIME__ --tool codex --tool claude --json
    ```
 
    Preserve explicit `--run`, `--id`, `--route`, and `--base` choices. Do not
@@ -139,6 +151,9 @@ User request: `$ARGUMENTS`
 
 <success_criteria>
 - The starting state was discovered rather than assumed.
+- Legacy public `gsd` command references in brownfield `.planning/` Markdown
+  were either absent or explicitly reviewed, migrated, and committed before the
+  candidate base was created.
 - Direct, single-candidate, and N-candidate execution are all available.
 - Every candidate begins from the recorded exact base commit.
 - Multi-machine workers are accepted only through the published identity tag,

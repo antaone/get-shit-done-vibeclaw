@@ -77,22 +77,36 @@ Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelizat
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
-Read runtime/worktree config and fail closed before any executor dispatch:
+Resolve the active runtime and worktree behavior before any executor dispatch. Runtime identity belongs to the installed adapter, not to the project that created or promoted the phase. Managed Vibe launches may override the installed identity through `GSD_RUNTIME`; the project config is only a source-checkout fallback where the installer token has not been replaced.
 
 ```bash
-RUNTIME=$(gsd-sdk query config-get runtime --default claude 2>/dev/null || echo "claude")
-USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
+RUNTIME="${GSD_RUNTIME:-__VGSD_RUNTIME__}"
+if [ "$RUNTIME" = "__VGSD_RUNTIME__" ]; then
+  RUNTIME=$(gsd-sdk query config-get runtime --default claude 2>/dev/null || echo "claude")
+fi
+
+CONFIGURED_USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees --default "__unset__" 2>/dev/null || echo "__unset__")
+if [ "$CONFIGURED_USE_WORKTREES" = "__unset__" ]; then
+  if [ "$RUNTIME" = "codex" ]; then
+    USE_WORKTREES=false
+  else
+    USE_WORKTREES=true
+  fi
+else
+  USE_WORKTREES="$CONFIGURED_USE_WORKTREES"
+fi
+
 EXECUTOR_STALL_INTERVAL_MINUTES=$(gsd-sdk query config-get executor.stall_detect_interval_minutes 2>/dev/null || echo "5")
 EXECUTOR_STALL_THRESHOLD_MINUTES=$(gsd-sdk query config-get executor.stall_threshold_minutes 2>/dev/null || echo "10")
 
 if [ "$RUNTIME" = "codex" ] && [ "$USE_WORKTREES" != "false" ]; then
-  echo "FATAL: Codex execute-phase worktree isolation is unsupported. Set workflow.use_worktrees=false or use a runtime with Agent isolation=\"worktree\" support." >&2
+  echo "FATAL: Codex execute-phase worktree isolation is unsupported. workflow.use_worktrees must be false, or use a runtime with Agent isolation=\"worktree\" support." >&2
   exit 1
 fi
 # Sweep orphaned locked worktrees from prior crashed sessions before spawning executors (#3707).
 [ "$USE_WORKTREES" != "false" ] && gsd-sdk query worktree.reap-orphans 2>/dev/null || true
 ```
-Codex maps subagents to `spawn_agent`, which has no direct Codex mapping for Claude Code's `isolation="worktree"` parameter. Failing closed prevents main-checkout edits while the workflow believes agents are isolated.
+Codex maps subagents to `spawn_agent`, which has no direct Codex mapping for Claude Code's `isolation="worktree"` parameter. An unset `workflow.use_worktrees` therefore defaults to `false` for Codex and to `true` for runtimes with isolated executor worktrees. An explicit non-false Codex setting still fails closed, preventing main-checkout edits while the workflow believes agents are isolated.
 
 If the project uses git submodules, worktree isolation is unsafe **only when a plan touches a submodule path** — the executor commit protocol cannot correctly handle submodule commits inside isolated worktrees. The previous behavior unconditionally disabled worktree isolation whenever `.gitmodules` existed, which penalised every plan in a submodule project even when the plan was nowhere near a submodule. Compute submodule paths once and intersect them per-plan with the plan's declared `files_modified` frontmatter.
 

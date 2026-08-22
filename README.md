@@ -95,6 +95,45 @@ The published-package form is `npx get-shit-done-cc` with the same flags. Use `-
 
 The installer supports Claude Code, OpenCode, Gemini CLI, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Hermes Agent, Cline, and CodeBuddy.
 
+### Uninstall GSD and VibeClaw
+
+Run the installer again with `--uninstall`, using the same runtime and scope
+that were used for installation. The scope is required so the installer never
+guesses which configuration tree it may change.
+
+```bash
+# Remove one global runtime installation
+npx get-shit-done-cc@latest --codex --global --uninstall
+npx get-shit-done-cc@latest --claude --global --uninstall
+
+# Remove the current project's local runtime installation
+npx get-shit-done-cc@latest --codex --local --uninstall
+
+# Remove every supported runtime installation in the selected scope
+npx get-shit-done-cc@latest --all --global --uninstall
+npx get-shit-done-cc@latest --all --local --uninstall
+```
+
+Replace `--codex` or `--claude` with the runtime originally installed. The
+uninstaller removes GSD/VibeClaw-managed commands, skills, agents, hooks, and
+manifests while preserving unrelated runtime configuration and repository
+files. It does not delete `.planning/`, `.planning-vibe/`, project source, or
+Git history.
+
+If this checkout was exposed with `npm link`, remove the linked executables
+after uninstalling the runtime artifacts:
+
+```bash
+npm unlink --global get-shit-done-cc
+```
+
+Removing Vibe orchestration from a repository is a separate, destructive
+operation. First promote or otherwise preserve any candidate work you need,
+check `vibe status`, and clean each completed candidate with
+`vibe cleanup <candidate-id>`. Only then remove the committed
+`.planning-vibe/` directory and disposable `.vibe/` worktree directory. Keep
+`.planning/` if you want the brownfield GSD history to remain available.
+
 ### GSD command syntax
 
 The installer writes the correct command form for each runtime:
@@ -229,6 +268,13 @@ required baseline commit. For brownfield work, invoke it from the existing
 repository's integration branch. In either case, it can initialize Vibe and
 prepare the selected candidates without making you translate the flow into
 terminal commands.
+
+When a brownfield `.planning/` tree still contains legacy `/gsd-*`, `/gsd:*`,
+or `$gsd-*` public command references, the gateway reports their exact locations
+and runtime-native `vgsd` replacements before candidate preparation. Migration
+is explicit: review the proposed edits, apply them through the gateway, and
+commit the focused planning change so every candidate inherits the corrected
+namespace from its recorded base.
 
 Local mode uses one coordinator checkout and path-bound worktrees. Opt-in
 multi-machine mode publishes guarded Git handoffs so assigned tools can execute

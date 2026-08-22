@@ -71,6 +71,43 @@ The installed command calls the runtime-local `get-shit-done/bin/vibe.cjs`, so
 it works wherever `vgsd` was installed; a globally linked `vibe` executable is
 optional.
 
+## Uninstall
+
+Uninstall runtime artifacts with the same runtime flag and installation scope
+used during setup. Both `--global` and `--local` are explicit safeguards; the
+installer refuses an uninstall when neither scope is supplied.
+
+```bash
+# One runtime
+npx get-shit-done-cc@latest --codex --global --uninstall
+npx get-shit-done-cc@latest --gemini --local --uninstall
+
+# Every supported runtime in one scope
+npx get-shit-done-cc@latest --all --global --uninstall
+npx get-shit-done-cc@latest --all --local --uninstall
+```
+
+Use the corresponding flag for any other installed runtime. This removes only
+installer-managed commands, skills, agents, hooks, and manifests from the
+selected runtime configuration. It preserves unrelated configuration and does
+not delete repository source, Git history, `.planning/`, or
+`.planning-vibe/`.
+
+For a source checkout that was made globally callable with `npm link`, remove
+the linked executables after uninstalling runtime artifacts:
+
+```bash
+npm unlink --global get-shit-done-cc
+```
+
+Retiring Vibe from a particular repository is intentionally separate. Before
+removing project state, inspect `vibe status`, preserve or promote any candidate
+results you need, and use `vibe cleanup <candidate-id>` for every completed
+candidate worktree. You may then remove the committed `.planning-vibe/` state
+and disposable `.vibe/` directory. Do not remove `.planning/` when retaining
+the project's GSD plans and history, and do not remove Vibe state while a
+candidate contains unpromoted work.
+
 ## Command order: Vibe first, workflow second
 
 Yes: when you want branch/worktree isolation or competing tool runs, start on
@@ -314,6 +351,15 @@ execute, verify, or review uses the reviewed integration commit when there is
 no earlier Vibe promotion. Normal advancement inside an active feature run
 still requires the prior stage's promoted result.
 
+Before candidate preparation, the gateway scans committed `.planning/**/*.md`
+for legacy public command references such as `/gsd-plan-phase`,
+`/gsd:execute-phase`, or `$gsd-verify-work`. If it finds any, it shows the exact
+file, line, original token, and runtime-native replacement. With approval, run
+the reported `vibe entry migrate` action, review and commit that focused
+planning diff, and then prepare candidates. The migration is never folded into
+an unreviewed candidate base. Internal `gsd-tools` and `gsd-sdk` names, URLs,
+non-Markdown files, and unrelated prose are left untouched.
+
 ### Brownfield C: small fix, fast change, or investigation
 
 General commands receive generated one-stage workflows, so they use the same
@@ -409,6 +455,11 @@ Initialization is idempotent. It validates existing configuration, only creates
 missing bundled templates, and scans `vgsd/*` branches plus Git-local execution
 metadata. Any direct pre-Vibe work is recorded in
 `.planning-vibe/state/standalone-executions.json`.
+
+Initialization itself does not rewrite GSD artifacts. Brownfield command
+namespace cleanup is a separate, explicit operation discovered by
+`vibe entry inspect <command> --runtime <runtime>` and applied with
+`vibe entry migrate <command> --runtime <runtime>` only after review.
 
 ## vgsd execution-branch guard
 

@@ -10,6 +10,7 @@ const {
   VibeError,
   createDefaultRegistry,
   inspectVibeEntry,
+  migrateLegacyPlanningCommands,
   prepareVibeEntry,
 } = require(fs.existsSync(sourceCore) ? sourceCore : installedCore);
 
@@ -57,8 +58,9 @@ function help() {
 
 Usage:
   vibe init [--project <dir>] [--json]
-  vibe entry inspect <vgsd-command>
-  vibe entry prepare <vgsd-command> [--tool <tool> ...] [--run <run>] [--id <run>] [--multi-machine --remote <name>]
+  vibe entry inspect <vgsd-command> [--runtime <runtime>]
+  vibe entry migrate <vgsd-command> [--runtime <runtime>] [--dry-run]
+  vibe entry prepare <vgsd-command> [--runtime <runtime>] [--tool <tool> ...] [--run <run>] [--id <run>] [--multi-machine --remote <name>]
   vibe mode show|local|multi-machine [--remote <name>]
   vibe route list|show <name>|use <name>
   vibe run start <workflow> [--id <run>] [--route <route>] [--base <commit>]
@@ -148,11 +150,12 @@ function main(argv = process.argv.slice(2)) {
   if (command === 'entry') {
     const action = tokens.shift();
     const vgsdCommand = tokens.shift();
-    if (!vgsdCommand) throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|prepare <vgsd-command>');
+    if (!vgsdCommand) throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|migrate|prepare <vgsd-command>');
     const cwd = path.resolve(project || process.cwd());
     if (action === 'inspect') {
+      const runtime = takeOption(tokens, '--runtime');
       assertNoArgs(tokens);
-      const result = inspectVibeEntry({ cwd, command: vgsdCommand });
+      const result = inspectVibeEntry({ cwd, command: vgsdCommand, runtime });
       emit(result, json, (value) => [
         `Command: /vgsd:${value.command}`,
         `Action: ${value.action}`,
@@ -163,7 +166,21 @@ function main(argv = process.argv.slice(2)) {
       ].filter(Boolean).join('\n'));
       return 0;
     }
+    if (action === 'migrate') {
+      const runtime = takeOption(tokens, '--runtime');
+      const dryRun = takeFlag(tokens, '--dry-run');
+      assertNoArgs(tokens);
+      const result = migrateLegacyPlanningCommands(cwd, { runtime, dryRun });
+      emit({ command: vgsdCommand, ...result }, json, (value) => [
+        `Planning files scanned: ${value.scanned_files}`,
+        `Legacy command references: ${value.total_references}`,
+        `Files affected: ${value.affected_files.length}`,
+        value.migrated ? `Migrated for runtime: ${value.runtime}` : dryRun ? `Dry run for runtime: ${value.runtime}` : 'No migration needed.',
+      ].join('\n'));
+      return 0;
+    }
     if (action === 'prepare') {
+      const runtime = takeOption(tokens, '--runtime');
       const tools = takeOption(tokens, '--tool', { repeat: true });
       const runId = takeOption(tokens, '--run');
       const id = takeOption(tokens, '--id');
@@ -177,6 +194,7 @@ function main(argv = process.argv.slice(2)) {
       const result = prepareVibeEntry({
         cwd,
         command: vgsdCommand,
+        runtime,
         tools,
         runId,
         id,
@@ -205,7 +223,7 @@ function main(argv = process.argv.slice(2)) {
       ].join('\n'));
       return 0;
     }
-    throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|prepare <vgsd-command>');
+    throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|migrate|prepare <vgsd-command>');
   }
   const orchestrator = createOrchestrator(project, command === 'init');
   let result;

@@ -6,11 +6,14 @@ const { describe, test, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { createTempDir, createTempGitProject, cleanup } = require('./helpers.cjs');
 const {
   VibeOrchestrator,
   normalizeCommand,
   resolveCommandEntry,
+  inspectLegacyPlanningCommands,
+  migrateLegacyPlanningCommands,
   inspectVibeEntry,
   prepareVibeEntry,
 } = require('../get-shit-done/bin/lib/vibe/index.cjs');
@@ -75,6 +78,103 @@ describe('vgsd to Vibe entry routing', () => {
       () => prepareVibeEntry({ cwd: project, command: 'quick', tools: ['codex'] }),
       (error) => error.code === 'INTEGRATION_DIRTY' && error.details.files.some((file) => file.includes('pending.txt')),
     );
+  });
+
+  test('requires an explicit brownfield migration for legacy commands in committed planning Markdown', () => {
+    const project = createTempGitProject('vibe-entry-legacy-planning-');
+    projects.push(project);
+    const statePath = path.join(project, '.planning', 'STATE.md');
+    const original = [
+      '# State',
+      '',
+      'Next: /gsd-plan-phase 3',
+      'Then: $gsd-execute-phase 3',
+      'Verify: /gsd:verify-work 3',
+      'Internal CLI: /gsd-tools and /gsd-sdk',
+      'Reference URL: https://example.test/gsd-plan-phase',
+      '',
+    ].join('\n');
+    fs.writeFileSync(statePath, original, 'utf8');
+    execFileSync('git', ['add', '--', '.planning/STATE.md'], { cwd: project });
+    execFileSync('git', ['commit', '-m', 'legacy planning state'], { cwd: project });
+
+    const inspected = inspectVibeEntry({ cwd: project, command: 'plan-phase', runtime: 'codex' });
+    assert.equal(inspected.action, 'migrate-planning-commands');
+    assert.equal(inspected.reason, 'legacy_planning_command_namespace');
+    assert.equal(inspected.legacy_planning_commands.total_references, 3);
+    assert.deepEqual(
+      inspected.legacy_planning_commands.affected_files[0].references.map((reference) => reference.replacement),
+      ['$vgsd-plan-phase', '$vgsd-execute-phase', '$vgsd-verify-work'],
+    );
+
+    assert.throws(
+      () => prepareVibeEntry({ cwd: project, command: 'plan-phase', tools: ['codex'], runtime: 'codex' }),
+      (error) => error.code === 'LEGACY_PLANNING_COMMANDS'
+        && error.details.legacy_planning_commands.total_references === 3,
+    );
+
+    const preview = migrateLegacyPlanningCommands(project, { runtime: 'codex', dryRun: true });
+    assert.equal(preview.migrated, false);
+    assert.equal(fs.readFileSync(statePath, 'utf8'), original);
+
+    const migrated = migrateLegacyPlanningCommands(project, { runtime: 'codex' });
+    assert.equal(migrated.migrated, true);
+    assert.equal(migrated.total_references, 3);
+    const updated = fs.readFileSync(statePath, 'utf8');
+    assert.match(updated, /Next: \$vgsd-plan-phase 3/);
+    assert.match(updated, /Then: \$vgsd-execute-phase 3/);
+    assert.match(updated, /Verify: \$vgsd-verify-work 3/);
+    assert.match(updated, /Internal CLI: \/gsd-tools and \/gsd-sdk/);
+    assert.match(updated, /https:\/\/example\.test\/gsd-plan-phase/);
+
+    const pendingCommit = inspectVibeEntry({ cwd: project, command: 'plan-phase', runtime: 'codex' });
+    assert.equal(pendingCommit.action, 'choose-mode');
+    assert.equal(pendingCommit.vibe_requires_baseline, true);
+    execFileSync('git', ['add', '--', '.planning/STATE.md'], { cwd: project });
+    execFileSync('git', ['commit', '-m', 'migrate planning command namespace'], { cwd: project });
+
+    const prepared = prepareVibeEntry({
+      cwd: project,
+      command: 'plan-phase',
+      tools: ['codex'],
+      runtime: 'codex',
+      id: 'legacy-planning-migrated',
+    });
+    assert.equal(prepared.candidates[0].invocation, '$vgsd-plan-phase');
+    assert.match(
+      fs.readFileSync(path.join(prepared.candidates[0].worktree, '.planning', 'STATE.md'), 'utf8'),
+      /\$vgsd-plan-phase/,
+    );
+  });
+
+  test('rolls back earlier planning files when a legacy-command migration write fails', () => {
+    const project = createTempGitProject('vibe-entry-legacy-rollback-');
+    projects.push(project);
+    const roadmapPath = path.join(project, '.planning', 'ROADMAP.md');
+    const statePath = path.join(project, '.planning', 'STATE.md');
+    fs.writeFileSync(roadmapPath, 'Run /gsd-discuss-phase 1\n', 'utf8');
+    fs.writeFileSync(statePath, 'Run /gsd-plan-phase 1\n', 'utf8');
+
+    let writes = 0;
+    let injected = false;
+    assert.throws(
+      () => migrateLegacyPlanningCommands(project, {
+        runtime: 'gemini',
+        writeFile(file, content) {
+          writes += 1;
+          if (!injected && writes === 2) {
+            injected = true;
+            throw new Error('injected write failure');
+          }
+          fs.writeFileSync(file, content, 'utf8');
+        },
+      }),
+      (error) => error.code === 'PLANNING_COMMAND_MIGRATION_FAILED'
+        && error.details.rollback_failures.length === 0,
+    );
+    assert.equal(fs.readFileSync(roadmapPath, 'utf8'), 'Run /gsd-discuss-phase 1\n');
+    assert.equal(fs.readFileSync(statePath, 'utf8'), 'Run /gsd-plan-phase 1\n');
+    assert.equal(inspectLegacyPlanningCommands(project, { runtime: 'gemini' }).total_references, 2);
   });
 
   test('prepares N quick candidates and routes subsequent execution into their worktrees', () => {
