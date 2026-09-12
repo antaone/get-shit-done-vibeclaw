@@ -1,0 +1,23 @@
+{
+  "exclude": [
+    "CHANGELOG.md",
+    "docs/RELEASE-*.md",
+    ".changeset/**",
+    "docs/superpowers/specs/**",
+    "docs/superpowers/plans/**",
+    "node_modules/**",
+    "sdk/node_modules/**",
+    "sdk/dist/**",
+    "hooks/dist/**",
+    "scripts/rename-identity.cjs",
+    "scripts/identity-rename.map.json",
+    "tests/rename-identity-script.test.cjs",
+    "get-shit-done/bin/lib/identity.cjs",
+    "sdk/src/identity.ts",
+    "tests/identity.test.cjs",
+    "tests/fvgsd-coexistence.install.test.cjs",
+    "tests/helpers/foreign-installs.cjs",
+    "tests/fixtures/foreign-installer-matchers.json"
+  ],
+  "codeExtensions": [".js", ".cjs", ".mjs", ".ts"]
+}
