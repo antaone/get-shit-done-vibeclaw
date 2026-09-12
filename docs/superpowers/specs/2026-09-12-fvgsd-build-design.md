@@ -1,14 +1,14 @@
-# Design: /fvsgd-build — plan and execute in one step
+# Design: /fvgsd-build — plan and execute in one step
 
 **Date:** 2026-09-12
 **Status:** Design approved in conversation; spec awaiting review
-**Sub-project:** 2 of 2. Implement after `2026-09-12-fvsgd-identity-design.md`; names below assume it is done.
+**Sub-project:** 2 of 2. Implement after `2026-09-12-fvgsd-identity-design.md`; names below assume it is done.
 
 ---
 
 ## Summary
 
-`/fvsgd-build <phase>` replaces the separate plan-phase and execute-phase steps for a discussed phase. It:
+`/fvgsd-build <phase>` replaces the separate plan-phase and execute-phase steps for a discussed phase. It:
 
 1. Reads the phase's inputs:
    - CONTEXT.md
@@ -76,19 +76,19 @@ These costs come from one assumption: an expensive model writes exhaustive plans
 ## Architecture
 
 ```text
-/fvsgd-build <phase> [--confirm] [--gaps] [--research-only] [--brief-only]
+/fvgsd-build <phase> [--confirm] [--gaps] [--research-only] [--brief-only]
     │
-    ├─ fvsgd-sdk query init.build        → inputs, check commands, capabilities, config, resume state, baseline
-    ├─ stop if no CONTEXT.md             → suggest /fvsgd-discuss-phase <phase>
-    ├─ research if RESEARCH.md missing   → fvsgd-phase-researcher              (--research-only stops here)
+    ├─ fvgsd-sdk query init.build        → inputs, check commands, capabilities, config, resume state, baseline
+    ├─ stop if no CONTEXT.md             → suggest /fvgsd-discuss-phase <phase>
+    ├─ research if RESEARCH.md missing   → fvgsd-phase-researcher              (--research-only stops here)
     ├─ baseline checks if needed         → build.run-checks --set full --label baseline (background during the brief, else right after it)
-    ├─ fvsgd-builder, brief mode         → {P}-{NN}-PLAN.md, build.check-brief, commit    (--brief-only stops here)
+    ├─ fvgsd-builder, brief mode         → {P}-{NN}-PLAN.md, build.check-brief, commit    (--brief-only stops here)
     │    └─ --confirm or mode: interactive → user approves; user_setup items asked before building
     ├─ build.waves                        → ordered waves of slices
-    │    └─ per wave: fvsgd-builder, slice mode, per slice → build.merge-wave → build.run-checks --set wave
+    │    └─ per wave: fvgsd-builder, slice mode, per slice → build.merge-wave → build.run-checks --set wave
     ├─ build.run-checks --set full, build.scan-stubs
-    ├─ fvsgd-verifier, build mode        → {P}-VERIFICATION.md (+ {P}-HUMAN-UAT.md)
-    ├─ fix rounds ≤ build_fix_rounds     → build.group-problems → fvsgd-builder per slice → rerun failed checks → verifier recheck
+    ├─ fvgsd-verifier, build mode        → {P}-VERIFICATION.md (+ {P}-HUMAN-UAT.md)
+    ├─ fix rounds ≤ build_fix_rounds     → build.group-problems → fvgsd-builder per slice → rerun failed checks → verifier recheck
     ├─ lead writes {P}-{NN}-SUMMARY.md body
     └─ build.finalize                     → summary frontmatter, ID coverage, STATE/ROADMAP/REQUIREMENTS, commit
 ```
@@ -99,14 +99,14 @@ These costs come from one assumption: an expensive model writes exhaustive plans
 
 | Component | Path | Purpose |
 |---|---|---|
-| Command | `commands/gsd/build.md` | `name: fvsgd:build`; argument hint `<phase> [--confirm] [--gaps] [--research-only] [--brief-only]`; execution-branch guard block like other commands |
+| Command | `commands/gsd/build.md` | `name: fvgsd:build`; argument hint `<phase> [--confirm] [--gaps] [--research-only] [--brief-only]`; execution-branch guard block like other commands |
 | Workflow | `get-shit-done/workflows/build.md` | Lead instructions; target 400 lines or fewer |
-| Agent | `agents/fvsgd-builder.md` | Brief and slice modes; target 10KB or smaller; no embedded reference dumps |
+| Agent | `agents/fvgsd-builder.md` | Brief and slice modes; target 10KB or smaller; no embedded reference dumps |
 | Format references | `get-shit-done/references/build-brief.md`, `get-shit-done/references/build-summary.md` | Brief and summary formats, read on demand |
 | Query handlers | `sdk/src/query/build-*.ts`, family manifest `sdk/src/query/command-manifest.build.ts`, `init.build` added to `command-manifest.init.ts`, handlers mapped in `command-family-handlers.ts` | `init.build`, `build.check-brief`, `build.waves`, `build.merge-wave`, `build.run-checks`, `build.scan-stubs`, `build.group-problems`, `build.finalize`, `checks.detect` |
 | Capability table | `sdk/shared/runtime-capabilities.json` | Per-runtime switches |
 | VibeClaw template | `get-shit-done/vibe/templates/workflows/feature-build.yaml` | Stage workflow using build |
-| Stage 2 script | `get-shit-done/workflows/claude/fvsgd-build-slices.js` | Saved Claude Code workflow (Stage 2 only) |
+| Stage 2 script | `get-shit-done/workflows/claude/fvgsd-build-slices.js` | Saved Claude Code workflow (Stage 2 only) |
 
 `command-aliases.generated.ts` is regenerated, and `npm run check:alias-drift` must pass.
 
@@ -147,7 +147,7 @@ Returns JSON:
 - **Milestone brief.** The first file that exists of `.planning/MILESTONE-CONTEXT.md` and `.planning/MILESTONE-BRIEF.md`.
 - **Models.** Resolved with the existing model-profile resolution, including `models` and `model_overrides`:
   - `brief` and `strong` use the planning-tier model.
-  - `slice` uses the model of the new `fvsgd-builder` row: quality opus, balanced sonnet, budget sonnet, adaptive sonnet, inherit inherit. The row belongs to the `execution` phase type.
+  - `slice` uses the model of the new `fvgsd-builder` row: quality opus, balanced sonnet, budget sonnet, adaptive sonnet, inherit inherit. The row belongs to the `execution` phase type.
   - `verifier` is unchanged.
 - **Resume state**, derived from files and git only:
   - `new`: no brief exists for the current plan number.
@@ -241,12 +241,12 @@ The builder fixes any errors in the same turn. Nothing else about the brief is c
 
 **Gap briefs.** A `--gaps` brief has `gap_closure: true`, `depends_on: ["{P}-{previous NN}"]` and `wave` set to the previous wave plus one. Its slices cover only the gaps listed in VERIFICATION.md.
 
-### Builder agent: `agents/fvsgd-builder.md`
+### Builder agent: `agents/fvgsd-builder.md`
 
 ```yaml
 ---
-name: fvsgd-builder
-description: Writes the build brief for a phase, or builds one slice of it, for /fvsgd-build.
+name: fvgsd-builder
+description: Writes the build brief for a phase, or builds one slice of it, for /fvgsd-build.
 tools: Read, Write, Edit, Bash, Grep, Glob
 effort: high
 ---
@@ -341,7 +341,7 @@ notes: |
 
 **`build.run-checks --set quick|wave|full [--label <name>] [--only <names>]`**
 - Runs the resolved commands, each with a timeout of `workflow.build_check_timeout_seconds`.
-- Stores the result under `<git-common-dir>/fvsgd/build/{P}/<label or set>.json`, outside the working tree, and records each command's latest result, with the commit it ran at, in `<git-common-dir>/fvsgd/build/{P}/latest.json`.
+- Stores the result under `<git-common-dir>/fvgsd/build/{P}/<label or set>.json`, outside the working tree, and records each command's latest result, with the commit it ran at, in `<git-common-dir>/fvgsd/build/{P}/latest.json`.
 - Returns:
 
 ```json
@@ -357,7 +357,7 @@ notes: |
 
 ### Verification
 
-- **Verifier inputs.** The lead spawns `fvsgd-verifier` with a build-mode block in its prompt. The inputs are:
+- **Verifier inputs.** The lead spawns `fvgsd-verifier` with a build-mode block in its prompt. The inputs are:
   - the brief path
   - the slice results
   - the full `build.run-checks` result
@@ -365,9 +365,9 @@ notes: |
   - the diff stat and the files changed since the base commit
   - the CONTEXT decisions
   - the phase's ROADMAP success criteria and requirement IDs
-- **Rules in build mode.** `agents/fvsgd-verifier.md` gains a build-mode section: the verifier does not rerun the full test suite, but may run targeted probe commands. It writes `{P}-VERIFICATION.md` in the existing format (frontmatter `phase`, `verified`, `status`, `score`, plus the gaps list).
+- **Rules in build mode.** `agents/fvgsd-verifier.md` gains a build-mode section: the verifier does not rerun the full test suite, but may run targeted probe commands. It writes `{P}-VERIFICATION.md` in the existing format (frontmatter `phase`, `verified`, `status`, `score`, plus the gaps list).
 - **Human-only checks** (visual or manual flows) go to `{P}-HUMAN-UAT.md` in the existing format. With `workflow.build_human_checks: defer` (the default) they don't affect `status`. With `block`, the status is `human_needed`.
-- **Optional code review.** When `workflow.build_code_review` is true, the lead also spawns `fvsgd-code-reviewer` once over the diff. Its Critical findings join the fix list; Warning and Info findings are listed in the summary.
+- **Optional code review.** When `workflow.build_code_review` is true, the lead also spawns `fvgsd-code-reviewer` once over the diff. Its Critical findings join the fix list; Warning and Info findings are listed in the summary.
 
 ### Fix rounds
 
@@ -376,7 +376,7 @@ notes: |
 3. **Fixing.** The lead spawns a builder per group; groups with disjoint files run in parallel under the same tier rules. Each builder commits `fix({P}-{slice}): <what>`.
 4. **Rechecking.** Only the failed commands rerun, plus build and typecheck. Then the verifier rechecks only the open gaps.
 5. **Stopping.** The loop ends when no problems remain, after `workflow.build_fix_rounds` rounds (default 2), or early when a round doesn't reduce the number of problems.
-6. **If problems remain,** VERIFICATION.md keeps status `gaps_found`, the summary lists what is left, and the next-step output suggests `/fvsgd-build {phase} --gaps`.
+6. **If problems remain,** VERIFICATION.md keeps status `gaps_found`, the summary lists what is left, and the next-step output suggests `/fvgsd-build {phase} --gaps`.
 
 ### Summary and finalize
 
@@ -425,9 +425,9 @@ Remaining gaps, deferred human checks, deferred decisions.
 5. **Result.** Returns `{ "ok": true, "phase_complete": bool, "commit": "<sha>" }`.
 
 The command then prints the next step:
-- `/fvsgd-discuss-phase` or `/fvsgd-build` for the next phase
-- `/fvsgd-build {phase} --gaps` when gaps remain
-- `/fvsgd-verify-work {phase}` when HUMAN-UAT items are pending
+- `/fvgsd-discuss-phase` or `/fvgsd-build` for the next phase
+- `/fvgsd-build {phase} --gaps` when gaps remain
+- `/fvgsd-verify-work {phase}` when HUMAN-UAT items are pending
 
 ---
 
@@ -439,15 +439,15 @@ Status checks are unchanged: a brief counts as a plan and a build summary counts
 
 | Situation | Suggestion |
 |---|---|
-| CONTEXT.md exists, no plans | `/fvsgd-build N` |
-| An incomplete plan has `kind: brief` | `/fvsgd-build N` (resume) |
-| Build phase with VERIFICATION.md `gaps_found` | `/fvsgd-build N --gaps` |
-| `do` receives "build phase N" | `/fvsgd-build N` |
+| CONTEXT.md exists, no plans | `/fvgsd-build N` |
+| An incomplete plan has `kind: brief` | `/fvgsd-build N` (resume) |
+| Build phase with VERIFICATION.md `gaps_found` | `/fvgsd-build N --gaps` |
+| `do` receives "build phase N" | `/fvgsd-build N` |
 
 - **Code:** `sdk/src/query/route-next-action.ts`, and the manager recommended actions in `get-shit-done/bin/lib/init.cjs`.
 - **Workflows:** `get-shit-done/workflows/next.md`, `progress.md`, `manager.md`, `autonomous.md` (plan and execute become one build step, and gap closure uses `--gaps`), `transition.md`, `discuss-phase/modes/chain.md` (chains into build) and `do.md`.
 - **Plan index:** `phase-plan-index` (`sdk/src/query/phase.ts` and `get-shit-done/bin/lib/phase.cjs`) adds `kind` for each plan.
-- **execute-phase:** if any incomplete plan has `kind: brief`, it stops with: "Phase N was started with /fvsgd-build — run /fvsgd-build N to resume."
+- **execute-phase:** if any incomplete plan has `kind: brief`, it stops with: "Phase N was started with /fvgsd-build — run /fvgsd-build N to resume."
 - **Turning it off:** with `workflow.build_mode: false`, all suggestions revert to plan-phase and execute-phase.
 
 ### SDK runner
@@ -469,10 +469,10 @@ Status checks are unchanged: a brief counts as a plan and a build summary counts
 ### VibeClaw
 
 **`feature-build.yaml` stages**
-- **research:** `gsd.command: fvsgd:build`, `gsd.args: ["--research-only"]`, `mutates_source: false`.
+- **research:** `gsd.command: fvgsd:build`, `gsd.args: ["--research-only"]`, `mutates_source: false`.
 - **discuss** (optional): same definition as in `feature-development.yaml`.
-- **brief** (optional): `gsd.command: fvsgd:build`, `gsd.args: ["--brief-only"]`, `mutates_source: false`, `input.promoted_stages: [research, discuss]`.
-- **build:** `gsd.command: fvsgd:build`, `mutates_source: true`, `input.promoted_stages: [brief, discuss, research]`.
+- **brief** (optional): `gsd.command: fvgsd:build`, `gsd.args: ["--brief-only"]`, `mutates_source: false`, `input.promoted_stages: [research, discuss]`.
+- **build:** `gsd.command: fvgsd:build`, `mutates_source: true`, `input.promoted_stages: [brief, discuss, research]`.
 - **verify** and **review:** same definitions as in `feature-development.yaml`, with verify's `input.promoted_stages: [build]`.
 
 **Code and data changes**
@@ -507,7 +507,7 @@ Reused settings:
 ### Docs and inventory
 
 - `docs/COMMANDS.md`, `docs/USER-GUIDE.md`, `docs/CONFIGURATION.md`, `docs/VIBECLAW.md` and `README.md` describe build.
-- `get-shit-done/references/model-profiles.md` gets the `fvsgd-builder` row.
+- `get-shit-done/references/model-profiles.md` gets the `fvgsd-builder` row.
 - `docs/INVENTORY.md` and `docs/INVENTORY-MANIFEST.json` are regenerated.
 - A changeset fragment is added.
 
@@ -517,7 +517,7 @@ Reused settings:
 
 Built after Stage 1 is in use and the brief, summary and query formats have settled.
 
-- **Install.** The installer copies `get-shit-done/workflows/claude/fvsgd-build-slices.js` to `~/.claude/workflows/`, for Claude Code only. It runs as `/fvsgd-build-slices`; the name differs from `/fvsgd-build` because saved workflows become slash commands.
+- **Install.** The installer copies `get-shit-done/workflows/claude/fvgsd-build-slices.js` to `~/.claude/workflows/`, for Claude Code only. It runs as `/fvgsd-build-slices`; the name differs from `/fvgsd-build` because saved workflows become slash commands.
 - **Opt-in.** Set `workflow.build_engine: "workflow"`. When the runtime's `workflow_scripts` switch is off, or the launch is not permitted, build falls back to the agents engine and says so.
 - **Division of work.**
   - The command still does setup, research, the brief, `--confirm` and `user_setup`, because a workflow cannot pause for user input.
@@ -531,14 +531,14 @@ Built after Stage 1 is in use and the brief, summary and query formats have sett
 - **Script.**
   - `meta` is a plain literal with phases `Slices`, `Checks`, `Verify` and `Fix`.
   - For each wave, it runs `parallel()` over slice agents with worktree isolation and a JSON schema matching SLICE RESULT.
-  - An agent runs `fvsgd-sdk query build.merge-wave` and `build.run-checks`, because the script itself has no shell access.
+  - An agent runs `fvgsd-sdk query build.merge-wave` and `build.run-checks`, because the script itself has no shell access.
   - It then runs the verifier agent and the fix loop, applying the same stop rule inside the script.
   - It returns `{ slices, checks, verification, fix_rounds, blocked }`.
 - **Constraints from Claude Code.**
   - No mid-run user input: blocked slices end the run with `blocked` entries. The command asks the user and relaunches, and completed agents replay from cache within the session.
   - `Date.now()` and `Math.random()` throw inside scripts, so timestamps come from `args` or queries.
   - At most 16 concurrent agents.
-  - Headless runs need a `Workflow(fvsgd-build-slices)` allow rule, and the installer prints that hint.
+  - Headless runs need a `Workflow(fvgsd-build-slices)` allow rule, and the installer prints that hint.
 - **Before writing the script,** the implementer loads Claude Code's `/workflow-authoring` reference to confirm the `agent()` option for worktree isolation. If none exists, slices within a wave run one at a time inside the script.
 - **Tests.** Load the script in a `node:vm` harness with fake `agent`, `parallel`, `pipeline` and `phase` functions and a fixture `args`. Assert the call order, the merge/check/verify sequence, the fix-round stop rule and the returned shape.
 
@@ -576,11 +576,11 @@ Assertions compare JSON output or parsed files, never source text or raw substri
 **Root (`node:test`)**
 - **Manager:** recommended actions in `init.cjs` for the same fixtures.
 - **VibeClaw:** `feature-build.yaml` validates; `gsd.args` is accepted and rejected per the pattern and appears in the rendered context's invocation; the `build` lifecycle entry resolves; both routes files contain `build`. Update the pinned workflow list in `tests/vibe-core.test.cjs`.
-- **Install:** `fvsgd-builder` installs in every runtime layout, and converters drop unsupported frontmatter keys. `runtime-capabilities.json` has an entry for every layout runtime, and unknown runtimes resolve to all `false`.
+- **Install:** `fvgsd-builder` installs in every runtime layout, and converters drop unsupported frontmatter keys. `runtime-capabilities.json` has an entry for every layout runtime, and unknown runtimes resolve to all `false`.
 - **Existing checks:** the command contract lint, inventory manifest sync, command and agent docs parity, execution-branch guard check, alias drift check and configuration freshness check pass.
 
 **Acceptance (manual)**
-- After installing fvsgd, run `/fvsgd-build` on a real phase of a project.
+- After installing fvgsd, run `/fvgsd-build` on a real phase of a project.
 - Compare it with that project's most recent phase built with plan-phase and execute-phase: new planning files, wall-clock time (the summary's `build.started` and `build.completed` versus that phase's git timestamps), fix rounds and verification status.
 
 ---
