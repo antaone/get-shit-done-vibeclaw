@@ -1,0 +1,10 @@
+{
+  "fileNamePrefixes": ["gsd-", "vgsd-"],
+  "hookCommandSubstrings": [
+    "gsd-check-update", "gsd-context-monitor", "gsd-prompt-guard", "gsd-read-guard",
+    "gsd-read-injection-scanner", "gsd-workflow-guard", "gsd-validate-commit",
+    "gsd-graphify-update", "gsd-session-state", "gsd-phase-boundary", "gsd-update-banner", "gsd-statusline"
+  ],
+  "codexSectionPrefixes": ["agents.gsd-"],
+  "permissionKeySubstrings": ["get-shit-done"]
+}
