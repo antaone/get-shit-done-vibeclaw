@@ -36,14 +36,14 @@ describe('bug #2836: audit-open quick-task summary filename + UAT terminal statu
   // Ensure GSD env vars do not redirect planningDir() away from our fixture.
   let prevProject, prevWorkstream;
   before(() => {
-    prevProject = process.env.GSD_PROJECT;
-    prevWorkstream = process.env.GSD_WORKSTREAM;
-    delete process.env.GSD_PROJECT;
-    delete process.env.GSD_WORKSTREAM;
+    prevProject = process.env.FVGSD_PROJECT;
+    prevWorkstream = process.env.FVGSD_WORKSTREAM;
+    delete process.env.FVGSD_PROJECT;
+    delete process.env.FVGSD_WORKSTREAM;
   });
   after(() => {
-    if (prevProject !== undefined) process.env.GSD_PROJECT = prevProject;
-    if (prevWorkstream !== undefined) process.env.GSD_WORKSTREAM = prevWorkstream;
+    if (prevProject !== undefined) process.env.FVGSD_PROJECT = prevProject;
+    if (prevWorkstream !== undefined) process.env.FVGSD_WORKSTREAM = prevWorkstream;
   });
 
   test('quick task with ${quick_id}-SUMMARY.md is recognized as complete (not missing)', () => {

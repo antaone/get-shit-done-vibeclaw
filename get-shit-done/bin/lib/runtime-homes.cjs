@@ -98,7 +98,7 @@ function getGlobalConfigDir(runtime) {
       return env.QWEN_CONFIG_DIR ? expandTilde(env.QWEN_CONFIG_DIR) : path.join(home, '.qwen');
 
     // ── Hermes Agent ─────────────────────────────────────────────────────────
-    // Note: skills use a nested layout (skills/vgsd/<skill>/) — see getGlobalSkillDir().
+    // Note: skills use a nested layout (skills/fvgsd/<skill>/) — see getGlobalSkillDir().
     case 'hermes':
       return env.HERMES_HOME ? expandTilde(env.HERMES_HOME) : path.join(home, '.hermes');
 
@@ -135,7 +135,7 @@ function getGlobalConfigDir(runtime) {
 /**
  * Return the global skills base directory for the given runtime.
  * Most runtimes: <configDir>/skills
- * Hermes: <configDir>/skills/vgsd  (nested category layout — #2841)
+ * Hermes: <configDir>/skills/fvgsd  (nested category layout — #2841)
  * Cline:  null (rules-based, no skills directory)
  *
  * @param {string} runtime
@@ -144,7 +144,7 @@ function getGlobalConfigDir(runtime) {
 function getGlobalSkillsBase(runtime) {
   if (runtime === 'cline') return null;
   const configDir = getGlobalConfigDir(runtime);
-  if (runtime === 'hermes') return path.join(configDir, 'skills', 'vgsd');
+  if (runtime === 'hermes') return path.join(configDir, 'skills', 'fvgsd');
   return path.join(configDir, 'skills');
 }
 
@@ -153,7 +153,7 @@ function getGlobalSkillsBase(runtime) {
  * Returns null for runtimes that don't use a skills directory (cline).
  *
  * @param {string} runtime
- * @param {string} skillName - e.g. 'gsd-executor'
+ * @param {string} skillName - e.g. 'fvgsd-executor'
  * @returns {string|null}
  */
 function getGlobalSkillDir(runtime, skillName) {

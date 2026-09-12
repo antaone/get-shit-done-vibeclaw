@@ -22,7 +22,7 @@ function isTimeoutMessage(message: string): boolean {
 }
 
 export function timeoutMessage(command: string, args: string[], timeoutMs: number): string {
-  return `gsd-tools timed out after ${timeoutMs}ms: ${command} ${args.join(' ')}`;
+  return `fvgsd-tools timed out after ${timeoutMs}ms: ${command} ${args.join(' ')}`;
 }
 
 export function toFailureSignal(error: unknown): QueryFailureSignal {

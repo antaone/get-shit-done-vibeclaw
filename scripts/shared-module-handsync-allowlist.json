@@ -96,7 +96,7 @@
       "cjs": "get-shit-done/bin/lib/intel.cjs",
       "ts": "sdk/src/query/intel.ts",
       "classification": "cooperating-sibling",
-      "justification": "CJS intel.cjs is the synchronous runtime implementation used by gsd-tools.cjs; sdk/src/query/intel.ts is the async QueryHandler port for the SDK query seam (explicitly documented as a port in its file header). The two files intentionally diverge on INTEL_FILES naming (CJS: file-roles.json/api-map.json/dependency-graph.json/arch-decisions.json; SDK: files.json/apis.json/deps.json/arch.md) — existing CJS tests are locked to the old naming. Not a hand-sync drift pattern; separate runtime responsibilities across the seam."
+      "justification": "CJS intel.cjs is the synchronous runtime implementation used by fvgsd-tools.cjs; sdk/src/query/intel.ts is the async QueryHandler port for the SDK query seam (explicitly documented as a port in its file header). The two files intentionally diverge on INTEL_FILES naming (CJS: file-roles.json/api-map.json/dependency-graph.json/arch-decisions.json; SDK: files.json/apis.json/deps.json/arch.md) — existing CJS tests are locked to the old naming. Not a hand-sync drift pattern; separate runtime responsibilities across the seam."
     },
     {
       "cjs": "get-shit-done/bin/lib/model-catalog.cjs",
@@ -138,7 +138,7 @@
       "cjs": "get-shit-done/bin/lib/prompt-budget.cjs",
       "ts": "sdk/src/query/prompt-budget.ts",
       "classification": "cooperating-sibling",
-      "justification": "CJS prompt-budget.cjs provides the applyBudget implementation used by gsd-tools.cjs case 'prompt-budget'. SDK prompt-budget.ts is the native QueryHandler port for gsd-sdk query dispatch (#3081). The SDK handler ports the pure budget logic and adds CLI arg parsing / file I/O directly, satisfying the registry-integration drift-guard without duplicating shared state."
+      "justification": "CJS prompt-budget.cjs provides the applyBudget implementation used by fvgsd-tools.cjs case 'prompt-budget'. SDK prompt-budget.ts is the native QueryHandler port for fvgsd-sdk query dispatch (#3081). The SDK handler ports the pure budget logic and adds CLI arg parsing / file I/O directly, satisfying the registry-integration drift-guard without duplicating shared state."
     }
   ],
   "migrateMeBacklog": []

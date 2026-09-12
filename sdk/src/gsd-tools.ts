@@ -2,11 +2,11 @@
  * GSD Tools Bridge — programmatic access to GSD planning operations.
  *
  * By default routes commands through the SDK **query registry** (same handlers as
- * `gsd-sdk query`) so `PhaseRunner`, `InitRunner`, and `GSD` share contracts with
+ * `fvgsd-sdk query`) so `PhaseRunner`, `InitRunner`, and `GSD` share contracts with
  * the typed CLI. Runner hot-path helpers (`initPhaseOp`, `phasePlanIndex`,
  * `phaseComplete`, `initNewProject`, `configSet`, `commit`) call
  * `registry.dispatch()` with canonical keys when native query is active, avoiding
- * repeated argv resolution. When a workstream is set, dispatches to `gsd-tools.cjs` so
+ * repeated argv resolution. When a workstream is set, dispatches to `fvgsd-tools.cjs` so
  * workstream env stays aligned with CJS.
  */
 
@@ -44,7 +44,7 @@ export class GSDTools {
     gsdToolsPath?: string;
     timeoutMs?: number;
     workstream?: string;
-    /** When set, mutation handlers emit the same events as `gsd-sdk query`. */
+    /** When set, mutation handlers emit the same events as `fvgsd-sdk query`. */
     eventStream?: GSDEventStream;
     /** Correlation id for mutation events when `eventStream` is set. */
     sessionId?: string;
@@ -139,7 +139,7 @@ export class GSDTools {
   // ─── Core exec ───────────────────────────────────────────────────────────
 
   /**
-   * Execute a gsd-tools command and return parsed JSON output.
+   * Execute a fvgsd-tools command and return parsed JSON output.
    * Handles the `@file:` prefix pattern for large results.
    */
   async exec(command: string, args: string[] = []): Promise<unknown> {
@@ -149,7 +149,7 @@ export class GSDTools {
   // ─── Raw exec (no JSON parsing) ───────────────────────────────────────
 
   /**
-   * Execute a gsd-tools command and return raw stdout without JSON parsing.
+   * Execute a fvgsd-tools command and return raw stdout without JSON parsing.
    * Use for commands like `config-set` that return plain text, not JSON.
    */
   async execRaw(command: string, args: string[] = []): Promise<string> {
@@ -187,7 +187,7 @@ export class GSDTools {
   }
 
   /**
-   * Query phase state from gsd-tools.cjs `init phase-op`.
+   * Query phase state from fvgsd-tools.cjs `init phase-op`.
    * Returns a typed PhaseOpInfo describing what exists on disk for this phase.
    */
   async initPhaseOp(phaseNumber: string): Promise<PhaseOpInfo> {
@@ -202,7 +202,7 @@ export class GSDTools {
   }
 
   /**
-   * Begin phase state tracking in gsd-tools.cjs.
+   * Begin phase state tracking in fvgsd-tools.cjs.
    */
   async stateBeginPhase(phaseNumber: string): Promise<string> {
     return this.execRaw('state', ['begin-phase', '--phase', phaseNumber]);
@@ -217,7 +217,7 @@ export class GSDTools {
   }
 
   /**
-   * Query new-project init state from gsd-tools.cjs `init new-project`.
+   * Query new-project init state from fvgsd-tools.cjs `init new-project`.
    * Returns project metadata, model configs, brownfield detection, etc.
    */
   async initNewProject(): Promise<InitNewProjectInfo> {
@@ -225,8 +225,8 @@ export class GSDTools {
   }
 
   /**
-   * Set a config value via gsd-tools.cjs `config-set`.
-   * Handles type coercion (booleans, numbers, JSON) on the gsd-tools side.
+   * Set a config value via fvgsd-tools.cjs `config-set`.
+   * Handles type coercion (booleans, numbers, JSON) on the fvgsd-tools side.
    * Note: config-set returns `key=value` text, not JSON, so we use execRaw.
    */
   async configSet(key: string, value: string): Promise<string> {

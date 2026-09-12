@@ -7,7 +7,7 @@
  * GSD Secure-Phase Tests
  *
  * Validates the security-first enforcement layer:
- * - gsd-security-auditor agent frontmatter and structure
+ * - fvgsd-security-auditor agent frontmatter and structure
  * - secure-phase command file
  * - secure-phase workflow file
  * - SECURITY.md template
@@ -27,15 +27,15 @@ const COMMANDS_DIR = path.join(REPO_ROOT, 'commands', 'gsd');
 const WORKFLOWS_DIR = path.join(REPO_ROOT, 'get-shit-done', 'workflows');
 const TEMPLATES_DIR = path.join(REPO_ROOT, 'get-shit-done', 'templates');
 
-// ─── 1. Agent frontmatter — gsd-security-auditor.md ─────────────────────────
+// ─── 1. Agent frontmatter — fvgsd-security-auditor.md ─────────────────────────
 
-describe('SECURE: gsd-security-auditor agent', () => {
-  const agentPath = path.join(AGENTS_DIR, 'gsd-security-auditor.md');
+describe('SECURE: fvgsd-security-auditor agent', () => {
+  const agentPath = path.join(AGENTS_DIR, 'fvgsd-security-auditor.md');
 
   test('agent file exists', () => {
     assert.ok(
       fs.existsSync(agentPath),
-      'gsd-security-auditor.md must exist in agents/'
+      'fvgsd-security-auditor.md must exist in agents/'
     );
   });
 
@@ -48,12 +48,12 @@ describe('SECURE: gsd-security-auditor agent', () => {
     assert.ok(frontmatter.includes('color:'), 'missing color:');
   });
 
-  test('name is gsd-security-auditor', () => {
+  test('name is fvgsd-security-auditor', () => {
     const content = fs.readFileSync(agentPath, 'utf-8');
     const frontmatter = content.split('---')[1] || '';
     assert.ok(
-      frontmatter.includes('name: gsd-security-auditor'),
-      'name must be gsd-security-auditor'
+      frontmatter.includes('name: fvgsd-security-auditor'),
+      'name must be fvgsd-security-auditor'
     );
   });
 
@@ -162,11 +162,11 @@ describe('SECURE: secure-phase workflow file', () => {
     );
   });
 
-  test('contains gsd-security-auditor reference', () => {
+  test('contains fvgsd-security-auditor reference', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
     assert.ok(
-      content.includes('gsd-security-auditor'),
-      'must reference gsd-security-auditor agent'
+      content.includes('fvgsd-security-auditor'),
+      'must reference fvgsd-security-auditor agent'
     );
   });
 
@@ -394,7 +394,7 @@ describe('SECURE: VALIDATION.md security columns', () => {
 // ─── 7. Threat-model-anchored behaviour (structural) ────────────────────────
 
 describe('SECURE: threat-model-anchored behaviour', () => {
-  const agentPath = path.join(AGENTS_DIR, 'gsd-security-auditor.md');
+  const agentPath = path.join(AGENTS_DIR, 'fvgsd-security-auditor.md');
   const wfPath = path.join(WORKFLOWS_DIR, 'secure-phase.md');
 
   test('agent does NOT contain "scan for vulnerabilities" (verifies, not scans)', () => {

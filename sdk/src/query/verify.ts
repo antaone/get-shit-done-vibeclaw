@@ -315,7 +315,7 @@ export const verifyArtifacts: QueryHandler = async (args, projectDir) => {
  * Verify that commit hashes referenced in SUMMARY.md files actually exist.
  *
  * Port of `cmdVerifyCommits` from `verify.cjs` lines 262-282.
- * Used by gsd-verifier agent to confirm commits mentioned in summaries
+ * Used by fvgsd-verifier agent to confirm commits mentioned in summaries
  * are real commits in the git history.
  *
  * @param args - One or more commit hashes
@@ -649,7 +649,7 @@ export const verifySchemaDrift: QueryHandler = async (args, projectDir, workstre
 // docs/adr/3524-cjs-sdk-hard-seam.md §3 and docs/prd/3524-cjs-sdk-hard-seam.md
 // L160: "CJS-only Module handlers (...drift...) keep their in-process CJS
 // implementations because no SDK counterpart exists." Previous Phase 6 stub
-// (which execFileSync'd back to gsd-tools) created an infinite SDK→CLI→SDK
+// (which execFileSync'd back to fvgsd-tools) created an infinite SDK→CLI→SDK
 // recursion when the CJS verify-command-router dispatched through the SDK
 // bridge — observed forking hundreds of node processes on a 64 GiB host.
 // The router now dispatches `verify codebase-drift` direct to

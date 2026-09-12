@@ -370,10 +370,10 @@ Next steps:
 <offer_next>
 After triage:
 
-- /vgsd:review — Run cross-AI peer review on a specific phase plan
-- /vgsd:ship — Create a PR from completed work
-- /vgsd:progress — See overall project state
-- /vgsd:inbox --label — Re-run with auto-labeling enabled
+- /fvgsd:review — Run cross-AI peer review on a specific phase plan
+- /fvgsd:ship — Create a PR from completed work
+- /fvgsd:progress — See overall project state
+- /fvgsd:inbox --label — Re-run with auto-labeling enabled
 </offer_next>
 
 <success_criteria>

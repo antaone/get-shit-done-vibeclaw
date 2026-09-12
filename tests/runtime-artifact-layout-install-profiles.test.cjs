@@ -41,11 +41,11 @@ const REAL_AGENTS_DIR = path.join(__dirname, '..', 'agents');
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function tmpDir(prefix) {
-  return fs.mkdtempSync(path.join(os.tmpdir(), prefix || 'gsd-ip-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), prefix || 'fvgsd-ip-'));
 }
 
 function createFixtureSkillsDir() {
-  const tmp = createTempDir('gsd-stage-profile-');
+  const tmp = createTempDir('fvgsd-stage-profile-');
   for (const name of ['plan-phase', 'execute-phase', 'autonomous', 'progress', 'help', 'phase']) {
     fs.writeFileSync(path.join(tmp, `${name}.md`), `# ${name}\n`);
   }
@@ -53,8 +53,8 @@ function createFixtureSkillsDir() {
 }
 
 function createFixtureAgentsDir() {
-  const tmp = createTempDir('gsd-agents-profile-');
-  for (const name of ['gsd-planner', 'gsd-executor', 'gsd-code-reviewer']) {
+  const tmp = createTempDir('fvgsd-agents-profile-');
+  for (const name of ['fvgsd-planner', 'fvgsd-executor', 'fvgsd-code-reviewer']) {
     fs.writeFileSync(path.join(tmp, `${name}.md`), `# ${name}\n`);
   }
   return tmp;
@@ -73,7 +73,7 @@ describe('stageSkillsForRuntimeAsSkills', () => {
   });
 
   test('registers stagedDir in STAGED_DIRS after staging', (t) => {
-    const src = createTempDir('gsd-rta-src-');
+    const src = createTempDir('fvgsd-rta-src-');
     let stagedDir;
     t.after(() => {
       cleanup(src);
@@ -82,19 +82,19 @@ describe('stageSkillsForRuntimeAsSkills', () => {
     fs.writeFileSync(path.join(src, 'alpha.md'), '# alpha\n');
     cleanupStagedSkills();
     const converter = (content, _skillName) => content;
-    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: '*' }, converter, 'gsd-');
+    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: '*' }, converter, 'fvgsd-');
     assert.ok(STAGED_DIRS.has(stagedDir), 'stagedDir must be in STAGED_DIRS');
   });
 
   test('non-existent srcCommandsDir returns srcCommandsDir unchanged', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-rta-no-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-rta-no-exist-' + Date.now());
     const converter = (content, _skillName) => content;
-    const result = stageSkillsForRuntimeAsSkills(ghost, { skills: '*' }, converter, 'gsd-');
+    const result = stageSkillsForRuntimeAsSkills(ghost, { skills: '*' }, converter, 'fvgsd-');
     assert.strictEqual(result, ghost);
   });
 
   test('empty prefix produces <stem>/SKILL.md without prefix segment', (t) => {
-    const src = createTempDir('gsd-rta-src-');
+    const src = createTempDir('fvgsd-rta-src-');
     let stagedDir;
     t.after(() => {
       cleanup(src);
@@ -110,7 +110,7 @@ describe('stageSkillsForRuntimeAsSkills', () => {
   });
 
   test('converter is called with (content, skillName) for each kept skill', (t) => {
-    const src = createTempDir('gsd-rta-src-');
+    const src = createTempDir('fvgsd-rta-src-');
     let stagedDir;
     t.after(() => {
       cleanup(src);
@@ -131,7 +131,7 @@ describe('stageSkillsForRuntimeAsSkills', () => {
   });
 
   test('skills Set filters: only matching stems land in stagedDir', (t) => {
-    const src = createTempDir('gsd-rta-src-');
+    const src = createTempDir('fvgsd-rta-src-');
     let stagedDir;
     t.after(() => {
       cleanup(src);
@@ -141,13 +141,13 @@ describe('stageSkillsForRuntimeAsSkills', () => {
       fs.writeFileSync(path.join(src, `${name}.md`), `# ${name}\n`);
     }
     const converter = (content, _skillName) => content;
-    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: new Set(['phase']) }, converter, 'gsd-');
+    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: new Set(['phase']) }, converter, 'fvgsd-');
     const entries = fs.readdirSync(stagedDir).sort();
-    assert.deepStrictEqual(entries, ['gsd-phase']);
+    assert.deepStrictEqual(entries, ['fvgsd-phase']);
   });
 
   test('skills === "*" stages all md files as <prefix><stem>/SKILL.md', (t) => {
-    const src = createTempDir('gsd-rta-src-');
+    const src = createTempDir('fvgsd-rta-src-');
     let stagedDir;
     t.after(() => {
       cleanup(src);
@@ -157,11 +157,11 @@ describe('stageSkillsForRuntimeAsSkills', () => {
       fs.writeFileSync(path.join(src, `${name}.md`), `# ${name}\n`);
     }
     const converter = (content, _skillName) => content;
-    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: '*' }, converter, 'gsd-');
+    stagedDir = stageSkillsForRuntimeAsSkills(src, { skills: '*' }, converter, 'fvgsd-');
     const entries = fs.readdirSync(stagedDir).sort();
-    assert.deepStrictEqual(entries, ['gsd-alpha', 'gsd-beta', 'gsd-gamma']);
+    assert.deepStrictEqual(entries, ['fvgsd-alpha', 'fvgsd-beta', 'fvgsd-gamma']);
     for (const name of ['alpha', 'beta', 'gamma']) {
-      const content = fs.readFileSync(path.join(stagedDir, `gsd-${name}`, 'SKILL.md'), 'utf8');
+      const content = fs.readFileSync(path.join(stagedDir, `fvgsd-${name}`, 'SKILL.md'), 'utf8');
       assert.strictEqual(content, `# ${name}\n`);
     }
   });
@@ -207,7 +207,7 @@ describe('stageSkillsForProfile', () => {
   });
 
   test('non-existent srcDir returns srcDir unchanged', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-no-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-no-exist-' + Date.now());
     const result = stageSkillsForProfile(ghost, { skills: new Set(['help']), agents: new Set() });
     assert.strictEqual(result, ghost);
   });
@@ -254,14 +254,14 @@ describe('stageAgentsForProfile', () => {
       cleanup(src);
       if (staged) cleanupStagedSkills();
     });
-    const agents = new Set(['gsd-planner']);
+    const agents = new Set(['fvgsd-planner']);
     staged = stageAgentsForProfile(src, { skills: new Set(['plan-phase']), agents });
     const files = fs.readdirSync(staged).sort();
-    assert.deepStrictEqual(files, ['gsd-planner.md']);
+    assert.deepStrictEqual(files, ['fvgsd-planner.md']);
   });
 
   test('non-existent srcAgentsDir returns srcAgentsDir unchanged', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-agents-no-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-agents-no-exist-' + Date.now());
     const result = stageAgentsForProfile(ghost, { skills: new Set(), agents: new Set() });
     assert.strictEqual(result, ghost);
   });
@@ -271,7 +271,7 @@ describe('stageAgentsForProfile', () => {
     const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
     const resolved = resolveProfile({ modes: ['standard'], manifest });
     assert.ok(resolved.agents instanceof Set && resolved.agents.size > 0,
-      'standard profile must have >0 agents (plan-phase calls gsd-planner etc)');
+      'standard profile must have >0 agents (plan-phase calls fvgsd-planner etc)');
     let staged;
     t.after(() => {
       if (staged) cleanupStagedSkills();
@@ -431,13 +431,13 @@ describe('resolveProfile', () => {
     assert.ok(result.agents instanceof Set, 'result should have agents Set');
   });
 
-  test('standard — agents Set is non-empty; gsd-planner and gsd-plan-checker present', () => {
+  test('standard — agents Set is non-empty; fvgsd-planner and fvgsd-plan-checker present', () => {
     const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
     const result = resolveProfile({ modes: ['standard'], manifest });
     assert.ok(result.agents instanceof Set, 'agents should be a Set');
     assert.ok(result.agents.size > 0, `standard profile should have >0 agents, got ${result.agents.size}`);
-    assert.ok(result.agents.has('gsd-planner'), 'standard should include gsd-planner');
-    assert.ok(result.agents.has('gsd-plan-checker'), 'standard should include gsd-plan-checker');
+    assert.ok(result.agents.has('fvgsd-planner'), 'standard should include fvgsd-planner');
+    assert.ok(result.agents.has('fvgsd-plan-checker'), 'standard should include fvgsd-plan-checker');
   });
 
   test('full — agents is a Set (full staging uses srcDir directly)', () => {
@@ -447,16 +447,16 @@ describe('resolveProfile', () => {
     assert.ok(result.agents instanceof Set, 'agents should still be a Set for full');
   });
 
-  test('agents are derived from real manifest body text (gsd-planner from plan-phase)', () => {
+  test('agents are derived from real manifest body text (fvgsd-planner from plan-phase)', () => {
     const realManifest = loadSkillsManifest(REAL_COMMANDS_DIR);
     const result = resolveProfile({ modes: ['standard'], manifest: realManifest });
-    assert.ok(result.agents.has('gsd-planner'), 'gsd-planner should be derived from plan-phase body');
+    assert.ok(result.agents.has('fvgsd-planner'), 'fvgsd-planner should be derived from plan-phase body');
   });
 
   test('agents transitively closed — plan-phase in standard brings its agents', () => {
     const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
     const result = resolveProfile({ modes: ['standard'], manifest });
-    assert.ok(result.agents.has('gsd-planner'));
+    assert.ok(result.agents.has('fvgsd-planner'));
   });
 });
 
@@ -464,7 +464,7 @@ describe('resolveProfile', () => {
 
 describe('loadSkillsManifest', () => {
   test('returns a Map', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       const m = loadSkillsManifest(dir);
       assert.ok(m instanceof Map, 'should return a Map');
@@ -474,7 +474,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('skill with no requires: frontmatter maps to empty array', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       writeSkill(dir, 'help', 'name: gsd:help\ndescription: Help text');
       const m = loadSkillsManifest(dir);
@@ -486,7 +486,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('skill with requires: single value maps to array of one', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       writeSkill(dir, 'add-tests', 'name: gsd:add-tests\ndescription: Add tests\nrequires: [phase]');
       const m = loadSkillsManifest(dir);
@@ -498,7 +498,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('skill with requires: multiple values maps to full array', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       writeSkill(dir, 'plan-phase', 'name: gsd:plan-phase\ndescription: Plan\nrequires: [discuss-phase, phase, review, update]');
       const m = loadSkillsManifest(dir);
@@ -509,7 +509,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('ignores non-.md files in the dir', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       writeSkill(dir, 'help', 'name: gsd:help\ndescription: Help');
       fs.writeFileSync(path.join(dir, 'README.txt'), 'not a skill');
@@ -524,7 +524,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('empty dir returns empty Map', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       const m = loadSkillsManifest(dir);
       assert.strictEqual(m.size, 0);
@@ -534,7 +534,7 @@ describe('loadSkillsManifest', () => {
   });
 
   test('skill with requires: empty array maps to empty array', () => {
-    const dir = tmpDir('gsd-manifest-fixture-');
+    const dir = tmpDir('fvgsd-manifest-fixture-');
     try {
       writeSkill(dir, 'explore', 'name: gsd:explore\ndescription: Explore\nrequires: []');
       const m = loadSkillsManifest(dir);
@@ -560,7 +560,7 @@ describe('loadSkillsManifest', () => {
 
 describe('readActiveProfile / writeActiveProfile', () => {
   test('write then read round-trips the profile name', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       writeActiveProfile(dir, 'standard');
       assert.strictEqual(readActiveProfile(dir), 'standard');
@@ -570,7 +570,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('round-trips "core" profile', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       writeActiveProfile(dir, 'core');
       assert.strictEqual(readActiveProfile(dir), 'core');
@@ -580,7 +580,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('round-trips composed profiles "core,audit"', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       writeActiveProfile(dir, 'core,audit');
       assert.strictEqual(readActiveProfile(dir), 'core,audit');
@@ -590,7 +590,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('round-trips "full"', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       writeActiveProfile(dir, 'full');
       assert.strictEqual(readActiveProfile(dir), 'full');
@@ -600,7 +600,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('missing marker file returns null (not throws)', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       const result = readActiveProfile(dir);
       assert.strictEqual(result, null);
@@ -610,15 +610,15 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('non-existent directory returns null (not throws)', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-marker-no-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-marker-no-exist-' + Date.now());
     const result = readActiveProfile(ghost);
     assert.strictEqual(result, null);
   });
 
   test('corrupt marker content (invalid chars) returns null', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-profile'), 'profile with spaces and !!!\n');
+      fs.writeFileSync(path.join(dir, '.fvgsd-profile'), 'profile with spaces and !!!\n');
       const result = readActiveProfile(dir);
       assert.strictEqual(result, null);
     } finally {
@@ -627,9 +627,9 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('empty marker file returns null', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-profile'), '');
+      fs.writeFileSync(path.join(dir, '.fvgsd-profile'), '');
       const result = readActiveProfile(dir);
       assert.strictEqual(result, null);
     } finally {
@@ -638,7 +638,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('writeActiveProfile creates the directory if it does not exist', () => {
-    const base = tmpDir('gsd-marker-base-');
+    const base = tmpDir('fvgsd-marker-base-');
     const nested = path.join(base, 'skills', '.claude');
     try {
       writeActiveProfile(nested, 'standard');
@@ -650,7 +650,7 @@ describe('readActiveProfile / writeActiveProfile', () => {
   });
 
   test('overwrites a previously written profile', () => {
-    const dir = tmpDir('gsd-marker-');
+    const dir = tmpDir('fvgsd-marker-');
     try {
       writeActiveProfile(dir, 'core');
       writeActiveProfile(dir, 'full');

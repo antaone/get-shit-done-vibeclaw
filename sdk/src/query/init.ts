@@ -143,7 +143,7 @@ function detectNestedSubdir(base: string, info: { inside: boolean; worktreeRoot:
 /**
  * Compute the canonical phase directory name for a known phase entry from the
  * roadmap when no directory exists yet.  Applies the project_code prefix so
- * the first-touch creation path used by /vgsd-discuss-phase and /vgsd-plan-phase
+ * the first-touch creation path used by /fvgsd-discuss-phase and /fvgsd-plan-phase
  * stays consistent with the prefix produced by `phase.add` / `phase.insert`.
  *
  * Returns null when phaseNumber or phaseName cannot be determined.
@@ -217,8 +217,8 @@ function getLatestCompletedMilestone(projectDir: string): { version: string; nam
  * Check which GSD agents are installed on disk.
  *
  * Runtime-aware per issue #2402: detects the invoking runtime
- * (`GSD_RUNTIME` → `config.runtime` → 'claude') and probes that runtime's
- * canonical `agents/` directory. `GSD_AGENTS_DIR` still short-circuits.
+ * (`FVGSD_RUNTIME` → `config.runtime` → 'claude') and probes that runtime's
+ * canonical `agents/` directory. `FVGSD_AGENTS_DIR` still short-circuits.
  *
  * The optional `projectDir` parameter enables the repo-local `.claude/agents`
  * fallback for Claude `--local` installs (bug #3751).
@@ -417,7 +417,7 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
   // --tdd is a boolean override of config.workflow.tdd_mode — matches the CJS
   // path's parseNamedArgs(args, [], ['validate', 'tdd']) projection
   // (bin/lib/init-command-router.cjs handler block) which passes options.tdd
-  // through to cmdInitExecutePhase. Without parsing here, `gsd-tools init
+  // through to cmdInitExecutePhase. Without parsing here, `fvgsd-tools init
   // execute-phase 1 --tdd` would never override a false config value.
   const tddFlag = args.includes('--tdd');
 
@@ -431,8 +431,8 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
   const configExists = existsSync(join(planningDir, 'config.json'));
   const [executorModel, verifierModel] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-executor', projectDir),
-        getModelAlias('gsd-verifier', projectDir),
+        getModelAlias('fvgsd-executor', projectDir),
+        getModelAlias('fvgsd-verifier', projectDir),
       ])
     : ['', ''];
 
@@ -518,9 +518,9 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   const configExists = existsSync(join(planningDir, 'config.json'));
   const [researcherModel, plannerModel, checkerModel] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-phase-researcher', projectDir),
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
+        getModelAlias('fvgsd-phase-researcher', projectDir),
+        getModelAlias('fvgsd-planner', projectDir),
+        getModelAlias('fvgsd-plan-checker', projectDir),
       ])
     : ['', '', ''];
 
@@ -530,7 +530,7 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   const plans = (phaseInfo?.plans || []) as string[];
   const summaries = (phaseInfo?.summaries || []) as string[];
 
-  // #3569: surface phase lifecycle status so /vgsd-plan-phase can short-circuit
+  // #3569: surface phase lifecycle status so /fvgsd-plan-phase can short-circuit
   // on closed (Complete) phases instead of silently replanning over shipped
   // code. Reuses determinePhaseStatus — the project-wide vocabulary used by
   // `progress` (Pending | Planned | In Progress | Executed | Complete |
@@ -541,7 +541,7 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
     : 'Pending';
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /vgsd-plan-phase stays consistent with phase.add.
+  // the first-touch mkdir in /fvgsd-plan-phase stays consistent with phase.add.
   const rawProjectCode = (config as Record<string, unknown>).project_code as string || '';
   assertSafeProjectCode(rawProjectCode);
   const expectedPhaseDirName = phaseDir
@@ -639,9 +639,9 @@ export const initNewMilestone: QueryHandler = async (_args, projectDir) => {
   } catch { /* intentionally empty */ }
 
   const [researcherModel, synthesizerModel, roadmapperModel] = await Promise.all([
-    getModelAlias('gsd-project-researcher', projectDir),
-    getModelAlias('gsd-research-synthesizer', projectDir),
-    getModelAlias('gsd-roadmapper', projectDir),
+    getModelAlias('fvgsd-project-researcher', projectDir),
+    getModelAlias('fvgsd-research-synthesizer', projectDir),
+    getModelAlias('fvgsd-roadmapper', projectDir),
   ]);
 
   const result: Record<string, unknown> = {
@@ -702,10 +702,10 @@ export const initQuick: QueryHandler = async (args, projectDir) => {
   const configExists = existsSync(join(planningDir, 'config.json'));
   const [plannerModel, executorModel, checkerModel, verifierModel] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-executor', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
-        getModelAlias('gsd-verifier', projectDir),
+        getModelAlias('fvgsd-planner', projectDir),
+        getModelAlias('fvgsd-executor', projectDir),
+        getModelAlias('fvgsd-plan-checker', projectDir),
+        getModelAlias('fvgsd-verifier', projectDir),
       ])
     : ['', '', '', ''];
 
@@ -779,8 +779,8 @@ export const initVerifyWork: QueryHandler = async (args, projectDir, workstream)
   const configExists = existsSync(join(projectDir, '.planning', 'config.json'));
   const [plannerModel, checkerModel] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
+        getModelAlias('fvgsd-planner', projectDir),
+        getModelAlias('fvgsd-plan-checker', projectDir),
       ])
     : ['', ''];
 
@@ -866,7 +866,7 @@ export const initPhaseOp: QueryHandler = async (args, projectDir, workstream) =>
   const plans = (phaseInfo?.plans || []) as string[];
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /vgsd-discuss-phase stays consistent with phase.add.
+  // the first-touch mkdir in /fvgsd-discuss-phase stays consistent with phase.add.
   const rawProjectCode = (config as Record<string, unknown>).project_code as string || '';
   assertSafeProjectCode(rawProjectCode);
   const expectedPhaseDirName = phaseDir
@@ -1109,7 +1109,7 @@ export const initMapCodebase: QueryHandler = async (_args, projectDir) => {
     existingMaps = readdirSync(codebaseDir).filter(f => f.endsWith('.md'));
   } catch { /* intentionally empty */ }
 
-  const mapperModel = await getModelAlias('gsd-codebase-mapper', projectDir);
+  const mapperModel = await getModelAlias('fvgsd-codebase-mapper', projectDir);
 
   const result: Record<string, unknown> = {
     mapper_model: mapperModel,
@@ -1143,7 +1143,7 @@ export const initMapCodebase: QueryHandler = async (_args, projectDir) => {
  */
 export const initNewWorkspace: QueryHandler = async (_args, projectDir) => {
   const home = process.env.HOME || homedir();
-  const defaultBase = join(home, 'gsd-workspaces');
+  const defaultBase = join(home, 'fvgsd-workspaces');
 
   // Detect child git repos (one level deep)
   const childRepos: Array<{ name: string; path: string; has_uncommitted: boolean }> = [];
@@ -1189,7 +1189,7 @@ export const initNewWorkspace: QueryHandler = async (_args, projectDir) => {
  */
 export const initListWorkspaces: QueryHandler = async (_args, _projectDir) => {
   const home = process.env.HOME || homedir();
-  const defaultBase = join(home, 'gsd-workspaces');
+  const defaultBase = join(home, 'fvgsd-workspaces');
 
   const workspaces: Array<Record<string, unknown>> = [];
   if (existsSync(defaultBase)) {
@@ -1258,7 +1258,7 @@ export const initRemoveWorkspace: QueryHandler = async (args, _projectDir) => {
   }
 
   const home = process.env.HOME || homedir();
-  const defaultBase = join(home, 'gsd-workspaces');
+  const defaultBase = join(home, 'fvgsd-workspaces');
   const wsPath = join(defaultBase, name);
   const manifestPath = join(wsPath, 'WORKSPACE.md');
 

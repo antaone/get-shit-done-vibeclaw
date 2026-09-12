@@ -1,5 +1,5 @@
 <purpose>
-Create structured `.planning/HANDOFF.json` and `.continue-here.md` handoff files to preserve complete work state across sessions. The JSON provides machine-readable state for `/vgsd:resume-work`; the markdown provides human-readable context.
+Create structured `.planning/HANDOFF.json` and `.continue-here.md` handoff files to preserve complete work state across sessions. The JSON provides machine-readable state for `/fvgsd:resume-work`; the markdown provides human-readable context.
 </purpose>
 
 <required_reading>
@@ -66,7 +66,7 @@ Report any summaries with placeholder content as incomplete items.
 **Write structured handoff to `.planning/HANDOFF.json`:**
 
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+timestamp=$(fvgsd-sdk query current-timestamp full --raw)
 ```
 
 ```json
@@ -201,13 +201,13 @@ Be specific enough for a fresh Claude to understand immediately.
 
 Use `current-timestamp` for last_updated field. You can use init todos (which provides timestamps) or call directly:
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+timestamp=$(fvgsd-sdk query current-timestamp full --raw)
 ```
 </step>
 
 <step name="commit">
 ```bash
-gsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
+fvgsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
 ```
 </step>
 
@@ -226,7 +226,7 @@ Current state:
 - Blockers: [count] ({human_actions_pending count} need human action)
 - Committed as WIP
 
-To resume: /vgsd:resume-work
+To resume: /fvgsd:resume-work
 
 ```
 </step>

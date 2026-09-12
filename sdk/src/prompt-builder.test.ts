@@ -58,7 +58,7 @@ function makePlan(overrides: Partial<ParsedPlan> = {}): ParsedPlan {
 }
 
 const SAMPLE_AGENT_DEF = `---
-name: gsd-executor
+name: fvgsd-executor
 description: Executes GSD plans
 tools: Read, Write, Edit, Bash, Grep, Glob
 permissionMode: acceptEdits

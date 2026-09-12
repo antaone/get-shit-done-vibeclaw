@@ -3,7 +3,7 @@
  * parse → prompt → query() → SUMMARY.md
  *
  * Requires Claude Code CLI (`claude`) installed and authenticated, plus
- * opt-in env `GSD_ENABLE_E2E=1`. Skips if env unset or CLI unavailable.
+ * opt-in env `FVGSD_ENABLE_E2E=1`. Skips if env unset or CLI unavailable.
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -26,7 +26,7 @@ try {
   cliAvailable = false;
 }
 
-const e2eEnabled = process.env.GSD_ENABLE_E2E === '1';
+const e2eEnabled = process.env.FVGSD_ENABLE_E2E === '1';
 const canRunE2E = cliAvailable && e2eEnabled;
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -38,7 +38,7 @@ describe.skipIf(!canRunE2E)('E2E: Single plan execution', () => {
   let tmpDir: string;
 
   beforeAll(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-e2e-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-e2e-'));
     // Copy fixture files to temp directory
     await cp(fixturesDir, tmpDir, { recursive: true });
   });
@@ -63,12 +63,12 @@ describe.skipIf(!canRunE2E)('E2E: Single plan execution', () => {
     // Verify the plan's task was executed — output.txt should exist
     const outputPath = join(tmpDir, 'output.txt');
     const outputContent = await readFile(outputPath, 'utf-8');
-    expect(outputContent).toContain('hello from gsd-sdk');
+    expect(outputContent).toContain('hello from fvgsd-sdk');
   }, 120_000); // 2 minute timeout for real CLI execution
 
   it('proves session isolation (R014) — different session IDs for sequential runs', async () => {
     // Create a second temp dir for isolation proof
-    const tmpDir2 = await mkdtemp(join(tmpdir(), 'gsd-sdk-e2e-'));
+    const tmpDir2 = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-e2e-'));
     await cp(fixturesDir, tmpDir2, { recursive: true });
 
     try {
@@ -116,7 +116,7 @@ describe.skipIf(!canRunE2E)('E2E: Event stream during plan execution (R007)', ()
   let tmpDir: string;
 
   beforeAll(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-e2e-stream-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-e2e-stream-'));
     await cp(fixturesDir, tmpDir, { recursive: true });
   });
 
@@ -169,7 +169,7 @@ describe.skipIf(!canRunE2E)('E2E: Event stream during plan execution (R007)', ()
 
 describe('E2E: Error handling', () => {
   it('returns failure for nonexistent plan path', async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-e2e-err-'));
+    const tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-e2e-err-'));
 
     try {
       const gsd = new GSD({ projectDir: tmpDir });

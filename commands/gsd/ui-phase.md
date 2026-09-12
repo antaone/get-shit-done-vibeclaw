@@ -1,5 +1,5 @@
 ---
-name: vgsd:ui-phase
+name: fvgsd:ui-phase
 description: Generate UI design contract (UI-SPEC.md) for frontend phases
 argument-hint: "[phase]"
 allowed-tools:
@@ -16,25 +16,25 @@ requires: [phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "ui-phase" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "ui-phase" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
 
 <objective>
 Create a UI design contract (UI-SPEC.md) for a frontend phase.
-Orchestrates gsd-ui-researcher and gsd-ui-checker.
+Orchestrates fvgsd-ui-researcher and fvgsd-ui-checker.
 Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/ui-phase.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/workflows/ui-phase.md
+@~/.claude/fvgsd/references/ui-brand.md
 </execution_context>
 
 <context>

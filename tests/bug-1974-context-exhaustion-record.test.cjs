@@ -1,5 +1,5 @@
 /**
- * Integration tests for gsd-context-monitor.js auto-record on CRITICAL (#1974).
+ * Integration tests for fvgsd/context-monitor.js auto-record on CRITICAL (#1974).
  *
  * Verifies:
  * 1. On CRITICAL + active GSD project, the hook sets criticalRecorded in the
@@ -37,8 +37,8 @@ const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const { cleanup } = require('./helpers.cjs');
 
-const HOOK_PATH = path.resolve(__dirname, '..', 'hooks', 'gsd-context-monitor.js');
-const GSD_TOOLS = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const HOOK_PATH = path.resolve(__dirname, '..', 'hooks', 'fvgsd/context-monitor.js');
+const FVGSD_TOOLS = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
 
 /**
  * Run the hook with a given session id and context percentage.
@@ -71,7 +71,7 @@ function runHook(sessionId, remainingPct, cwd) {
 }
 
 /**
- * Run gsd-tools state record-session synchronously.
+ * Run fvgsd-tools state record-session synchronously.
  * Returns { exitCode, stdout, stderr }.
  * Used to verify the persistence seam deterministically without relying on
  * the fire-and-forget subprocess timing that caused flake (#3726).
@@ -79,7 +79,7 @@ function runHook(sessionId, remainingPct, cwd) {
 function runRecordSession(cwd, stoppedAt) {
   const result = spawnSync(
     process.execPath,
-    [GSD_TOOLS, 'state', 'record-session', '--stopped-at', stoppedAt, '--cwd', cwd],
+    [FVGSD_TOOLS, 'state', 'record-session', '--stopped-at', stoppedAt, '--cwd', cwd],
     { encoding: 'utf-8', timeout: 10000 }
   );
   return { exitCode: result.status, stdout: result.stdout, stderr: result.stderr };
@@ -104,7 +104,7 @@ describe('#1974 context exhaustion auto-record', () => {
   let sessionId;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-1974-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-1974-'));
     const planningDir = path.join(tmpDir, '.planning');
     fs.mkdirSync(planningDir, { recursive: true });
 
@@ -122,7 +122,7 @@ describe('#1974 context exhaustion auto-record', () => {
       '',
     ].join('\n'));
 
-    // Minimal config.json required by gsd-tools
+    // Minimal config.json required by fvgsd-tools
     fs.writeFileSync(path.join(planningDir, 'config.json'), JSON.stringify({ project_code: 'TEST' }));
 
     sessionId = `test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -252,11 +252,11 @@ describe('#1974 context exhaustion auto-record', () => {
     assert.match(
       hookSource,
       /path\.join\(__dirname,\s*'\.\.',\s*'get-shit-done'/,
-      'hook must use __dirname-based path resolution for gsd-tools.cjs'
+      'hook must use __dirname-based path resolution for fvgsd-tools.cjs'
     );
     assert.doesNotMatch(
       hookSource,
-      /process\.env\.HOME.*\.claude.*get-shit-done.*gsd-tools\.cjs/,
+      /process\.env\.HOME.*\.claude.*get-shit-done.*fvgsd-tools\.cjs/,
       'hook must not hardcode ~/.claude/ path'
     );
   });

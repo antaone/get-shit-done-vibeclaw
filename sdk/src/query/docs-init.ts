@@ -21,7 +21,7 @@ import { MODEL_PROFILES, resolveModel } from './config-query.js';
 import { detectRuntime, resolveAgentsDir, toPosixPath } from './helpers.js';
 import type { QueryHandler } from './utils.js';
 
-const GSD_MARKER = '<!-- generated-by: gsd-doc-writer -->';
+const FVGSD_MARKER = '<!-- generated-by: fvgsd-doc-writer -->';
 
 const SKIP_DIRS = new Set([
   'node_modules', '.git', '.planning', '.claude', '__pycache__',
@@ -43,7 +43,7 @@ function hasGsdMarker(filePath: string): boolean {
     const fd = openSync(filePath, 'r');
     const bytesRead = readSync(fd, buf, 0, 500, 0);
     closeSync(fd);
-    return buf.subarray(0, bytesRead).toString('utf-8').includes(GSD_MARKER);
+    return buf.subarray(0, bytesRead).toString('utf-8').includes(FVGSD_MARKER);
   } catch {
     return false;
   }
@@ -229,13 +229,13 @@ function checkAgentsInstalled(config?: { runtime?: unknown }): { agents_installe
 }
 
 /**
- * Init payload for docs-update workflow — matches `gsd-tools docs-init` JSON.
+ * Init payload for docs-update workflow — matches `fvgsd-tools docs-init` JSON.
  * Port of `cmdDocsInit` from docs.cjs.
  */
 export const docsInit: QueryHandler = async (_args, projectDir) => {
   const config = await loadConfig(projectDir);
   const configExists = existsSync(join(projectDir, '.planning', 'config.json'));
-  const docModelResult = await resolveModel(['gsd-doc-writer'], projectDir);
+  const docModelResult = await resolveModel(['fvgsd-doc-writer'], projectDir);
   const docWriterData = docModelResult.data as Record<string, unknown>;
   const doc_writer_model = configExists ? ((docWriterData?.model as string) || '') : '';
 

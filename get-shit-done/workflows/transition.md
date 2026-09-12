@@ -2,15 +2,15 @@
 
 **This is an INTERNAL workflow — NOT a user-facing command.**
 
-There is no `/vgsd-transition` command. This workflow is invoked automatically by
+There is no `/fvgsd-transition` command. This workflow is invoked automatically by
 `execute-phase` during auto-advance, or inline by the orchestrator after phase
-verification. Users should never be told to run `/vgsd-transition`.
+verification. Users should never be told to run `/fvgsd-transition`.
 
 **Valid user commands for phase progression:**
-- `/vgsd:discuss-phase {N}` — discuss a phase before planning
-- `/vgsd:plan-phase {N}` — plan a phase
-- `/vgsd:execute-phase {N}` — execute a phase
-- `/vgsd:progress` — see roadmap progress
+- `/fvgsd:discuss-phase {N}` — discuss a phase before planning
+- `/fvgsd:plan-phase {N}` — plan a phase
+- `/fvgsd:execute-phase {N}` — execute a phase
+- `/fvgsd:progress` — see roadmap progress
 
 </internal_workflow>
 
@@ -93,7 +93,7 @@ Append to the completion confirmation message (regardless of mode):
 Outstanding verification items in this phase:
 {list filenames}
 
-These will carry forward as debt. Review: `/vgsd:audit-uat`
+These will carry forward as debt. Review: `/fvgsd:audit-uat`
 ```
 
 This does NOT block transition — it ensures the user sees the debt before confirming.
@@ -160,10 +160,10 @@ If found, delete them — phase is complete, handoffs are stale.
 
 <step name="update_roadmap_and_state">
 
-**Delegate ROADMAP.md and STATE.md updates to `gsd-sdk query phase.complete`:**
+**Delegate ROADMAP.md and STATE.md updates to `fvgsd-sdk query phase.complete`:**
 
 ```bash
-TRANSITION=$(gsd-sdk query phase.complete "${current_phase}")
+TRANSITION=$(fvgsd-sdk query phase.complete "${current_phase}")
 ```
 
 The CLI handles:
@@ -278,7 +278,7 @@ Scan LEARNINGS.md files from recent phases for recurring patterns and surface pr
 **Invoke the graduation helper:**
 
 ```text
-@~/.claude/get-shit-done/workflows/graduation.md
+@~/.claude/fvgsd/workflows/graduation.md
 ```
 
 This step is fully delegated to `graduation.md`. It handles guard checks (feature flag, window size, threshold), clustering, backlog filtering, HITL prompting, promotion writes, and STATE.md updates.
@@ -295,12 +295,12 @@ This step is fully delegated to `graduation.md`. It handles guard checks (featur
 
 <step name="update_current_position_after_transition">
 
-**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `gsd-sdk query phase.complete` in the update_roadmap_and_state step.
+**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `fvgsd-sdk query phase.complete` in the update_roadmap_and_state step.
 
 Verify the updates are correct by reading STATE.md. If the progress bar needs updating, use:
 
 ```bash
-PROGRESS=$(gsd-sdk query progress.bar --raw)
+PROGRESS=$(fvgsd-sdk query progress.bar --raw)
 ```
 
 Update the progress bar line in STATE.md with the result.
@@ -399,7 +399,7 @@ Resume file: None
 
 **MANDATORY: Verify milestone status before presenting next steps.**
 
-**Use the transition result from `gsd-sdk query phase.complete`:**
+**Use the transition result from `fvgsd-sdk query phase.complete`:**
 
 The `is_last_phase` field from the phase complete result tells you directly:
 - `is_last_phase: false` → More phases remain → Go to **Route A**
@@ -409,7 +409,7 @@ The `next_phase` and `next_phase_name` fields give you the next phase details.
 
 If you need additional context, use:
 ```bash
-ROADMAP=$(gsd-sdk query roadmap.analyze)
+ROADMAP=$(fvgsd-sdk query roadmap.analyze)
 ```
 
 This returns all phases with goals, disk status, and completion info.
@@ -422,20 +422,20 @@ Before routing to Route B, check whether other workstreams are still active.
 This prevents one workstream from advancing or completing the milestone while
 other workstreams are still working on their phases.
 
-**Skip this check if NOT in workstream mode** (i.e., `GSD_WORKSTREAM` is not set / flat mode).
+**Skip this check if NOT in workstream mode** (i.e., `FVGSD_WORKSTREAM` is not set / flat mode).
 In flat mode, go directly to **Route B**.
 
 ```bash
 # Only check if we're in workstream mode
-if [ -n "$GSD_WORKSTREAM" ]; then
-  WS_LIST=$(gsd-sdk query workstream.list --raw)
+if [ -n "$FVGSD_WORKSTREAM" ]; then
+  WS_LIST=$(fvgsd-sdk query workstream.list --raw)
 fi
 ```
 
 Parse the JSON result. The output has `{ mode, workstreams: [...] }`.
 Each workstream entry has: `name`, `status`, `current_phase`, `phase_count`, `completed_phases`.
 
-Filter out the current workstream (`$GSD_WORKSTREAM`) and any workstreams with
+Filter out the current workstream (`$FVGSD_WORKSTREAM`) and any workstreams with
 status containing "milestone complete" or "archived" (case-insensitive).
 The remaining entries are **other active workstreams**.
 
@@ -468,7 +468,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Plan Phase [X+1] in detail
 ```
 
-Exit skill and invoke SlashCommand("/vgsd:plan-phase [X+1] --auto ${GSD_WS}")
+Exit skill and invoke SlashCommand("/fvgsd:plan-phase [X+1] --auto ${FVGSD_WS}")
 
 **If CONTEXT.md does NOT exist:**
 
@@ -480,7 +480,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Discuss Phase [X+1] first
 ```
 
-Exit skill and invoke SlashCommand("/vgsd:discuss-phase [X+1] --auto ${GSD_WS}")
+Exit skill and invoke SlashCommand("/fvgsd:discuss-phase [X+1] --auto ${FVGSD_WS}")
 
 </if>
 
@@ -499,13 +499,13 @@ Exit skill and invoke SlashCommand("/vgsd:discuss-phase [X+1] --auto ${GSD_WS}")
 
 `/clear` then:
 
-`/vgsd:discuss-phase [X+1] ${GSD_WS}` — gather context and clarify approach
+`/fvgsd:discuss-phase [X+1] ${FVGSD_WS}` — gather context and clarify approach
 
 ---
 
 **Also available:**
-- `/vgsd:plan-phase [X+1] ${GSD_WS}` — skip discussion, plan directly
-- `/vgsd:plan-phase --research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/fvgsd:plan-phase [X+1] ${FVGSD_WS}` — skip discussion, plan directly
+- `/fvgsd:plan-phase --research-phase [X+1] ${FVGSD_WS}` — investigate unknowns
 
 ---
 ```
@@ -524,13 +524,13 @@ Exit skill and invoke SlashCommand("/vgsd:discuss-phase [X+1] --auto ${GSD_WS}")
 
 `/clear` then:
 
-`/vgsd:plan-phase [X+1] ${GSD_WS}`
+`/fvgsd:plan-phase [X+1] ${FVGSD_WS}`
 
 ---
 
 **Also available:**
-- `/vgsd:discuss-phase [X+1] ${GSD_WS}` — revisit context
-- `/vgsd:plan-phase --research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/fvgsd:discuss-phase [X+1] ${FVGSD_WS}` — revisit context
+- `/fvgsd:plan-phase --research-phase [X+1] ${FVGSD_WS}` — investigate unknowns
 
 ---
 ```
@@ -548,7 +548,7 @@ to the next milestone — other workstreams are still working.
 **Clear auto-advance chain flag** — workstream boundary is the natural stopping point:
 
 ```bash
-gsd-sdk query config-set workflow._auto_chain_active false
+fvgsd-sdk query config-set workflow._auto_chain_active false
 ```
 
 <if mode="yolo">
@@ -576,18 +576,18 @@ This workstream's phases are complete. Other workstreams are still active:
 
 Archive this workstream:
 
-`/vgsd:workstreams complete {current_ws_name} ${GSD_WS}`
+`/fvgsd:workstreams complete {current_ws_name} ${FVGSD_WS}`
 
 See overall milestone progress:
 
-`/vgsd:workstreams progress ${GSD_WS}`
+`/fvgsd:workstreams progress ${FVGSD_WS}`
 
 <sub>Milestone completion will be available once all workstreams finish.</sub>
 
 ---
 ```
 
-Do NOT suggest `/vgsd:complete-milestone` or `/vgsd:new-milestone`.
+Do NOT suggest `/fvgsd:complete-milestone` or `/fvgsd:new-milestone`.
 Do NOT auto-invoke any further slash commands.
 
 **Stop here.** The user must explicitly decide what to do next.
@@ -602,7 +602,7 @@ Do NOT auto-invoke any further slash commands.
 **Clear auto-advance chain flag** — milestone boundary is the natural stopping point:
 
 ```bash
-gsd-sdk query config-set workflow._auto_chain_active false
+fvgsd-sdk query config-set workflow._auto_chain_active false
 ```
 
 <if mode="yolo">
@@ -615,7 +615,7 @@ Phase {X} marked complete.
 ⚡ Auto-continuing: Complete milestone and archive
 ```
 
-Exit skill and invoke SlashCommand("/vgsd:complete-milestone {version} ${GSD_WS}")
+Exit skill and invoke SlashCommand("/fvgsd:complete-milestone {version} ${FVGSD_WS}")
 
 </if>
 
@@ -634,7 +634,7 @@ Exit skill and invoke SlashCommand("/vgsd:complete-milestone {version} ${GSD_WS}
 
 `/clear` then:
 
-`/vgsd:complete-milestone {version} ${GSD_WS}`
+`/fvgsd:complete-milestone {version} ${FVGSD_WS}`
 
 ---
 

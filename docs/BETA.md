@@ -4,14 +4,14 @@
 
 ---
 
-## `/vgsd-ultraplan-phase` — Ultraplan Integration [BETA]
+## `/fvgsd-ultraplan-phase` — Ultraplan Integration [BETA]
 
 > **Claude Code only · Requires Claude Code v2.1.91+**
 > Ultraplan is itself a Claude Code research preview — both this command and the underlying feature may change.
 
 ### What it does
 
-`/vgsd-ultraplan-phase` offloads GSD's plan-phase drafting to [Claude Code's ultraplan](https://code.claude.ai) cloud infrastructure. Instead of planning locally in the terminal, the plan is drafted in a browser-based session with:
+`/fvgsd-ultraplan-phase` offloads GSD's plan-phase drafting to [Claude Code's ultraplan](https://code.claude.ai) cloud infrastructure. Instead of planning locally in the terminal, the plan is drafted in a browser-based session with:
 
 - An **outline sidebar** for navigating the plan structure
 - **Inline comments** for annotating and refining tasks
@@ -23,9 +23,9 @@ When you're satisfied with the draft, you save it and import it back into GSD �
 
 | Situation | Recommendation |
 |-----------|---------------|
-| Long, complex phases where you want to read and comment on the plan before it executes | Use `/vgsd-ultraplan-phase` |
-| Quick phases, familiar domain, or non-Claude Code runtimes | Use `/vgsd-plan-phase` (stable) |
-| You have a plan from another source (teammate, external AI) | Use `/vgsd-import` |
+| Long, complex phases where you want to read and comment on the plan before it executes | Use `/fvgsd-ultraplan-phase` |
+| Quick phases, familiar domain, or non-Claude Code runtimes | Use `/fvgsd-plan-phase` (stable) |
+| You have a plan from another source (teammate, external AI) | Use `/fvgsd-import` |
 
 ### Requirements
 
@@ -36,8 +36,8 @@ When you're satisfied with the draft, you save it and import it back into GSD �
 ### Usage
 
 ```bash
-/vgsd-ultraplan-phase         # Ultraplan the next unplanned phase
-/vgsd-ultraplan-phase 2       # Ultraplan a specific phase number
+/fvgsd-ultraplan-phase         # Ultraplan the next unplanned phase
+/fvgsd-ultraplan-phase 2       # Ultraplan a specific phase number
 ```
 
 | Argument | Required | Description |
@@ -52,7 +52,7 @@ When you're satisfied with the draft, you save it and import it back into GSD �
 
 3. **Return-path instructions** — Before launching ultraplan, GSD prints the import command to your terminal so it's visible in your scroll-back buffer after the browser session ends:
    ```
-   When done: /vgsd-import --from <path-to-saved-plan>
+   When done: /fvgsd-import --from <path-to-saved-plan>
    ```
 
 4. **Ultraplan launches** — The `/ultraplan` command hands off to the browser. Use the outline sidebar and inline comments to review and refine the draft.
@@ -61,38 +61,38 @@ When you're satisfied with the draft, you save it and import it back into GSD �
 
 6. **Import back into GSD** — Run the import command that was printed in step 3:
    ```bash
-   /vgsd-import --from /path/to/saved-plan.md
+   /fvgsd-import --from /path/to/saved-plan.md
    ```
-   This runs conflict detection against `PROJECT.md`, converts the plan to GSD format, validates it with `gsd-plan-checker`, updates `ROADMAP.md`, and commits — the same path as any external plan import.
+   This runs conflict detection against `PROJECT.md`, converts the plan to GSD format, validates it with `fvgsd-plan-checker`, updates `ROADMAP.md`, and commits — the same path as any external plan import.
 
 ### What gets produced
 
 | Step | Output |
 |------|--------|
 | After ultraplan | External plan file (saved by Claude Code) |
-| After `/vgsd-import` | `{phase}-{N}-PLAN.md` in `.planning/phases/` |
+| After `/fvgsd-import` | `{phase}-{N}-PLAN.md` in `.planning/phases/` |
 
 ### What this command does NOT do
 
-- Write `PLAN.md` files directly — all writes go through `/vgsd-import`
-- Replace `/vgsd-plan-phase` — local planning is unaffected and remains the default
-- Run research agents — if you need `RESEARCH.md` first, run `/vgsd-plan-phase --skip-verify` or a research-only pass before using this command
+- Write `PLAN.md` files directly — all writes go through `/fvgsd-import`
+- Replace `/fvgsd-plan-phase` — local planning is unaffected and remains the default
+- Run research agents — if you need `RESEARCH.md` first, run `/fvgsd-plan-phase --skip-verify` or a research-only pass before using this command
 
 ### Troubleshooting
 
 **"ultraplan is not available in this runtime"**
-You're running GSD outside of Claude Code. Switch to a Claude Code terminal session, or use `/vgsd-plan-phase` instead.
+You're running GSD outside of Claude Code. Switch to a Claude Code terminal session, or use `/fvgsd-plan-phase` instead.
 
 **Ultraplan browser session never opened**
 Check your Claude Code version: `claude --version`. Requires v2.1.91+. Update with `claude update`.
 
-**`/vgsd-import` reports conflicts**
+**`/fvgsd-import` reports conflicts**
 Ultraplan may have proposed something that contradicts a decision in `PROJECT.md`. The import step will prompt you to resolve each conflict before writing anything.
 
 **Plan checker fails after import**
-The imported plan has structural issues. Review the checker output, edit the saved file to fix them, and re-run `/vgsd-import --from <same-file>`.
+The imported plan has structural issues. Review the checker output, edit the saved file to fix them, and re-run `/fvgsd-import --from <same-file>`.
 
 ### Related commands
 
-- [`/vgsd-plan-phase`](COMMANDS.md#vgsd-plan-phase) — standard local planning (stable, all runtimes)
-- [`/vgsd-import`](COMMANDS.md#vgsd-import) — import any external plan file into GSD
+- [`/fvgsd-plan-phase`](COMMANDS.md#fvgsd-plan-phase) — standard local planning (stable, all runtimes)
+- [`/fvgsd-import`](COMMANDS.md#fvgsd-import) — import any external plan file into GSD

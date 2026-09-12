@@ -92,52 +92,52 @@ function projectManagedHookCommand({ absoluteRunner, scriptPath, runtime = 'gene
 
 const MANAGED_HOOK_BASENAMES_BY_SURFACE = {
   'settings-json': new Set([
-    'gsd-check-update.js',
-    'gsd-statusline.js',
-    'gsd-context-monitor.js',
-    'gsd-prompt-guard.js',
-    'gsd-read-guard.js',
-    'gsd-read-injection-scanner.js',
-    'gsd-update-banner.js',
-    'gsd-workflow-guard.js',
+    'fvgsd/check-update.js',
+    'fvgsd/statusline.js',
+    'fvgsd/context-monitor.js',
+    'fvgsd/prompt-guard.js',
+    'fvgsd/read-guard.js',
+    'fvgsd/read-injection-scanner.js',
+    'fvgsd/update-banner.js',
+    'fvgsd/workflow-guard.js',
   ]),
   'codex-toml': new Set([
-    'gsd-check-update.js',
+    'fvgsd/check-update.js',
   ]),
 };
 
 const MANAGED_HOOK_COMMAND_BASENAMES_BY_SURFACE = {
   'settings-json': new Set([
-    'gsd-check-update.js',
-    'gsd-statusline.js',
-    'gsd-context-monitor.js',
-    'gsd-prompt-guard.js',
-    'gsd-read-guard.js',
-    'gsd-read-injection-scanner.js',
-    'gsd-update-banner.js',
-    'gsd-workflow-guard.js',
-    'gsd-session-state.sh',
-    'gsd-validate-commit.sh',
-    'gsd-phase-boundary.sh',
+    'fvgsd/check-update.js',
+    'fvgsd/statusline.js',
+    'fvgsd/context-monitor.js',
+    'fvgsd/prompt-guard.js',
+    'fvgsd/read-guard.js',
+    'fvgsd/read-injection-scanner.js',
+    'fvgsd/update-banner.js',
+    'fvgsd/workflow-guard.js',
+    'fvgsd/session-state.sh',
+    'fvgsd/validate-commit.sh',
+    'fvgsd/phase-boundary.sh',
   ]),
   'codex-toml': new Set([
-    'gsd-check-update.js',
+    'fvgsd/check-update.js',
   ]),
   'codex-hooks-json': new Set([
-    'gsd-check-update.js',
+    'fvgsd/check-update.js',
     // #3426: Windows .cmd shim for Codex hook — must be treated as managed so
     // reconcileCodexHooksJsonSessionStart can replace stale node-runner commands
     // with the .cmd shim on reinstall (and vice-versa on cross-platform moves).
-    'gsd-check-update.cmd',
+    'fvgsd/check-update.cmd',
   ]),
 };
 
 const LEGACY_MANAGED_HOOK_ALIASES_BY_SURFACE = {
   'codex-toml': new Set([
-    'gsd-update-check.js',
+    'fvgsd-update-check.js',
   ]),
   'codex-hooks-json': new Set([
-    'gsd-update-check.js',
+    'fvgsd-update-check.js',
   ]),
 };
 
@@ -326,7 +326,7 @@ function buildWindowsShimTriple(shimSrc) {
   return {
     invocation,
     eol: { cmd: '\r\n', ps1: '\n', sh: '\n' },
-    fileNames: { cmd: 'gsd-sdk.cmd', ps1: 'gsd-sdk.ps1', sh: 'gsd-sdk' },
+    fileNames: { cmd: 'fvgsd-sdk.cmd', ps1: 'fvgsd-sdk.ps1', sh: 'fvgsd-sdk' },
     render: { cmd: renderCmd, ps1: renderPs1, sh: renderSh },
   };
 }
@@ -350,12 +350,12 @@ function formatSdkPathDiagnostic({ shimDir, platform, runDir }) {
   } else {
     actionLines.push('Could not locate a writable PATH directory to install the shim.');
     actionLines.push('Install globally to materialize the bin symlink:');
-    actionLines.push('npm install -g get-shit-done-cc');
+    actionLines.push('npm install -g fvgsd');
   }
   const npxNoteLines = isNpx
     ? [
         "Note: you're running via npx. For a persistent shim,",
-        'install globally instead: npm install -g get-shit-done-cc',
+        'install globally instead: npm install -g fvgsd',
       ]
     : [];
   return { shimLocationLine, actionLines, shellActions, npxNoteLines, isNpx, isWin32 };

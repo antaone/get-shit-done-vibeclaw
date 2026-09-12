@@ -20,7 +20,7 @@ describe('findProjectRoot (project-root module)', () => {
   let workspace: string;
 
   beforeEach(async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'gsd-pr-module-'));
+    workspace = await mkdtemp(join(tmpdir(), 'fvgsd-pr-module-'));
   });
 
   afterEach(async () => {

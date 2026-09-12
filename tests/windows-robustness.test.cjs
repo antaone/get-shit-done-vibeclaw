@@ -183,7 +183,7 @@ describe('hook stdin timeout patterns', () => {
 // ─── @file: Handoff ─────────────────────────────────────────────────────────
 
 describe('@file: handoff in workflows', () => {
-  test('all workflows calling gsd-tools init have @file: handler', () => {
+  test('all workflows calling fvgsd-tools init have @file: handler', () => {
     const workflowFiles = fs.readdirSync(WORKFLOWS_DIR)
       .filter(f => f.endsWith('.md'));
 
@@ -191,8 +191,8 @@ describe('@file: handoff in workflows', () => {
     for (const wf of workflowFiles) {
       const content = fs.readFileSync(path.join(WORKFLOWS_DIR, wf), 'utf-8');
 
-      // Check if this workflow calls gsd-tools.cjs init
-      if (/INIT=\$\(node.*gsd-tools.*\binit\b/.test(content)) {
+      // Check if this workflow calls fvgsd-tools.cjs init
+      if (/INIT=\$\(node.*fvgsd-tools.*\binit\b/.test(content)) {
         // Must have @file: handler
         if (!content.includes('@file:')) {
           missing.push(wf);
@@ -202,7 +202,7 @@ describe('@file: handoff in workflows', () => {
 
     assert.strictEqual(
       missing.length, 0,
-      `Workflows calling gsd-tools init without @file: handler (large output will be truncated):\n  ${missing.join('\n  ')}`
+      `Workflows calling fvgsd-tools init without @file: handler (large output will be truncated):\n  ${missing.join('\n  ')}`
     );
   });
 });

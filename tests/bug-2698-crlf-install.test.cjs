@@ -6,7 +6,7 @@
 /**
  * Regression test for #2698: CRLF line endings break agent-block strip regexes
  *
- * The legacy `gsd-update-check` hook migration in bin/install.js uses two
+ * The legacy `fvgsd-update-check` hook migration in bin/install.js uses two
  * separate .replace() calls:
  *   1. LF-only regex: /\n# GSD Hooks\n\[\[hooks\]\]\nevent = ...\n/
  *   2. CRLF-only regex: /\r\n# GSD Hooks\r\n\[\[hooks\]\]\r\nevent = ...\r\n/
@@ -31,7 +31,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, before, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -42,7 +42,7 @@ const { execFileSync } = require('child_process');
 
 const INSTALL_SRC = path.join(__dirname, '..', 'bin', 'install.js');
 const BUILD_SCRIPT = path.join(__dirname, '..', 'scripts', 'build-hooks.js');
-const { install, GSD_CODEX_MARKER } = require(INSTALL_SRC);
+const { install, FVGSD_CODEX_MARKER } = require(INSTALL_SRC);
 const { cleanup } = require('./helpers.cjs');
 
 // Ensure hooks/dist/ is populated before install tests
@@ -57,7 +57,7 @@ describe('#2698: CRLF stale gsd-update-check block is removed on Codex reinstall
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-crlf-install-2698-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-crlf-install-2698-'));
   });
 
   afterEach(() => {
@@ -85,7 +85,7 @@ function writeCodexConfigWithStaleHooks(dir, headerEol, bodyEol) {
       '[features]',
       'codex_hooks = true',
       '',
-    ].join(headerEol) + headerEol + staleBlock + headerEol + headerEol + GSD_CODEX_MARKER + headerEol;
+    ].join(headerEol) + headerEol + staleBlock + headerEol + headerEol + FVGSD_CODEX_MARKER + headerEol;
 
     const codexDir = path.join(dir, '.codex');
     fs.mkdirSync(codexDir, { recursive: true });
@@ -124,14 +124,14 @@ function writeCodexConfigWithStaleHooks(dir, headerEol, bodyEol) {
     const content = fs.readFileSync(configPath, 'utf-8');
 
     assert.ok(
-      !content.includes('gsd-update-check'),
+      !content.includes('fvgsd-update-check'),
       'Stale gsd-update-check entry must be removed from LF config.toml (#2698)'
     );
     const hooksJsonCommands = readHooksSessionStartCommands(path.join(tmpDir, '.codex'));
     assert.equal(
-      hooksJsonCommands.some((cmd) => cmd.includes('gsd-check-update')),
+      hooksJsonCommands.some((cmd) => cmd.includes('fvgsd/check-update')),
       true,
-      'New gsd-check-update hook must appear in hooks.json after reinstall'
+      'New fvgsd/check-update hook must appear in hooks.json after reinstall'
     );
   });
 
@@ -147,14 +147,14 @@ function writeCodexConfigWithStaleHooks(dir, headerEol, bodyEol) {
     const content = fs.readFileSync(configPath, 'utf-8');
 
     assert.ok(
-      !content.includes('gsd-update-check'),
+      !content.includes('fvgsd-update-check'),
       'Stale gsd-update-check entry must be removed from CRLF config.toml (#2698)'
     );
     const hooksJsonCommands = readHooksSessionStartCommands(path.join(tmpDir, '.codex'));
     assert.equal(
-      hooksJsonCommands.some((cmd) => cmd.includes('gsd-check-update')),
+      hooksJsonCommands.some((cmd) => cmd.includes('fvgsd/check-update')),
       true,
-      'New gsd-check-update hook must appear in hooks.json after reinstall'
+      'New fvgsd/check-update hook must appear in hooks.json after reinstall'
     );
   });
 
@@ -175,7 +175,7 @@ function writeCodexConfigWithStaleHooks(dir, headerEol, bodyEol) {
     const content = fs.readFileSync(configPath, 'utf-8');
 
     assert.ok(
-      !content.includes('gsd-update-check'),
+      !content.includes('fvgsd-update-check'),
       [
         'Stale gsd-update-check block with mixed LF/CRLF endings must be removed (#2698).',
         'Old code used two separate LF-only and CRLF-only regexes; neither matched mixed content.',

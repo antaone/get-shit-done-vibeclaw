@@ -42,7 +42,7 @@ export class QuerySubprocessAdapter {
           } catch (parseErr) {
             reject(
               this.deps.createFailureError(
-                `Failed to parse gsd-tools output for "${command}": ${parseErr instanceof Error ? parseErr.message : String(parseErr)}\nRaw output: ${raw.slice(0, 500)}`,
+                `Failed to parse fvgsd-tools output for "${command}": ${parseErr instanceof Error ? parseErr.message : String(parseErr)}\nRaw output: ${raw.slice(0, 500)}`,
                 command,
                 args,
                 0,
@@ -110,7 +110,7 @@ export class QuerySubprocessAdapter {
     }
 
     return this.deps.createFailureError(
-      `gsd-tools exited with code ${error.code ?? 'unknown'}: ${command} ${args.join(' ')}${stderrStr ? `\n${stderrStr}` : ''}`,
+      `fvgsd-tools exited with code ${error.code ?? 'unknown'}: ${command} ${args.join(' ')}${stderrStr ? `\n${stderrStr}` : ''}`,
       command,
       args,
       typeof error.code === 'number' ? error.code : error.status ?? 1,
@@ -119,7 +119,7 @@ export class QuerySubprocessAdapter {
   }
 
   private processSpawnError(command: string, args: string[], err: Error) {
-    return this.deps.createFailureError(`Failed to execute gsd-tools: ${err.message}`, command, args, null, '');
+    return this.deps.createFailureError(`Failed to execute fvgsd-tools: ${err.message}`, command, args, null, '');
   }
 
   private async parseOutput(raw: string): Promise<unknown> {
@@ -137,7 +137,7 @@ export class QuerySubprocessAdapter {
         jsonStr = await readFile(resolvedPath, 'utf-8');
       } catch (err) {
         const reason = err instanceof Error ? err.message : String(err);
-        throw new Error(`Failed to read gsd-tools @file: indirection at "${resolvedPath}": ${reason}`);
+        throw new Error(`Failed to read fvgsd-tools @file: indirection at "${resolvedPath}": ${reason}`);
       }
     }
 

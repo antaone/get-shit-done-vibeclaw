@@ -675,7 +675,7 @@ describe('new-milestone workflow verification gate', () => {
 
 describe('milestone complete explicit version scope (#3043)', () => {
   test('milestone.complete v3.6 uses v3.6 phases even when STATE milestone is v3.5', () => {
-    const tmpDir = createTempProject('gsd-bug-3043-');
+    const tmpDir = createTempProject('fvgsd-bug-3043-');
     try {
       fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), '---\nmilestone: v3.5\n---\n');
       writeRoadmap(
@@ -701,7 +701,7 @@ describe('milestone complete explicit version scope (#3043)', () => {
   });
 
   test('milestone.complete fails when explicit milestone version resolves no phases', () => {
-    const tmpDir = createTempProject('gsd-bug-3043-empty-');
+    const tmpDir = createTempProject('fvgsd-bug-3043-empty-');
     try {
       fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), '---\nmilestone: v1.0\n---\n');
       writeRoadmap(tmpDir, '# Roadmap\n\n## 🚧 v1.0\n### Phase 1: foundation\n');

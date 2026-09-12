@@ -1,5 +1,5 @@
 ---
-name: vgsd:review
+name: fvgsd:review
 description: Request cross-AI peer review of phase plans from external AI CLIs
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--opencode] [--qwen] [--cursor] [--all]"
 allowed-tools:
@@ -12,12 +12,12 @@ requires: [config, phase, plan-phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "review" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "review" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -25,13 +25,13 @@ Parse the JSON response:
 <objective>
 Invoke external AI CLIs (Gemini, Claude, Codex, OpenCode, Qwen Code, Cursor) to independently review phase plans.
 Produces a structured REVIEWS.md with per-reviewer feedback that can be fed back into
-planning via /vgsd:plan-phase --reviews.
+planning via /fvgsd:plan-phase --reviews.
 
 **Flow:** Detect CLIs → Build review prompt → Invoke each CLI → Collect responses → Write REVIEWS.md
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/review.md
+@~/.claude/fvgsd/workflows/review.md
 </execution_context>
 
 <context>

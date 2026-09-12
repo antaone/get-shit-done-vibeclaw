@@ -1,5 +1,5 @@
 <purpose>
-List all GSD workspaces found in ~/vgsd-workspaces/ with their status.
+List all GSD workspaces found in ~/fvgsd-workspaces/ with their status.
 </purpose>
 
 <required_reading>
@@ -11,7 +11,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 ## 1. Setup
 
 ```bash
-INIT=$(gsd-sdk query init.list-workspaces)
+INIT=$(fvgsd-sdk query init.list-workspaces)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -22,10 +22,10 @@ Parse JSON for: `workspace_base`, `workspaces`, `workspace_count`.
 **If `workspace_count` is 0:**
 
 ```
-No workspaces found in ~/vgsd-workspaces/
+No workspaces found in ~/fvgsd-workspaces/
 
 Create one with:
-  /vgsd:workspace --new --name my-workspace --repos repo1,repo2
+  /fvgsd:workspace --new --name my-workspace --repos repo1,repo2
 ```
 
 Done.
@@ -35,7 +35,7 @@ Done.
 Display a table:
 
 ```
-GSD Workspaces (~/vgsd-workspaces/)
+GSD Workspaces (~/fvgsd-workspaces/)
 
 | Name | Repos | Strategy | GSD Project |
 |------|-------|----------|-------------|
@@ -43,8 +43,8 @@ GSD Workspaces (~/vgsd-workspaces/)
 | feature-b | 2 | clone | No |
 
 Manage:
-  cd ~/vgsd-workspaces/<name>     # Enter a workspace
-  /vgsd-remove-workspace <name>   # Remove a workspace
+  cd ~/fvgsd-workspaces/<name>     # Enter a workspace
+  /fvgsd-remove-workspace <name>   # Remove a workspace
 ```
 
 For each workspace, show:

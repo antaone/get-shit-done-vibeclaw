@@ -13,8 +13,8 @@
  * authored by the current flow fall through the filter and are misclassified as
  * user customizations, prompting spurious merge conflicts during `--reapply`.
  *
- * Fix: add `gsd-update` arm to the alternation so both the legacy and current
- * commit-message prefixes are excluded. `GSD update` and `gsd-install`
+ * Fix: add `fvgsd-update` arm to the alternation so both the legacy and current
+ * commit-message prefixes are excluded. `GSD update` and `fvgsd-install`
  * exclusions are preserved.
  *
  * Per the repo's source-text-is-the-product exception: the workflow file's text
@@ -92,8 +92,8 @@ describe('Bug #3516: git-enhanced two-way merge filter includes gsd-update arm',
 
   test('filter excludes renamed gsd-update commits (primary fix)', () => {
     assert.ok(
-      arms.some((arm) => arm === 'gsd-update'),
-      `filter must include 'gsd-update' arm (renamed flow); got arms: ${JSON.stringify(arms)}`,
+      arms.some((arm) => arm === 'fvgsd-update'),
+      `filter must include 'fvgsd-update' arm (renamed flow); got arms: ${JSON.stringify(arms)}`,
     );
   });
 
@@ -106,13 +106,13 @@ describe('Bug #3516: git-enhanced two-way merge filter includes gsd-update arm',
 
   test('filter excludes gsd-install commits (no regression)', () => {
     assert.ok(
-      arms.some((arm) => arm === 'gsd-install'),
-      `filter must include 'gsd-install' arm; got arms: ${JSON.stringify(arms)}`,
+      arms.some((arm) => arm === 'fvgsd-install'),
+      `filter must include 'fvgsd-install' arm; got arms: ${JSON.stringify(arms)}`,
     );
   });
 
   test('all four expected exclusion patterns are present in the filter', () => {
-    const required = ['gsd:update', 'gsd-update', 'GSD update', 'gsd-install'];
+    const required = ['gsd:update', 'fvgsd-update', 'GSD update', 'fvgsd-install'];
     const missing = required.filter((p) => !arms.some((arm) => arm === p));
     assert.deepEqual(
       missing,

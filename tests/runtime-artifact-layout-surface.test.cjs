@@ -23,13 +23,13 @@ const REAL_COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function tmpDir(prefix) {
-  return fs.mkdtempSync(path.join(os.tmpdir(), prefix || 'gsd-ral-surf-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), prefix || 'fvgsd-ral-surf-'));
 }
 
 function createFixtureRuntime() {
-  const base = createTempDir('gsd-surface-apply-');
+  const base = createTempDir('fvgsd-surface-apply-');
   const runtimeConfigDir = base;
-  const commandsDir = path.join(runtimeConfigDir, 'commands', 'vgsd');
+  const commandsDir = path.join(runtimeConfigDir, 'commands', 'fvgsd');
   const agentsDir = path.join(runtimeConfigDir, 'agents');
   fs.mkdirSync(commandsDir, { recursive: true });
   fs.mkdirSync(agentsDir, { recursive: true });
@@ -174,20 +174,20 @@ describe('applySurface', () => {
   test('_syncGsdDir skills kind: adds missing skill dirs, removes stale prefix-matched dirs, preserves foreign dirs', (t) => {
     const { _syncGsdDir } = require('../get-shit-done/bin/lib/surface.cjs');
 
-    const base = createTempDir('gsd-surface-skills-');
+    const base = createTempDir('fvgsd-surface-skills-');
     t.after(() => cleanup(base));
     const stagedDir = path.join(base, 'staged');
     const destDir = path.join(base, 'dest');
     fs.mkdirSync(destDir, { recursive: true });
 
-    const stem1 = 'vgsd-help';
-    const stem2 = 'vgsd-update';
+    const stem1 = 'fvgsd-help';
+    const stem2 = 'fvgsd-update';
     fs.mkdirSync(path.join(stagedDir, stem1), { recursive: true });
     fs.writeFileSync(path.join(stagedDir, stem1, 'SKILL.md'), '# help\n', 'utf8');
     fs.mkdirSync(path.join(stagedDir, stem2), { recursive: true });
     fs.writeFileSync(path.join(stagedDir, stem2, 'SKILL.md'), '# update\n', 'utf8');
 
-    const staleDir = path.join(destDir, 'vgsd-old-skill');
+    const staleDir = path.join(destDir, 'fvgsd-old-skill');
     fs.mkdirSync(staleDir, { recursive: true });
     fs.writeFileSync(path.join(staleDir, 'SKILL.md'), '# old\n', 'utf8');
 
@@ -195,12 +195,12 @@ describe('applySurface', () => {
     fs.mkdirSync(foreignDir, { recursive: true });
     fs.writeFileSync(path.join(foreignDir, 'SKILL.md'), '# custom\n', 'utf8');
 
-    const skillsKind = { kind: 'skills', destSubpath: 'skills', prefix: 'vgsd-', stage: () => stagedDir };
+    const skillsKind = { kind: 'skills', destSubpath: 'skills', prefix: 'fvgsd-', stage: () => stagedDir };
 
     // Build a minimal manifest that includes the GSD-owned stems so that the
-    // manifest-membership gate (Finding 1 fix) correctly identifies vgsd-old-skill
+    // manifest-membership gate (Finding 1 fix) correctly identifies fvgsd-old-skill
     // as GSD-owned and prunes it. Without a manifest the new code conservatively
-    // preserves all vgsd-* dirs it cannot confirm are GSD-owned.
+    // preserves all fvgsd-* dirs it cannot confirm are GSD-owned.
     const manifest = new Map([
       ['help', []],
       ['update', []],
@@ -209,15 +209,15 @@ describe('applySurface', () => {
 
     _syncGsdDir(stagedDir, destDir, skillsKind, manifest);
 
-    assert.ok(fs.existsSync(path.join(destDir, stem1, 'SKILL.md')), 'vgsd-help/SKILL.md should be copied');
-    assert.ok(fs.existsSync(path.join(destDir, stem2, 'SKILL.md')), 'vgsd-update/SKILL.md should be copied');
-    // stale vgsd- dir removed (it's in the manifest so it is GSD-owned, but not in staged set)
-    assert.ok(!fs.existsSync(staleDir), 'stale vgsd-old-skill dir should be removed');
+    assert.ok(fs.existsSync(path.join(destDir, stem1, 'SKILL.md')), 'fvgsd-help/SKILL.md should be copied');
+    assert.ok(fs.existsSync(path.join(destDir, stem2, 'SKILL.md')), 'fvgsd-update/SKILL.md should be copied');
+    // stale fvgsd- dir removed (it's in the manifest so it is GSD-owned, but not in staged set)
+    assert.ok(!fs.existsSync(staleDir), 'stale fvgsd-old-skill dir should be removed');
     assert.ok(fs.existsSync(foreignDir), 'my-custom-skill dir should be preserved');
   });
 
   test('applySurface recreates missing destination directories', (t) => {
-    const base = createTempDir('gsd-surface-missing-dest-');
+    const base = createTempDir('fvgsd-surface-missing-dest-');
     t.after(() => cleanup(base));
     const runtimeConfigDir = base;
     writeActiveProfile(runtimeConfigDir, 'core');
@@ -231,47 +231,47 @@ describe('applySurface', () => {
     const layout = resolveRuntimeArtifactLayout('claude', runtimeConfigDir, 'local');
     applySurface(runtimeConfigDir, layout, manifest, CLUSTERS);
 
-    const commandsDir = path.join(runtimeConfigDir, 'commands', 'vgsd');
-    assert.ok(fs.existsSync(commandsDir), 'commands/vgsd dir should be created even if initially absent');
+    const commandsDir = path.join(runtimeConfigDir, 'commands', 'fvgsd');
+    assert.ok(fs.existsSync(commandsDir), 'commands/fvgsd dir should be created even if initially absent');
     const files = fs.readdirSync(commandsDir).filter(f => f.endsWith('.md'));
-    assert.ok(files.length > 0, 'commands/vgsd should contain staged skill files');
+    assert.ok(files.length > 0, 'commands/fvgsd should contain staged skill files');
     assert.ok(files.includes('help.md'), 'help.md should be present after applySurface on missing dest');
   });
 
   test('Hermes profile shrink: stale GSD skill dirs are removed; user skills preserved', (t) => {
     const { _syncGsdDir } = require('../get-shit-done/bin/lib/surface.cjs');
 
-    const base = createTempDir('gsd-surface-hermes-shrink-');
+    const base = createTempDir('fvgsd-surface-hermes-shrink-');
     t.after(() => cleanup(base));
     const stagedDir = path.join(base, 'staged');
     const destDir = path.join(base, 'dest');
     fs.mkdirSync(destDir, { recursive: true });
 
-    fs.mkdirSync(path.join(stagedDir, 'gsd-executor'), { recursive: true });
-    fs.writeFileSync(path.join(stagedDir, 'gsd-executor', 'SKILL.md'), '# executor\n', 'utf8');
+    fs.mkdirSync(path.join(stagedDir, 'fvgsd-executor'), { recursive: true });
+    fs.writeFileSync(path.join(stagedDir, 'fvgsd-executor', 'SKILL.md'), '# executor\n', 'utf8');
 
-    fs.mkdirSync(path.join(destDir, 'gsd-executor'), { recursive: true });
-    fs.writeFileSync(path.join(destDir, 'gsd-executor', 'SKILL.md'), '# executor\n', 'utf8');
-    fs.mkdirSync(path.join(destDir, 'gsd-planner'), { recursive: true });
-    fs.writeFileSync(path.join(destDir, 'gsd-planner', 'SKILL.md'), '# planner\n', 'utf8');
+    fs.mkdirSync(path.join(destDir, 'fvgsd-executor'), { recursive: true });
+    fs.writeFileSync(path.join(destDir, 'fvgsd-executor', 'SKILL.md'), '# executor\n', 'utf8');
+    fs.mkdirSync(path.join(destDir, 'fvgsd-planner'), { recursive: true });
+    fs.writeFileSync(path.join(destDir, 'fvgsd-planner', 'SKILL.md'), '# planner\n', 'utf8');
     fs.mkdirSync(path.join(destDir, 'user-skill'), { recursive: true });
     fs.writeFileSync(path.join(destDir, 'user-skill', 'SKILL.md'), '# user\n', 'utf8');
 
     const manifest = new Map([
-      ['gsd-executor', []],
-      ['gsd-planner', []],
+      ['fvgsd-executor', []],
+      ['fvgsd-planner', []],
     ]);
 
     const hermesKind = { kind: 'skills', destSubpath: 'skills/gsd', prefix: '', stage: () => stagedDir };
     _syncGsdDir(stagedDir, destDir, hermesKind, manifest);
 
     assert.ok(
-      fs.existsSync(path.join(destDir, 'gsd-executor', 'SKILL.md')),
-      'gsd-executor should be kept (in staged set)'
+      fs.existsSync(path.join(destDir, 'fvgsd-executor', 'SKILL.md')),
+      'fvgsd-executor should be kept (in staged set)'
     );
     assert.ok(
-      !fs.existsSync(path.join(destDir, 'gsd-planner')),
-      'gsd-planner should be removed (in manifest but not in staged set — stale GSD skill)'
+      !fs.existsSync(path.join(destDir, 'fvgsd-planner')),
+      'fvgsd-planner should be removed (in manifest but not in staged set — stale GSD skill)'
     );
     assert.ok(
       fs.existsSync(path.join(destDir, 'user-skill', 'SKILL.md')),
@@ -282,7 +282,7 @@ describe('applySurface', () => {
   test('_syncGsdDir skills kind (hermes): preserves non-GSD user dir under skills/gsd/ when kindPrefix is empty', (t) => {
     const { _syncGsdDir } = require('../get-shit-done/bin/lib/surface.cjs');
 
-    const base = createTempDir('gsd-surface-hermes-');
+    const base = createTempDir('fvgsd-surface-hermes-');
     t.after(() => cleanup(base));
     const stagedDir = path.join(base, 'staged');
     const destDir = path.join(base, 'dest');
@@ -308,7 +308,7 @@ describe('applySurface', () => {
 
 describe('resolveSurface', () => {
   test('no surface state + core base profile → identical to resolveProfile core', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeActiveProfile(dir, 'core');
       const manifest = realManifest();
@@ -328,7 +328,7 @@ describe('resolveSurface', () => {
   });
 
   test('standard base + disabledClusters:["utility"] removes utility skills', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeActiveProfile(dir, 'standard');
       writeSurface(dir, {
@@ -356,7 +356,7 @@ describe('resolveSurface', () => {
   });
 
   test('explicitAdds:["sketch"] adds sketch to a core install', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeActiveProfile(dir, 'core');
       writeSurface(dir, {
@@ -381,7 +381,7 @@ describe('resolveSurface', () => {
   });
 
   test('explicitRemoves removes individual skill stems', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeSurface(dir, {
         baseProfile: 'standard',
@@ -400,7 +400,7 @@ describe('resolveSurface', () => {
   });
 
   test('result is a Set<string> with name property and agents Set', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeActiveProfile(dir, 'core');
       const manifest = realManifest();
@@ -414,8 +414,8 @@ describe('resolveSurface', () => {
     }
   });
 
-  test('surface with baseProfile overrides .gsd-profile marker', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+  test('surface with baseProfile overrides .fvgsd-profile marker', () => {
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeActiveProfile(dir, 'core');
       writeSurface(dir, {
@@ -439,7 +439,7 @@ describe('resolveSurface', () => {
   });
 
   test('disabled cluster + explicitAdds can re-add specific skills from disabled cluster', () => {
-    const dir = tmpDir('gsd-surface-resolve-');
+    const dir = tmpDir('fvgsd-surface-resolve-');
     try {
       writeSurface(dir, {
         baseProfile: 'standard',
@@ -472,7 +472,7 @@ describe('resolveSurface', () => {
 
 describe('readSurface / writeSurface', () => {
   test('round-trips a complete surface state', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       const state = {
         baseProfile: 'standard',
@@ -489,7 +489,7 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('round-trips empty arrays', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       const state = {
         baseProfile: 'core',
@@ -505,7 +505,7 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('round-trips composed base profile', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       const state = {
         baseProfile: 'core,audit',
@@ -521,7 +521,7 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('missing file returns null', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       const result = readSurface(dir);
       assert.strictEqual(result, null);
@@ -531,15 +531,15 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('non-existent directory returns null', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-surface-no-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-surface-no-exist-' + Date.now());
     const result = readSurface(ghost);
     assert.strictEqual(result, null);
   });
 
   test('corrupt JSON returns null', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
-      fs.writeFileSync(path.join(dir, '.vgsd-surface.json'), '{not valid json', 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-surface.json'), '{not valid json', 'utf8');
       const result = readSurface(dir);
       assert.strictEqual(result, null);
     } finally {
@@ -548,10 +548,10 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('JSON missing baseProfile field returns null', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       fs.writeFileSync(
-        path.join(dir, '.vgsd-surface.json'),
+        path.join(dir, '.fvgsd-surface.json'),
         JSON.stringify({ disabledClusters: [], explicitAdds: [], explicitRemoves: [] }),
         'utf8'
       );
@@ -563,10 +563,10 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('JSON with non-array disabledClusters returns null', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       fs.writeFileSync(
-        path.join(dir, '.vgsd-surface.json'),
+        path.join(dir, '.fvgsd-surface.json'),
         JSON.stringify({ baseProfile: 'standard', disabledClusters: 'utility', explicitAdds: [], explicitRemoves: [] }),
         'utf8'
       );
@@ -578,21 +578,21 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('atomic write: result file is never a partial tmp file', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       const state = { baseProfile: 'full', disabledClusters: [], explicitAdds: [], explicitRemoves: [] };
       writeSurface(dir, state);
       const files = fs.readdirSync(dir);
       const tmpFiles = files.filter(f => f.includes('.tmp.'));
       assert.deepStrictEqual(tmpFiles, [], 'no tmp files should remain after write');
-      assert.ok(files.includes('.vgsd-surface.json'));
+      assert.ok(files.includes('.fvgsd-surface.json'));
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 
   test('second write overwrites first', () => {
-    const dir = tmpDir('gsd-surface-state-');
+    const dir = tmpDir('fvgsd-surface-state-');
     try {
       writeSurface(dir, { baseProfile: 'core', disabledClusters: [], explicitAdds: [], explicitRemoves: [] });
       writeSurface(dir, { baseProfile: 'standard', disabledClusters: ['utility'], explicitAdds: [], explicitRemoves: [] });
@@ -605,7 +605,7 @@ describe('readSurface / writeSurface', () => {
   });
 
   test('writeSurface creates directory if it does not exist', () => {
-    const base = tmpDir('gsd-surface-state-');
+    const base = tmpDir('fvgsd-surface-state-');
     const nested = path.join(base, 'skills', 'subdir');
     try {
       writeSurface(nested, { baseProfile: 'full', disabledClusters: [], explicitAdds: [], explicitRemoves: [] });
@@ -704,9 +704,9 @@ describe('CLUSTERS data structure', () => {
 
 describe('listSurface', () => {
   test('returns { enabled, disabled, tokenCost } structure', () => {
-    const dir = tmpDir('gsd-surface-list-');
+    const dir = tmpDir('fvgsd-surface-list-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-source'), REAL_COMMANDS_DIR, 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-source'), REAL_COMMANDS_DIR, 'utf8');
       writeActiveProfile(dir, 'core');
       const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
       const result = listSurface(dir, manifest, CLUSTERS);
@@ -721,9 +721,9 @@ describe('listSurface', () => {
   });
 
   test('core profile: enabled has fewer skills than full; enabled + disabled = total stems', () => {
-    const dir = tmpDir('gsd-surface-list-');
+    const dir = tmpDir('fvgsd-surface-list-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-source'), REAL_COMMANDS_DIR, 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-source'), REAL_COMMANDS_DIR, 'utf8');
       writeActiveProfile(dir, 'core');
       const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
       const coreList = listSurface(dir, manifest, CLUSTERS);
@@ -742,9 +742,9 @@ describe('listSurface', () => {
   });
 
   test('disabling utility cluster reduces enabled count', () => {
-    const dir = tmpDir('gsd-surface-list-');
+    const dir = tmpDir('fvgsd-surface-list-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-source'), REAL_COMMANDS_DIR, 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-source'), REAL_COMMANDS_DIR, 'utf8');
       writeActiveProfile(dir, 'standard');
       const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
 
@@ -768,9 +768,9 @@ describe('listSurface', () => {
   });
 
   test('tokenCost is sum of description char lengths ÷ 4 for enabled skills', () => {
-    const dir = tmpDir('gsd-surface-list-');
+    const dir = tmpDir('fvgsd-surface-list-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-source'), REAL_COMMANDS_DIR, 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-source'), REAL_COMMANDS_DIR, 'utf8');
       writeActiveProfile(dir, 'core');
       const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
       const result = listSurface(dir, manifest, CLUSTERS);
@@ -791,9 +791,9 @@ describe('listSurface', () => {
   });
 
   test('enabled and disabled arrays are sorted', () => {
-    const dir = tmpDir('gsd-surface-list-');
+    const dir = tmpDir('fvgsd-surface-list-');
     try {
-      fs.writeFileSync(path.join(dir, '.gsd-source'), REAL_COMMANDS_DIR, 'utf8');
+      fs.writeFileSync(path.join(dir, '.fvgsd-source'), REAL_COMMANDS_DIR, 'utf8');
       writeActiveProfile(dir, 'standard');
       const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
       const result = listSurface(dir, manifest, CLUSTERS);

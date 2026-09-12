@@ -6,8 +6,8 @@
  * subprocess — finds the shim. That set is not the same as the user's
  * later interactive shell PATH:
  *
- *   - Windows cross-shell: gsd-sdk.cmd resolves under PowerShell/cmd
- *     (PATHEXT) but bare `gsd-sdk` does not resolve under Git Bash /
+ *   - Windows cross-shell: fvgsd-sdk.cmd resolves under PowerShell/cmd
+ *     (PATHEXT) but bare `fvgsd-sdk` does not resolve under Git Bash /
  *     MSYS / WSL bash.
  *   - POSIX ~/.local/bin: install subprocess inherits npm/npx-injected
  *     PATH containing ~/.local/bin; user's login shell may not.
@@ -34,7 +34,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
@@ -50,11 +50,11 @@ describe('bug #3020: isGsdSdkOnPath accepts an explicit PATH string', () => {
     assert.equal(typeof isGsdSdkOnPath, 'function');
   });
 
-  test('returns true when an executable gsd-sdk exists in the supplied PATH', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3020-'));
+  test('returns true when an executable fvgsd-sdk exists in the supplied PATH', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3020-'));
     try {
-      // Create a fake `gsd-sdk` shim with the executable bit set.
-      const shimName = process.platform === 'win32' ? 'gsd-sdk.cmd' : 'gsd-sdk';
+      // Create a fake `fvgsd-sdk` shim with the executable bit set.
+      const shimName = process.platform === 'win32' ? 'fvgsd-sdk.cmd' : 'fvgsd-sdk';
       const shimPath = path.join(tmp, shimName);
       fs.writeFileSync(shimPath, process.platform === 'win32' ? '@echo off\nexit 0\n' : '#!/bin/sh\nexit 0\n');
       if (process.platform !== 'win32') fs.chmodSync(shimPath, 0o755);
@@ -65,8 +65,8 @@ describe('bug #3020: isGsdSdkOnPath accepts an explicit PATH string', () => {
     }
   });
 
-  test('returns false when the supplied PATH has no gsd-sdk', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3020-'));
+  test('returns false when the supplied PATH has no fvgsd-sdk', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3020-'));
     try {
       const result = isGsdSdkOnPath(tmp);
       assert.equal(result, false);
@@ -145,10 +145,10 @@ describe('bug #3020: getUserShellPath probes the user login shell PATH', () => {
 
 describe('bug #3020: cross-shell PATH mismatch is detectable via the new helpers', () => {
   test('install-time PATH has shim, user-shell PATH does not → mismatch detected', () => {
-    const installDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3020-install-'));
-    const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3020-user-'));
+    const installDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3020-install-'));
+    const userDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3020-user-'));
     try {
-      const shimName = process.platform === 'win32' ? 'gsd-sdk.cmd' : 'gsd-sdk';
+      const shimName = process.platform === 'win32' ? 'fvgsd-sdk.cmd' : 'fvgsd-sdk';
       const shimPath = path.join(installDir, shimName);
       fs.writeFileSync(shimPath, process.platform === 'win32' ? '@echo off\nexit 0\n' : '#!/bin/sh\nexit 0\n');
       if (process.platform !== 'win32') fs.chmodSync(shimPath, 0o755);

@@ -8,7 +8,7 @@
  *
  * /gsd-update cache-clear step only cleared per-runtime cache paths
  * (e.g. ~/.claude/cache/gsd-update-check.json) but the SessionStart hook
- * (hooks/gsd-check-update.js) writes to the shared tool-agnostic path
+ * (hooks/fvgsd/check-update.js) writes to the shared tool-agnostic path
  * ~/.cache/gsd/gsd-update-check.json. After a successful update, the statusline
  * kept showing the stale "⬆ /gsd-update" indicator because the actual cache
  * file was never deleted.
@@ -31,10 +31,10 @@ const UPDATE_WORKFLOW = path.join(
   'workflows',
   'update.md'
 );
-const CHECK_UPDATE_HOOK = path.join(REPO_ROOT, 'hooks', 'gsd-check-update.js');
+const CHECK_UPDATE_HOOK = path.join(REPO_ROOT, 'hooks', 'fvgsd/check-update.js');
 
 describe('bug-2784: update.md cache-clear covers shared cache path', () => {
-  test('gsd-check-update.js hook constructs cache dir from .cache and gsd path segments', () => {
+  test('fvgsd/check-update.js hook constructs cache dir from .cache and gsd path segments', () => {
     const hookContent = fs.readFileSync(CHECK_UPDATE_HOOK, 'utf-8');
     // Parse the path.join() call structurally rather than text-grepping.
     const m = hookContent.match(/const cacheDir\s*=\s*path\.join\(([^)]+)\)/);

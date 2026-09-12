@@ -4,7 +4,7 @@
  * Uses the same `loadConfig(cwd)` as `get-shit-done/bin/lib/state.cjs` by resolving
  * `core.cjs` next to a shipped/bundled/user `get-shit-done` install (same probe order
  * as `resolveGsdToolsPath`). This keeps JSON output **byte-compatible** with
- * `node gsd-tools.cjs state load` for monorepo and standard installs.
+ * `node fvgsd-tools.cjs state load` for monorepo and standard installs.
  *
  * Distinct from {@link stateJson} (`state json` / `state.json`) which mirrors
  * `cmdStateJson` (rebuilt frontmatter only).

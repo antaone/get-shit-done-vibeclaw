@@ -1,7 +1,7 @@
 /**
  * Utility query handlers — pure SDK implementations of simple commands.
  *
- * These handlers are direct TypeScript ports of gsd-tools.cjs functions:
+ * These handlers are direct TypeScript ports of fvgsd-tools.cjs functions:
  * - `generateSlug` ← `cmdGenerateSlug` (commands.cjs lines 38-48)
  * - `currentTimestamp` ← `cmdCurrentTimestamp` (commands.cjs lines 50-71)
  *
@@ -30,7 +30,7 @@ export interface QueryResult<T = unknown> {
    * `'json'` (default) — JSON-stringify as usual.
    *
    * Only meaningful when `data` is a string and the consumer is the CLI.
-   * Used by `agent-skills` so workflows embedding `$(gsd-sdk query …)` receive
+   * Used by `agent-skills` so workflows embedding `$(fvgsd-sdk query …)` receive
    * a raw `<agent_skills>` XML block rather than a JSON-quoted string.
    */
   format?: 'json' | 'text';

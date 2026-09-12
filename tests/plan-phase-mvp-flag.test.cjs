@@ -20,7 +20,7 @@ function parseWorkflowContract(content) {
   const hasRoadmapModeRead = lines.some(line => line.includes('phase.mvp-mode') || line.includes('roadmap'));
   const hasSkeletonReference = lines.some(line => line.includes('SKELETON.md'));
   const hasWalkingSkeletonLabel = lines.some(line => line.toLowerCase().includes('walking skeleton'));
-  const plannerLines = lines.filter(line => line.includes('planner') || line.includes('gsd-planner'));
+  const plannerLines = lines.filter(line => line.includes('planner') || line.includes('fvgsd-planner'));
   const plannerUsesMvpMode = plannerLines.some(line => line.includes('MVP_MODE')) || lines.some(line => line.includes('MVP_MODE') && line.includes('planner'));
   return {
     argExtractionLine,
@@ -52,7 +52,7 @@ describe('plan-phase workflow — --mvp flag', () => {
     assert.ok(contract.hasWalkingSkeletonLabel, 'workflow must label the gate as Walking Skeleton');
   });
 
-  test('planner spawn passes MVP_MODE to gsd-planner', () => {
+  test('planner spawn passes MVP_MODE to fvgsd-planner', () => {
     assert.ok(contract.plannerUsesMvpMode, 'workflow must wire MVP_MODE into the planner subagent prompt');
   });
 });

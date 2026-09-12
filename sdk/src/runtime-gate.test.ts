@@ -1,7 +1,7 @@
 /**
  * Unit tests for runtime-gate.ts
  *
- * Regression tests for #2832: gsd-sdk auto silently routed Codex (and other
+ * Regression tests for #2832: fvgsd-sdk auto silently routed Codex (and other
  * non-Claude) runtime projects through the Claude Agent SDK, picked
  * Claude-Sonnet defaults from the profile map, and reported instant failures.
  * The gate fails fast with an actionable error so users either set the right
@@ -14,12 +14,12 @@ import { assertRuntimeSupportsAutoMode } from './runtime-gate.js';
 describe('assertRuntimeSupportsAutoMode', () => {
   let prevEnv: string | undefined;
   beforeEach(() => {
-    prevEnv = process.env.GSD_RUNTIME;
-    delete process.env.GSD_RUNTIME;
+    prevEnv = process.env.FVGSD_RUNTIME;
+    delete process.env.FVGSD_RUNTIME;
   });
   afterEach(() => {
-    if (prevEnv === undefined) delete process.env.GSD_RUNTIME;
-    else process.env.GSD_RUNTIME = prevEnv;
+    if (prevEnv === undefined) delete process.env.FVGSD_RUNTIME;
+    else process.env.FVGSD_RUNTIME = prevEnv;
   });
 
   it('passes for runtime: claude (config)', () => {
@@ -35,8 +35,8 @@ describe('assertRuntimeSupportsAutoMode', () => {
     expect(() => assertRuntimeSupportsAutoMode({ runtime: 'codex' })).toThrow(/codex/);
   });
 
-  it('throws for GSD_RUNTIME=codex even when config says claude', () => {
-    process.env.GSD_RUNTIME = 'codex';
+  it('throws for FVGSD_RUNTIME=codex even when config says claude', () => {
+    process.env.FVGSD_RUNTIME = 'codex';
     expect(() => assertRuntimeSupportsAutoMode({ runtime: 'claude' })).toThrow(/codex/);
   });
 
@@ -66,11 +66,11 @@ describe('assertRuntimeSupportsAutoMode', () => {
     expect(() => assertRuntimeSupportsAutoMode({ runtime: 'totally-bogus' })).not.toThrow();
   });
 
-  it('attributes source to config when GSD_RUNTIME is set to an unsupported value', () => {
+  it('attributes source to config when FVGSD_RUNTIME is set to an unsupported value', () => {
     // Unsupported env values fall through to config in detectRuntime; the
     // gate's error message must report config (not the discarded env value)
     // as the source so users debug the right thing.
-    process.env.GSD_RUNTIME = 'unsupported-env';
+    process.env.FVGSD_RUNTIME = 'unsupported-env';
     let caught: Error | undefined;
     try {
       assertRuntimeSupportsAutoMode({ runtime: 'codex' });
@@ -79,6 +79,6 @@ describe('assertRuntimeSupportsAutoMode', () => {
     }
     expect(caught).toBeDefined();
     expect(caught!.message).toMatch(/config\.runtime="codex"/);
-    expect(caught!.message).not.toMatch(/GSD_RUNTIME=unsupported-env/);
+    expect(caught!.message).not.toMatch(/FVGSD_RUNTIME=unsupported-env/);
   });
 });

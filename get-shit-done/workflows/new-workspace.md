@@ -13,7 +13,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 **MANDATORY FIRST STEP — Execute init command:**
 
 ```bash
-INIT=$(gsd-sdk query init.new-workspace)
+INIT=$(fvgsd-sdk query init.new-workspace)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -73,7 +73,7 @@ Error:
 No git repos found in the current directory and this is not a git repo.
 
 Run this command from a directory containing git repos, or specify repos explicitly:
-  /vgsd:workspace --new --name my-workspace --repos /path/to/repo1,/path/to/repo2
+  /fvgsd:workspace --new --name my-workspace --repos /path/to/repo1,/path/to/repo2
 ```
 Exit.
 
@@ -84,7 +84,7 @@ Error:
 Error: --auto requires --repos to specify which repos to include.
 
 Usage:
-  /vgsd:workspace --new --name my-workspace --repos repo1,repo2 --auto
+  /fvgsd:workspace --new --name my-workspace --repos repo1,repo2 --auto
 ```
 Exit.
 
@@ -203,7 +203,7 @@ Workspace created: $TARGET_PATH
 
 Next steps:
   cd "$TARGET_PATH"
-  /vgsd:new-project    # Initialize GSD in the workspace
+  /fvgsd:new-project    # Initialize GSD in the workspace
 ```
 
 **If some repos failed:**
@@ -216,7 +216,7 @@ Workspace created with $SUCCESS_COUNT of $TOTAL_COUNT repos: $TARGET_PATH
 
 Next steps:
   cd "$TARGET_PATH"
-  /vgsd:new-project    # Initialize GSD in the workspace
+  /fvgsd:new-project    # Initialize GSD in the workspace
 ```
 
 **Offer to initialize GSD (if not `--auto`):**
@@ -225,7 +225,7 @@ Use AskUserQuestion:
 - header: "Initialize GSD"
 - question: "Would you like to initialize a GSD project in the new workspace?"
 - options:
-  - "Yes — run /vgsd:new-project" → tell user to `cd "$TARGET_PATH"` first, then run `/vgsd:new-project`
+  - "Yes — run /fvgsd:new-project" → tell user to `cd "$TARGET_PATH"` first, then run `/fvgsd:new-project`
   - "No — I'll set it up later" → done
 
 </process>

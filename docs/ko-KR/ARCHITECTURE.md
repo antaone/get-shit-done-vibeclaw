@@ -31,7 +31,7 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 ```
 ┌──────────────────────────────────────────────────────┐
 │                      USER                            │
-│            /vgsd-command [args]                        │
+│            /fvgsd-command [args]                        │
 └─────────────────────┬────────────────────────────────┘
                       │
 ┌─────────────────────▼────────────────────────────────┐
@@ -54,7 +54,7 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
        │              │                 │
 ┌──────▼──────────────▼─────────────────▼──────────────┐
 │              CLI TOOLS LAYER                          │
-│   get-shit-done/bin/gsd-tools.cjs                     │
+│   get-shit-done/bin/fvgsd-tools.cjs                     │
 │   (State, config, phase, roadmap, verify, templates)  │
 └──────────────────────┬───────────────────────────────┘
                        │
@@ -76,7 +76,7 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 ### 2. 가벼운 오케스트레이터
 
 워크플로우 파일(`get-shit-done/workflows/*.md`)은 무거운 작업을 직접 수행하지 않습니다. 다음 작업만 담당합니다.
-- `gsd-tools.cjs init <workflow>`로 컨텍스트를 로드합니다
+- `fvgsd-tools.cjs init <workflow>`로 컨텍스트를 로드합니다
 - 집중된 프롬프트로 전문화된 에이전트를 생성합니다
 - 결과를 수집하여 다음 단계로 전달합니다
 - 단계 사이에 상태를 업데이트합니다
@@ -107,10 +107,10 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 ### Commands (`commands/gsd/*.md`)
 
 사용자 대면 진입점입니다. 각 파일은 YAML 전문(name, description, allowed-tools)과 워크플로우를 부트스트랩하는 프롬프트 본문을 포함합니다. 명령어는 다음과 같이 설치됩니다.
-- **Claude Code:** 커스텀 슬래시 명령어 (`/vgsd-command-name`)
-- **OpenCode / Kilo:** 슬래시 명령어 (`/vgsd-command-name`)
-- **Codex:** Skills (`$vgsd-command-name`)
-- **Copilot:** 슬래시 명령어 (`/vgsd-command-name`)
+- **Claude Code:** 커스텀 슬래시 명령어 (`/fvgsd-command-name`)
+- **OpenCode / Kilo:** 슬래시 명령어 (`/fvgsd-command-name`)
+- **Codex:** Skills (`$fvgsd-command-name`)
+- **Copilot:** 슬래시 명령어 (`/fvgsd-command-name`)
 - **Antigravity:** Skills
 
 **전체 명령어 수:** 44개
@@ -118,7 +118,7 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 ### Workflows (`get-shit-done/workflows/*.md`)
 
 명령어가 참조하는 오케스트레이션 로직입니다. 다음을 포함하는 단계별 프로세스를 담습니다.
-- `gsd-tools.cjs init`을 통한 컨텍스트 로드
+- `fvgsd-tools.cjs init`을 통한 컨텍스트 로드
 - 모델 해석을 포함한 에이전트 생성 지시
 - 게이트/체크포인트 정의
 - 상태 업데이트 패턴
@@ -150,7 +150,7 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 
 ### Templates (`get-shit-done/templates/`)
 
-모든 계획 아티팩트를 위한 Markdown 템플릿입니다. `gsd-tools.cjs template fill`과 `scaffold` 명령어가 사전 구조화된 파일을 생성하는 데 사용합니다.
+모든 계획 아티팩트를 위한 Markdown 템플릿입니다. `fvgsd-tools.cjs template fill`과 `scaffold` 명령어가 사전 구조화된 파일을 생성하는 데 사용합니다.
 - `project.md`, `requirements.md`, `roadmap.md`, `state.md` — 핵심 프로젝트 파일
 - `phase-prompt.md` — 단계 실행 프롬프트 템플릿
 - `summary.md` (+ `summary-minimal.md`, `summary-standard.md`, `summary-complex.md`) — 세분화 인식 요약 템플릿
@@ -166,15 +166,15 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 
 | 훅 | 이벤트 | 목적 |
 |------|-------|---------|
-| `gsd-statusline.js` | `statusLine` | 모델, 작업, 디렉터리, 컨텍스트 사용 바 표시 |
-| `gsd-context-monitor.js` | `PostToolUse` / `AfterTool` | 잔여 35%/25% 시점에 에이전트 대면 컨텍스트 경고 주입 |
-| `gsd-check-update.js` | `SessionStart` | 새 GSD 버전을 백그라운드에서 확인 |
-| `gsd-prompt-guard.js` | `PreToolUse` | `.planning/` 쓰기 작업에서 프롬프트 인젝션 패턴 스캔 (권고용) |
-| `gsd-workflow-guard.js` | `PreToolUse` | GSD 워크플로우 컨텍스트 외부의 파일 편집 감지 (권고용, `hooks.workflow_guard`로 활성화) |
+| `fvgsd/statusline.js` | `statusLine` | 모델, 작업, 디렉터리, 컨텍스트 사용 바 표시 |
+| `fvgsd/context-monitor.js` | `PostToolUse` / `AfterTool` | 잔여 35%/25% 시점에 에이전트 대면 컨텍스트 경고 주입 |
+| `fvgsd/check-update.js` | `SessionStart` | 새 GSD 버전을 백그라운드에서 확인 |
+| `fvgsd/prompt-guard.js` | `PreToolUse` | `.planning/` 쓰기 작업에서 프롬프트 인젝션 패턴 스캔 (권고용) |
+| `fvgsd/workflow-guard.js` | `PreToolUse` | GSD 워크플로우 컨텍스트 외부의 파일 편집 감지 (권고용, `hooks.workflow_guard`로 활성화) |
 
 ### CLI Tools (`get-shit-done/bin/`)
 
-17개의 도메인 모듈을 포함하는 Node.js CLI 유틸리티(`gsd-tools.cjs`)입니다.
+17개의 도메인 모듈을 포함하는 Node.js CLI 유틸리티(`fvgsd-tools.cjs`)입니다.
 
 | 모듈 | 역할 |
 |--------|---------------|
@@ -202,10 +202,10 @@ GSD는 사용자와 AI 코딩 에이전트(Claude Code, Gemini CLI, OpenCode, Ki
 ```
 Orchestrator (workflow .md)
     │
-    ├── Load context: gsd-tools.cjs init <workflow> <phase>
+    ├── Load context: fvgsd-tools.cjs init <workflow> <phase>
     │   Returns JSON with: project info, config, state, phase details
     │
-    ├── Resolve model: gsd-tools.cjs resolve-model <agent-name>
+    ├── Resolve model: fvgsd-tools.cjs resolve-model <agent-name>
     │   Returns: opus | sonnet | haiku | inherit
     │
     ├── Spawn Agent (Task/SubAgent call)
@@ -216,22 +216,22 @@ Orchestrator (workflow .md)
     │
     ├── Collect result
     │
-    └── Update state: gsd-tools.cjs state update/patch/advance-plan
+    └── Update state: fvgsd-tools.cjs state update/patch/advance-plan
 ```
 
 ### 에이전트 생성 카테고리
 
 | 카테고리 | 에이전트 | 병렬성 |
 |----------|--------|-------------|
-| **Researchers** | gsd-project-researcher, gsd-phase-researcher, gsd-ui-researcher, gsd-advisor-researcher | 4개 병렬 (stack, features, architecture, pitfalls); advisor는 discuss-phase 중 생성됨 |
-| **Synthesizers** | gsd-research-synthesizer | 순차적 (조사자 완료 후) |
-| **Planners** | gsd-planner, gsd-roadmapper | 순차적 |
-| **Checkers** | gsd-plan-checker, gsd-integration-checker, gsd-ui-checker, gsd-nyquist-auditor | 순차적 (검증 루프, 최대 3회 반복) |
-| **Executors** | gsd-executor | 웨이브 내 병렬, 웨이브 간 순차적 |
-| **Verifiers** | gsd-verifier | 순차적 (모든 executor 완료 후) |
-| **Mappers** | gsd-codebase-mapper | 4개 병렬 (tech, arch, quality, concerns) |
-| **Debuggers** | gsd-debugger | 순차적 (대화형) |
-| **Auditors** | gsd-ui-auditor | 순차적 |
+| **Researchers** | fvgsd-project-researcher, fvgsd-phase-researcher, fvgsd-ui-researcher, fvgsd-advisor-researcher | 4개 병렬 (stack, features, architecture, pitfalls); advisor는 discuss-phase 중 생성됨 |
+| **Synthesizers** | fvgsd-research-synthesizer | 순차적 (조사자 완료 후) |
+| **Planners** | fvgsd-planner, fvgsd-roadmapper | 순차적 |
+| **Checkers** | fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-ui-checker, fvgsd-nyquist-auditor | 순차적 (검증 루프, 최대 3회 반복) |
+| **Executors** | fvgsd-executor | 웨이브 내 병렬, 웨이브 간 순차적 |
+| **Verifiers** | fvgsd-verifier | 순차적 (모든 executor 완료 후) |
+| **Mappers** | fvgsd-codebase-mapper | 4개 병렬 (tech, arch, quality, concerns) |
+| **Debuggers** | fvgsd-debugger | 순차적 (대화형) |
+| **Auditors** | fvgsd-ui-auditor | 순차적 |
 
 ### 웨이브 실행 모델
 
@@ -346,16 +346,16 @@ UI-SPEC.md (per phase) ───────────────────
 ~/.claude/                          # Claude Code (전역 설치)
 ├── commands/gsd/*.md               # 37개 슬래시 명령어
 ├── get-shit-done/
-│   ├── bin/gsd-tools.cjs           # CLI 유틸리티
+│   ├── bin/fvgsd-tools.cjs           # CLI 유틸리티
 │   ├── bin/lib/*.cjs               # 15개 도메인 모듈
 │   ├── workflows/*.md              # 42개 워크플로우 정의
 │   ├── references/*.md             # 13개 공유 참조 문서
 │   └── templates/                  # 계획 아티팩트 템플릿
 ├── agents/*.md                     # 15개 에이전트 정의
 ├── hooks/
-│   ├── gsd-statusline.js           # 상태표시줄 훅
-│   ├── gsd-context-monitor.js      # 컨텍스트 경고 훅
-│   └── gsd-check-update.js         # 업데이트 확인 훅
+│   ├── fvgsd/statusline.js           # 상태표시줄 훅
+│   ├── fvgsd/context-monitor.js      # 컨텍스트 경고 훅
+│   └── fvgsd/check-update.js         # 업데이트 확인 훅
 ├── settings.json                   # 훅 등록
 └── VERSION                         # 설치된 버전 번호
 ```
@@ -378,13 +378,13 @@ UI-SPEC.md (per phase) ───────────────────
 ├── STATE.md                # 살아있는 메모리: 위치, 결정, 차단, 메트릭
 ├── config.json             # 워크플로우 설정
 ├── MILESTONES.md           # 완료된 마일스톤 보관
-├── research/               # /vgsd-new-project의 도메인 조사
+├── research/               # /fvgsd-new-project의 도메인 조사
 │   ├── SUMMARY.md
 │   ├── STACK.md
 │   ├── FEATURES.md
 │   ├── ARCHITECTURE.md
 │   └── PITFALLS.md
-├── codebase/               # 브라운필드 매핑 (/vgsd-map-codebase에서)
+├── codebase/               # 브라운필드 매핑 (/fvgsd-map-codebase에서)
 │   ├── STACK.md
 │   ├── ARCHITECTURE.md
 │   ├── CONVENTIONS.md
@@ -410,13 +410,13 @@ UI-SPEC.md (per phase) ───────────────────
 ├── todos/
 │   ├── pending/            # 캡처된 아이디어
 │   └── done/               # 완료된 할 일
-├── threads/               # 영구 컨텍스트 스레드 (/vgsd-thread에서)
-├── seeds/                 # 미래 지향적 아이디어 (/vgsd-capture --seed에서)
+├── threads/               # 영구 컨텍스트 스레드 (/fvgsd-thread에서)
+├── seeds/                 # 미래 지향적 아이디어 (/fvgsd-capture --seed에서)
 ├── debug/                  # 활성 디버그 세션
 │   ├── *.md                # 활성 세션
 │   ├── resolved/           # 보관된 세션
 │   └── knowledge-base.md   # 영구 디버그 학습 내용
-├── ui-reviews/             # /vgsd-ui-review의 스크린샷 (gitignored)
+├── ui-reviews/             # /fvgsd-ui-review의 스크린샷 (gitignored)
 └── continue-here.md        # 컨텍스트 핸드오프 (pause-work에서)
 ```
 
@@ -439,8 +439,8 @@ UI-SPEC.md (per phase) ───────────────────
    - Antigravity: Google 모델 등가물을 사용한 skills-first 방식
 5. **경로 정규화** — `~/.claude/` 경로를 런타임별 경로로 교체
 6. **설정 통합** — 런타임의 `settings.json`에 훅 등록
-7. **패치 백업** — v1.17부터 로컬 수정 파일을 `gsd-local-patches/`에 백업하여 `/vgsd-update --reapply`에 사용
-8. **매니페스트 추적** — 깔끔한 제거를 위해 `gsd-file-manifest.json` 작성
+7. **패치 백업** — v1.17부터 로컬 수정 파일을 `fvgsd-local-patches/`에 백업하여 `/fvgsd-update --reapply`에 사용
+8. **매니페스트 추적** — 깔끔한 제거를 위해 `fvgsd-file-manifest.json` 작성
 9. **제거 모드** — `--uninstall`로 모든 GSD 파일, 훅, 설정 제거
 
 ### 플랫폼 처리
@@ -458,15 +458,15 @@ UI-SPEC.md (per phase) ───────────────────
 ```
 Runtime Engine (Claude Code / Gemini CLI)
     │
-    ├── statusLine event ──► gsd-statusline.js
+    ├── statusLine event ──► fvgsd/statusline.js
     │   Reads: stdin (session JSON)
     │   Writes: stdout (formatted status), /tmp/claude-ctx-{session}.json (bridge)
     │
-    ├── PostToolUse/AfterTool event ──► gsd-context-monitor.js
+    ├── PostToolUse/AfterTool event ──► fvgsd/context-monitor.js
     │   Reads: stdin (tool event JSON), /tmp/claude-ctx-{session}.json (bridge)
     │   Writes: stdout (hookSpecificOutput with additionalContext warning)
     │
-    └── SessionStart event ──► gsd-check-update.js
+    └── SessionStart event ──► fvgsd/check-update.js
         Reads: VERSION file
         Writes: ~/.claude/cache/gsd-update-check.json (spawns background process)
 ```
@@ -491,16 +491,16 @@ Runtime Engine (Claude Code / Gemini CLI)
 
 ### 보안 훅 (v1.27)
 
-**Prompt Guard** (`gsd-prompt-guard.js`).
+**Prompt Guard** (`fvgsd/prompt-guard.js`).
 - `.planning/` 파일에 Write/Edit 시 트리거됩니다
 - 프롬프트 인젝션 패턴을 콘텐츠에서 스캔합니다 (역할 재정의, 지시 우회, system 태그 인젝션)
 - 권고용 — 감지를 기록하며 차단하지 않습니다
 - 패턴은 훅 독립성을 위해 인라인으로 포함됩니다 (`security.cjs`의 일부)
 
-**Workflow Guard** (`gsd-workflow-guard.js`).
+**Workflow Guard** (`fvgsd/workflow-guard.js`).
 - `.planning/` 외부 파일에 Write/Edit 시 트리거됩니다
-- GSD 워크플로우 컨텍스트 외부의 편집을 감지합니다 (활성 `/vgsd-` 명령어 또는 Task 서브에이전트 없음)
-- 상태 추적 변경을 위해 `/vgsd-quick` 또는 `/vgsd-fast` 사용을 권고합니다
+- GSD 워크플로우 컨텍스트 외부의 편집을 감지합니다 (활성 `/fvgsd-` 명령어 또는 Task 서브에이전트 없음)
+- 상태 추적 변경을 위해 `/fvgsd-quick` 또는 `/fvgsd-fast` 사용을 권고합니다
 - `hooks.workflow_guard: true`로 활성화 (기본값: false)
 
 ---
@@ -511,12 +511,12 @@ GSD는 통합된 명령어/워크플로우 아키텍처를 통해 여러 AI 코�
 
 | 런타임 | 명령어 형식 | 에이전트 시스템 | 설정 위치 |
 |---------|---------------|--------------|-----------------|
-| Claude Code | `/vgsd-command` | Task 생성 | `~/.claude/` |
-| OpenCode | `/vgsd-command` | Subagent 모드 | `~/.config/opencode/` |
-| Kilo | `/vgsd-command` | Subagent 모드 | `~/.config/kilo/` |
-| Gemini CLI | `/vgsd-command` | Task 생성 | `~/.gemini/` |
-| Codex | `$vgsd-command` | Skills | `~/.codex/` |
-| Copilot | `/vgsd-command` | 에이전트 위임 | `~/.github/` |
+| Claude Code | `/fvgsd-command` | Task 생성 | `~/.claude/` |
+| OpenCode | `/fvgsd-command` | Subagent 모드 | `~/.config/opencode/` |
+| Kilo | `/fvgsd-command` | Subagent 모드 | `~/.config/kilo/` |
+| Gemini CLI | `/fvgsd-command` | Task 생성 | `~/.gemini/` |
+| Codex | `$fvgsd-command` | Skills | `~/.codex/` |
+| Copilot | `/fvgsd-command` | 에이전트 위임 | `~/.github/` |
 | Antigravity | Skills | Skills | `~/.gemini/antigravity/` |
 
 ### 추상화 포인트

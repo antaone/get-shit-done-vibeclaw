@@ -3,10 +3,10 @@
 // product (workflow instructions consumed by AI agents), not a source .cjs file.
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
- * Bug #3657: verify-reapply-patches false-fails when gsd-pristine/ snapshot is
+ * Bug #3657: verify-reapply-patches false-fails when fvgsd-pristine/ snapshot is
  * newer than backup-meta baseline.
  *
  * Root cause: the verifier computes user-added lines as
@@ -90,7 +90,7 @@ function runVerifier({ pristine = true } = {}) {
 }
 
 before(() => {
-  tmpRoot    = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3657-'));
+  tmpRoot    = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3657-'));
   patchesDir = path.join(tmpRoot, 'patches');
   configDir  = path.join(tmpRoot, 'installed');
   pristineDir = path.join(tmpRoot, 'pristine');
@@ -119,7 +119,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
   test('exits 0 with reason=OK_PRISTINE_DRIFT_DETECTED when on-disk pristine hash does not match recorded hash', () => {
     resetFixture();
 
-    const FILE = 'agents/gsd-executor.md';
+    const FILE = 'agents/fvgsd-executor.md';
 
     // v_old pristine: the file as it existed when the backup was made.
     const oldPristineContent =
@@ -131,7 +131,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
       oldPristineContent +
       'model: sonnet in frontmatter — the user customisation to preserve\n';
 
-    // The installer later refreshed gsd-pristine/ to v_new.
+    // The installer later refreshed fvgsd-pristine/ to v_new.
     // The upstream update removed the second stock line entirely.
     const newPristineContent =
       'line present in old pristine and also in backup\n' +
@@ -173,7 +173,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
   test('still catches FAIL_USER_LINES_MISSING when pristine matches recorded hash', () => {
     resetFixture();
 
-    const FILE = 'agents/gsd-executor.md';
+    const FILE = 'agents/fvgsd-executor.md';
 
     const pristineContent =
       'stock line one that is long enough to be significant\n' +
@@ -265,7 +265,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
   test('handles mixed drift + real-failure across multiple files independently', () => {
     resetFixture();
 
-    const DRIFT_FILE  = 'agents/gsd-executor.md';
+    const DRIFT_FILE  = 'agents/fvgsd-executor.md';
     const CLEAN_FILE  = 'workflows/update.md';
 
     const driftOldPristine  = 'old upstream line that was removed in newer pristine version\n';
@@ -353,7 +353,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
   test('Finding 1: JSON report includes top-level drifted count and drifted_files when drift is detected', () => {
     resetFixture();
 
-    const FILE = 'agents/gsd-executor.md';
+    const FILE = 'agents/fvgsd-executor.md';
     const oldPristineContent = 'old pristine line that was present when backup was captured\n';
     const newPristineContent = 'new upstream line in the refreshed pristine snapshot version\n';
     const userLine = 'user customisation line that should be preserved across updates';
@@ -398,7 +398,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
   test('Finding 1: drifted count and drifted_files aggregate correctly across multiple drifted files', () => {
     resetFixture();
 
-    const FILE_A = 'agents/gsd-executor.md';
+    const FILE_A = 'agents/fvgsd-executor.md';
     const FILE_B = 'workflows/update.md';
     const FILE_C = 'skills/custom/SKILL.md';
 

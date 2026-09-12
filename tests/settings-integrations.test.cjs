@@ -38,7 +38,7 @@ const REPO_ROOT = path.join(__dirname, '..');
 // #2790: settings-integrations.md was consolidated into config.md as the --integrations flag.
 const COMMAND_PATH = path.join(REPO_ROOT, 'commands', 'gsd', 'config.md');
 const WORKFLOW_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'settings-integrations.md');
-const SKILL_PATH = path.join(REPO_ROOT, '.claude', 'skills', 'gsd-settings-integrations.md');
+const SKILL_PATH = path.join(REPO_ROOT, '.claude', 'skills', 'fvgsd-settings-integrations.md');
 const SETTINGS_WORKFLOW_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'settings.md');
 
 function readIfExists(p) {
@@ -133,8 +133,8 @@ describe('#2529 workflow — agent_skills injection', () => {
   });
 
   test('agent_skills.<valid-slug> passes validator', () => {
-    assert.ok(isValidConfigKey('agent_skills.gsd-executor'));
-    assert.ok(isValidConfigKey('agent_skills.gsd-planner'));
+    assert.ok(isValidConfigKey('agent_skills.fvgsd-executor'));
+    assert.ok(isValidConfigKey('agent_skills.fvgsd-planner'));
     assert.ok(isValidConfigKey('agent_skills.my_custom_agent'));
   });
 });
@@ -222,15 +222,15 @@ describe('#2529 config-set round-trip', () => {
     runGsdTools(['config-ensure-section'], tmp);
 
     const r = runGsdTools(
-      ['config-set', 'agent_skills.gsd-executor', 'skill-a,skill-b'],
+      ['config-set', 'agent_skills.fvgsd-executor', 'skill-a,skill-b'],
       tmp
     );
-    assert.ok(r.success, `agent_skills.gsd-executor set failed: ${r.error}`);
+    assert.ok(r.success, `agent_skills.fvgsd-executor set failed: ${r.error}`);
     const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.planning', 'config.json'), 'utf-8'));
     // Accept either array or string — validator accepts both shapes today.
-    const v = cfg.agent_skills?.['gsd-executor'];
+    const v = cfg.agent_skills?.['fvgsd-executor'];
     assert.ok(v === 'skill-a,skill-b' || (Array.isArray(v) && v.join(',') === 'skill-a,skill-b'),
-      `expected agent_skills.gsd-executor to contain both skills, got ${JSON.stringify(v)}`);
+      `expected agent_skills.fvgsd-executor to contain both skills, got ${JSON.stringify(v)}`);
   });
 });
 
@@ -251,18 +251,18 @@ describe('#2529 config merge safety', () => {
     assert.strictEqual(cfg.brave_search, 'BSKY-preserve-me-9999');
   });
 
-  test('setting agent_skills.gsd-executor preserves unrelated review.models.codex', (t) => {
+  test('setting agent_skills.fvgsd-executor preserves unrelated review.models.codex', (t) => {
     const tmp = createTempProject();
     t.after(() => cleanup(tmp));
     runGsdTools(['config-ensure-section'], tmp);
     runGsdTools(['config-set', 'review.models.codex', 'codex exec'], tmp);
 
-    const r = runGsdTools(['config-set', 'agent_skills.gsd-planner', 'a,b'], tmp);
+    const r = runGsdTools(['config-set', 'agent_skills.fvgsd-planner', 'a,b'], tmp);
     assert.ok(r.success, `set failed: ${r.error}`);
 
     const cfg = JSON.parse(fs.readFileSync(path.join(tmp, '.planning', 'config.json'), 'utf-8'));
     assert.strictEqual(cfg.review?.models?.codex, 'codex exec', 'unrelated review.models.codex must be preserved');
-    assert.ok(cfg.agent_skills?.['gsd-planner'], 'agent_skills.gsd-planner must be set');
+    assert.ok(cfg.agent_skills?.['fvgsd-planner'], 'agent_skills.fvgsd-planner must be set');
   });
 });
 

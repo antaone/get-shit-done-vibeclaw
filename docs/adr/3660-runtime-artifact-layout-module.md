@@ -5,7 +5,7 @@
 - **Issue:** #3660
 - **Implementation:** #3663 (Phase 1), feat/3663-runtime-artifact-layout-module-phase-1-m
 
-The **Runtime Surface Module** (`get-shit-done/bin/lib/surface.cjs`, introduced by ADR-0011 Phase 2) re-materializes a resolved Skill Surface profile to disk via `applySurface`. It currently hardcodes two artifact kinds (`commands`, `agents`) and re-derives their source directories via `_findInstallSource` / `_findAgentsSource` walk-up heuristics. The install and uninstall pipelines in `bin/install.js` each encode the same per-runtime artifact layout independently across ~14 install sites and ~6 uninstall sites. Bug #3659 surfaced the resulting drift: `applySurface` omits the `skills` kind for runtimes whose canonical layout is `skills/gsd-<stem>/SKILL.md`, so `vgsd-surface profile <name>` leaves ~67 skill directories on disk under the install-time profile's footprint when the resolved profile should have pruned them — roughly 2.7k tokens per session on a measured workstation.
+The **Runtime Surface Module** (`get-shit-done/bin/lib/surface.cjs`, introduced by ADR-0011 Phase 2) re-materializes a resolved Skill Surface profile to disk via `applySurface`. It currently hardcodes two artifact kinds (`commands`, `agents`) and re-derives their source directories via `_findInstallSource` / `_findAgentsSource` walk-up heuristics. The install and uninstall pipelines in `bin/install.js` each encode the same per-runtime artifact layout independently across ~14 install sites and ~6 uninstall sites. Bug #3659 surfaced the resulting drift: `applySurface` omits the `skills` kind for runtimes whose canonical layout is `skills/gsd-<stem>/SKILL.md`, so `fvgsd-surface profile <name>` leaves ~67 skill directories on disk under the install-time profile's footprint when the resolved profile should have pruned them — roughly 2.7k tokens per session on a measured workstation.
 
 The root problem is the absence of a typed seam for "where does runtime R put artifact kind K." Three lifecycle sites (install, uninstall, surface) each independently encode this knowledge and drift independently.
 
@@ -23,7 +23,7 @@ The root problem is the absence of a typed seam for "where does runtime R put ar
 - `applySurface` migrates from `(runtimeConfigDir, commandsDir, agentsDir, manifest, clusterMap)` to `(runtimeConfigDir, layout, manifest, clusterMap)`. Body collapses to `for (const kind of layout.kinds) _syncGsdDir(kind.stage(resolved), path.join(layout.configDir, kind.destSubpath), kind.kind)`.
 - `_findInstallSource` and `_findAgentsSource` in `surface.cjs` are removed. The layout owns source resolution.
 - Phase 2 (separate PR): install and uninstall paths in `bin/install.js` migrate to iterate `layout.kinds`. Per-runtime if/else branches for skill-directory creation/removal collapse to one layout-driven loop per pipeline.
-- Legacy-layout migrations (`bin/install.js:6710`/`:8402` for the pre-nested `skills/vgsd-*/` flat layout; `migrateLegacyDevPreferencesToSkill` for #2973) remain inside the Installer Migration Module (ADR-0008) and run **before** layout-driven copy. The layout module describes only the current canonical target — no historical kinds.
+- Legacy-layout migrations (`bin/install.js:6710`/`:8402` for the pre-nested `skills/fvgsd-*/` flat layout; `migrateLegacyDevPreferencesToSkill` for #2973) remain inside the Installer Migration Module (ADR-0008) and run **before** layout-driven copy. The layout module describes only the current canonical target — no historical kinds.
 
 ## Initial Scope
 
@@ -128,7 +128,7 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
 
 ## References
 
-- Confirmed bug: `#3659` — `applySurface` doesn't prune `~/.claude/skills/vgsd-*/` dirs
+- Confirmed bug: `#3659` — `applySurface` doesn't prune `~/.claude/skills/fvgsd-*/` dirs
 - See `0011-skill-surface-budget-module.md` — the Runtime Surface Module this seam serves
 - See `0008-installer-migration-module.md` — legacy-layout migrations stay there
 - See `0005-sdk-architecture-seam-map.md` — the seam map this module joins

@@ -31,7 +31,7 @@ const REAL_COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
 
 describe('resolveEffectiveProfile', () => {
   test('no explicit flag and no marker → returns "full"', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       const result = resolveEffectiveProfile({ requestedProfileName: null, targetDir: dir });
       assert.strictEqual(result, 'full');
@@ -41,7 +41,7 @@ describe('resolveEffectiveProfile', () => {
   });
 
   test('no explicit flag but marker exists → returns marker profile', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       writeActiveProfile(dir, 'standard');
       const result = resolveEffectiveProfile({ requestedProfileName: null, targetDir: dir });
@@ -52,7 +52,7 @@ describe('resolveEffectiveProfile', () => {
   });
 
   test('no explicit flag but core marker exists → returns "core"', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       writeActiveProfile(dir, 'core');
       const result = resolveEffectiveProfile({ requestedProfileName: null, targetDir: dir });
@@ -63,7 +63,7 @@ describe('resolveEffectiveProfile', () => {
   });
 
   test('explicit --profile=full overrides a non-full marker', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       writeActiveProfile(dir, 'core');
       const result = resolveEffectiveProfile({ requestedProfileName: 'full', targetDir: dir });
@@ -74,7 +74,7 @@ describe('resolveEffectiveProfile', () => {
   });
 
   test('explicit --profile=standard overrides a core marker', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       writeActiveProfile(dir, 'core');
       const result = resolveEffectiveProfile({ requestedProfileName: 'standard', targetDir: dir });
@@ -85,7 +85,7 @@ describe('resolveEffectiveProfile', () => {
   });
 
   test('full marker falls back to "full" (not recorded as a restriction)', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-reu-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-reu-'));
     try {
       writeActiveProfile(dir, 'full');
       const result = resolveEffectiveProfile({ requestedProfileName: null, targetDir: dir });
@@ -129,7 +129,7 @@ describe('mostRestrictiveProfile', () => {
 
 describe('marker-driven profile resolution end-to-end', () => {
   test('fresh install with --profile=standard writes marker, re-read resolves standard', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-e2e-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-e2e-'));
     try {
       // Simulate: fresh install with --profile=standard
       writeActiveProfile(dir, 'standard');
@@ -164,8 +164,8 @@ describe('marker-driven profile resolution end-to-end', () => {
   });
 
   test('marker disagreement across runtimes → mostRestrictiveProfile picks smaller set', () => {
-    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-rtA-'));
-    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-rtB-'));
+    const dirA = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-rtA-'));
+    const dirB = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-rtB-'));
     try {
       writeActiveProfile(dirA, 'standard');
       writeActiveProfile(dirB, 'core');
@@ -181,7 +181,7 @@ describe('marker-driven profile resolution end-to-end', () => {
   });
 
   test('explicit --profile=full overrides restrictive marker (no narrowing)', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-override-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-override-'));
     try {
       writeActiveProfile(dir, 'core');
       const effective = resolveEffectiveProfile({ requestedProfileName: 'full', targetDir: dir });

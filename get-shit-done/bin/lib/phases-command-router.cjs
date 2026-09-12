@@ -9,23 +9,23 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
 
 /**
  * Manifest-backed phases subcommand router.
- * Keeps gsd-tools.cjs thin while preserving current CJS semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving current CJS semantics.
  *
  * Phase 6: phases.list and phases.clear are dispatched via executeForCjs when
  * the SDK is available. CJS fallback retained when:
- * - GSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
+ * - FVGSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
  * - SDK is unavailable (build not present).
  *
  * SDK-only (not in CJS router, treated as unknown):
  * - archive: `phases archive` is SDK-only (`phases.archive` handler in SDK
- *   query registry). CJS `gsd-tools phases` intentionally supports list/clear only.
+ *   query registry). CJS `fvgsd-tools phases` intentionally supports list/clear only.
  *   `archive` is excluded from the subcommands list so it falls through to the
  *   "unknown subcommand" error path (matching pre-Phase 6 behavior).
  *
  * CJS-only subcommands: none.
  */
 function routePhasesCommand({ phase, milestone, args, cwd, raw, error }) {
-  const activeWorkstream = process.env.GSD_WORKSTREAM;
+  const activeWorkstream = process.env.FVGSD_WORKSTREAM;
   const sdkAvailable = !activeWorkstream && tryLoadSdk();
 
   function sdkHandler(registryCommand, registryArgs, legacyArgs, cjsFallback) {

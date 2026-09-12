@@ -1,5 +1,5 @@
 ---
-name: vgsd:debug
+name: fvgsd:debug
 description: Systematic debugging with persistent state across context resets
 argument-hint: "[list | status <slug> | continue <slug> | --diagnose] [issue description]"
 allowed-tools:
@@ -11,12 +11,12 @@ allowed-tools:
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "debug" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "debug" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -24,7 +24,7 @@ Parse the JSON response:
 <objective>
 Debug issues using scientific method with subagent isolation.
 
-**Orchestrator role:** Gather symptoms, spawn gsd-debugger agent, handle checkpoints, spawn continuations.
+**Orchestrator role:** Gather symptoms, spawn fvgsd-debugger agent, handle checkpoints, spawn continuations.
 
 **Flags:**
 - `--diagnose` — Diagnose only. Returns a Root Cause Report without applying a fix.
@@ -34,12 +34,12 @@ Debug issues using scientific method with subagent isolation.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
-- gsd-debugger — investigates bugs using scientific method
+- fvgsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
+- fvgsd-debugger — investigates bugs using scientific method
 </available_agent_types>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/debug.md
+@~/.claude/fvgsd/workflows/debug.md
 </execution_context>
 
 <context>

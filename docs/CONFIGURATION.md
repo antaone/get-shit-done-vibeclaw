@@ -6,7 +6,7 @@
 
 ## Configuration File
 
-GSD stores project settings in `.planning/config.json`. Created during `/vgsd-new-project`, updated via `/vgsd-settings`.
+GSD stores project settings in `.planning/config.json`. Created during `/fvgsd-new-project`, updated via `/fvgsd-settings`.
 
 ### Full Schema
 
@@ -146,7 +146,7 @@ GSD stores project settings in `.planning/config.json`. Created during `/vgsd-ne
 | `dynamic_routing.max_escalations` | integer | `0`, `1`, `2`, … | `1` | Hard cap on retries per agent invocation. Beyond the cap the resolver returns the cap-tier model. Added in v1.40 |
 | `project_code` | string | any short string | (none) | Prefix for phase directory names (e.g., `"ABC"` produces `ABC-01-setup/`). Added in v1.31 |
 | `response_language` | string | language code | (none) | Language for agent responses (e.g., `"pt"`, `"ko"`, `"ja"`). Propagates to all spawned agents for cross-phase language consistency. Added in v1.32 |
-| `context_window` | number | any integer | `200000` | Context window size in tokens. Set `1000000` for 1M-context models (e.g., `claude-opus-4-7[1m]`). Values `>= 500000` enable adaptive context enrichment (full-body reads of prior SUMMARY.md, deeper anti-pattern reads). Configured via `/vgsd-config --advanced`. |
+| `context_window` | number | any integer | `200000` | Context window size in tokens. Set `1000000` for 1M-context models (e.g., `claude-opus-4-7[1m]`). Values `>= 500000` enable adaptive context enrichment (full-body reads of prior SUMMARY.md, deeper anti-pattern reads). Configured via `/fvgsd-config --advanced`. |
 | `context_profile` | string | `dev`, `research`, `review` | (none) | Execution context preset that applies a pre-configured bundle of mode, model, and workflow settings for the current type of work. Added in v1.34 |
 | `claude_md_path` | string | any file path | `./CLAUDE.md` | Custom output path for the generated CLAUDE.md file. Useful for monorepos or projects that need CLAUDE.md in a non-root location. Defaults to `./CLAUDE.md` at the project root. Added in v1.36 |
 | `claude_md_assembly.mode` | enum | `embed`, `link` | `embed` | Controls how managed sections are written into CLAUDE.md. `embed` (default) inlines content between GSD markers. `link` writes `@.planning/<source-path>` instead — Claude Code expands the reference at runtime, reducing CLAUDE.md size by ~65% on typical projects. `link` only applies to sections that have a real source file; `workflow` and fallback sections always embed. Per-block overrides: `claude_md_assembly.blocks.<section>` (e.g. `claude_md_assembly.blocks.architecture: link`). Added in v1.38 |
@@ -163,7 +163,7 @@ GSD stores project settings in `.planning/config.json`. Created during `/vgsd-ne
 
 ## Integration Settings
 
-Configured interactively via [`/vgsd-config --integrations`](COMMANDS.md#vgsd-config). These are *connectivity* settings — API keys and cross-tool routing — and are intentionally kept separate from `/vgsd-settings` (workflow toggles).
+Configured interactively via [`/fvgsd-config --integrations`](COMMANDS.md#fvgsd-config). These are *connectivity* settings — API keys and cross-tool routing — and are intentionally kept separate from `/fvgsd-settings` (workflow toggles).
 
 ### Search API keys
 
@@ -190,13 +190,13 @@ API key fields accept a string value (the key itself). They can also be set to t
 
 The `<cli>` slug is validated against `[a-zA-Z0-9_-]+`. Empty or path-containing slugs are rejected by `config-set`.
 
-### Reviewer defaults for `/vgsd-review`
+### Reviewer defaults for `/fvgsd-review`
 
-Use `review.default_reviewers` to scope the no-flag `/vgsd-review` run to a subset of detected reviewers.
+Use `review.default_reviewers` to scope the no-flag `/fvgsd-review` run to a subset of detected reviewers.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `review.default_reviewers` | string[] \| null | `null` (all detected reviewers) | Optional default subset for no-flag `/vgsd-review`, e.g. `["gemini","codex"]`. Precedence is: explicit reviewer flags > `--all` > `review.default_reviewers` > all detected. Unknown slugs are ignored with a warning; known-but-undetected slugs are ignored with an info note; empty arrays are rejected by `config-set`. |
+| `review.default_reviewers` | string[] \| null | `null` (all detected reviewers) | Optional default subset for no-flag `/fvgsd-review`, e.g. `["gemini","codex"]`. Precedence is: explicit reviewer flags > `--all` > `review.default_reviewers` > all detected. Unknown slugs are ignored with a warning; known-but-undetected slugs are ignored with an info note; empty arrays are rejected by `config-set`. |
 
 Example:
 
@@ -210,7 +210,7 @@ Example:
 
 ### Agent-skill injection (dynamic)
 
-`agent_skills.<agent-type>` extends the `agent_skills` map documented below. Slug is validated against `[a-zA-Z0-9_-]+` — no path separators, no whitespace, no shell metacharacters. Configured interactively via `/vgsd-config --integrations`.
+`agent_skills.<agent-type>` extends the `agent_skills` map documented below. Slug is validated against `[a-zA-Z0-9_-]+` — no path separators, no whitespace, no shell metacharacters. Configured interactively via `/fvgsd-config --integrations`.
 
 ---
 
@@ -226,57 +226,57 @@ All workflow toggles follow the **absent = enabled** pattern. If a key is missin
 | `workflow.auto_advance` | boolean | `false` | Auto-chain discuss → plan → execute without stopping |
 | `workflow.nyquist_validation` | boolean | `true` | Test coverage mapping during plan-phase research |
 | `workflow.ui_phase` | boolean | `true` | Generate UI design contracts for frontend phases |
-| `workflow.ui_safety_gate` | boolean | `true` | Prompt to run /vgsd-ui-phase for frontend phases during plan-phase |
-| `workflow.ui_review` | boolean | `true` | Run visual quality audit (`/vgsd-ui-review`) after phase execution in autonomous mode. When `false`, the UI audit step is skipped. |
+| `workflow.ui_safety_gate` | boolean | `true` | Prompt to run /fvgsd-ui-phase for frontend phases during plan-phase |
+| `workflow.ui_review` | boolean | `true` | Run visual quality audit (`/fvgsd-ui-review`) after phase execution in autonomous mode. When `false`, the UI audit step is skipped. |
 | `workflow.node_repair` | boolean | `true` | Autonomous task repair on verification failure |
 | `workflow.node_repair_budget` | number | `2` | Max repair attempts per failed task |
 | `workflow.research_before_questions` | boolean | `false` | Run research before discussion questions instead of after |
-| `workflow.discuss_mode` | string | `'discuss'` | Controls how `/vgsd-discuss-phase` gathers context. `'discuss'` (default) asks questions one-by-one. `'assumptions'` reads the codebase first, generates structured assumptions with confidence levels, and only asks you to correct what's wrong. Added in v1.28 |
+| `workflow.discuss_mode` | string | `'discuss'` | Controls how `/fvgsd-discuss-phase` gathers context. `'discuss'` (default) asks questions one-by-one. `'assumptions'` reads the codebase first, generates structured assumptions with confidence levels, and only asks you to correct what's wrong. Added in v1.28 |
 | `workflow.max_discuss_passes` | number | `3` | Maximum number of question rounds in discuss-phase before the workflow stops asking. Useful in headless/auto mode to prevent infinite discussion loops. |
-| `workflow.skip_discuss` | boolean | `false` | When `true`, `/vgsd-autonomous` bypasses the discuss-phase entirely, writing minimal CONTEXT.md from the ROADMAP phase goal. Useful for projects where developer preferences are fully captured in PROJECT.md/REQUIREMENTS.md. Added in v1.28 |
+| `workflow.skip_discuss` | boolean | `false` | When `true`, `/fvgsd-autonomous` bypasses the discuss-phase entirely, writing minimal CONTEXT.md from the ROADMAP phase goal. Useful for projects where developer preferences are fully captured in PROJECT.md/REQUIREMENTS.md. Added in v1.28 |
 | `workflow.text_mode` | boolean | `false` | Replaces AskUserQuestion TUI menus with plain-text numbered lists. Required for Claude Code remote sessions (`/rc` mode) where TUI menus don't render. Can also be set per-session with `--text` flag on discuss-phase. Added in v1.28 |
 | `workflow.use_worktrees` | boolean | `true` | When `false`, disables git worktree isolation for parallel execution. Users who prefer sequential execution or whose environment does not support worktrees can disable this. Added in v1.31 |
 | `workflow.worktree_skip_hooks` | boolean | `false` | When `true`, executor agents in worktree mode pass `--no-verify` (skipping pre-commit hooks) and post-wave hook validation runs against the merged result instead. Opt-in escape hatch for projects whose hooks cannot run in agent worktrees. Default `false` runs hooks on every commit (#2924). |
-| `workflow.code_review` | boolean | `true` | Enable `/vgsd-code-review` and `/vgsd-code-review --fix` commands. When `false`, the commands exit with a configuration gate message. Added in v1.34 |
-| `workflow.code_review_depth` | string | `standard` | Default review depth for `/vgsd-code-review`: `quick` (pattern-matching only), `standard` (per-file analysis), or `deep` (cross-file with import graphs). Can be overridden per-run with `--depth=`. Added in v1.34 |
+| `workflow.code_review` | boolean | `true` | Enable `/fvgsd-code-review` and `/fvgsd-code-review --fix` commands. When `false`, the commands exit with a configuration gate message. Added in v1.34 |
+| `workflow.code_review_depth` | string | `standard` | Default review depth for `/fvgsd-code-review`: `quick` (pattern-matching only), `standard` (per-file analysis), or `deep` (cross-file with import graphs). Can be overridden per-run with `--depth=`. Added in v1.34 |
 | `workflow.plan_bounce` | boolean | `false` | Run external validation script against generated plans. When enabled, the plan-phase orchestrator pipes each PLAN.md through the script specified by `plan_bounce_script` and blocks on non-zero exit. Added in v1.36 |
 | `workflow.plan_bounce_script` | string | (none) | Path to the external script invoked for plan bounce validation. Receives the PLAN.md path as its first argument. Required when `plan_bounce` is `true`. Added in v1.36 |
 | `workflow.plan_bounce_passes` | number | `2` | Number of sequential bounce passes to run. Each pass feeds the previous pass's output back into the validator. Higher values increase rigor at the cost of latency. Added in v1.36 |
 | `workflow.post_planning_gaps` | boolean | `true` | Unified post-planning gap report (#2493). After all plans are generated and committed, scans REQUIREMENTS.md and CONTEXT.md `<decisions>` against every PLAN.md in the phase directory, then prints one `Source \| Item \| Status` table. Word-boundary matching (REQ-1 vs REQ-10) and natural sort (REQ-02 before REQ-10). Non-blocking — informational report only. Set to `false` to skip Step 13e of plan-phase. |
-| `workflow.plan_review_convergence` | boolean | `false` | Enable the `/vgsd-plan-review-convergence` command. Disabled by default — the command exits with an enable instruction when this key is `false`. The command automates the manual plan→review→replan loop: it spawns configured reviewers (Codex, Gemini, Claude, OpenCode, Ollama, LM Studio, llama.cpp), counts unresolved HIGH concerns via the CYCLE_SUMMARY contract, replans with `--reviews` feedback, and repeats until converged or max cycles reached. Enable with `gsd config-set workflow.plan_review_convergence true`. Added in v1.39 |
-| `workflow.plan_chunked` | boolean | `false` | Enable chunked planning mode. When `true` (or when `--chunked` flag is passed to `/vgsd-plan-phase`), the orchestrator splits the single long-lived planner Task into a short outline Task followed by N short per-plan Tasks (~3-5 min each). Each plan is committed individually for crash resilience. If a Task hangs and the terminal is force-killed, rerunning with `--chunked` resumes from the last completed plan. Particularly useful on Windows where long-lived Tasks may hang on stdio. Added in v1.38 |
-| `workflow.code_review_command` | string | (none) | Shell command for external code review integration in `/vgsd-ship`. Receives changed file paths via stdin. Non-zero exit blocks the ship workflow. Added in v1.36 |
+| `workflow.plan_review_convergence` | boolean | `false` | Enable the `/fvgsd-plan-review-convergence` command. Disabled by default — the command exits with an enable instruction when this key is `false`. The command automates the manual plan→review→replan loop: it spawns configured reviewers (Codex, Gemini, Claude, OpenCode, Ollama, LM Studio, llama.cpp), counts unresolved HIGH concerns via the CYCLE_SUMMARY contract, replans with `--reviews` feedback, and repeats until converged or max cycles reached. Enable with `gsd config-set workflow.plan_review_convergence true`. Added in v1.39 |
+| `workflow.plan_chunked` | boolean | `false` | Enable chunked planning mode. When `true` (or when `--chunked` flag is passed to `/fvgsd-plan-phase`), the orchestrator splits the single long-lived planner Task into a short outline Task followed by N short per-plan Tasks (~3-5 min each). Each plan is committed individually for crash resilience. If a Task hangs and the terminal is force-killed, rerunning with `--chunked` resumes from the last completed plan. Particularly useful on Windows where long-lived Tasks may hang on stdio. Added in v1.38 |
+| `workflow.code_review_command` | string | (none) | Shell command for external code review integration in `/fvgsd-ship`. Receives changed file paths via stdin. Non-zero exit blocks the ship workflow. Added in v1.36 |
 | `workflow.tdd_mode` | boolean | `false` | Enable TDD pipeline as a first-class execution mode. When `true`, the planner aggressively applies `type: tdd` to eligible tasks (business logic, APIs, validations, algorithms) and the executor enforces RED/GREEN/REFACTOR gate sequence. An end-of-phase collaborative review checkpoint verifies gate compliance. Added in v1.36 |
 | `workflow.human_verify_mode` | string | `'end-of-phase'` | Controls human verification checkpoints. `'end-of-phase'` (default since #3309) suppresses `checkpoint:human-verify` tasks and embeds checks into `<verify><human-check>` blocks for end-of-phase review. `'mid-flight'` restores blocking checkpoint tasks. `checkpoint:decision` and `checkpoint:human-action` are unaffected. See [Checkpoints Reference](../get-shit-done/references/checkpoints.md#checkpoint_types). |
 | `workflow.cross_ai_execution` | boolean | `false` | Delegate phase execution to an external AI CLI instead of spawning local executor agents. Useful for leveraging a different model's strengths for specific phases. Added in v1.36 |
 | `workflow.cross_ai_command` | string | (none) | Shell command template for cross-AI execution. Receives the phase prompt via stdin. Must produce SUMMARY.md-compatible output. Required when `cross_ai_execution` is `true`. Added in v1.36 |
 | `workflow.cross_ai_timeout` | number | `300` | Timeout in seconds for cross-AI execution commands. Prevents runaway external processes. Added in v1.36 |
-| `workflow.ai_integration_phase` | boolean | `true` | Enable the `/vgsd-ai-integration-phase` command. When `false`, the command exits with a configuration gate message |
+| `workflow.ai_integration_phase` | boolean | `true` | Enable the `/fvgsd-ai-integration-phase` command. When `false`, the command exits with a configuration gate message |
 | `workflow.auto_prune_state` | boolean | `false` | When `true`, automatically prune stale entries from STATE.md at phase boundaries instead of prompting |
-| `workflow.pattern_mapper` | boolean | `true` | Run the `gsd-pattern-mapper` agent between research and planning to map new files to existing codebase analogs |
+| `workflow.pattern_mapper` | boolean | `true` | Run the `fvgsd-pattern-mapper` agent between research and planning to map new files to existing codebase analogs |
 | `workflow.subagent_timeout` | number | `600` | Timeout in seconds for individual subagent invocations. Increase for long-running research or execution phases |
 | `executor.stall_detect_interval_minutes` | number | `5` | Minutes between executor stall checks while an executor agent is active. The execute-phase orchestrator uses this cadence to inspect recent commits and avoid waiting forever on a silent agent. |
 | `executor.stall_threshold_minutes` | number | `10` | Minutes without executor completion or expected-branch commit activity before execute-phase offers recovery choices for a possible stalled executor. |
 | `workflow.inline_plan_threshold` | number | `3` | Maximum number of tasks in a phase before the planner generates a separate PLAN.md file instead of inlining tasks in the prompt |
 | `workflow.drift_threshold` | number | `3` | Minimum number of new structural elements (new directories, barrel exports, migrations, route modules) introduced during a phase before the post-execute codebase-drift gate takes action. See [#2003](https://github.com/gsd-build/get-shit-done/issues/2003). Added in v1.39 |
-| `workflow.drift_action` | string | `warn` | What to do when `workflow.drift_threshold` is exceeded after `/vgsd-execute-phase`. `warn` prints a message suggesting `/vgsd-map-codebase --paths …`; `auto-remap` spawns `gsd-codebase-mapper` scoped to the affected paths. Added in v1.39 |
+| `workflow.drift_action` | string | `warn` | What to do when `workflow.drift_threshold` is exceeded after `/fvgsd-execute-phase`. `warn` prints a message suggesting `/fvgsd-map-codebase --paths …`; `auto-remap` spawns `fvgsd-codebase-mapper` scoped to the affected paths. Added in v1.39 |
 | `workflow.build_command` | string | (none) | Shell command to build the project in the post-merge build gate (Step A of step 5.6 in execute-phase). When unset, the gate auto-detects: Xcode (`.xcodeproj` present) → `xcodebuild build`, `Makefile` with `build:` target → `make build`, Justfile → `just build`, `Cargo.toml` → `cargo build`, `go.mod` → `go build ./...`, Python → `python -m py_compile`, `package.json` with `build` script → `npm run build`. Runs with a 5-minute timeout; failure increments `WAVE_FAILURE_COUNT`. Added in v1.39 |
 | `workflow.test_command` | string | (none) | Shell command to run the project's test suite in the post-merge test gate (Step B of step 5.6 in execute-phase) and the regression gate. When unset, the gate auto-detects: Xcode (`.xcodeproj` present) → `xcodebuild test`, `Makefile` with `test:` target → `make test`, Justfile → `just test`, `package.json` → `npm test`, `Cargo.toml` → `cargo test`, `go.mod` → `go test ./...`, Python → `python -m pytest`. Runs with a 5-minute timeout; failure increments `WAVE_FAILURE_COUNT`. Added in v1.39 |
 
 ## Code Quality Settings
 
-The `code_quality.*` namespace gates optional structural-analysis tooling that augments `/vgsd-code-review`. Settings are additive: each tool is independently opt-in and off by default.
+The `code_quality.*` namespace gates optional structural-analysis tooling that augments `/fvgsd-code-review`. Settings are additive: each tool is independently opt-in and off by default.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `code_quality.fallow.enabled` | boolean | `false` | Enables fallow structural pre-pass for `/vgsd-code-review`. When `false`, no fallow binary probe or JSON artifact is produced. |
+| `code_quality.fallow.enabled` | boolean | `false` | Enables fallow structural pre-pass for `/fvgsd-code-review`. When `false`, no fallow binary probe or JSON artifact is produced. |
 | `code_quality.fallow.scope` | string | `phase` | Scope for fallow analysis: `phase` (current review file scope) or `repo` (entire repository). |
 | `code_quality.fallow.profile` | string | `standard` | Fallow profile selector passed to the pre-pass runner (`minimal`, `standard`, `strict`). |
 | `code_quality.fallow.mcp` | boolean | `false` | **Reserved — not yet implemented.** When `true`, enables MCP-backed structural findings mode for runtimes that support MCP server routing. Setting this to `true` is currently a no-op and emits a runtime warning. |
 
 ## Ship Settings
 
-`ship.pr_body_sections` adds additional PR body sections for project-specific PRD/PR body content in `/vgsd-ship` without editing `get-shit-done/workflows/ship.md`.
+`ship.pr_body_sections` adds additional PR body sections for project-specific PRD/PR body content in `/fvgsd-ship` without editing `get-shit-done/workflows/ship.md`.
 
 For a user guide with onboarding examples and troubleshooting, see [Custom PR Body Sections](ship-pr-body-sections.md).
 
@@ -294,7 +294,7 @@ Each entry supports:
 | `template` | string | (none) | Literal Markdown with closed tokens: `{phase_number}`, `{phase_name}`, `{phase_dir}`, `{base_branch}`, `{padded_phase}`. |
 | `fallback` | string | (none) | Literal Markdown used when `source` yields no content and no `template` is provided. |
 
-At least one of `source`, `template`, or `fallback` is required for each section. The default is `[]`, so existing projects keep their current `/vgsd-ship` output until onboarding adds enabled entries.
+At least one of `source`, `template`, or `fallback` is required for each section. The default is `[]`, so existing projects keep their current `/fvgsd-ship` output until onboarding adds enabled entries.
 
 Example:
 
@@ -344,7 +344,7 @@ Example:
 
 ### Project-Root Resolution in Multi-Repo Workspaces
 
-When `sub_repos` is set and `gsd-tools.cjs` or `gsd-sdk query` is invoked from inside a listed child repo, both CLIs walk up to the parent workspace that owns `.planning/` before dispatching handlers. Resolution order (checked at each ancestor up to 10 levels, never above `$HOME`):
+When `sub_repos` is set and `fvgsd-tools.cjs` or `fvgsd-sdk query` is invoked from inside a listed child repo, both CLIs walk up to the parent workspace that owns `.planning/` before dispatching handlers. Resolution order (checked at each ancestor up to 10 levels, never above `$HOME`):
 
 1. If the starting directory already has its own `.planning/`, it is the project root (no walk-up).
 2. Parent has `.planning/config.json` listing the starting directory's top-level segment in `sub_repos` (or the legacy `planning.sub_repos` shape).
@@ -364,11 +364,11 @@ If `.planning/` is in `.gitignore`, `commit_docs` is automatically `false` regar
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `hooks.context_warnings` | boolean | `true` | Show context window usage warnings via context monitor hook |
-| `hooks.workflow_guard` | boolean | `false` | Warn when file edits happen outside GSD workflow context (advises using `/vgsd-quick` or `/vgsd-fast`) |
+| `hooks.workflow_guard` | boolean | `false` | Warn when file edits happen outside GSD workflow context (advises using `/fvgsd-quick` or `/fvgsd-fast`) |
 | `statusline.show_last_command` | boolean | `false` | Append `last: /<cmd>` suffix to the statusline showing the most recently invoked slash command. Opt-in; reads the active session transcript to extract the latest `<command-name>` tag (closes #2538) |
 | `statusline.context_position` | string | `"end"` | Position of the context-window meter. `"end"` (default) renders at line tail; `"front"` renders immediately after the model name so the meter stays visible in narrow terminals. Closes #2937 |
 
-The prompt injection guard hook (`gsd-prompt-guard.js`) is always active and cannot be disabled — it's a security feature, not a workflow toggle.
+The prompt injection guard hook (`fvgsd/prompt-guard.js`) is always active and cannot be disabled — it's a security feature, not a workflow toggle.
 
 ### Private Planning Setup
 
@@ -395,9 +395,9 @@ Add an `agent_skills` section to `.planning/config.json` mapping agent types to 
 ```json
 {
   "agent_skills": {
-    "gsd-executor": ["skills/testing-standards", "skills/api-conventions"],
-    "gsd-planner": ["skills/architecture-rules"],
-    "gsd-verifier": ["skills/acceptance-criteria"]
+    "fvgsd-executor": ["skills/testing-standards", "skills/api-conventions"],
+    "fvgsd-planner": ["skills/architecture-rules"],
+    "fvgsd-verifier": ["skills/acceptance-criteria"]
   }
 }
 ```
@@ -408,23 +408,23 @@ Each path must be a directory containing a `SKILL.md` file. Paths are validated 
 
 Any GSD agent type can receive skills. Common types:
 
-- `gsd-executor` -- executes implementation plans
-- `gsd-planner` -- creates phase plans
+- `fvgsd-executor` -- executes implementation plans
+- `fvgsd-planner` -- creates phase plans
 - `gsd-checker` -- verifies plan quality
-- `gsd-verifier` -- post-execution verification
+- `fvgsd-verifier` -- post-execution verification
 - `gsd-researcher` -- phase research
-- `gsd-project-researcher` -- new-project research
-- `gsd-debugger` -- diagnostic agents
-- `gsd-codebase-mapper` -- codebase analysis
+- `fvgsd-project-researcher` -- new-project research
+- `fvgsd-debugger` -- diagnostic agents
+- `fvgsd-codebase-mapper` -- codebase analysis
 - `gsd-advisor` -- discuss-phase advisors
-- `gsd-ui-researcher` -- UI design contract creation
-- `gsd-ui-checker` -- UI spec verification
-- `gsd-roadmapper` -- roadmap creation
+- `fvgsd-ui-researcher` -- UI design contract creation
+- `fvgsd-ui-checker` -- UI spec verification
+- `fvgsd-roadmapper` -- roadmap creation
 - `gsd-synthesizer` -- research synthesis
 
 ### How It Works
 
-At spawn time, workflows call `gsd-sdk query agent-skills <type>` (or legacy `node gsd-tools.cjs agent-skills <type>`) to load configured skills. If skills exist for the agent type, they are injected as an `<agent_skills>` block in the Task() prompt:
+At spawn time, workflows call `fvgsd-sdk query agent-skills <type>` (or legacy `node fvgsd-tools.cjs agent-skills <type>`) to load configured skills. If skills exist for the agent type, they are injected as an `<agent_skills>` block in the Task() prompt:
 
 ```xml
 <agent_skills>
@@ -441,7 +441,7 @@ If no skills are configured, the block is omitted (zero overhead).
 Set skills via the CLI:
 
 ```bash
-gsd-sdk query config-set agent_skills.gsd-executor '["skills/my-skill"]'
+fvgsd-sdk query config-set agent_skills.fvgsd-executor '["skills/my-skill"]'
 ```
 
 ---
@@ -455,16 +455,16 @@ Toggle optional capabilities via the `features.*` config namespace. Feature flag
 | `features.thinking_partner` | boolean | `false` | Enable thinking partner analysis at workflow decision points |
 | `features.global_learnings` | boolean | `false` | Enable cross-project learnings pipeline (auto-copy at phase completion, planner injection) |
 | `learnings.max_inject` | number | `10` | Maximum number of cross-project learnings injected into each planner prompt. Lower values reduce prompt size; higher values provide broader historical context |
-| `intel.enabled` | boolean | `false` | Enable queryable codebase intelligence system. When `true`, `/vgsd-map-codebase --query` commands build and query a JSON index in `.planning/intel/`. Added in v1.34 |
+| `intel.enabled` | boolean | `false` | Enable queryable codebase intelligence system. When `true`, `/fvgsd-map-codebase --query` commands build and query a JSON index in `.planning/intel/`. Added in v1.34 |
 
 <a id="graphify-settings"></a>
 ### Graphify Settings
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `graphify.enabled` | boolean | `false` | Enable the project knowledge graph. When `true`, `/vgsd-graphify` builds and queries a graph in `.planning/graphs/`. Added in v1.36 |
-| `graphify.build_timeout` | number (seconds) | `300` | Maximum seconds allowed for a `/vgsd-graphify build` run before it aborts. Added in v1.36 |
-| `graphify.auto_update` | boolean | `false` | **Opt-in (issue #3347).** When `true` (and `graphify.enabled` is also `true`), the bundled PostToolUse hook `hooks/gsd-graphify-update.sh` auto-rebuilds the project knowledge graph in a detached background process after `git commit/merge/pull/rebase --continue/cherry-pick` on the default branch (`git.base_branch` override, else `main`/`master`/`trunk`). Hook returns instantly; the rebuild updates `.planning/graphs/{graph.json,graph.html,GRAPH_REPORT.md}` and writes `.planning/graphs/.last-build-status.json` (`{ts, status: "running"\|"ok"\|"failed", exit_code, duration_ms, head_at_build}`). PID-locked, CI-aware (`$CI` env suppresses), bails silently if `graphify` is not on `PATH`. Default `false` so existing behaviour is unchanged after upgrade. |
+| `graphify.enabled` | boolean | `false` | Enable the project knowledge graph. When `true`, `/fvgsd-graphify` builds and queries a graph in `.planning/graphs/`. Added in v1.36 |
+| `graphify.build_timeout` | number (seconds) | `300` | Maximum seconds allowed for a `/fvgsd-graphify build` run before it aborts. Added in v1.36 |
+| `graphify.auto_update` | boolean | `false` | **Opt-in (issue #3347).** When `true` (and `graphify.enabled` is also `true`), the bundled PostToolUse hook `hooks/fvgsd/graphify-update.sh` auto-rebuilds the project knowledge graph in a detached background process after `git commit/merge/pull/rebase --continue/cherry-pick` on the default branch (`git.base_branch` override, else `main`/`master`/`trunk`). Hook returns instantly; the rebuild updates `.planning/graphs/{graph.json,graph.html,GRAPH_REPORT.md}` and writes `.planning/graphs/.last-build-status.json` (`{ts, status: "running"\|"ok"\|"failed", exit_code, duration_ms, head_at_build}`). PID-locked, CI-aware (`$CI` env suppresses), bails silently if `graphify` is not on `PATH`. Default `false` so existing behaviour is unchanged after upgrade. |
 
 #### Multi-developer setup
 
@@ -480,11 +480,11 @@ writes (no conflict markers in the knowledge graph), plus the post-commit
 rebuild hook. It writes `.gitattributes` and registers `graphify
 merge-driver` in `.git/config`. Solo projects can skip this step; running it
 anyway is harmless. Introduced upstream in graphify v0.7.0 alongside the
-`built_at_commit` freshness signal that `/vgsd-graphify status` surfaces.
+`built_at_commit` freshness signal that `/fvgsd-graphify status` surfaces.
 
 #### Commit-based staleness
 
-`/vgsd-graphify status` reports two orthogonal staleness signals:
+`/fvgsd-graphify status` reports two orthogonal staleness signals:
 
 - **`stale`** (mtime-based, 24-hour window) — when the graph file was last
   written. Useful when graphify isn't run automatically.
@@ -502,10 +502,10 @@ architecture questions.
 
 ```bash
 # Enable a feature
-gsd-sdk query config-set features.global_learnings true
+fvgsd-sdk query config-set features.global_learnings true
 
 # Disable a feature
-gsd-sdk query config-set features.thinking_partner false
+fvgsd-sdk query config-set features.thinking_partner false
 ```
 
 The `features.*` namespace is a dynamic key pattern — new feature flags can be added without modifying `VALID_CONFIG_KEYS`. Any key matching `features.<name>` is accepted by the config system.
@@ -552,7 +552,7 @@ All four fields are **optional and additive** — STATE.md files without them ke
 | `git.create_tag` | boolean | `true` | Create a git tag (`v[X.Y]`) on milestone completion. Set to `false` for projects with their own release flow |
 | `git.phase_branch_template` | string | `gsd/phase-{phase}-{slug}` | Branch name template for phase strategy |
 | `git.milestone_branch_template` | string | `gsd/{milestone}-{slug}` | Branch name template for milestone strategy |
-| `git.quick_branch_template` | string or null | `null` | Optional branch name template for `/vgsd-quick` tasks |
+| `git.quick_branch_template` | string or null | `null` | Optional branch name template for `/fvgsd-quick` tasks |
 
 ### Strategy Comparison
 
@@ -624,7 +624,7 @@ These keys live under `workflow.*` — that is where the workflows and installer
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `workflow.security_enforcement` | boolean | `true` | Enable threat-model-anchored security verification via `/vgsd-secure-phase`. When `false`, security checks are skipped entirely |
+| `workflow.security_enforcement` | boolean | `true` | Enable threat-model-anchored security verification via `/fvgsd-secure-phase`. When `false`, security checks are skipped entirely |
 | `workflow.security_asvs_level` | number (1-3) | `1` | OWASP ASVS verification level. Level 1 = opportunistic, Level 2 = standard, Level 3 = comprehensive |
 | `workflow.security_block_on` | string | `"high"` | Minimum severity that blocks phase advancement. Options: `"high"`, `"medium"`, `"low"` |
 
@@ -686,7 +686,7 @@ record, or items already deferred to a later phase.
 
 ## Review Settings
 
-Configure per-CLI model selection for `/vgsd-review`. When set, overrides the CLI's default model for that reviewer.
+Configure per-CLI model selection for `/fvgsd-review`. When set, overrides the CLI's default model for that reviewer.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
@@ -699,7 +699,7 @@ Configure per-CLI model selection for `/vgsd-review`. When set, overrides the CL
 | `review.models.ollama` | string | (server default) | Model name passed to Ollama when `--ollama` reviewer is invoked. If unset, the first available model reported by the server is used (e.g. `llama3`). Set to a specific tag: `gsd config-set review.models.ollama codellama` |
 | `review.models.lm_studio` | string | (server default) | Model name passed to LM Studio when `--lm-studio` reviewer is invoked. If unset, the first available model reported by the server is used. |
 | `review.models.llama_cpp` | string | (server default) | Model name passed to llama.cpp when `--llama-cpp` reviewer is invoked. If unset, the first model reported by `/v1/models` is used. |
-| `review.default_reviewers` | string[] \| null | (all detected reviewers) | Default reviewer subset for no-flag `/vgsd-review`. Example: `["gemini","codex"]`. Explicit flags and `--all` override this setting. |
+| `review.default_reviewers` | string[] \| null | (all detected reviewers) | Default reviewer subset for no-flag `/fvgsd-review`. Example: `["gemini","codex"]`. Explicit flags and `--all` override this setting. |
 | `review.max_prompt_tokens` | number\|null | null | Default maximum estimated tokens for the assembled review prompt. When set, the prompt is deterministically trimmed before being sent to each reviewer. Per-reviewer overrides via `review.max_prompt_tokens_per_reviewer` take precedence. null = no trim (current behavior). |
 | `review.max_prompt_tokens_per_reviewer` | object | {} | Per-reviewer token budget overrides. Keys are reviewer slugs (ollama, llama_cpp, lm_studio, gemini, claude, codex, opencode, qwen, cursor). Values override `review.max_prompt_tokens` for that reviewer. Recommended for local model servers. |
 | `review.ollama_host` | string | `http://localhost:11434` | Base URL of the Ollama server. Override when running Ollama on a non-default port or remote host: `gsd config-set review.ollama_host http://192.168.1.10:11434` |
@@ -729,7 +729,7 @@ Falls back to each CLI's configured default when a key is absent. Added in v1.35
 
 ## Manager Passthrough Flags
 
-Configure per-step flags that `/vgsd-manager` appends to each dispatched command. This allows customizing how the manager runs discuss, plan, and execute steps without manual flag entry.
+Configure per-step flags that `/fvgsd-manager` appends to each dispatched command. This allows customizing how the manager runs discuss, plan, and execute steps without manual flag entry.
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
@@ -761,24 +761,24 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 
 | Agent | `quality` | `balanced` | `budget` | `inherit` |
 |-------|-----------|------------|----------|-----------|
-| gsd-planner | Opus | Opus | Sonnet | Inherit |
-| gsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
-| gsd-executor | Opus | Sonnet | Sonnet | Inherit |
-| gsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-debugger | Opus | Sonnet | Sonnet | Inherit |
-| gsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
-| gsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-pattern-mapper | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-ui-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-ui-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-ui-auditor | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-doc-writer | Opus | Sonnet | Haiku | Inherit |
-| gsd-doc-verifier | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-planner | Opus | Opus | Sonnet | Inherit |
+| fvgsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-executor | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-debugger | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
+| fvgsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-pattern-mapper | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-ui-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-ui-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-ui-auditor | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-doc-writer | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-doc-verifier | Sonnet | Sonnet | Haiku | Inherit |
 
 > **All 33 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
 
@@ -790,8 +790,8 @@ Override specific agents without changing the entire profile:
 {
   "model_profile": "balanced",
   "model_overrides": {
-    "gsd-executor": "opus",
-    "gsd-planner": "haiku"
+    "fvgsd-executor": "opus",
+    "fvgsd-planner": "haiku"
   }
 }
 ```
@@ -813,7 +813,7 @@ for the change to take effect. See issue #2256.
 
 > Express tuning at the **phase** level (planning, research, execution, verification) without learning the agent taxonomy. Added in [#3023](https://github.com/gsd-build/get-shit-done/pull/3030).
 
-`model_overrides` is per-**agent** (precise but verbose; you have to know that `gsd-codebase-mapper` is research and `gsd-doc-writer` is execution). The `models` block lets you say "Opus for planning and execution, Sonnet for the rest" in two lines:
+`model_overrides` is per-**agent** (precise but verbose; you have to know that `fvgsd-codebase-mapper` is research and `fvgsd-doc-writer` is execution). The `models` block lets you say "Opus for planning and execution, Sonnet for the rest" in two lines:
 
 ```json
 {
@@ -827,7 +827,7 @@ for the change to take effect. See issue #2256.
     "completion": "sonnet"
   },
   "model_overrides": {
-    "gsd-codebase-mapper": "haiku"
+    "fvgsd-codebase-mapper": "haiku"
   }
 }
 ```
@@ -836,11 +836,11 @@ for the change to take effect. See issue #2256.
 
 | Phase type | Agents |
 |---|---|
-| `planning` | `gsd-planner`, `gsd-roadmapper`, `gsd-pattern-mapper` |
+| `planning` | `fvgsd-planner`, `fvgsd-roadmapper`, `fvgsd-pattern-mapper` |
 | `discuss` | (reserved — no subagent today) |
-| `research` | `gsd-phase-researcher`, `gsd-project-researcher`, `gsd-research-synthesizer`, `gsd-codebase-mapper`, `gsd-ui-researcher` |
-| `execution` | `gsd-executor`, `gsd-debugger`, `gsd-doc-writer` |
-| `verification` | `gsd-verifier`, `gsd-plan-checker`, `gsd-integration-checker`, `gsd-nyquist-auditor`, `gsd-ui-checker`, `gsd-ui-auditor`, `gsd-doc-verifier` |
+| `research` | `fvgsd-phase-researcher`, `fvgsd-project-researcher`, `fvgsd-research-synthesizer`, `fvgsd-codebase-mapper`, `fvgsd-ui-researcher` |
+| `execution` | `fvgsd-executor`, `fvgsd-debugger`, `fvgsd-doc-writer` |
+| `verification` | `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-nyquist-auditor`, `fvgsd-ui-checker`, `fvgsd-ui-auditor`, `fvgsd-doc-verifier` |
 | `completion` | (reserved — no subagent today) |
 
 `discuss` and `completion` are accepted by the schema for forward compatibility; setting them today is a no-op until a subagent maps to them.
@@ -855,7 +855,7 @@ for the change to take effect. See issue #2256.
 5. Runtime default                       ← when nothing else applies
 ```
 
-The five layers compose top-down: `model_profile` is the base tier, `models[<phase_type>]` overrides at the phase level, `dynamic_routing` (when enabled) escalates per-attempt on soft failure, `model_overrides[<agent>]` carves per-agent exceptions at the top, and the runtime default applies when nothing else does. In the example above, all five research agents resolve to `sonnet` *except* `gsd-codebase-mapper`, which the per-agent override pins to `haiku`. `dynamic_routing` is disabled by default — when off (`enabled: false` or block omitted), this section's behavior is unchanged from today.
+The five layers compose top-down: `model_profile` is the base tier, `models[<phase_type>]` overrides at the phase level, `dynamic_routing` (when enabled) escalates per-attempt on soft failure, `model_overrides[<agent>]` carves per-agent exceptions at the top, and the runtime default applies when nothing else does. In the example above, all five research agents resolve to `sonnet` *except* `fvgsd-codebase-mapper`, which the per-agent override pins to `haiku`. `dynamic_routing` is disabled by default — when off (`enabled: false` or block omitted), this section's behavior is unchanged from today.
 
 #### Accepted values
 
@@ -920,9 +920,9 @@ Each agent in `MODEL_PROFILES` declares one of three default tiers. The resolver
 
 | Tier | Agents | Use case |
 |---|---|---|
-| `light` | gsd-codebase-mapper, gsd-doc-classifier, gsd-doc-verifier, gsd-integration-checker, gsd-intel-updater, gsd-nyquist-auditor, gsd-pattern-mapper, gsd-plan-checker, gsd-research-synthesizer, gsd-ui-auditor, gsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | gsd-advisor-researcher, gsd-ai-researcher, gsd-code-fixer, gsd-code-reviewer, gsd-doc-synthesizer, gsd-doc-writer, gsd-domain-researcher, gsd-eval-auditor, gsd-executor, gsd-phase-researcher, gsd-project-researcher, gsd-ui-researcher, gsd-verifier | Default workhorse — research, writing, primary verification |
-| `heavy` | gsd-assumptions-analyzer, gsd-debug-session-manager, gsd-debugger, gsd-eval-planner, gsd-framework-selector, gsd-planner, gsd-roadmapper, gsd-security-auditor, gsd-user-profiler | Deep reasoning — already at top, can't escalate further |
+| `light` | fvgsd-codebase-mapper, fvgsd-doc-classifier, fvgsd-doc-verifier, fvgsd-integration-checker, fvgsd-intel-updater, fvgsd-nyquist-auditor, fvgsd-pattern-mapper, fvgsd-plan-checker, fvgsd-research-synthesizer, fvgsd-ui-auditor, fvgsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
+| `standard` | fvgsd-advisor-researcher, fvgsd-ai-researcher, fvgsd-code-fixer, fvgsd-code-reviewer, fvgsd-doc-synthesizer, fvgsd-doc-writer, fvgsd-domain-researcher, fvgsd-eval-auditor, fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-ui-researcher, fvgsd-verifier | Default workhorse — research, writing, primary verification |
+| `heavy` | fvgsd-assumptions-analyzer, fvgsd-debug-session-manager, fvgsd-debugger, fvgsd-eval-planner, fvgsd-framework-selector, fvgsd-planner, fvgsd-roadmapper, fvgsd-security-auditor, fvgsd-user-profiler | Deep reasoning — already at top, can't escalate further |
 
 #### Escalation flow
 
@@ -976,7 +976,7 @@ The `dynamic_routing` block is **disabled by default** — `enabled: false` (or 
 
 > **Codex CLI minimum supported version: `0.130.0`** (issue [#3562](https://github.com/gsd-build/get-shit-done/issues/3562)).
 >
-> [Codex CLI 0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From this version forward, Codex CLI only scans `~/.codex/skills/<name>/SKILL.md`, `<project>/.codex/skills/`, and registered plugin roots for invocable skills. GSD installs the `$vgsd-*` surface as `~/.codex/skills/gsd-<name>/SKILL.md` so commands resolve after a Codex restart. Earlier Codex CLI versions can show a duplicate listing (the legacy extra-roots scan plus the user-root copies) — restart Codex and either upgrade to ≥ 0.130.0 or accept the duplicates until you do.
+> [Codex CLI 0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From this version forward, Codex CLI only scans `~/.codex/skills/<name>/SKILL.md`, `<project>/.codex/skills/`, and registered plugin roots for invocable skills. GSD installs the `$fvgsd-*` surface as `~/.codex/skills/gsd-<name>/SKILL.md` so commands resolve after a Codex restart. Earlier Codex CLI versions can show a duplicate listing (the legacy extra-roots scan plus the user-root copies) — restart Codex and either upgrade to ≥ 0.130.0 or accept the duplicates until you do.
 
 When GSD is installed for a non-Claude runtime, the installer automatically sets `resolve_model_ids: "omit"` in `~/.gsd/defaults.json`. This causes GSD to return an empty model parameter for all agents, so each agent uses whatever model the runtime is configured with. No additional setup is needed for the default case.
 
@@ -986,10 +986,10 @@ If you want different agents to use different models, use `model_overrides` with
 {
   "resolve_model_ids": "omit",
   "model_overrides": {
-    "gsd-planner": "o3",
-    "gsd-executor": "o4-mini",
-    "gsd-debugger": "o3",
-    "gsd-codebase-mapper": "o4-mini"
+    "fvgsd-planner": "o3",
+    "fvgsd-executor": "o4-mini",
+    "fvgsd-debugger": "o3",
+    "fvgsd-codebase-mapper": "o4-mini"
   }
 }
 ```
@@ -1041,7 +1041,7 @@ When `runtime` is set, profile tiers (`opus`/`sonnet`/`haiku`) resolve to runtim
 }
 ```
 
-This resolves `gsd-planner` → `gpt-5.4` (xhigh), `gsd-executor` → `gpt-5.3-codex` (medium), `gsd-codebase-mapper` → `gpt-5.4-mini` (medium). The Codex installer embeds `model = "..."` and `model_reasoning_effort = "..."` in each generated agent TOML.
+This resolves `fvgsd-planner` → `gpt-5.4` (xhigh), `fvgsd-executor` → `gpt-5.3-codex` (medium), `fvgsd-codebase-mapper` → `gpt-5.4-mini` (medium). The Codex installer embeds `model = "..."` and `model_reasoning_effort = "..."` in each generated agent TOML.
 
 **Claude example** — explicit opt-in resolves to full Claude IDs (no `resolve_model_ids: true` needed):
 
@@ -1097,8 +1097,8 @@ This resolves `gsd-planner` → `gpt-5.4` (xhigh), `gsd-executor` → `gpt-5.3-c
 | `CLAUDE_CONFIG_DIR` | Override default config directory (`~/.claude/`) |
 | `GEMINI_API_KEY` | Detected by context monitor to switch hook event name |
 | `WSL_DISTRO_NAME` | Detected by installer for WSL path handling |
-| `GSD_SKIP_SCHEMA_CHECK` | Skip schema drift detection during execute-phase (v1.31) |
-| `GSD_PROJECT` | Override project root for multi-project workspace support (v1.32) |
+| `FVGSD_SKIP_SCHEMA_CHECK` | Skip schema drift detection during execute-phase (v1.31) |
+| `FVGSD_PROJECT` | Override project root for multi-project workspace support (v1.32) |
 
 ---
 
@@ -1108,4 +1108,4 @@ Save settings as global defaults for future projects:
 
 **Location:** `~/.gsd/defaults.json`
 
-When `/vgsd-new-project` creates a new `config.json`, it reads global defaults and merges them as the starting configuration. Per-project settings always override globals.
+When `/fvgsd-new-project` creates a new `config.json`, it reads global defaults and merges them as the starting configuration. Per-project settings always override globals.

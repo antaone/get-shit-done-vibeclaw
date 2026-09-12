@@ -12,27 +12,27 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-gsd-sdk query config-ensure-section
-INIT=$(gsd-sdk query state.load)
+fvgsd-sdk query config-ensure-section
+INIT=$(fvgsd-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# `state.load` returns STATE frontmatter JSON from the SDK — it does not include `config_path`. Orchestrators may set `GSD_CONFIG_PATH` from init phase-op JSON; otherwise resolve the same path gsd-tools uses for flat vs active workstream (#2282).
-if [[ -z "${GSD_CONFIG_PATH:-}" ]]; then
+# `state.load` returns STATE frontmatter JSON from the SDK — it does not include `config_path`. Orchestrators may set `FVGSD_CONFIG_PATH` from init phase-op JSON; otherwise resolve the same path fvgsd-tools uses for flat vs active workstream (#2282).
+if [[ -z "${FVGSD_CONFIG_PATH:-}" ]]; then
   if [[ -f .planning/active-workstream ]]; then
     WS=$(tr -d '\n\r' < .planning/active-workstream)
-    GSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
+    FVGSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
   else
-    GSD_CONFIG_PATH=".planning/config.json"
+    FVGSD_CONFIG_PATH=".planning/config.json"
   fi
 fi
 ```
 
 Creates `config.json` (at the resolved path) with defaults if missing. `INIT` still holds `state.load` output for any step that needs STATE fields.
-Store `$GSD_CONFIG_PATH` — all subsequent reads and writes use this path, not a hardcoded `.planning/config.json`, so active-workstream installs target the correct file (#2282).
+Store `$FVGSD_CONFIG_PATH` — all subsequent reads and writes use this path, not a hardcoded `.planning/config.json`, so active-workstream installs target the correct file (#2282).
 </step>
 
 <step name="read_current">
 ```bash
-cat "$GSD_CONFIG_PATH"
+cat "$FVGSD_CONFIG_PATH"
 ```
 
 Parse current values (default to `true` if not present):
@@ -40,17 +40,17 @@ Parse current values (default to `true` if not present):
 - `workflow.plan_check` — spawn plan checker during plan-phase
 - `workflow.verifier` — spawn verifier during execute-phase
 - `workflow.nyquist_validation` — validation architecture research during plan-phase (default: true if absent)
-- `workflow.pattern_mapper` — run gsd-pattern-mapper between research and planning (default: true if absent)
+- `workflow.pattern_mapper` — run fvgsd-pattern-mapper between research and planning (default: true if absent)
 - `workflow.ui_phase` — generate UI-SPEC.md design contracts for frontend phases (default: true if absent)
-- `workflow.ui_safety_gate` — prompt to run /vgsd:ui-phase before planning frontend phases (default: true if absent)
+- `workflow.ui_safety_gate` — prompt to run /fvgsd:ui-phase before planning frontend phases (default: true if absent)
 - `workflow.ai_integration_phase` — framework selection + eval strategy for AI phases (default: true if absent)
 - `workflow.tdd_mode` — enforce RED/GREEN/REFACTOR gate sequence during execute-phase (default: false if absent)
-- `workflow.code_review` — enable /vgsd:code-review and /vgsd:code-review --fix commands (default: true if absent)
-- `workflow.code_review_depth` — default depth for /vgsd:code-review: `quick`, `standard`, or `deep` (default: `"standard"` if absent; only relevant when `code_review` is on)
-- `workflow.ui_review` — run visual quality audit (/vgsd:ui-review) in autonomous mode (default: true if absent)
+- `workflow.code_review` — enable /fvgsd:code-review and /fvgsd:code-review --fix commands (default: true if absent)
+- `workflow.code_review_depth` — default depth for /fvgsd:code-review: `quick`, `standard`, or `deep` (default: `"standard"` if absent; only relevant when `code_review` is on)
+- `workflow.ui_review` — run visual quality audit (/fvgsd:ui-review) in autonomous mode (default: true if absent)
 - `commit_docs` — whether `.planning/` files are committed to git (default: true if absent)
-- `intel.enabled` — enable queryable codebase intelligence (/vgsd:map-codebase --query) (default: false if absent)
-- `graphify.enabled` — enable project knowledge graph (/vgsd:graphify) (default: false if absent)
+- `intel.enabled` — enable queryable codebase intelligence (/fvgsd:map-codebase --query) (default: false if absent)
+- `graphify.enabled` — enable project knowledge graph (/fvgsd:graphify) (default: false if absent)
 - `graphify.auto_update` — opt-in: auto-rebuild graph after main HEAD advances (#3347) (default: `false`)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
@@ -153,11 +153,11 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable Code Review? (/vgsd:code-review and /vgsd:code-review --fix commands)",
+    question: "Enable Code Review? (/fvgsd:code-review and /fvgsd:code-review --fix commands)",
     header: "Code Review",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "Enable /vgsd:code-review commands for reviewing source files changed during a phase." },
+      { label: "Yes (Recommended)", description: "Enable /fvgsd:code-review commands for reviewing source files changed during a phase." },
       { label: "No", description: "Commands exit with a configuration gate message. Use when code review is handled externally." }
     ]
   },
@@ -165,7 +165,7 @@ AskUserQuestion([
   // chosen code_review value is "Yes". If code_review is "No", omit this question from
   // the AskUserQuestion call and do not touch the existing workflow.code_review_depth value.
   {
-    question: "Code Review Depth? (default depth for /vgsd:code-review — override per-run with --depth=)",
+    question: "Code Review Depth? (default depth for /fvgsd:code-review — override per-run with --depth=)",
     header: "Review Depth",
     multiSelect: false,
     options: [
@@ -175,7 +175,7 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable UI Review? (visual quality audit via /vgsd:ui-review in autonomous mode)",
+    question: "Enable UI Review? (visual quality audit via /fvgsd:ui-review in autonomous mode)",
     header: "UI Review",
     multiSelect: false,
     options: [
@@ -197,7 +197,7 @@ AskUserQuestion([
     header: "Pattern Mapper",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "gsd-pattern-mapper runs between research and plan steps. Surfaces conventions so new code follows house style." },
+      { label: "Yes (Recommended)", description: "fvgsd-pattern-mapper runs between research and plan steps. Surfaces conventions so new code follows house style." },
       { label: "No", description: "Skip pattern mapping. Faster; lose consistency hinting for new files." }
     ]
   },
@@ -222,11 +222,11 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable UI Safety Gate? (prompts to run /vgsd:ui-phase before planning frontend phases)",
+    question: "Enable UI Safety Gate? (prompts to run /fvgsd:ui-phase before planning frontend phases)",
     header: "UI Gate",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "plan-phase asks to run /vgsd:ui-phase first when frontend indicators detected." },
+      { label: "Yes (Recommended)", description: "plan-phase asks to run /fvgsd:ui-phase first when frontend indicators detected." },
       { label: "No", description: "No prompt — plan-phase proceeds without UI-SPEC check." }
     ]
   },
@@ -235,7 +235,7 @@ AskUserQuestion([
     header: "AI Phase",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "Run /vgsd:ai-integration-phase before planning AI system phases. Surfaces the right framework, researches its docs, and designs the evaluation strategy." },
+      { label: "Yes (Recommended)", description: "Run /fvgsd:ai-integration-phase before planning AI system phases. Surfaces the right framework, researches its docs, and designs the evaluation strategy." },
       { label: "No", description: "Skip AI design contract. Good for non-AI phases or when framework is already decided." }
     ]
   },
@@ -291,7 +291,7 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Run smart discuss before each phase — surfaces gray areas and captures decisions." },
-      { label: "Yes", description: "Skip discuss in /vgsd:autonomous — chain directly to plan. Best for backend/pipeline work where phase descriptions are the spec." }
+      { label: "Yes", description: "Skip discuss in /fvgsd:autonomous — chain directly to plan. Best for backend/pipeline work where phase descriptions are the spec." }
     ]
   },
   {
@@ -304,21 +304,21 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable Intel? (queryable codebase intelligence via /vgsd:map-codebase --query — builds a JSON index in .planning/intel/)",
+    question: "Enable Intel? (queryable codebase intelligence via /fvgsd:map-codebase --query — builds a JSON index in .planning/intel/)",
     header: "Intel",
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Skip intel indexing. Use when codebase is small or intel queries are not needed." },
-      { label: "Yes", description: "Enable /vgsd:map-codebase --query commands. Builds and queries a JSON index of the codebase." }
+      { label: "Yes", description: "Enable /fvgsd:map-codebase --query commands. Builds and queries a JSON index of the codebase." }
     ]
   },
   {
-    question: "Enable Graphify? (project knowledge graph via /vgsd:graphify — builds a graph in .planning/graphs/)",
+    question: "Enable Graphify? (project knowledge graph via /fvgsd:graphify — builds a graph in .planning/graphs/)",
     header: "Graphify",
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Skip knowledge graph. Use when dependency graphs are not needed." },
-      { label: "Yes", description: "Enable /vgsd:graphify commands. Builds and queries a project knowledge graph." }
+      { label: "Yes", description: "Enable /fvgsd:graphify commands. Builds and queries a project knowledge graph." }
     ]
   },
   {
@@ -326,7 +326,7 @@ AskUserQuestion([
     header: "Graph auto-update",
     multiSelect: false,
     options: [
-      { label: "No (Recommended)", description: "Manual /vgsd:graphify build only. Conservative default — opt in if you want fresh context on every /vgsd:quick or /vgsd:plan-phase." },
+      { label: "No (Recommended)", description: "Manual /fvgsd:graphify build only. Conservative default — opt in if you want fresh context on every /fvgsd:quick or /fvgsd:plan-phase." },
       { label: "Yes", description: "Auto-rebuild the graph in a detached background process after git commit/merge/pull/rebase --continue/cherry-pick on the default branch. Hook returns instantly; rebuild runs out-of-band. No-op if Graphify is disabled." }
     ]
   }
@@ -381,9 +381,9 @@ Merge new settings into existing config.json:
 }
 ```
 
-**Safe merge:** Apply each chosen value via `gsd-sdk query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place.
+**Safe merge:** Apply each chosen value via `fvgsd-sdk query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place.
 
-Write updated config to `$GSD_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
+Write updated config to `$FVGSD_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
 </step>
 
 <step name="save_as_defaults">
@@ -479,15 +479,15 @@ Display:
 | Context Warnings     | {On/Off} |
 | Saved as Defaults    | {Yes/No} |
 
-These settings apply to future /vgsd:plan-phase and /vgsd:execute-phase runs.
+These settings apply to future /fvgsd:plan-phase and /fvgsd:execute-phase runs.
 
 Quick commands:
-- /vgsd:config --integrations — configure API keys (Brave/Firecrawl/Exa), review.models CLI routing, and agent_skills injection
-- /vgsd:config --profile <profile> — switch model profile
-- /vgsd:plan-phase --research — force research
-- /vgsd:plan-phase --skip-research — skip research
-- /vgsd:plan-phase --skip-verify — skip plan check
-- /vgsd:config --advanced — power-user tuning (plan bounce, timeouts, branch templates, cross-AI, context window)
+- /fvgsd:config --integrations — configure API keys (Brave/Firecrawl/Exa), review.models CLI routing, and agent_skills injection
+- /fvgsd:config --profile <profile> — switch model profile
+- /fvgsd:plan-phase --research — force research
+- /fvgsd:plan-phase --skip-research — skip research
+- /fvgsd:plan-phase --skip-verify — skip plan check
+- /fvgsd:config --advanced — power-user tuning (plan bounce, timeouts, branch templates, cross-AI, context window)
 ```
 </step>
 

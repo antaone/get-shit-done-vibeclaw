@@ -1,7 +1,7 @@
 /**
  * Regression test for bug #2351
  *
- * gsd-intel-updater used hardcoded canonical paths (`agents/*.md`,
+ * fvgsd-intel-updater used hardcoded canonical paths (`agents/*.md`,
  * `commands/gsd/*.md`, `hooks/*.js`, etc.) that assumed the standard
  * `.claude/` runtime layout. Under a `.kilo` install, the runtime root is
  * `.kilo/`, and the command directory is `command/` (not `commands/gsd/`).
@@ -19,13 +19,13 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const AGENT_PATH = path.join(__dirname, '..', 'agents', 'gsd-intel-updater.md');
+const AGENT_PATH = path.join(__dirname, '..', 'agents', 'fvgsd-intel-updater.md');
 
 describe('bug #2351: intel updater kilo layout support', () => {
   let content;
 
   test('agent file exists', () => {
-    assert.ok(fs.existsSync(AGENT_PATH), 'agents/gsd-intel-updater.md must exist');
+    assert.ok(fs.existsSync(AGENT_PATH), 'agents/fvgsd-intel-updater.md must exist');
     content = fs.readFileSync(AGENT_PATH, 'utf-8');
   });
 
@@ -38,7 +38,7 @@ describe('bug #2351: intel updater kilo layout support', () => {
       content.includes('layout detection');
     assert.ok(
       hasDetection,
-      'gsd-intel-updater.md must instruct the agent to detect the runtime layout ' +
+      'fvgsd-intel-updater.md must instruct the agent to detect the runtime layout ' +
       '(.kilo vs .claude) before resolving canonical paths (#2351)'
     );
   });

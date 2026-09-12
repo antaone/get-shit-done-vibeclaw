@@ -5,7 +5,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -28,9 +28,9 @@ describe('release-tarball-smoke', () => {
 
   before(async () => {
     // Pack once into a temp dir.
-    packDir = createTempDir('gsd-smoke-pack-');
-    installPrefix = createTempDir('gsd-smoke-prefix-');
-    fixtureDir = createTempDir('gsd-smoke-fixture-');
+    packDir = createTempDir('fvgsd-smoke-pack-');
+    installPrefix = createTempDir('fvgsd-smoke-prefix-');
+    fixtureDir = createTempDir('fvgsd-smoke-fixture-');
 
     const packOutput = runNpm(
       ['pack', '--pack-destination', packDir],
@@ -85,7 +85,7 @@ describe('release-tarball-smoke', () => {
   // ── Test C — happy lifecycle ───────────────────────────────────────────────
   // Verifies that the installed package has all expected command .md files and
   // that each command resolves a workflow .md file that also exists.
-  // Also verifies that `get-shit-done-cc --local --claude` (init) succeeds in
+  // Also verifies that `fvgsd --local --claude` (init) succeeds in
   // the fixtureDir and creates the expected .claude/ directories.
   test('C: happy lifecycle — command + workflow files resolve OK', () => {
     const result = runSmoke({
@@ -140,9 +140,9 @@ describe('release-tarball-smoke', () => {
   });
 
   // ── Test E — SDK binary callable ──────────────────────────────────────────
-  // Verifies that `gsd-sdk query state.json` exits 0 and returns parseable JSON.
+  // Verifies that `fvgsd-sdk query state.json` exits 0 and returns parseable JSON.
   // This is the primary guard for SDK_BINARY_NOT_CALLABLE regressions.
-  test('E: sdk binary callable — gsd-sdk query produces parseable JSON', () => {
+  test('E: sdk binary callable — fvgsd-sdk query produces parseable JSON', () => {
     const result = runSmoke({
       tarballPath,
       installPrefix,

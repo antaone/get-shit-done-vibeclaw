@@ -36,7 +36,7 @@ describe('checkShipReady', () => {
   let projectDir: string;
 
   beforeEach(async () => {
-    projectDir = join(tmpdir(), `gsd-check-ship-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    projectDir = join(tmpdir(), `fvgsd-check-ship-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(join(projectDir, '.planning', 'phases'), { recursive: true });
   });
 
@@ -77,7 +77,7 @@ describe('checkShipReady', () => {
 
   it('never throws — returns false fields on git errors', async () => {
     // Use a directory that is not a git repo
-    const nonGitDir = join(tmpdir(), `gsd-non-git-${Date.now()}`);
+    const nonGitDir = join(tmpdir(), `fvgsd-non-git-${Date.now()}`);
     await mkdir(join(nonGitDir, '.planning', 'phases', '01-test'), { recursive: true });
 
     try {

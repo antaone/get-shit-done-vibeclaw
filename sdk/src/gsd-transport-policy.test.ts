@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { resolveTransportPolicy, setTransportPolicy, clearTransportPolicy } from './gsd-transport-policy.js';
 
-describe('gsd-transport-policy', () => {
+describe('fvgsd-transport-policy', () => {
   afterEach(() => {
     clearTransportPolicy();
   });

@@ -1,5 +1,5 @@
 ---
-name: vgsd:surface
+name: fvgsd:surface
 description: Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall
 argument-hint: "[list|status|profile <name>|disable <cluster>|enable <cluster>|reset]"
 allowed-tools:
@@ -10,21 +10,21 @@ requires: [config, update]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "surface" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "surface" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
 
 <objective>
 Manage the current runtime's command or skill surface without reinstall. Reads/writes
-`$HOME/.claude/.vgsd-surface.json` (sibling to `$HOME/.claude/.gsd-profile`) and
+`$HOME/.claude/.fvgsd-surface.json` (sibling to `$HOME/.claude/.fvgsd-profile`) and
 re-stages the active runtime artifact destinations in place. The installer rewrites
-that base path and `__VGSD_RUNTIME__` for the active tool.
+that base path and `__FVGSD_RUNTIME__` for the active tool.
 
 Sub-commands: list · status · profile · disable · enable · reset
 </objective>
@@ -41,7 +41,7 @@ Parse the first token of $ARGUMENTS:
 | `profile <n1>,<n2>` | Composed profiles (comma-separated, no spaces) |
 | `disable <cluster>` | Add cluster to `disabledClusters`, re-stage |
 | `enable <cluster>` | Remove cluster from `disabledClusters`, re-stage |
-| `reset` | Delete `.vgsd-surface.json`, return to install-time profile |
+| `reset` | Delete `.fvgsd-surface.json`, return to install-time profile |
 | *(none)* | Treat as `list` |
 
 ---
@@ -66,8 +66,8 @@ Token cost: ~T (budget cap ~500 tokens for 200k context @ 1%)
 For `status` also append:
 
 ```
-Base profile:   standard  (from .vgsd-surface.json)
-Install profile: standard  (from .gsd-profile)
+Base profile:   standard  (from .fvgsd-surface.json)
+Install profile: standard  (from .fvgsd-profile)
 ```
 
 ---
@@ -118,7 +118,7 @@ Valid cluster names: `core_loop`, `audit_review`, `milestone`, `research_ideate`
 
 ## reset
 
-1. Check if `.vgsd-surface.json` exists.
+1. Check if `.fvgsd-surface.json` exists.
 2. Delete it.
 3. Re-apply using only `readActiveProfile(runtimeConfigDir)` (install-time profile).
 4. Confirm: "Surface reset to install-time profile `<name>`."
@@ -133,7 +133,7 @@ The installer rewrites `$HOME/.claude/` below to that configured directory.
 
 ```bash
 # Values below are installer-resolved for the active runtime.
-RUNTIME="__VGSD_RUNTIME__"
+RUNTIME="__FVGSD_RUNTIME__"
 RUNTIME_CONFIG_DIR="$HOME/.claude/"
 SCOPE="global"
 
@@ -144,12 +144,12 @@ SCOPE="global"
 
 For a project-local installation, set `SCOPE="local"` and use that project's
 runtime config directory. Never infer the destination directory manually; use
-`resolveRuntimeArtifactLayout('__VGSD_RUNTIME__', runtimeConfigDir, scope)` so
+`resolveRuntimeArtifactLayout('__FVGSD_RUNTIME__', runtimeConfigDir, scope)` so
 Claude Code and Codex skills, Gemini namespaced TOML commands, and OpenCode flat
 commands are each re-staged in their native layout.
 
-Surface state is stored at `${RUNTIME_CONFIG_DIR}/.vgsd-surface.json`
-(i.e. `$HOME/.claude/.vgsd-surface.json` before installer path rewriting).
+Surface state is stored at `${RUNTIME_CONFIG_DIR}/.fvgsd-surface.json`
+(i.e. `$HOME/.claude/.fvgsd-surface.json` before installer path rewriting).
 
 ---
 
@@ -160,11 +160,11 @@ Surface state is stored at `${RUNTIME_CONFIG_DIR}/.vgsd-surface.json`
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>
-Runtime: `__VGSD_RUNTIME__`
+Runtime: `__FVGSD_RUNTIME__`
 Runtime config directory: `$HOME/.claude/`
-Surface state file: `$HOME/.claude/.vgsd-surface.json`
-Install profile marker: `$HOME/.claude/.gsd-profile`
-Managed artifact destinations: derive with `resolveRuntimeArtifactLayout('__VGSD_RUNTIME__', runtimeConfigDir, scope)`
-Engine module: `$HOME/.claude/get-shit-done/bin/lib/surface.cjs`
-Cluster definitions: `$HOME/.claude/get-shit-done/bin/lib/clusters.cjs`
+Surface state file: `$HOME/.claude/.fvgsd-surface.json`
+Install profile marker: `$HOME/.claude/.fvgsd-profile`
+Managed artifact destinations: derive with `resolveRuntimeArtifactLayout('__FVGSD_RUNTIME__', runtimeConfigDir, scope)`
+Engine module: `$HOME/.claude/fvgsd/bin/lib/surface.cjs`
+Cluster definitions: `$HOME/.claude/fvgsd/bin/lib/clusters.cjs`
 </execution_context>

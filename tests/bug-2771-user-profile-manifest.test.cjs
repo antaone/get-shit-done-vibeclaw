@@ -6,7 +6,7 @@
  * also records it under "get-shit-done/USER-PROFILE.md" with a SHA-256 of whatever was
  * on disk at install time. On the next install, saveLocalPatches() compares the on-disk
  * (refreshed) hash to the manifest hash, finds them different, and emits the spurious
- * "Found N locally modified GSD file(s) — backed up to gsd-local-patches/" warning.
+ * "Found N locally modified GSD file(s) — backed up to fvgsd-local-patches/" warning.
  *
  * Invariant: a file is either distribution (manifest-tracked, diff'd against manifest)
  * or user artifact (preserved across installs, never diff'd). It cannot be both. The
@@ -28,8 +28,8 @@ const { createTempDir, cleanup } = require('./helpers.cjs');
 
 const INSTALL_SCRIPT = path.join(__dirname, '..', 'bin', 'install.js');
 const BUILD_SCRIPT = path.join(__dirname, '..', 'scripts', 'build-hooks.js');
-const MANIFEST_NAME = 'gsd-file-manifest.json';
-const PATCHES_DIR_NAME = 'gsd-local-patches';
+const MANIFEST_NAME = 'fvgsd-file-manifest.json';
+const PATCHES_DIR_NAME = 'fvgsd-local-patches';
 
 before(() => {
   execFileSync(process.execPath, [BUILD_SCRIPT], { encoding: 'utf-8', stdio: 'pipe' });
@@ -37,7 +37,7 @@ before(() => {
 
 function runInstaller(configDir) {
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
-  delete env.GSD_TEST_MODE;
+  delete env.FVGSD_TEST_MODE;
   return execFileSync(
     process.execPath,
     [INSTALL_SCRIPT, '--claude', '--global', '--yes', '--no-sdk'],
@@ -47,10 +47,10 @@ function runInstaller(configDir) {
 
 // ─── Test 1: writeManifest must NOT record USER-PROFILE.md ────────────────────
 
-describe('#2771: USER-PROFILE.md is excluded from gsd-file-manifest.json', () => {
+describe('#2771: USER-PROFILE.md is excluded from fvgsd-file-manifest.json', () => {
   let tmpDir;
 
-  beforeEach(() => { tmpDir = createTempDir('gsd-2771-manifest-'); });
+  beforeEach(() => { tmpDir = createTempDir('fvgsd-2771-manifest-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('writeManifest excludes get-shit-done/USER-PROFILE.md even when present on disk', () => {
@@ -79,7 +79,7 @@ describe('#2771: USER-PROFILE.md is excluded from gsd-file-manifest.json', () =>
 describe('#2771: USER-PROFILE.md is still preserved across reinstall', () => {
   let tmpDir;
 
-  beforeEach(() => { tmpDir = createTempDir('gsd-2771-preserve-'); });
+  beforeEach(() => { tmpDir = createTempDir('fvgsd-2771-preserve-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('USER-PROFILE.md content survives reinstall (preservation regression guard)', () => {
@@ -101,7 +101,7 @@ describe('#2771: USER-PROFILE.md is still preserved across reinstall', () => {
 describe('#2771: refreshed USER-PROFILE.md does not trigger local-patches warning', () => {
   let tmpDir;
 
-  beforeEach(() => { tmpDir = createTempDir('gsd-2771-patches-'); });
+  beforeEach(() => { tmpDir = createTempDir('fvgsd-2771-patches-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('saveLocalPatches does not classify a refreshed USER-PROFILE.md as a local patch', () => {
@@ -126,7 +126,7 @@ describe('#2771: refreshed USER-PROFILE.md does not trigger local-patches warnin
     const patchFile = path.join(patchesDir, 'get-shit-done', 'USER-PROFILE.md');
     assert.ok(
       !fs.existsSync(patchFile),
-      'USER-PROFILE.md must NOT appear in gsd-local-patches/ — it is a user artifact, not a modified distribution file'
+      'USER-PROFILE.md must NOT appear in fvgsd-local-patches/ — it is a user artifact, not a modified distribution file'
     );
 
     const offendingLine = output
@@ -145,7 +145,7 @@ describe('#2771: refreshed USER-PROFILE.md does not trigger local-patches warnin
 describe('#2771: legacy manifest entries for USER_OWNED_ARTIFACTS are normalized', () => {
   let tmpDir;
 
-  beforeEach(() => { tmpDir = createTempDir('gsd-2771-legacy-'); });
+  beforeEach(() => { tmpDir = createTempDir('fvgsd-2771-legacy-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('pre-existing manifest entry for USER-PROFILE.md does not trigger patches warning', () => {
@@ -194,15 +194,15 @@ describe('#2771: legacy manifest entries for USER_OWNED_ARTIFACTS are normalized
 
 describe('#2771: USER_OWNED_ARTIFACTS is a single source of truth', () => {
   test('install.js exports USER_OWNED_ARTIFACTS containing USER-PROFILE.md', () => {
-    const origMode = process.env.GSD_TEST_MODE;
-    process.env.GSD_TEST_MODE = '1';
+    const origMode = process.env.FVGSD_TEST_MODE;
+    process.env.FVGSD_TEST_MODE = '1';
     let mod;
     try {
       delete require.cache[require.resolve(INSTALL_SCRIPT)];
       mod = require(INSTALL_SCRIPT);
     } finally {
-      if (origMode === undefined) delete process.env.GSD_TEST_MODE;
-      else process.env.GSD_TEST_MODE = origMode;
+      if (origMode === undefined) delete process.env.FVGSD_TEST_MODE;
+      else process.env.FVGSD_TEST_MODE = origMode;
     }
 
     assert.ok(
@@ -224,7 +224,7 @@ describe('manifest path safety', () => {
   let outside;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-manifest-path-safety-');
+    tmpDir = createTempDir('fvgsd-manifest-path-safety-');
     outside = path.join(tmpDir, '..', `outside-managed-file-${path.basename(tmpDir)}.txt`);
   });
   afterEach(() => {
@@ -233,15 +233,15 @@ describe('manifest path safety', () => {
   });
 
   test('saveLocalPatches ignores manifest entries that escape the install root', () => {
-    const origMode = process.env.GSD_TEST_MODE;
-    process.env.GSD_TEST_MODE = '1';
+    const origMode = process.env.FVGSD_TEST_MODE;
+    process.env.FVGSD_TEST_MODE = '1';
     let mod;
     try {
       delete require.cache[require.resolve(INSTALL_SCRIPT)];
       mod = require(INSTALL_SCRIPT);
     } finally {
-      if (origMode === undefined) delete process.env.GSD_TEST_MODE;
-      else process.env.GSD_TEST_MODE = origMode;
+      if (origMode === undefined) delete process.env.FVGSD_TEST_MODE;
+      else process.env.FVGSD_TEST_MODE = origMode;
     }
 
     fs.writeFileSync(outside, 'outside user data\n', 'utf8');
@@ -265,15 +265,15 @@ describe('manifest path safety', () => {
   });
 
   test('saveLocalPatches does not follow symlinked patch directories outside the install root', () => {
-    const origMode = process.env.GSD_TEST_MODE;
-    process.env.GSD_TEST_MODE = '1';
+    const origMode = process.env.FVGSD_TEST_MODE;
+    process.env.FVGSD_TEST_MODE = '1';
     let mod;
     try {
       delete require.cache[require.resolve(INSTALL_SCRIPT)];
       mod = require(INSTALL_SCRIPT);
     } finally {
-      if (origMode === undefined) delete process.env.GSD_TEST_MODE;
-      else process.env.GSD_TEST_MODE = origMode;
+      if (origMode === undefined) delete process.env.FVGSD_TEST_MODE;
+      else process.env.FVGSD_TEST_MODE = origMode;
     }
 
     const hookPath = path.join(tmpDir, 'hooks', 'managed.js');

@@ -1,10 +1,10 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2994: scripts/verify-reapply-patches.cjs ships in tarball but is
- * not installed at ${GSD_HOME}/scripts/.
+ * not installed at ${FVGSD_HOME}/scripts/.
  *
  * Root cause: bin/install.js copies the get-shit-done/ source tree to
  * ${configDir}/get-shit-done/ but does NOT copy the top-level scripts/
@@ -45,12 +45,12 @@ describe('Bug #2994: verify-reapply-patches.cjs lives at the runtime-installed p
   });
 });
 
-// Parse reapply-patches.md to extract every `node "${GSD_HOME}/...cjs"`
+// Parse reapply-patches.md to extract every `node "${FVGSD_HOME}/...cjs"`
 // invocation as structured records. Assertions go against the parsed
 // records, not against the markdown text.
 function extractScriptInvocations(markdown) {
   const invocations = [];
-  const re = /node\s+"\$\{GSD_HOME\}\/([^"]+\.cjs)"/g;
+  const re = /node\s+"\$\{FVGSD_HOME\}\/([^"]+\.cjs)"/g;
   let match;
   while ((match = re.exec(markdown)) !== null) {
     invocations.push({ relPath: match[1] });
@@ -59,10 +59,10 @@ function extractScriptInvocations(markdown) {
 }
 
 describe('Bug #2994: reapply-patches workflow references the runtime-installed path', () => {
-  test('every node ${GSD_HOME}/... invocation in reapply-patches.md uses an installed runtime path', () => {
+  test('every node ${FVGSD_HOME}/... invocation in reapply-patches.md uses an installed runtime path', () => {
     const md = fs.readFileSync(REAPPLY_WORKFLOW, 'utf-8');
     const invocations = extractScriptInvocations(md);
-    assert.ok(invocations.length > 0, 'sanity: expected at least one node ${GSD_HOME}/... invocation in reapply-patches.md');
+    assert.ok(invocations.length > 0, 'sanity: expected at least one node ${FVGSD_HOME}/... invocation in reapply-patches.md');
 
     const violations = invocations.filter(inv => !inv.relPath.startsWith('get-shit-done/'));
     assert.deepEqual(violations, [], `invocations under non-installed paths: ${JSON.stringify(violations)}`);

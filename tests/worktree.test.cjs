@@ -7,7 +7,7 @@
  * Worktree Lifecycle Module — branch-check and workspace-safety tests
  *
  * Seam: get-shit-done/workflows/{execute-phase,execute-plan,quick}.md,
- *       agents/gsd-executor.md
+ *       agents/fvgsd-executor.md
  *
  * Split from the consolidated 13→2 worktree cluster (≤800 LOC/file):
  *   - tests/bug-2015-worktree-base-branch.test.cjs      (#2015: reset --hard)
@@ -32,7 +32,7 @@ const REPO_ROOT = path.join(__dirname, '..');
 const EXECUTE_PHASE_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'execute-phase.md');
 const EXECUTE_PLAN_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'execute-plan.md');
 const QUICK_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'quick.md');
-const EXECUTOR_AGENT_PATH = path.join(REPO_ROOT, 'agents', 'gsd-executor.md');
+const EXECUTOR_AGENT_PATH = path.join(REPO_ROOT, 'agents', 'fvgsd-executor.md');
 const DIAGNOSE_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'diagnose-issues.md');
 const GIT_INTEGRATION_PATH = path.join(REPO_ROOT, 'get-shit-done', 'references', 'git-integration.md');
 
@@ -218,7 +218,7 @@ describe('worktree_branch_check must use reset --hard not reset --soft (#2015)',
 describe('bug-2075: worktree deletion safeguards', () => {
 
   describe('Failure Mode B: git clean prohibition in executor agent', () => {
-    test('gsd-executor.md explicitly prohibits git clean in worktree context', () => {
+    test('fvgsd-executor.md explicitly prohibits git clean in worktree context', () => {
       const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
 
       // Must have an explicit prohibition section mentioning git clean
@@ -239,17 +239,17 @@ describe('bug-2075: worktree deletion safeguards', () => {
 
       assert.ok(
         prohibitsGitClean,
-        'gsd-executor.md must explicitly prohibit git clean — running it inside a worktree deletes files committed on the feature branch (#2075 Failure Mode B)'
+        'fvgsd-executor.md must explicitly prohibit git clean — running it inside a worktree deletes files committed on the feature branch (#2075 Failure Mode B)'
       );
     });
 
-    test('gsd-executor.md git clean prohibition explains the worktree data-loss risk', () => {
+    test('fvgsd-executor.md git clean prohibition explains the worktree data-loss risk', () => {
       const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
 
       // The prohibition must be accompanied by a reason — not just a bare rule
       // Look for the word "worktree" near the git clean prohibition
       const gitCleanIdx = content.indexOf('git clean');
-      assert.ok(gitCleanIdx > -1, 'gsd-executor.md must mention git clean (to prohibit it)');
+      assert.ok(gitCleanIdx > -1, 'fvgsd-executor.md must mention git clean (to prohibit it)');
 
       // Extract context around the git clean mention (500 chars either side)
       const contextStart = Math.max(0, gitCleanIdx - 500);
@@ -264,7 +264,7 @@ describe('bug-2075: worktree deletion safeguards', () => {
 
       assert.ok(
         hasWorktreeRationale,
-        'The git clean prohibition in gsd-executor.md must explain why: git clean in a worktree deletes files that appear untracked but are committed on the feature branch'
+        'The git clean prohibition in fvgsd-executor.md must explain why: git clean in a worktree deletes files that appear untracked but are committed on the feature branch'
       );
     });
   });
@@ -326,18 +326,18 @@ describe('bug-2075: worktree deletion safeguards', () => {
   });
 
   describe('Defense-in-depth: post-commit deletion check (from #1977)', () => {
-    test('gsd-executor.md task_commit_protocol has post-commit deletion verification', () => {
+    test('fvgsd-executor.md task_commit_protocol has post-commit deletion verification', () => {
       const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
 
       assert.ok(
         content.includes('--diff-filter=D'),
-        'gsd-executor.md must include --diff-filter=D to detect accidental file deletions after each commit'
+        'fvgsd-executor.md must include --diff-filter=D to detect accidental file deletions after each commit'
       );
 
       // Must have a warning about unexpected deletions
       assert.ok(
         content.includes('DELETIONS') || content.includes('WARNING'),
-        'gsd-executor.md must emit a warning when a commit includes unexpected file deletions'
+        'fvgsd-executor.md must emit a warning when a commit includes unexpected file deletions'
       );
     });
   });
@@ -628,10 +628,10 @@ done < <(${DISCOVERY_PIPELINE})
       //   upstream/         <- main repo
       //   workspace/        <- worktree of upstream (the "workspace")
       //   workspace/.claude/worktrees/agent-XXXX/  <- agent worktree
-      upstream = makeTempUpstreamRepo('gsd-2774-upstream-');
+      upstream = makeTempUpstreamRepo('fvgsd-2774-upstream-');
 
       workspacesParent = fs.mkdtempSync(
-        path.join(os.tmpdir(), 'gsd-2774-workspaces-')
+        path.join(os.tmpdir(), 'fvgsd-2774-workspaces-')
       );
       workspace = path.join(workspacesParent, 'feature-x');
       execSync(`git worktree add -b workspace/feature-x "${workspace}"`, {

@@ -1,11 +1,11 @@
 <purpose>
 Retroactive audit of an implemented AI phase's evaluation coverage. Standalone command that works on any GSD-managed AI phase. Produces a scored EVAL-REVIEW.md with gap analysis and remediation plan.
 
-Use after /vgsd:execute-phase to verify that the evaluation strategy from AI-SPEC.md was actually implemented. Mirrors the pattern of /vgsd:ui-review and /vgsd:validate-phase.
+Use after /fvgsd:execute-phase to verify that the evaluation strategy from AI-SPEC.md was actually implemented. Mirrors the pattern of /fvgsd:ui-review and /fvgsd:validate-phase.
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/ai-evals.md
+@~/.claude/fvgsd/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -13,14 +13,14 @@ Use after /vgsd:execute-phase to verify that the evaluation strategy from AI-SPE
 ## 0. Initialize
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `commit_docs`.
 
 ```bash
-AUDITOR_MODEL=$(gsd-sdk query resolve-model gsd-eval-auditor 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+AUDITOR_MODEL=$(fvgsd-sdk query resolve-model fvgsd-eval-auditor 2>/dev/null | jq -r '.model' 2>/dev/null || true)
 ```
 
 Display banner:
@@ -40,7 +40,7 @@ EVAL_REVIEW_FILE=$(ls "${PHASE_DIR}"/*-EVAL-REVIEW.md 2>/dev/null | head -1)
 
 **State A** — AI-SPEC.md + SUMMARY.md exist: Full audit against spec
 **State B** — SUMMARY.md exists, no AI-SPEC.md: Audit against general best practices
-**State C** — No SUMMARY.md: Exit — "Phase {N} not executed. Run /vgsd:execute-phase {N} first."
+**State C** — No SUMMARY.md: Exit — "Phase {N} not executed. Run /fvgsd:execute-phase {N} first."
 
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
@@ -58,7 +58,7 @@ If "Re-audit": continue.
 ```
 No AI-SPEC.md found for Phase {N}.
 Audit will evaluate against general AI eval best practices rather than a phase-specific plan.
-Consider running /vgsd:ai-integration-phase {N} before implementation next time.
+Consider running /fvgsd:ai-integration-phase {N} before implementation next time.
 ```
 Continue (non-blocking).
 
@@ -69,7 +69,7 @@ Build file list for auditor:
 - All SUMMARY.md files in phase dir
 - All PLAN.md files in phase dir
 
-## 3. Spawn gsd-eval-auditor
+## 3. Spawn fvgsd-eval-auditor
 
 ```
 ◆ Spawning eval auditor...
@@ -78,7 +78,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd-eval-auditor.md for instructions.
+Read ~/.claude/agents/fvgsd-eval-auditor.md for instructions.
 
 <objective>
 Conduct evaluation coverage audit of Phase {phase_number}: {phase_name}
@@ -124,10 +124,10 @@ Read the written EVAL-REVIEW.md. Extract:
 ◆ Output: {eval_review_path}
 
 {If PRODUCTION READY:}
-  Next step: /vgsd:plan-phase (next phase) or deploy
+  Next step: /fvgsd:plan-phase (next phase) or deploy
 
 {If NEEDS WORK:}
-  Address critical gaps in EVAL-REVIEW.md, then re-run /vgsd:eval-review {N}
+  Address critical gaps in EVAL-REVIEW.md, then re-run /fvgsd:eval-review {N}
 
 {If SIGNIFICANT GAPS or NOT IMPLEMENTED:}
   Review AI-SPEC.md evaluation plan. Critical eval dimensions are not implemented.
@@ -147,7 +147,7 @@ git commit -m "docs({phase_slug}): add EVAL-REVIEW.md — score {overall_score}/
 <success_criteria>
 - [ ] Phase execution state detected correctly
 - [ ] AI-SPEC.md presence handled (with or without)
-- [ ] gsd-eval-auditor spawned with correct context
+- [ ] fvgsd-eval-auditor spawned with correct context
 - [ ] EVAL-REVIEW.md written (by auditor)
 - [ ] Score and verdict displayed to user
 - [ ] Appropriate next steps surfaced based on verdict

@@ -7,7 +7,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -53,7 +53,7 @@ function writeFile(root, relPath, content) {
 
 function writeManifest(root, files) {
   fs.writeFileSync(
-    path.join(root, 'gsd-file-manifest.json'),
+    path.join(root, 'fvgsd-file-manifest.json'),
     JSON.stringify({
       version: '1.49.0',
       timestamp: '2026-05-10T00:00:00.000Z',
@@ -139,7 +139,7 @@ function stripAnsi(value) {
 function runInstallerCli(runtime, targetDir, options = {}) {
   const { minimal = true } = options;
   const env = { ...process.env };
-  delete env.GSD_TEST_MODE;
+  delete env.FVGSD_TEST_MODE;
   env.HOME = path.join(path.dirname(targetDir), 'home');
   env.USERPROFILE = env.HOME;
 
@@ -169,14 +169,14 @@ function listDirNames(root, relPath) {
 
 function assertHasGsdDirectory(root, relPath) {
   assert.ok(
-    listDirNames(root, relPath).some((name) => name.startsWith('gsd-')),
+    listDirNames(root, relPath).some((name) => name.startsWith('fvgsd-')),
     `${relPath} should contain generated GSD entries`
   );
 }
 
 function assertNoGsdDirectoryEntries(root, relPath) {
   assert.equal(
-    listDirNames(root, relPath).some((name) => name.startsWith('gsd-')),
+    listDirNames(root, relPath).some((name) => name.startsWith('fvgsd-')),
     false,
     `${relPath} should not contain generated GSD entries`
   );
@@ -192,15 +192,15 @@ function assertFreshInstallContract(runtime, targetDir) {
     `${runtime} should install the package VERSION`
   );
   assert.ok(
-    fs.existsSync(path.join(targetDir, 'get-shit-done', 'bin', 'gsd-tools.cjs')),
+    fs.existsSync(path.join(targetDir, 'get-shit-done', 'bin', 'fvgsd-tools.cjs')),
     `${runtime} should install the GSD tool payload`
   );
   assert.ok(
-    fs.existsSync(path.join(targetDir, 'gsd-file-manifest.json')),
+    fs.existsSync(path.join(targetDir, 'fvgsd-file-manifest.json')),
     `${runtime} should write the install manifest`
   );
 
-  const manifest = JSON.parse(fs.readFileSync(path.join(targetDir, 'gsd-file-manifest.json'), 'utf8'));
+  const manifest = JSON.parse(fs.readFileSync(path.join(targetDir, 'fvgsd-file-manifest.json'), 'utf8'));
   assert.equal(manifest.version, pkg.version, `${runtime} manifest should record the package version`);
   assert.equal(manifest.mode, 'full', `${runtime} manifest should record a full install`);
   assert.ok(
@@ -230,7 +230,7 @@ function assertFreshInstallContract(runtime, targetDir) {
     );
   } else if (contract.surface === 'flat-command') {
     assert.ok(
-      listDirNames(targetDir, 'command').some((name) => name.startsWith('gsd-') && name.endsWith('.md')),
+      listDirNames(targetDir, 'command').some((name) => name.startsWith('fvgsd-') && name.endsWith('.md')),
       `${runtime} should install flattened command markdown files`
     );
   } else if (contract.surface === 'commands-gsd') {
@@ -247,7 +247,7 @@ function assertFreshInstallContract(runtime, targetDir) {
   }
 
   assert.ok(
-    listDirNames(targetDir, 'agents').some((name) => name.startsWith('gsd-')),
+    listDirNames(targetDir, 'agents').some((name) => name.startsWith('fvgsd-')),
     `${runtime} full install should install agents`
   );
 
@@ -284,7 +284,7 @@ describe('installer migration install integration', { concurrency: false }, () =
   let codexHome;
 
   beforeEach(() => {
-    tmpRoot = createTempDir('gsd-install-migrations-');
+    tmpRoot = createTempDir('fvgsd-install-migrations-');
     codexHome = path.join(tmpRoot, '.codex');
     fs.mkdirSync(codexHome, { recursive: true });
   });
@@ -349,7 +349,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       fs.readFileSync(path.join(claudeHome, 'hooks/statusline.js'), 'utf8'),
       'legacy managed hook\n'
     );
-    assert.equal(fs.existsSync(path.join(claudeHome, 'gsd-install-state.json')), false);
+    assert.equal(fs.existsSync(path.join(claudeHome, 'fvgsd-install-state.json')), false);
   });
 
   test('rolls back applied migrations when multi-runtime finalization fails', () => {
@@ -377,7 +377,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       fs.readFileSync(path.join(claudeHome, 'hooks/statusline.js'), 'utf8'),
       'legacy managed hook\n'
     );
-    assert.equal(fs.existsSync(path.join(claudeHome, 'gsd-install-state.json')), false);
+    assert.equal(fs.existsSync(path.join(claudeHome, 'fvgsd-install-state.json')), false);
   });
 
   test('rolls back completed runtime migrations when a later runtime install fails', () => {
@@ -410,12 +410,12 @@ describe('installer migration install integration', { concurrency: false }, () =
       fs.readFileSync(path.join(claudeHome, 'hooks/statusline.js'), 'utf8'),
       'legacy managed hook\n'
     );
-    assert.equal(fs.existsSync(path.join(claudeHome, 'gsd-install-state.json')), false);
+    assert.equal(fs.existsSync(path.join(claudeHome, 'fvgsd-install-state.json')), false);
     assert.equal(
       fs.readFileSync(path.join(codexHome, 'hooks/statusline.js'), 'utf8'),
       'legacy managed hook\n'
     );
-    assert.equal(fs.existsSync(path.join(codexHome, 'gsd-install-state.json')), false);
+    assert.equal(fs.existsSync(path.join(codexHome, 'fvgsd-install-state.json')), false);
   });
 
   for (const runtime of SUPPORTED_RUNTIMES) {
@@ -438,7 +438,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       assert.match(output, /Done!/);
       assert.equal(fs.existsSync(path.join(targetDir, 'hooks/statusline.js')), false);
 
-      const installState = JSON.parse(fs.readFileSync(path.join(targetDir, 'gsd-install-state.json'), 'utf8'));
+      const installState = JSON.parse(fs.readFileSync(path.join(targetDir, 'fvgsd-install-state.json'), 'utf8'));
       assert.ok(
         installState.appliedMigrations.some((entry) => entry.id === '2026-05-11-legacy-orphan-files'),
         `${runtime} should track the applied cleanup migration in install state`
@@ -461,7 +461,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       assert.match(output, /Installer migrations/);
       assert.match(output, /removed\s+hooks\/statusline\.js/);
       assert.equal(fs.existsSync(path.join(targetDir, 'hooks/statusline.js')), false);
-      const installState = JSON.parse(fs.readFileSync(path.join(targetDir, 'gsd-install-state.json'), 'utf8'));
+      const installState = JSON.parse(fs.readFileSync(path.join(targetDir, 'fvgsd-install-state.json'), 'utf8'));
       assert.ok(
         installState.appliedMigrations.some((entry) => entry.id === '2026-05-11-legacy-orphan-files'),
         'successful install should write install state for the applied cleanup migration'

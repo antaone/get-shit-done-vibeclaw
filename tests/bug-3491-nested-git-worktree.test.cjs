@@ -6,7 +6,7 @@
 // — a shallow check that only sees a `.git` entry directly in the current
 // directory. Subdirectories of an existing git worktree therefore reported
 // `has_git: false`, causing the workflow's `git init` step to create a nested
-// `.git` inside the outer repo's worktree. Subsequent gsd-sdk commits then
+// `.git` inside the outer repo's worktree. Subsequent fvgsd-sdk commits then
 // targeted the nested repo instead of the outer one, silently dropping all
 // planning artefacts from the outer repo's history.
 //

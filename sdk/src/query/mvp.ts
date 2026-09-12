@@ -11,12 +11,12 @@
  *
  * 2. **`task.is-behavior-adding`** — applies the three-check predicate
  *    (tdd=true frontmatter AND `<behavior>` block AND non-test source files in `<files>`)
- *    that was previously prose-only in `references/execute-mvp-tdd.md`. The gsd-executor
+ *    that was previously prose-only in `references/execute-mvp-tdd.md`. The fvgsd-executor
  *    agent now invokes the verb instead of inlining the checks.
  *
  * 3. **`user-story.validate`** — applies the canonical user-story regex
  *    `/^As a .+, I want to .+, so that .+\.$/` previously hardcoded in `verify-work.md`
- *    prose. Consumed by the verifier (phase-goal guard) and by `/vgsd-mvp-phase`
+ *    prose. Consumed by the verifier (phase-goal guard) and by `/fvgsd-mvp-phase`
  *    (interactive-prompt validation).
  *
  * Domain terms: see CONTEXT.md → MVP Mode, User Story, Behavior-Adding Task.
@@ -57,8 +57,8 @@ interface MvpModeResult {
  *   4. false
  *
  * @example
- *   gsd-sdk query phase.mvp-mode 1                    # roadmap + config check
- *   gsd-sdk query phase.mvp-mode 1 --cli-flag         # caller saw --mvp on CLI
+ *   fvgsd-sdk query phase.mvp-mode 1                    # roadmap + config check
+ *   fvgsd-sdk query phase.mvp-mode 1 --cli-flag         # caller saw --mvp on CLI
  */
 export const phaseMvpMode: QueryHandler<MvpModeResult> = async (args, projectDir, workstream) => {
   const phaseNum = args[0];
@@ -136,8 +136,8 @@ interface BehaviorAddingResult {
  * Canonical specification: get-shit-done/references/execute-mvp-tdd.md.
  *
  * @example
- *   gsd-sdk query task.is-behavior-adding ./plans/01-PLAN-auth.md
- *   gsd-sdk query task.is-behavior-adding --task-content "<task>...</task>"
+ *   fvgsd-sdk query task.is-behavior-adding ./plans/01-PLAN-auth.md
+ *   fvgsd-sdk query task.is-behavior-adding --task-content "<task>...</task>"
  */
 export const taskIsBehaviorAdding: QueryHandler<BehaviorAddingResult> = async (args, projectDir) => {
   let content: string | null = null;
@@ -243,11 +243,11 @@ export const USER_STORY_REGEX = /^As a (?<role>.+?), I want to (?<capability>.+?
 
 /**
  * Validate that a string matches the User Story format used by MVP-mode phases.
- * Used by `gsd-verifier` (phase-goal guard) and `/vgsd-mvp-phase` (interactive prompting).
+ * Used by `fvgsd-verifier` (phase-goal guard) and `/fvgsd-mvp-phase` (interactive prompting).
  *
  * @example
- *   gsd-sdk query user-story.validate "As a user, I want to log in, so that I can see my data."
- *   gsd-sdk query user-story.validate --story "<text>"
+ *   fvgsd-sdk query user-story.validate "As a user, I want to log in, so that I can see my data."
+ *   fvgsd-sdk query user-story.validate --story "<text>"
  */
 export const userStoryValidate: QueryHandler<UserStoryValidateResult> = async (args, _projectDir) => {
   let input: string | null = null;

@@ -63,7 +63,7 @@ reads is inert — the consumption mechanism is what gives an artifact meaning.
 ### USER-PROFILE.md
 - **Shape**: Calibration tier and preferences profile
 - **Lifecycle**: Created by `profile-user` → Updated as preferences are observed
-- **Location**: `~/.claude/get-shit-done/USER-PROFILE.md`
+- **Location**: `~/.claude/fvgsd/USER-PROFILE.md`
 - **Consumed by**: `discuss-phase-assumptions` (calibration tier), `plan-phase`
 
 ### SPIKE.md / DESIGN.md (per-spike)
@@ -72,21 +72,21 @@ reads is inert — the consumption mechanism is what gives an artifact meaning.
 - **Location**: `.planning/spikes/SPIKE-NNN/`
 - **Consumed by**: Planner when spike is referenced; `pause-work` for spike context handoff
 
-### Spike README.md / MANIFEST.md (per-spike, via /vgsd:spike)
+### Spike README.md / MANIFEST.md (per-spike, via /fvgsd:spike)
 - **Shape**: YAML frontmatter (spike, name, validates, verdict, related, tags) + run instructions + results
-- **Lifecycle**: Created by `/vgsd:spike` → Verified → Wrapped up by `/vgsd-spike-wrap-up`
+- **Lifecycle**: Created by `/fvgsd:spike` → Verified → Wrapped up by `/fvgsd-spike-wrap-up`
 - **Location**: `.planning/spikes/NNN-name/README.md`, `.planning/spikes/MANIFEST.md`
-- **Consumed by**: `/vgsd-spike-wrap-up` for curation; `pause-work` for spike context handoff
+- **Consumed by**: `/fvgsd-spike-wrap-up` for curation; `pause-work` for spike context handoff
 
 ### Sketch README.md / MANIFEST.md / index.html (per-sketch)
 - **Shape**: YAML frontmatter (sketch, name, question, winner, tags) + variants as tabbed HTML
-- **Lifecycle**: Created by `/vgsd:sketch` → Evaluated → Wrapped up by `/vgsd-sketch-wrap-up`
+- **Lifecycle**: Created by `/fvgsd:sketch` → Evaluated → Wrapped up by `/fvgsd-sketch-wrap-up`
 - **Location**: `.planning/sketches/NNN-name/README.md`, `.planning/sketches/NNN-name/index.html`, `.planning/sketches/MANIFEST.md`
-- **Consumed by**: `/vgsd-sketch-wrap-up` for curation; `pause-work` for sketch context handoff
+- **Consumed by**: `/fvgsd-sketch-wrap-up` for curation; `pause-work` for sketch context handoff
 
 ### WRAP-UP-SUMMARY.md (per wrap-up session)
 - **Shape**: Curation results, included/excluded items, feature/design area groupings
-- **Lifecycle**: Created by `/vgsd-spike-wrap-up` or `/vgsd-sketch-wrap-up`
+- **Lifecycle**: Created by `/fvgsd-spike-wrap-up` or `/fvgsd-sketch-wrap-up`
 - **Location**: `.planning/spikes/WRAP-UP-SUMMARY.md` or `.planning/sketches/WRAP-UP-SUMMARY.md`
 - **Consumed by**: Project history; not read by automated workflows
 

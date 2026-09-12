@@ -50,13 +50,13 @@ Standard format for presenting next steps after completing a command or workflow
 
 `/clear` then:
 
-`/vgsd:execute-phase 2`
+`/fvgsd:execute-phase 2`
 
 ---
 
 **Also available:**
 - Review plan before executing
-- `/vgsd-list-phase-assumptions 2` — check assumptions
+- `/fvgsd-list-phase-assumptions 2` — check assumptions
 
 ---
 ```
@@ -75,7 +75,7 @@ Add note that this is the last plan and what comes after:
 
 `/clear` then:
 
-`/vgsd:execute-phase 2`
+`/fvgsd:execute-phase 2`
 
 ---
 
@@ -97,13 +97,13 @@ Add note that this is the last plan and what comes after:
 
 `/clear` then:
 
-`/vgsd:plan-phase 2`
+`/fvgsd:plan-phase 2`
 
 ---
 
 **Also available:**
-- `/vgsd:discuss-phase 2` — gather context first
-- `/vgsd:plan-phase --research-phase 2` — investigate unknowns
+- `/fvgsd:discuss-phase 2` — gather context first
+- `/fvgsd:plan-phase --research-phase 2` — investigate unknowns
 - Review roadmap
 
 ---
@@ -126,13 +126,13 @@ Show completion status before next action:
 
 `/clear` then:
 
-`/vgsd:plan-phase 3`
+`/fvgsd:plan-phase 3`
 
 ---
 
 **Also available:**
-- `/vgsd:discuss-phase 3` — gather context first
-- `/vgsd:plan-phase --research-phase 3` — investigate unknowns
+- `/fvgsd:discuss-phase 3` — gather context first
+- `/fvgsd:plan-phase --research-phase 3` — investigate unknowns
 - Review what Phase 2 built
 
 ---
@@ -151,11 +151,11 @@ When there's no clear primary action:
 
 `/clear` then one of:
 
-**To plan directly:** `/vgsd:plan-phase 3`
+**To plan directly:** `/fvgsd:plan-phase 3`
 
-**To discuss context first:** `/vgsd:discuss-phase 3`
+**To discuss context first:** `/fvgsd:discuss-phase 3`
 
-**To research unknowns:** `/vgsd:plan-phase --research-phase 3`
+**To research unknowns:** `/fvgsd:plan-phase --research-phase 3`
 
 ---
 ```
@@ -175,7 +175,7 @@ All 4 phases shipped
 
 `/clear` then:
 
-`/vgsd:new-milestone`
+`/fvgsd:new-milestone`
 
 ---
 ```
@@ -218,7 +218,7 @@ Extract: `**02-03: Refresh Token Rotation** — Add /api/auth/refresh with slidi
 ## To Continue
 
 Run `/clear`, then paste:
-/vgsd:execute-phase 2
+/fvgsd:execute-phase 2
 ```
 
 User has no idea what 02-03 is about.
@@ -226,7 +226,7 @@ User has no idea what 02-03 is about.
 ### Don't: Missing /clear explanation
 
 ```
-`/vgsd:plan-phase 3`
+`/fvgsd:plan-phase 3`
 
 Run /clear first.
 ```
@@ -246,7 +246,7 @@ Sounds like an afterthought. Use "Also available:" instead.
 
 ```
 ```
-/vgsd:plan-phase 3
+/fvgsd:plan-phase 3
 ```
 ```
 

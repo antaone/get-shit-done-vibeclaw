@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -46,7 +46,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     if (!fs.existsSync(HOOKS_DIST) || fs.readdirSync(HOOKS_DIST).length === 0) {
       execFileSync(process.execPath, [BUILD_HOOKS_SCRIPT], { stdio: 'pipe' });
     }
-    tmpRoot = createTempDir('gsd-3427-3433-');
+    tmpRoot = createTempDir('fvgsd-3427-3433-');
     codexHome = path.join(tmpRoot, '.codex');
     fs.mkdirSync(codexHome, { recursive: true });
   });
@@ -59,10 +59,10 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     // Stale legacy body — fresh install must overwrite this so Codex sees the
     // current SKILL.md, not whatever was last on disk.
     const legacySkillBody = '# old managed\n';
-    fs.mkdirSync(path.join(codexHome, 'skills', 'gsd-help'), { recursive: true });
-    fs.writeFileSync(path.join(codexHome, 'skills', 'gsd-help', 'SKILL.md'), legacySkillBody);
+    fs.mkdirSync(path.join(codexHome, 'skills', 'fvgsd-help'), { recursive: true });
+    fs.writeFileSync(path.join(codexHome, 'skills', 'fvgsd-help', 'SKILL.md'), legacySkillBody);
     const legacyHash = crypto.createHash('sha256').update(legacySkillBody).digest('hex');
-    fs.writeFileSync(path.join(codexHome, 'gsd-file-manifest.json'), JSON.stringify({
+    fs.writeFileSync(path.join(codexHome, 'fvgsd-file-manifest.json'), JSON.stringify({
       version: 1,
       files: {
         'skills/gsd-help/SKILL.md': legacyHash,
@@ -82,13 +82,13 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     // #3562: $gsd-* commands are discoverable only when skills/gsd-*/SKILL.md
     // exists. The installer must regenerate (not remove) the managed gsd-*
     // directories.
-    assert.equal(entries.includes('gsd-help'), true);
-    const refreshedBody = fs.readFileSync(path.join(skillsDir, 'gsd-help', 'SKILL.md'), 'utf8');
+    assert.equal(entries.includes('fvgsd-help'), true);
+    const refreshedBody = fs.readFileSync(path.join(skillsDir, 'fvgsd-help', 'SKILL.md'), 'utf8');
     assert.notEqual(refreshedBody, legacySkillBody, 'stale legacy body must be overwritten');
     const frontmatter = parseFrontmatter(refreshedBody);
-    assert.equal(frontmatter.name, 'gsd-help', 'refreshed SKILL.md frontmatter must declare name: gsd-help');
+    assert.equal(frontmatter.name, 'fvgsd-help', 'refreshed SKILL.md frontmatter must declare name: gsd-help');
 
-    // Unrelated user skills are preserved — the regen scope is `gsd-*` only.
+    // Unrelated user skills are preserved — the regen scope is `fvgsd-*` only.
     assert.equal(entries.includes('custom-user-skill'), true);
   });
 
@@ -100,7 +100,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
       '[[hooks.SessionStart]]',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "node /tmp/legacy/.codex/hooks/gsd-check-update.js"',
+      'command = "node /tmp/legacy/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     fs.writeFileSync(path.join(codexHome, 'config.toml'), configToml);
@@ -122,11 +122,11 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     const tomlCommands = tomlSessionStart.flatMap((entry) =>
       (Array.isArray(entry?.hooks) ? entry.hooks : []).map((hook) => hook.command).filter((cmd) => typeof cmd === 'string')
     );
-    assert.equal(tomlCommands.some((cmd) => cmd.includes('gsd-check-update.js')), false);
+    assert.equal(tomlCommands.some((cmd) => cmd.includes('fvgsd/check-update.js')), false);
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
     const sessionStartCommands = extractSessionStartCommandsFromHooksJson(hooksJson);
-    const gsdCommands = sessionStartCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdCommands = sessionStartCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
 
     assert.equal(gsdCommands.length, 1);
     assert.equal(sessionStartCommands.includes('node "/Users/example/bin/user-hook.js"'), true);
@@ -135,8 +135,8 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
   test('uninstall removes managed SessionStart hook from hooks.json but preserves user hooks', () => {
     const hooksDir = path.join(codexHome, 'hooks');
     fs.mkdirSync(hooksDir, { recursive: true });
-    fs.writeFileSync(path.join(hooksDir, 'gsd-check-update.js'), '// managed hook\n');
-    const managedHookPath = path.join(codexHome, 'hooks', 'gsd-check-update.js').replace(/\\/g, '/');
+    fs.writeFileSync(path.join(hooksDir, 'fvgsd/check-update.js'), '// managed hook\n');
+    const managedHookPath = path.join(codexHome, 'hooks', 'fvgsd/check-update.js').replace(/\\/g, '/');
 
     fs.writeFileSync(path.join(codexHome, 'hooks.json'), JSON.stringify({
       SessionStart: [
@@ -155,7 +155,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     const sessionStartCommands = extractSessionStartCommandsFromHooksJson(hooksJson);
     // On Windows the managed hook is the .cmd shim path; on POSIX it is the .js node-runner command.
     // Either way the managed hook is gone after uninstall — only the user hook remains.
-    const gsdCommands = sessionStartCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdCommands = sessionStartCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
 
     assert.equal(gsdCommands.length, 0);
     assert.equal(sessionStartCommands.includes('node "/Users/example/bin/user-hook.js"'), true);

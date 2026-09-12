@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2643 / #2808: skill frontmatter name parity.
@@ -8,8 +8,8 @@ process.env.GSD_TEST_MODE = '1';
  * Original (#2643): workflows emitted Skill(skill="gsd:<cmd>") and the
  * installer registered colon form in SKILL.md name: to match.
  *
- * Updated for VibeClaw: workflows use Skill(skill="vgsd-<cmd>") (hyphen),
- * and the installer emits name: vgsd-<cmd> (hyphen). Claude Code autocomplete
+ * Updated for VibeClaw: workflows use Skill(skill="fvgsd-<cmd>") (hyphen),
+ * and the installer emits name: fvgsd-<cmd> (hyphen). Claude Code autocomplete
  * now shows the canonical hyphen form instead of the deprecated colon form.
  * Legacy gsd input remains accepted for upgrades.
  */
@@ -65,7 +65,7 @@ function extractSkillCalls(content) {
   const calls = [];
   // Body class excludes backslash so the extractor doesn't include an
   // escape character that precedes the closing quote in embedded examples
-  // (e.g. `Skill(skill=\"vgsd-plan-phase\", …)` written inside a string
+  // (e.g. `Skill(skill=\"fvgsd-plan-phase\", …)` written inside a string
   // context). A trailing `\` is permitted on the closing-quote side via the
   // optional `\\?` so both `\"` and `"` close the value cleanly.
   const argRe = /^\s*skill\s*=\s*\\?(['"])([^'"\\]+)\\?\1/i;
@@ -87,7 +87,7 @@ function extractSkillNamesHyphen(content) {
   return new Set(
     extractSkillCalls(content)
       .map((c) => c.name)
-      .filter((n) => n.startsWith('vgsd-')),
+      .filter((n) => n.startsWith('fvgsd-')),
   );
 }
 
@@ -95,21 +95,21 @@ function extractSkillNamesColon(content) {
   return new Set(
     extractSkillCalls(content)
       .map((c) => c.name)
-      .filter((n) => /^(?:vgsd|gsd):/.test(n)),
+      .filter((n) => /^(?:fvgsd|gsd):/.test(n)),
   );
 }
 
 describe('skill frontmatter name parity (#2643 / #2808)', () => {
   test('skillFrontmatterName helper emits hyphen form (#2808)', () => {
     assert.strictEqual(typeof skillFrontmatterName, 'function');
-    assert.strictEqual(skillFrontmatterName('vgsd-execute-phase'), 'vgsd-execute-phase');
-    assert.strictEqual(skillFrontmatterName('vgsd-plan-phase'), 'vgsd-plan-phase');
-    assert.strictEqual(skillFrontmatterName('gsd-next'), 'gsd-next');
+    assert.strictEqual(skillFrontmatterName('fvgsd-execute-phase'), 'fvgsd-execute-phase');
+    assert.strictEqual(skillFrontmatterName('fvgsd-plan-phase'), 'fvgsd-plan-phase');
+    assert.strictEqual(skillFrontmatterName('fvgsd-next'), 'fvgsd-next');
   });
 
-  test('convertClaudeCommandToClaudeSkill emits name: vgsd-<cmd> (hyphen)', () => {
+  test('convertClaudeCommandToClaudeSkill emits name: fvgsd-<cmd> (hyphen)', () => {
     const input = '---\nname: old\ndescription: test\n---\n\nBody.';
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-execute-phase');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-execute-phase');
     // Parse the frontmatter block structurally: extract the name: field value.
     const frontmatterMatch = result.match(/^---\n([\s\S]*?)\n---/);
     assert.ok(frontmatterMatch, 'output must have a frontmatter block delimited by ---');
@@ -119,8 +119,8 @@ describe('skill frontmatter name parity (#2643 / #2808)', () => {
     const nameValue = nameEntry.replace(/^name:\s*/, '').trim();
     assert.strictEqual(
       nameValue,
-      'vgsd-execute-phase',
-      `frontmatter name: must be 'vgsd-execute-phase' (hyphen form), got '${nameValue}'`
+      'fvgsd-execute-phase',
+      `frontmatter name: must be 'fvgsd-execute-phase' (hyphen form), got '${nameValue}'`
     );
   });
 
@@ -140,7 +140,7 @@ describe('skill frontmatter name parity (#2643 / #2808)', () => {
     );
   });
 
-  test('every workflow Skill(skill="vgsd-<cmd>") resolves to an emitted skill name', () => {
+  test('every workflow Skill(skill="fvgsd-<cmd>") resolves to an emitted skill name', () => {
     const workflowFiles = collectFiles(WORKFLOWS_DIR);
     const referenced = new Set();
     for (const f of workflowFiles) {
@@ -149,14 +149,14 @@ describe('skill frontmatter name parity (#2643 / #2808)', () => {
     }
     assert.ok(
       referenced.size > 0,
-      `expected at least one Skill(skill="vgsd-<cmd>") reference in workflows under ${WORKFLOWS_DIR}`
+      `expected at least one Skill(skill="fvgsd-<cmd>") reference in workflows under ${WORKFLOWS_DIR}`
     );
 
     const emitted = new Set();
     const cmdFiles = fs.readdirSync(COMMANDS_DIR).filter(f => f.endsWith('.md'));
     for (const cmd of cmdFiles) {
       const base = cmd.replace(/\.md$/, '');
-      const skillDirName = 'vgsd-' + base;
+      const skillDirName = 'fvgsd-' + base;
       const src = fs.readFileSync(path.join(COMMANDS_DIR, cmd), 'utf-8');
       const out = convertClaudeCommandToClaudeSkill(src, skillDirName);
       const m = out.match(/^---\nname:\s*(.+)$/m);

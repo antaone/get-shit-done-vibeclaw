@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Regression test for bug #3562 — Codex global install must create a
@@ -11,7 +11,7 @@ process.env.GSD_TEST_MODE = '1';
  * commands from skills/<name>/SKILL.md. Prior installer logic ("Codex now
  * discovers official skills from .agents/skills") was based on an assumption
  * that does not match the shipping Codex CLI behavior, leaving users with
- * workflows on disk and no $gsd-* entrypoints after `npx get-shit-done-cc
+ * workflows on disk and no $gsd-* entrypoints after `npx fvgsd
  * --codex --global`.
  *
  * Fix: re-wire copyCommandsAsCodexSkills() back into the install dispatch path
@@ -50,7 +50,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
     if (!fs.existsSync(HOOKS_DIST) || fs.readdirSync(HOOKS_DIST).length === 0) {
       execFileSync(process.execPath, [BUILD_HOOKS_SCRIPT], { stdio: 'pipe' });
     }
-    tmpRoot = createTempDir('gsd-3562-');
+    tmpRoot = createTempDir('fvgsd-3562-');
     codexHome = path.join(tmpRoot, '.codex');
     fs.mkdirSync(codexHome, { recursive: true });
   });
@@ -62,7 +62,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
   test('global install creates skills/gsd-help/SKILL.md', () => {
     withCodexHome(codexHome, () => install(true, 'codex'));
 
-    const skillPath = path.join(codexHome, 'skills', 'gsd-help', 'SKILL.md');
+    const skillPath = path.join(codexHome, 'skills', 'fvgsd-help', 'SKILL.md');
     assert.ok(
       fs.existsSync(skillPath),
       `Codex install must create ${skillPath} so $gsd-help is discoverable. ` +
@@ -73,12 +73,12 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
   test('SKILL.md content has frontmatter expected by Codex skill discovery', () => {
     withCodexHome(codexHome, () => install(true, 'codex'));
 
-    const skillPath = path.join(codexHome, 'skills', 'gsd-help', 'SKILL.md');
+    const skillPath = path.join(codexHome, 'skills', 'fvgsd-help', 'SKILL.md');
     assert.ok(fs.existsSync(skillPath), 'precondition: SKILL.md exists');
 
     const content = fs.readFileSync(skillPath, 'utf8');
     const frontmatter = parseFrontmatter(content);
-    assert.equal(frontmatter.name, 'gsd-help', 'SKILL.md frontmatter must declare name: gsd-help so $gsd-help resolves');
+    assert.equal(frontmatter.name, 'fvgsd-help', 'SKILL.md frontmatter must declare name: gsd-help so $gsd-help resolves');
   });
 
   test('multiple core $gsd-* skills are produced (not just gsd-help)', () => {
@@ -89,7 +89,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
 
     const gsdSkills = fs
       .readdirSync(skillsDir, { withFileTypes: true })
-      .filter((e) => e.isDirectory() && e.name.startsWith('gsd-'))
+      .filter((e) => e.isDirectory() && e.name.startsWith('fvgsd-'))
       .map((e) => e.name);
 
     // Lower bound — exact count depends on the current command surface. The

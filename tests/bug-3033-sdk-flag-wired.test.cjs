@@ -2,7 +2,7 @@
  * Regression test for #3033: --sdk flag parsed but never used.
  *
  * `hasSdk` was set in bin/install.js but never passed to `installSdkIfNeeded`,
- * so `npx get-shit-done-cc@latest --sdk` produced a misleading "✓ GSD SDK ready"
+ * so `npx fvgsd@latest --sdk` produced a misleading "✓ GSD SDK ready"
  * message while still silently skipping SDK deployment for local installs.
  *
  * Fix: `installSdkIfNeeded` now accepts `opts.forceSdk`. When true, the
@@ -17,7 +17,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -31,7 +31,7 @@ const { createTempDir, cleanup, captureConsole } = require('./helpers.cjs');
 const isWindows = process.platform === 'win32';
 
 describe('bug #3033: --sdk flag (opts.forceSdk) must be wired into installSdkIfNeeded',
-  { skip: isWindows ? 'POSIX-only: forces shebang gsd-sdk shim into ~/.local/bin and asserts mode 0o755' : false },
+  { skip: isWindows ? 'POSIX-only: forces shebang fvgsd-sdk shim into ~/.local/bin and asserts mode 0o755' : false },
   () => {
   let tmpRoot;
   let sdkDir;
@@ -40,7 +40,7 @@ describe('bug #3033: --sdk flag (opts.forceSdk) must be wired into installSdkIfN
   let savedEnv;
 
   beforeEach(() => {
-    tmpRoot = createTempDir('gsd-3033-');
+    tmpRoot = createTempDir('fvgsd-3033-');
     sdkDir = path.join(tmpRoot, 'sdk');
     pathDir = path.join(tmpRoot, 'somebin');
     homeDir = path.join(tmpRoot, 'home');
@@ -59,7 +59,7 @@ describe('bug #3033: --sdk flag (opts.forceSdk) must be wired into installSdkIfN
     cleanup(tmpRoot);
   });
 
-  test('forceSdk=true + isLocal=true + dist present: self-links gsd-sdk into PATH dir', () => {
+  test('forceSdk=true + isLocal=true + dist present: self-links fvgsd-sdk into PATH dir', () => {
     // Stage a valid dist so the installer can proceed past the missing-dist gate.
     fs.mkdirSync(path.join(sdkDir, 'dist'), { recursive: true });
     fs.writeFileSync(
@@ -79,10 +79,10 @@ describe('bug #3033: --sdk flag (opts.forceSdk) must be wired into installSdkIfN
     const combined = `${stdout}\n${stderr}`;
 
     // Shim must be materialized on PATH.
-    const linkPath = path.join(localBin, 'gsd-sdk');
+    const linkPath = path.join(localBin, 'fvgsd-sdk');
     assert.ok(
       fs.existsSync(linkPath),
-      `forceSdk=true must materialize gsd-sdk shim at ${linkPath}. Output:\n${combined}`,
+      `forceSdk=true must materialize fvgsd-sdk shim at ${linkPath}. Output:\n${combined}`,
     );
 
     // Must report "GSD SDK ready" — not the legacy "Skipping SDK check" message.
@@ -135,7 +135,7 @@ describe('bug #3033: --sdk flag (opts.forceSdk) must be wired into installSdkIfN
         installSdkIfNeeded({ sdkDir, isLocal: true, forceSdk: true, throwOnFailure: true });
       }),
       (error) => {
-        assert.equal(error.code, 'GSD_SDK_MISSING_DIST');
+        assert.equal(error.code, 'FVGSD_SDK_MISSING_DIST');
         assert.equal(error.exitCode, 1);
         return true;
       }

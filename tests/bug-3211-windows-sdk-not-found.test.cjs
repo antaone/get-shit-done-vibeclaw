@@ -1,13 +1,13 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Regression tests for bug #3211.
  *
  * Windows 11 + PowerShell 7 + Node v22.22.1, fresh
- * `npx get-shit-done-cc@latest --global --claude`:
- *   gsd-sdk: The term 'gsd-sdk' is not recognized
+ * `npx fvgsd@latest --global --claude`:
+ *   fvgsd-sdk: The term 'fvgsd-sdk' is not recognized
  *
  * Root causes (Windows sibling of #3231):
  *
@@ -114,21 +114,21 @@ describe('bug #3211-A: filterNpxFromPath handles Windows backslash _npx paths', 
 
 // ---------------------------------------------------------------------------
 // B. isGsdSdkOnPath — does not return true when only a Windows _npx dir has
-//    gsd-sdk.cmd (using filterNpxFromPath on the passed pathString)
+//    fvgsd-sdk.cmd (using filterNpxFromPath on the passed pathString)
 // ---------------------------------------------------------------------------
 
 describe('bug #3211-B: isGsdSdkOnPath rejects Windows _npx-only transient PATH', () => {
   let tmpRoot;
 
   before(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3211-b-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3211-b-'));
   });
 
   after(() => {
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('returns false when a gsd-sdk.cmd exists only in an _npx-style transient dir', () => {
+  test('returns false when a fvgsd-sdk.cmd exists only in an _npx-style transient dir', () => {
     // On POSIX we name the dir with _npx/ to match the filter pattern.
     // We can't set process.platform, but we CAN call isGsdSdkOnPath with an
     // explicit pathString that contains an _npx segment — the fix must
@@ -138,12 +138,12 @@ describe('bug #3211-B: isGsdSdkOnPath rejects Windows _npx-only transient PATH',
     const npxBinDir = path.join(tmpRoot, '_npx', 'abc123', 'node_modules', '.bin');
     fs.mkdirSync(npxBinDir, { recursive: true });
 
-    // Write a gsd-sdk shim (named .cmd for the Windows scenario — on POSIX
+    // Write a fvgsd-sdk shim (named .cmd for the Windows scenario — on POSIX
     // isGsdSdkOnPath won't find .cmd; we validate the filter, not the exec check).
-    const shimPath = path.join(npxBinDir, 'gsd-sdk.cmd');
+    const shimPath = path.join(npxBinDir, 'fvgsd-sdk.cmd');
     fs.writeFileSync(
       shimPath,
-      ['@ECHO OFF', '@node "C:\\path\\to\\gsd-sdk.js" %*', ''].join('\r\n'),
+      ['@ECHO OFF', '@node "C:\\path\\to\\fvgsd-sdk.js" %*', ''].join('\r\n'),
     );
 
     // The raw pathString contains an _npx segment — it MUST be filtered.
@@ -155,7 +155,7 @@ describe('bug #3211-B: isGsdSdkOnPath rejects Windows _npx-only transient PATH',
     assert.equal(
       onPath,
       false,
-      'isGsdSdkOnPath(filterNpxFromPath(path)) must return false when only _npx dir has gsd-sdk. persistentPath=' + persistentPath,
+      'isGsdSdkOnPath(filterNpxFromPath(path)) must return false when only _npx dir has fvgsd-sdk. persistentPath=' + persistentPath,
     );
   });
 });
@@ -267,19 +267,19 @@ describe('bug #3211-D: installSdkIfNeeded — Windows _npx false-positive', () =
   }
 
   beforeEach(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3211-d-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3211-d-'));
     sdkDir = makeSdkDir(tmpRoot);
 
     // Simulate: install-time PATH contains only a transient _npx dir
-    // with a gsd-sdk shim. The persistent npm prefix dir is separate and
+    // with a fvgsd-sdk shim. The persistent npm prefix dir is separate and
     // NOT in process.env.PATH during the npx run.
     const npxBinDir = path.join(tmpRoot, '_npx', 'abc123', 'node_modules', '.bin');
     fs.mkdirSync(npxBinDir, { recursive: true });
-    // Write a gsd-sdk shim in the transient dir (executable on POSIX)
-    const shimName = 'gsd-sdk';
+    // Write a fvgsd-sdk shim in the transient dir (executable on POSIX)
+    const shimName = 'fvgsd-sdk';
     fs.writeFileSync(
       path.join(npxBinDir, shimName),
-      ['#!/bin/sh', 'exec node /path/to/gsd-sdk.js "$@"', ''].join('\n'),
+      ['#!/bin/sh', 'exec node /path/to/fvgsd-sdk.js "$@"', ''].join('\n'),
       { mode: 0o755 },
     );
 
@@ -324,7 +324,7 @@ describe('bug #3211-D: installSdkIfNeeded — Windows _npx false-positive', () =
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('does NOT print "GSD SDK ready" when the only gsd-sdk entry is in a transient _npx dir and npm-prefix is off-PATH', () => {
+  test('does NOT print "GSD SDK ready" when the only fvgsd-sdk entry is in a transient _npx dir and npm-prefix is off-PATH', () => {
     const { stdout, stderr } = captureConsole(() => {
       installSdkIfNeeded({ sdkDir });
     });
@@ -332,7 +332,7 @@ describe('bug #3211-D: installSdkIfNeeded — Windows _npx false-positive', () =
 
     assert.ok(
       !/GSD SDK ready/.test(combined),
-      'installer must NOT print "GSD SDK ready" when gsd-sdk is only in a transient _npx dir. Got:\n' + combined,
+      'installer must NOT print "GSD SDK ready" when fvgsd-sdk is only in a transient _npx dir. Got:\n' + combined,
     );
     // Must emit SOME output (warning or diagnostic), not silently succeed.
     assert.ok(
@@ -350,37 +350,37 @@ describe('bug #3211-E: isLegacyGsdSdkShim detects legacy marker in .cmd files', 
   let tmpRoot;
 
   before(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3211-e-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3211-e-'));
   });
 
   after(() => {
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('detects @deprecated + gsd-tools.cjs in a .cmd shim', () => {
+  test('detects @deprecated + fvgsd-tools.cjs in a .cmd shim', () => {
     assert.equal(typeof isLegacyGsdSdkShim, 'function');
 
-    const legacyCmd = path.join(tmpRoot, 'gsd-sdk.cmd');
+    const legacyCmd = path.join(tmpRoot, 'fvgsd-sdk.cmd');
     fs.writeFileSync(
       legacyCmd,
       [
         '@ECHO OFF',
-        ':: @deprecated — use gsd-tools.cjs directly',
-        '@node "C:\\path\\to\\gsd-tools.cjs" %*',
+        ':: @deprecated — use fvgsd-tools.cjs directly',
+        '@node "C:\\path\\to\\fvgsd-tools.cjs" %*',
         '',
       ].join('\r\n'),
     );
-    assert.equal(isLegacyGsdSdkShim(legacyCmd), true, 'must detect @deprecated gsd-tools.cjs in .cmd shim');
+    assert.equal(isLegacyGsdSdkShim(legacyCmd), true, 'must detect @deprecated fvgsd-tools.cjs in .cmd shim');
   });
 
-  test('returns false for a modern .cmd shim pointing at gsd-sdk.js', () => {
-    const modernCmd = path.join(tmpRoot, 'gsd-sdk-modern.cmd');
+  test('returns false for a modern .cmd shim pointing at fvgsd-sdk.js', () => {
+    const modernCmd = path.join(tmpRoot, 'fvgsd-sdk-modern.cmd');
     fs.writeFileSync(
       modernCmd,
       [
         '@ECHO OFF',
         '@SETLOCAL',
-        '@node "C:\\path\\to\\get-shit-done-cc\\bin\\gsd-sdk.js" %*',
+        '@node "C:\\path\\to\\fvgsd\\bin\\fvgsd-sdk.js" %*',
         '',
       ].join('\r\n'),
     );

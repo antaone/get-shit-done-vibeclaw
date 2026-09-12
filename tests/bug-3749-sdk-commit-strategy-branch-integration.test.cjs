@@ -31,7 +31,7 @@ function git(projectDir, args) {
 }
 
 /**
- * Invoke `gsd-sdk query <subcommand> <...args>` against a project dir.
+ * Invoke `fvgsd-sdk query <subcommand> <...args>` against a project dir.
  * Returns { exitCode, stdout, stderr, json } where json is the parsed handler
  * payload (the SDK prints a single JSON object to stdout for query handlers).
  */
@@ -44,7 +44,7 @@ function runSdkQuery(subcommand, args, projectDir) {
     stdout = execFileSync(process.execPath, [SDK_CLI, ...argv], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, GSD_SESSION_KEY: '' },
+      env: { ...process.env, FVGSD_SESSION_KEY: '' },
     });
   } catch (err) {
     exitCode = err.status ?? 1;
@@ -65,11 +65,11 @@ function runSdkQuery(subcommand, args, projectDir) {
 
 // ─── Integration: commit handler with branching_strategy: phase ──────────────
 
-describe('bug #3749 (integration): gsd-sdk commit with branching_strategy: phase', () => {
+describe('bug #3749 (integration): fvgsd-sdk commit with branching_strategy: phase', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempGitProject('gsd-3749-');
+    tmpDir = createTempGitProject('fvgsd-3749-');
 
     // Write a phase directory that parsePhasesFromFiles can detect.
     const phaseDir = path.join(tmpDir, '.planning', 'phases', '1-setup');

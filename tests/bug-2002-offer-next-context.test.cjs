@@ -44,7 +44,7 @@ describe('bug #2002: offer_next checks CONTEXT.md before suggesting next step', 
     content = content || fs.readFileSync(workflowPath, 'utf-8');
     // Must have a conditional path where discuss-phase is the primary step
     // when CONTEXT.md is missing — look for proximity of "not exist"/"missing"/
-    // "does not exist" and "gsd-discuss-phase" in the offer_next step
+    // "does not exist" and "fvgsd-discuss-phase" in the offer_next step
     const offerNextIdx = content.indexOf('offer_next');
     assert.ok(offerNextIdx !== -1, 'offer_next step must exist');
 

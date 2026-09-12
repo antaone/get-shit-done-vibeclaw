@@ -6,7 +6,7 @@
  *
  * a) Frontmatter to body consistency:
  *    For each commands/gsd/*.md, parse requires: and walk the body for
- *    references to other GSD skills (public vgsd namespace or legacy gsd namespace).
+ *    references to other GSD skills (public fvgsd namespace or legacy gsd namespace).
  *    Fail if a skill body references a skill not listed in requires:.
  *
  * b) Profile closure satisfaction:
@@ -48,7 +48,7 @@ for (let i = 0; i < args.length; i++) {
 
 function extractBodyReferences(body) {
   const refs = new Set();
-  const re = /(?:\/?)(?:vgsd|gsd):([a-z0-9_-]+)/g;
+  const re = /(?:\/?)(?:fvgsd|gsd):([a-z0-9_-]+)/g;
   let m;
   while ((m = re.exec(body)) !== null) {
     refs.add(m[1]);
@@ -88,7 +88,7 @@ function checkFrontmatterBodyConsistency(manifest, allStems) {
           stem,
           filePath,
           undeclared: ref,
-          message: 'body references unknown skill vgsd:' + ref,
+          message: 'body references unknown skill fvgsd:' + ref,
         });
         continue;
       }
@@ -97,7 +97,7 @@ function checkFrontmatterBodyConsistency(manifest, allStems) {
           stem,
           filePath,
           undeclared: ref,
-          message: 'body references vgsd:' + ref + ' but requires: does not list it',
+          message: 'body references fvgsd:' + ref + ' but requires: does not list it',
         });
       }
     }

@@ -1,17 +1,17 @@
 <purpose>
-Generate a UI design contract (UI-SPEC.md) for frontend phases. Orchestrates gsd-ui-researcher and gsd-ui-checker with a revision loop. Inserts between discuss-phase and plan-phase in the lifecycle.
+Generate a UI design contract (UI-SPEC.md) for frontend phases. Orchestrates fvgsd-ui-researcher and fvgsd-ui-checker with a revision loop. Inserts between discuss-phase and plan-phase in the lifecycle.
 
 UI-SPEC.md locks spacing, typography, color, copywriting, and design system decisions before the planner creates tasks. This prevents design debt caused by ad-hoc styling decisions during execution.
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-ui-researcher — Researches UI/UX approaches
-- gsd-ui-checker — Reviews UI implementation quality
+- fvgsd-ui-researcher — Researches UI/UX approaches
+- fvgsd-ui-checker — Reviews UI implementation quality
 </available_agent_types>
 
 <process>
@@ -19,10 +19,10 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ## 1. Initialize
 
 ```bash
-INIT=$(gsd-sdk query init.plan-phase "$PHASE")
+INIT=$(fvgsd-sdk query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_UI=$(gsd-sdk query agent-skills gsd-ui-researcher)
-AGENT_SKILLS_UI_CHECKER=$(gsd-sdk query agent-skills gsd-ui-checker)
+AGENT_SKILLS_UI=$(fvgsd-sdk query agent-skills fvgsd-ui-researcher)
+AGENT_SKILLS_UI_CHECKER=$(fvgsd-sdk query agent-skills fvgsd-ui-checker)
 ```
 
 Parse JSON for: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_context`, `has_research`, `commit_docs`.
@@ -37,30 +37,30 @@ SKETCH_FINDINGS_PATH=$(ls ./.claude/skills/sketch-findings-*/SKILL.md 2>/dev/nul
 Resolve UI agent models:
 
 ```bash
-UI_RESEARCHER_MODEL=$(gsd-sdk query resolve-model gsd-ui-researcher --raw)
-UI_CHECKER_MODEL=$(gsd-sdk query resolve-model gsd-ui-checker --raw)
+UI_RESEARCHER_MODEL=$(fvgsd-sdk query resolve-model fvgsd-ui-researcher --raw)
+UI_CHECKER_MODEL=$(fvgsd-sdk query resolve-model fvgsd-ui-checker --raw)
 ```
 
 Check config:
 
 ```bash
-UI_ENABLED=$(gsd-sdk query config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_ENABLED=$(fvgsd-sdk query config-get workflow.ui_phase 2>/dev/null || echo "true")
 ```
 
 **If `UI_ENABLED` is `false`:**
 ```
-UI phase is disabled in config. Enable via /vgsd:settings.
+UI phase is disabled in config. Enable via /fvgsd:settings.
 ```
 Exit workflow.
 
-**If `planning_exists` is false:** Error — run `/vgsd:new-project` first.
+**If `planning_exists` is false:** Error — run `/fvgsd:new-project` first.
 
 ## 2. Parse and Validate Phase
 
 Extract phase number from $ARGUMENTS. If not provided, detect next unplanned phase.
 
 ```bash
-PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${PHASE}")
+PHASE_INFO=$(fvgsd-sdk query roadmap.get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases.
@@ -70,7 +70,7 @@ PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${PHASE}")
 **If `has_context` is false:**
 ```
 No CONTEXT.md found for Phase {N}.
-Recommended: run /vgsd:discuss-phase {N} first to capture design preferences.
+Recommended: run /fvgsd:discuss-phase {N} first to capture design preferences.
 Continuing without user decisions — UI researcher will ask all questions.
 ```
 Continue (non-blocking).
@@ -85,7 +85,7 @@ Continue (non-blocking).
 **If `SKETCH_FINDINGS_PATH` is not empty:**
 ```
 ⚡ Sketch findings detected: {SKETCH_FINDINGS_PATH}
-   Validated design decisions from /vgsd:sketch will be loaded into the UI researcher.
+   Validated design decisions from /fvgsd:sketch will be loaded into the UI researcher.
    Pre-validated decisions (layout, palette, typography, spacing) should be treated as locked — not re-asked.
 ```
 
@@ -109,7 +109,7 @@ If "View": display file contents, exit.
 If "Skip": proceed to step 7 (checker).
 If "Update": continue to step 5.
 
-## 5. Spawn gsd-ui-researcher
+## 5. Spawn fvgsd-ui-researcher
 
 Display:
 ```
@@ -123,7 +123,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd-ui-researcher.md for instructions.
+Read ~/.claude/agents/fvgsd-ui-researcher.md for instructions.
 
 <objective>
 Create UI design contract for Phase {phase_number}: {phase_name}
@@ -134,16 +134,16 @@ Answer: "What visual and interaction contracts does this phase need?"
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /vgsd:discuss-phase)
+- {context_path} (USER DECISIONS from /fvgsd:discuss-phase)
 - {research_path} (Technical Research — stack decisions)
-- {SKETCH_FINDINGS_PATH} (Sketch Findings — validated design decisions, CSS patterns, visual direction from /vgsd:sketch, if exists)
+- {SKETCH_FINDINGS_PATH} (Sketch Findings — validated design decisions, CSS patterns, visual direction from /fvgsd:sketch, if exists)
 </files_to_read>
 
 ${AGENT_SKILLS_UI}
 
 <output>
 Write to: {phase_dir}/{padded_phase}-UI-SPEC.md
-Template: ~/.claude/get-shit-done/templates/UI-SPEC.md
+Template: ~/.claude/fvgsd/templates/UI-SPEC.md
 </output>
 
 <config>
@@ -158,7 +158,7 @@ Omit null file paths from `<files_to_read>`.
 ```
 Agent(
   prompt=ui_research_prompt,
-  subagent_type="gsd-ui-researcher",
+  subagent_type="fvgsd-ui-researcher",
   model="{UI_RESEARCHER_MODEL}",
   description="UI Design Contract Phase {N}"
 )
@@ -174,7 +174,7 @@ Display confirmation. Continue to step 7.
 **If `## UI-SPEC BLOCKED`:**
 Display blocker details and options. Exit workflow.
 
-## 7. Spawn gsd-ui-checker
+## 7. Spawn fvgsd-ui-checker
 
 Display:
 ```
@@ -188,7 +188,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd-ui-checker.md for instructions.
+Read ~/.claude/agents/fvgsd-ui-checker.md for instructions.
 
 <objective>
 Validate UI design contract for Phase {phase_number}: {phase_name}
@@ -211,7 +211,7 @@ ui_safety_gate: {ui_safety_gate config value}
 ```
 Agent(
   prompt=ui_checker_prompt,
-  subagent_type="gsd-ui-checker",
+  subagent_type="fvgsd-ui-checker",
   model="{UI_CHECKER_MODEL}",
   description="Verify UI-SPEC Phase {N}"
 )
@@ -233,7 +233,7 @@ Track `revision_count` (starts at 0).
 
 **If `revision_count` < 2:**
 - Increment `revision_count`
-- Re-spawn gsd-ui-researcher with revision context:
+- Re-spawn fvgsd-ui-researcher with revision context:
 
 ```markdown
 <revision>
@@ -257,7 +257,7 @@ Max revision iterations reached. Remaining issues:
 
 Options:
 1. Force approve — proceed with current UI-SPEC (FLAGs become accepted)
-2. Edit manually — open UI-SPEC.md in editor, re-run /vgsd:ui-phase
+2. Edit manually — open UI-SPEC.md in editor, re-run /fvgsd:ui-phase
 3. Abandon — exit without approving
 ```
 
@@ -283,14 +283,14 @@ Dimensions: 6/6 passed
 {If CONTEXT.md exists for this phase:}
 **Plan Phase {N}** — planner will use UI-SPEC.md as design context
 
-`/clear` then: `/vgsd:plan-phase {N}`
+`/clear` then: `/fvgsd:plan-phase {N}`
 
 {If CONTEXT.md does NOT exist:}
 **Discuss Phase {N}** — gather implementation context before planning
 
-`/clear` then: `/vgsd:discuss-phase {N}`
+`/clear` then: `/fvgsd:discuss-phase {N}`
 
-(or `/vgsd:plan-phase {N}` to skip discussion)
+(or `/fvgsd:plan-phase {N}` to skip discussion)
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -298,13 +298,13 @@ Dimensions: 6/6 passed
 ## 11. Commit (if configured)
 
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
+fvgsd-sdk query commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```
 
 ## 12. Update State
 
 ```bash
-gsd-sdk query state.record-session \
+fvgsd-sdk query state.record-session \
   --stopped-at "Phase ${PHASE} UI-SPEC approved" \
   --resume-file "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```
@@ -316,9 +316,9 @@ gsd-sdk query state.record-session \
 - [ ] Phase validated against roadmap
 - [ ] Prerequisites checked (CONTEXT.md, RESEARCH.md — non-blocking warnings)
 - [ ] Existing UI-SPEC handled (update/view/skip)
-- [ ] gsd-ui-researcher spawned with correct context and file paths
+- [ ] fvgsd-ui-researcher spawned with correct context and file paths
 - [ ] UI-SPEC.md created in correct location
-- [ ] gsd-ui-checker spawned with UI-SPEC.md
+- [ ] fvgsd-ui-checker spawned with UI-SPEC.md
 - [ ] All 6 dimensions evaluated
 - [ ] Revision loop if BLOCKED (max 2 iterations)
 - [ ] Final status displayed with next steps

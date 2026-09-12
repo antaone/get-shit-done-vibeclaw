@@ -87,7 +87,7 @@ let tmpDir: string;
 // ─── Setup / Teardown ──────────────────────────────────────────────────────
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-phase-test-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-phase-test-'));
   const planningDir = join(tmpDir, '.planning');
   const phasesDir = join(planningDir, 'phases');
 

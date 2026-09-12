@@ -7,7 +7,7 @@
  * Tests for bug #1587: parallel agents for dependent plans
  *
  * Validates that:
- * 1. gsd-planner.md assign_waves step explicitly checks files_modified overlap
+ * 1. fvgsd-planner.md assign_waves step explicitly checks files_modified overlap
  *    and mandates a later wave for any plan that shares files with a prior plan.
  * 2. execute-phase.md has a pre-spawn intra-wave files_modified overlap check
  *    and directs sequential execution when overlap is detected.
@@ -18,7 +18,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const PLANNER_AGENT_PATH = path.join(__dirname, '..', 'agents', 'gsd-planner.md');
+const PLANNER_AGENT_PATH = path.join(__dirname, '..', 'agents', 'fvgsd-planner.md');
 const EXECUTE_PHASE_PATH = path.join(
   __dirname,
   '..',
@@ -28,12 +28,12 @@ const EXECUTE_PHASE_PATH = path.join(
 );
 
 // ---------------------------------------------------------------------------
-// gsd-planner.md — wave assignment must account for files_modified overlap
+// fvgsd-planner.md — wave assignment must account for files_modified overlap
 // ---------------------------------------------------------------------------
 
-describe('gsd-planner agent: files_modified wave ordering', () => {
+describe('fvgsd-planner agent: files_modified wave ordering', () => {
   test('planner agent file exists', () => {
-    assert.ok(fs.existsSync(PLANNER_AGENT_PATH), 'agents/gsd-planner.md should exist');
+    assert.ok(fs.existsSync(PLANNER_AGENT_PATH), 'agents/fvgsd-planner.md should exist');
   });
 
   test('assign_waves step checks files_modified overlap', () => {
@@ -58,7 +58,7 @@ describe('gsd-planner agent: files_modified wave ordering', () => {
     const assignWavesMatch = content.match(
       /<step name="assign_waves">([\s\S]*?)<\/step>/
     );
-    assert.ok(assignWavesMatch, 'assign_waves step should exist in gsd-planner.md');
+    assert.ok(assignWavesMatch, 'assign_waves step should exist in fvgsd-planner.md');
 
     const stepContent = assignWavesMatch[1];
 

@@ -12,7 +12,7 @@ describe('checkGates', () => {
   let projectDir: string;
 
   beforeEach(async () => {
-    projectDir = join(tmpdir(), `gsd-check-gates-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    projectDir = join(tmpdir(), `fvgsd-check-gates-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(join(projectDir, '.planning', 'phases'), { recursive: true });
     // Write a clean STATE.md
     await writeFile(

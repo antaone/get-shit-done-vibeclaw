@@ -6,18 +6,18 @@
 
 | 代理 | `quality` | `balanced` | `budget` |
 |-------|-----------|------------|----------|
-| gsd-planner | opus | opus | sonnet |
-| gsd-roadmapper | opus | sonnet | sonnet |
-| gsd-executor | opus | sonnet | sonnet |
-| gsd-phase-researcher | opus | sonnet | haiku |
-| gsd-project-researcher | opus | sonnet | haiku |
-| gsd-research-synthesizer | sonnet | sonnet | haiku |
-| gsd-debugger | opus | sonnet | sonnet |
-| gsd-codebase-mapper | sonnet | haiku | haiku |
-| gsd-verifier | sonnet | sonnet | haiku |
-| gsd-plan-checker | sonnet | sonnet | haiku |
-| gsd-integration-checker | sonnet | sonnet | haiku |
-| gsd-nyquist-auditor | sonnet | sonnet | haiku |
+| fvgsd-planner | opus | opus | sonnet |
+| fvgsd-roadmapper | opus | sonnet | sonnet |
+| fvgsd-executor | opus | sonnet | sonnet |
+| fvgsd-phase-researcher | opus | sonnet | haiku |
+| fvgsd-project-researcher | opus | sonnet | haiku |
+| fvgsd-research-synthesizer | sonnet | sonnet | haiku |
+| fvgsd-debugger | opus | sonnet | sonnet |
+| fvgsd-codebase-mapper | sonnet | haiku | haiku |
+| fvgsd-verifier | sonnet | sonnet | haiku |
+| fvgsd-plan-checker | sonnet | sonnet | haiku |
+| fvgsd-integration-checker | sonnet | sonnet | haiku |
+| fvgsd-nyquist-auditor | sonnet | sonnet | haiku |
 
 ## 配置理念
 
@@ -56,8 +56,8 @@
 {
   "model_profile": "balanced",
   "model_overrides": {
-    "gsd-executor": "opus",
-    "gsd-planner": "haiku"
+    "fvgsd-executor": "opus",
+    "fvgsd-planner": "haiku"
   }
 }
 ```
@@ -77,16 +77,16 @@
 
 ## 设计理由
 
-**为什么 gsd-planner 使用 Opus？**
+**为什么 fvgsd-planner 使用 Opus？**
 规划涉及架构决策、目标分解和任务设计。这是模型质量影响最大的地方。
 
-**为什么 gsd-executor 使用 Sonnet？**
+**为什么 fvgsd-executor 使用 Sonnet？**
 执行者遵循明确的 PLAN.md 指令。计划已包含推理；执行只是实现。
 
 **为什么 balanced 中验证器使用 Sonnet（而非 Haiku）？**
 验证需要目标回溯推理 —— 检查代码是否**交付**了阶段承诺的内容，而不仅仅是模式匹配。Sonnet 处理得很好；Haiku 可能会遗漏细微的差距。
 
-**为什么 gsd-codebase-mapper 使用 Haiku？**
+**为什么 fvgsd-codebase-mapper 使用 Haiku？**
 只读探索和模式提取。不需要推理，只需从文件内容输出结构化结果。
 
 **为什么用 `inherit` 而不是直接传递 `opus`？**

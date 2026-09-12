@@ -11,7 +11,7 @@
  * Uses node:test and node:assert (NOT Jest).
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -49,7 +49,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
       'Body content here.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-next');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-next');
     assert.ok(result.includes('allowed-tools:'), 'allowed-tools field is present');
     assert.ok(result.includes('Read'), 'Read tool preserved');
     assert.ok(result.includes('Bash'), 'Bash tool preserved');
@@ -59,7 +59,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
   test('preserves argument-hint', () => {
     const input = [
       '---',
-      'name: vgsd:debug',
+      'name: fvgsd:debug',
       'description: Debug issues',
       'argument-hint: "[issue description]"',
       'allowed-tools:',
@@ -70,7 +70,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
       'Debug body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-debug');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-debug');
     assert.ok(result.includes('argument-hint:'), 'argument-hint field is present');
     assert.ok(
       result.includes('[issue description]'),
@@ -90,7 +90,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
 
     // Directory name is gsd-next (hyphen, Windows-safe), frontmatter name is
     // gsd-next (hyphen, #2808 — canonical invocation form for Claude Code autocomplete).
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-next');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-next');
     assert.ok(result.includes('name: gsd-next'), 'frontmatter name uses hyphen form (#2808)');
   });
 
@@ -104,7 +104,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
       body,
     ].join('');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-test');
     assert.ok(result.includes('<objective>'), 'objective tag preserved');
     assert.ok(result.includes('Do the thing.'), 'body text preserved');
     assert.ok(result.includes('<process>'), 'process tag preserved');
@@ -120,7 +120,7 @@ describe('Qwen Code: convertClaudeCommandToClaudeSkill', () => {
       'Plan body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'gsd-plan');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-plan');
     assert.ok(result.startsWith('---\n'), 'frontmatter starts with ---');
     assert.ok(result.includes('\n---\n'), 'frontmatter closes with ---');
   });
@@ -132,7 +132,7 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-qwen-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-qwen-test-'));
   });
 
   afterEach(() => {
@@ -141,13 +141,13 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
     }
   });
 
-  test('creates skills/vgsd-xxx/SKILL.md directory structure', () => {
+  test('creates skills/fvgsd-xxx/SKILL.md directory structure', () => {
     // Create source command files
     const srcDir = path.join(tmpDir, 'src', 'commands', 'gsd');
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'quick.md'), [
       '---',
-      'name: vgsd:quick',
+      'name: fvgsd:quick',
       'description: Execute a quick task',
       'allowed-tools:',
       '  - Read',
@@ -160,17 +160,17 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
     const configDir = path.join(tmpDir, 'dest');
     fs.mkdirSync(configDir, { recursive: true });
     // Redirect findInstallSourceRoot to the test's custom srcDir
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir);
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
     installRuntimeArtifacts('qwen', configDir, 'global', resolvedProfileFull);
 
-    // Qwen layout: skills/gsd-<stem>/SKILL.md (destSubpath='skills', prefix='gsd-')
-    const skillPath = path.join(configDir, 'skills', 'vgsd-quick', 'SKILL.md');
-    assert.ok(fs.existsSync(skillPath), 'vgsd-quick/SKILL.md exists');
+    // Qwen layout: skills/gsd-<stem>/SKILL.md (destSubpath='skills', prefix='fvgsd-')
+    const skillPath = path.join(configDir, 'skills', 'fvgsd-quick', 'SKILL.md');
+    assert.ok(fs.existsSync(skillPath), 'fvgsd-quick/SKILL.md exists');
 
     // Verify content
     const content = fs.readFileSync(skillPath, 'utf8');
-    assert.ok(content.includes('name: vgsd-quick'), 'frontmatter name uses hyphen form (#2808)');
+    assert.ok(content.includes('name: fvgsd-quick'), 'frontmatter name uses hyphen form (#2808)');
     assert.ok(content.includes('description:'), 'description present');
     assert.ok(content.includes('allowed-tools:'), 'allowed-tools preserved');
     assert.ok(content.includes('<objective>'), 'body content preserved');
@@ -185,16 +185,16 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
       'description: Next step',
       '---',
       '',
-      'Reference: @~/.claude/get-shit-done/workflows/next.md',
+      'Reference: @~/.claude/fvgsd/workflows/next.md',
     ].join('\n'));
 
     const configDir = path.join(tmpDir, 'dest');
     fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir);
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
     installRuntimeArtifacts('qwen', configDir, 'global', resolvedProfileFull);
 
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd-next', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'fvgsd-next', 'SKILL.md'), 'utf8');
     assert.ok(!content.includes('~/.claude/'), 'old claude tilde-path removed');
     assert.ok(!content.includes('$HOME/.claude/'), 'old claude $HOME-path not present');
   });
@@ -208,16 +208,16 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
       'description: Plan phase',
       '---',
       '',
-      'Reference: $HOME/.claude/get-shit-done/workflows/plan.md',
+      'Reference: $HOME/.claude/fvgsd/workflows/plan.md',
     ].join('\n'));
 
     const configDir = path.join(tmpDir, 'dest');
     fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir);
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
     installRuntimeArtifacts('qwen', configDir, 'global', resolvedProfileFull);
 
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd-plan', 'SKILL.md'), 'utf8');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'fvgsd-plan', 'SKILL.md'), 'utf8');
     assert.ok(!content.includes('$HOME/.claude/'), 'old claude $HOME-path removed');
     assert.ok(!content.includes('~/.claude/'), 'old claude tilde-path not present');
   });
@@ -227,7 +227,7 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'quick.md'), [
       '---',
-      'name: vgsd:quick',
+      'name: fvgsd:quick',
       'description: Quick task',
       '---',
       '',
@@ -236,17 +236,17 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
 
     const configDir = path.join(tmpDir, 'dest');
     fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir);
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
     // Pre-create a stale skill at the new layout location
-    const staleSkillDir = path.join(configDir, 'skills', 'gsd-old-skill');
+    const staleSkillDir = path.join(configDir, 'skills', 'fvgsd-old-skill');
     fs.mkdirSync(staleSkillDir, { recursive: true });
     fs.writeFileSync(path.join(staleSkillDir, 'SKILL.md'), 'old');
 
     installRuntimeArtifacts('qwen', configDir, 'global', resolvedProfileFull);
 
     assert.ok(!fs.existsSync(staleSkillDir), 'stale skill removed');
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'vgsd-quick', 'SKILL.md')), 'new skill installed');
+    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd-quick', 'SKILL.md')), 'new skill installed');
   });
 
   test('preserves agent field in frontmatter', () => {
@@ -256,7 +256,7 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
       '---',
       'name: gsd:execute',
       'description: Execute phase',
-      'agent: gsd-executor',
+      'agent: fvgsd-executor',
       'allowed-tools:',
       '  - Read',
       '  - Bash',
@@ -268,12 +268,12 @@ describe('Qwen Code: installRuntimeArtifacts', () => {
 
     const configDir = path.join(tmpDir, 'dest');
     fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir);
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
     installRuntimeArtifacts('qwen', configDir, 'global', resolvedProfileFull);
 
-    const content = fs.readFileSync(path.join(configDir, 'skills', 'vgsd-execute', 'SKILL.md'), 'utf8');
-    assert.ok(content.includes('agent: gsd-executor'), 'agent field preserved');
+    const content = fs.readFileSync(path.join(configDir, 'skills', 'fvgsd-execute', 'SKILL.md'), 'utf8');
+    assert.ok(content.includes('agent: fvgsd-executor'), 'agent field preserved');
   });
 });
 
@@ -283,10 +283,10 @@ describe('Qwen Code: SKILL.md format validation', () => {
   test('SKILL.md frontmatter is valid YAML structure', () => {
     const input = [
       '---',
-      'name: vgsd:review',
+      'name: fvgsd:review',
       'description: Code review with quality checks',
       'argument-hint: "[PR number or branch]"',
-      'agent: gsd-code-reviewer',
+      'agent: fvgsd-code-reviewer',
       'allowed-tools:',
       '  - Read',
       '  - Grep',
@@ -296,14 +296,14 @@ describe('Qwen Code: SKILL.md format validation', () => {
       '<objective>Review code</objective>',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-review');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-review');
 
     // Parse the frontmatter
     const fmMatch = result.match(/^---\n([\s\S]*?)\n---/);
     assert.ok(fmMatch, 'has frontmatter block');
 
     const fmLines = fmMatch[1].split('\n');
-    const hasName = fmLines.some(l => l.startsWith('name: vgsd-review'));
+    const hasName = fmLines.some(l => l.startsWith('name: fvgsd-review'));
     const hasDesc = fmLines.some(l => l.startsWith('description:'));
     const hasAgent = fmLines.some(l => l.startsWith('agent:'));
     const hasTools = fmLines.some(l => l.startsWith('allowed-tools:'));

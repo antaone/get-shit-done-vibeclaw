@@ -50,7 +50,7 @@ const LEGACY_COMMAND_REFERENCE = /(?<![A-Za-z0-9_:/-])([/$])gsd([:-])([a-z][a-z0
 const LEGACY_NON_COMMAND_TOKENS = new Set(['sdk', 'tools']);
 
 function normalizeRuntime(value) {
-  return String(value || process.env.GSD_RUNTIME || 'claude').trim().toLowerCase() || 'claude';
+  return String(value || process.env.FVGSD_RUNTIME || 'claude').trim().toLowerCase() || 'claude';
 }
 
 function planningMarkdownFiles(projectRoot) {
@@ -169,9 +169,9 @@ function migrateLegacyPlanningCommands(projectRoot, options = {}) {
 function normalizeCommand(value) {
   let command = String(value || '').trim().toLowerCase();
   command = command.replace(/^\$/, '').replace(/^\//, '');
-  command = command.replace(/^vgsd(?::|-)/, '');
+  command = command.replace(/^fvgsd(?::|-)/, '');
   command = command.replace(/^gsd(?::|-)/, '');
-  invariant(/^[a-z][a-z0-9-]*$/.test(command), 'COMMAND_INVALID', `Invalid vgsd command '${value || ''}'`);
+  invariant(/^[a-z][a-z0-9-]*$/.test(command), 'COMMAND_INVALID', `Invalid fvgsd command '${value || ''}'`);
   return command;
 }
 
@@ -213,23 +213,23 @@ function commandWorkflow(entry) {
   return {
     version: 1,
     name: entry.workflow,
-    description: `Vibe-managed execution of /vgsd:${entry.command}.`,
+    description: `Vibe-managed execution of /fvgsd:${entry.command}.`,
     stages: {
       task: {
-        description: COMMAND_DESCRIPTIONS[entry.command] || `Run /vgsd:${entry.command} and persist its requested result.`,
+        description: COMMAND_DESCRIPTIONS[entry.command] || `Run /fvgsd:${entry.command} and persist its requested result.`,
         mutates_source: true,
         requires_result_commit: false,
         requires_git_candidate: true,
         input: { required: false, promoted_stages: [] },
         output: ['workflow_artifacts', 'source_commit_when_changed', 'summary'],
         completion: [
-          `the /vgsd:${entry.command} workflow completed`,
+          `the /fvgsd:${entry.command} workflow completed`,
           'requested artifacts and source changes persisted',
           'relevant checks run when source changed',
           'candidate summary written',
           'all candidate changes committed when tracked',
         ],
-        gsd: { command: `vgsd:${entry.command}` },
+        gsd: { command: `fvgsd:${entry.command}` },
       },
     },
   };
@@ -297,7 +297,7 @@ function inspectVibeEntry(options = {}) {
       ...entry,
       action: 'continue-direct',
       reason: 'control_command',
-      message: `/vgsd:${entry.command} manages the local GSD/Vibe surface and does not need a candidate.`,
+      message: `/fvgsd:${entry.command} manages the local GSD/Vibe surface and does not need a candidate.`,
     };
   }
 
@@ -370,9 +370,9 @@ function inspectVibeEntry(options = {}) {
         branch: candidate.git.branch,
       },
       message: matches && active
-        ? `Continue /vgsd:${entry.command} inside Vibe candidate '${candidate.id}'.`
+        ? `Continue /fvgsd:${entry.command} inside Vibe candidate '${candidate.id}'.`
         : !matches
-          ? `This worktree belongs to /vgsd:${assigned}; return to '${store.projectRoot}' to prepare /vgsd:${entry.command}.`
+          ? `This worktree belongs to /fvgsd:${assigned}; return to '${store.projectRoot}' to prepare /fvgsd:${entry.command}.`
           : `Candidate '${candidate.id}' is ${candidate.status}; return to '${store.projectRoot}' to inspect or prepare further work.`,
     };
   }
@@ -425,7 +425,7 @@ function inspectVibeEntry(options = {}) {
       ? `Prepare one or more '${entry.stage}' candidates in active run '${activeRun.id}'.`
       : conflict
         ? `Active run '${activeRun.id}' uses '${activeRun.workflow}'. Resolve it or explicitly name a new run before starting '${entry.workflow}'.`
-        : `Start '${entry.workflow}' and prepare one or more isolated candidates before running /vgsd:${entry.command}.`,
+        : `Start '${entry.workflow}' and prepare one or more isolated candidates before running /fvgsd:${entry.command}.`,
   };
 }
 
@@ -439,7 +439,7 @@ function ensureGeneratedWorkflow(orchestrator, entry) {
   invariant(
     workflow.stages[entry.stage] && normalizeCommand(workflow.stages[entry.stage].gsd.command) === entry.command,
     'COMMAND_WORKFLOW_MISMATCH',
-    `Workflow '${entry.workflow}' does not route to /vgsd:${entry.command}`,
+    `Workflow '${entry.workflow}' does not route to /fvgsd:${entry.command}`,
   );
   return workflow;
 }
@@ -447,7 +447,7 @@ function ensureGeneratedWorkflow(orchestrator, entry) {
 function prepareVibeEntry(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
   const entry = resolveCommandEntry(options.command);
-  invariant(entry.orchestratable, 'COMMAND_NOT_ORCHESTRATABLE', `/vgsd:${entry.command} runs directly and cannot be prepared as a candidate`);
+  invariant(entry.orchestratable, 'COMMAND_NOT_ORCHESTRATABLE', `/fvgsd:${entry.command} runs directly and cannot be prepared as a candidate`);
   const repository = inspectRepository(cwd, options.gitOptions);
   invariant(repository.available, 'GIT_REQUIRED', 'Initialize Git before preparing Vibe candidates');
   invariant(repository.head, 'GIT_COMMIT_UNKNOWN', 'Create a reviewed baseline commit before preparing Vibe candidates');
@@ -522,7 +522,7 @@ function prepareVibeEntry(options = {}) {
     runId: run.id,
     tool,
     env: options.env || process.env,
-    // vgsd-vibe is an explicit workflow entry selector. Starting at plan,
+    // fvgsd-vibe is an explicit workflow entry selector. Starting at plan,
     // execute, verify, or review consumes the reviewed integration base when
     // there is no earlier Vibe promotion; ordinary stage preparation keeps
     // the stricter promotion requirement.
@@ -552,9 +552,9 @@ function prepareVibeEntry(options = {}) {
     run: { id: run.id, workflow: run.workflow, route: run.route, base_commit: run.base_commit, coordination },
     candidates,
     next_action: coordination.multi_machine
-      ? 'On each worker, fetch the handoff, check out its candidate branch, run the assigned vgsd command, commit, and push. Then complete, compare, and promote from the coordinator.'
+      ? 'On each worker, fetch the handoff, check out its candidate branch, run the assigned fvgsd command, commit, and push. Then complete, compare, and promote from the coordinator.'
       : candidates.length === 1
-        ? 'Run the assigned vgsd command in the candidate worktree, then complete and promote it.'
+        ? 'Run the assigned fvgsd command in the candidate worktree, then complete and promote it.'
         : 'Run each candidate independently, complete them, compare their results, and promote one.',
   };
 }

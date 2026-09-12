@@ -5,7 +5,7 @@ Schema version: 1
 
 ## 1. Existing architecture and integration points
 
-GSD already separates authored workflow content from runtime installation. Canonical command wrappers live in `commands/gsd/`, detailed workflows in `get-shit-done/workflows/`, role prompts in `agents/`, and install-time runtime transformations in `bin/install.js` plus `runtime-artifact-layout.cjs`. The SDK exposes reusable phase execution and query APIs, while the compatibility CLI routes existing shell-oriented workflows through `gsd-tools.cjs`.
+GSD already separates authored workflow content from runtime installation. Canonical command wrappers live in `commands/gsd/`, detailed workflows in `get-shit-done/workflows/`, role prompts in `agents/`, and install-time runtime transformations in `bin/install.js` plus `runtime-artifact-layout.cjs`. The SDK exposes reusable phase execution and query APIs, while the compatibility CLI routes existing shell-oriented workflows through `fvgsd-tools.cjs`.
 
 `.planning/` is owned by GSD. `planning-workspace.cjs` centralizes its path, workstream, and lock policy. Existing worktree code is primarily GSD execution safety and cleanup policy; it is not a durable model for competing cross-runtime candidates. Git subprocesses already use the non-interactive `execGit` seam in `shell-command-projection.cjs`.
 
@@ -17,7 +17,7 @@ The orchestration implementation lives under `get-shit-done/bin/lib/vibe/` and i
 
 - `yaml.cjs`: deterministic YAML-subset parsing and serialization for committed configuration.
 - `schemas.cjs`: validation and normalization for configuration, routes, workflows, runs, and candidates.
-- `store.cjs`: `.planning-vibe/` paths, atomic JSON writes, append-only history, promotion records, and stale-lock recovery.
+- `store.cjs`: `.planning-fvgsd-vibe/` paths, atomic JSON writes, append-only history, promotion records, and stale-lock recovery.
 - `adapters.cjs`: registry-backed tool adapters and explicit/environment/marker detection.
 - `git.cjs`: exact-base branch/worktree creation, atomic remote handoff publication, worker-result receipt, completion validation, safe promotion/push, and cleanup.
 - `orchestrator.cjs`: route, run, candidate, context, completion, promotion, and status use cases.
@@ -28,10 +28,10 @@ Core state transitions return data or throw typed errors. Terminal formatting an
 
 ## 3. State schema
 
-`.planning-vibe/` is project state and is intended to be committed. `.vibe/` contains disposable worktrees and is added to the repository-local Git exclude file by `vibe init`.
+`.planning-fvgsd-vibe/` is project state and is intended to be committed. `.fvgsd-vibe/` contains disposable worktrees and is added to the repository-local Git exclude file by `vibe init`.
 
 ```text
-.planning-vibe/
+.planning-fvgsd-vibe/
 ├── config.yaml
 ├── routes/
 │   ├── cheap.yaml
@@ -68,9 +68,9 @@ A run records its integration branch and base commit when it starts. Run creatio
 - a later stage uses the selected prior promotion's integration commit;
 - competing candidates for one stage therefore receive the same promoted input and base.
 
-Every contract with `requires_git_candidate: true` receives a branch named `vibe/<run>/<stage>/<tool>-NNN` and an isolated worktree under `.vibe/worktrees/<candidate-id>`. This includes planning stages that persist GSD artifacts through Git, even when they do not mutate application source.
+Every contract with `requires_git_candidate: true` receives a branch named `vibe/<run>/<stage>/<tool>-NNN` and an isolated worktree under `.fvgsd-vibe/worktrees/<candidate-id>`. This includes planning stages that persist GSD artifacts through Git, even when they do not mutate application source.
 
-Completion requires a clean candidate worktree, verifies that the branch still points at the recorded result, verifies ancestry from the recorded base, and rejects candidate commits that modify `.planning-vibe/` or `.vibe/`. Candidate metadata remains centralized in the main repository state and is discovered from linked worktrees through Git's common worktree metadata.
+Completion requires a clean candidate worktree, verifies that the branch still points at the recorded result, verifies ancestry from the recorded base, and rejects candidate commits that modify `.planning-fvgsd-vibe/` or `.fvgsd-vibe/`. Candidate metadata remains centralized in the main repository state and is discovered from linked worktrees through Git's common worktree metadata.
 
 Runs snapshot either `local` or `multi-machine` coordination. Local candidates
 retain the absolute-path identity above. Multi-machine preparation also pushes
@@ -95,11 +95,11 @@ The normal promotion is a fast-forward from the integration branch's exact expec
 
 Promotion writes an intent record before Git mutation and finalizes an immutable numbered promotion record afterward. The run projection, candidate projection, immutable promotion record, and append-only history retain previous alternatives. A failed post-Git state update leaves a recoverable intent instead of pretending the operation never began.
 
-Dirty application/source changes block promotion. Changes limited to `.planning-vibe/` are allowed because orchestration state is expected to evolve while candidates run. No command resets, cleans, or force-checks out user work.
+Dirty application/source changes block promotion. Changes limited to `.planning-fvgsd-vibe/` are allowed because orchestration state is expected to evolve while candidates run. No command resets, cleans, or force-checks out user work.
 
 ## 6. Command model
 
-The separate `vibe` executable keeps orchestration distinct from `/vgsd:*` methodology commands:
+The separate `vibe` executable keeps orchestration distinct from `/fvgsd:*` methodology commands:
 
 ```text
 vibe init
@@ -121,9 +121,9 @@ All inspection and lifecycle commands support `--json`. `stage prepare` is inten
 
 ## 7. GSD compatibility
 
-Workflow contracts carry runtime-neutral stage semantics plus a `gsd.command` reference such as `vgsd:plan-phase` or `vgsd:execute-phase`. Stage context tells the selected tool which existing GSD action to run and where candidate-specific outputs belong. No runtime-specific copy of a GSD workflow is introduced.
+Workflow contracts carry runtime-neutral stage semantics plus a `gsd.command` reference such as `fvgsd:plan-phase` or `fvgsd:execute-phase`. Stage context tells the selected tool which existing GSD action to run and where candidate-specific outputs belong. No runtime-specific copy of a GSD workflow is introduced.
 
-Normal GSD operation does not create `.planning-vibe/` and does not load the VibeClaw library. VibeClaw only activates after `vibe init`.
+Normal GSD operation does not create `.planning-fvgsd-vibe/` and does not load the VibeClaw library. VibeClaw only activates after `vibe init`.
 
 ## 8. Configuration and tool selection
 
@@ -150,7 +150,7 @@ Candidate IDs and branches are allocated while holding the lock. Failed worktree
 
 ## 10. Migration and compatibility
 
-There is no silent automatic migration. Existing `.planning/`, `.gsd/`, commands, SDK consumers, runtime installs, workstreams, and GSD worktrees continue unchanged when `vibe init` runs. Entry inspection separately detects legacy public command references in brownfield `.planning/**/*.md`; candidate preparation fails closed until the operator explicitly applies, reviews, and commits the runtime-aware namespace migration. Internal `gsd-tools`/`gsd-sdk` names and non-Markdown artifacts are outside that migration. `vibe init` remains idempotent for an existing valid store and only creates missing orchestration templates/directories plus the private `.vibe/` Git exclude.
+There is no silent automatic migration. Existing `.planning/`, `.gsd/`, commands, SDK consumers, runtime installs, workstreams, and GSD worktrees continue unchanged when `vibe init` runs. Entry inspection separately detects legacy public command references in brownfield `.planning/**/*.md`; candidate preparation fails closed until the operator explicitly applies, reviews, and commits the runtime-aware namespace migration. Internal `fvgsd-tools`/`fvgsd-sdk` names and non-Markdown artifacts are outside that migration. `vibe init` remains idempotent for an existing valid store and only creates missing orchestration templates/directories plus the private `.fvgsd-vibe/` Git exclude.
 
 ## 11. Implementation phases
 
@@ -168,7 +168,7 @@ There is no silent automatic migration. Existing `.planning/`, `.gsd/`, commands
 - **Stale locks:** owner/age checks and bounded acquisition time.
 - **Runtime CLI drift:** managed launch is adapter-scoped and optional; printed context/manual launch is always available.
 - **GSD semantic duplication:** workflow contracts reference canonical GSD commands instead of copying workflow bodies.
-- **Orchestration metadata contaminating candidates:** candidate commits are rejected if they touch `.planning-vibe/` or `.vibe/`.
+- **Orchestration metadata contaminating candidates:** candidate commits are rejected if they touch `.planning-fvgsd-vibe/` or `.fvgsd-vibe/`.
 - **Forged or stale remote worker state:** live remote identity/completion tags,
   assigned runtime/command checks, ancestry checks, atomic publication, exact
   pushed-result receipt, and integration push rejection fail closed.

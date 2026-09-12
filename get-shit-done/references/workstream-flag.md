@@ -8,7 +8,7 @@ parallel milestone work by multiple Claude Code instances on the same codebase.
 ## Resolution Priority
 
 1. `--ws <name>` flag (explicit, highest priority)
-2. `GSD_WORKSTREAM` environment variable (per-instance)
+2. `FVGSD_WORKSTREAM` environment variable (per-instance)
 3. Session-scoped active workstream pointer in temp storage (per runtime session / terminal)
 4. `.planning/active-workstream` file (legacy shared fallback when no session key exists)
 5. `null` — flat mode (no workstreams)
@@ -20,7 +20,7 @@ Claude/Codex instances are active on the same repo at the same time. One session
 silently repoint another session's `STATE.md`, `ROADMAP.md`, and phase paths.
 
 GSD now prefers a session-scoped pointer keyed by runtime/session identity
-(`GSD_SESSION_KEY`, `CODEX_THREAD_ID`, `CLAUDE_CODE_SSE_PORT`, terminal session IDs,
+(`FVGSD_SESSION_KEY`, `CODEX_THREAD_ID`, `CLAUDE_CODE_SSE_PORT`, terminal session IDs,
 or the controlling TTY). This keeps concurrent sessions isolated while preserving
 legacy compatibility for runtimes that do not expose a stable session key.
 
@@ -28,7 +28,7 @@ legacy compatibility for runtimes that do not expose a stable session key.
 
 When GSD resolves the session-scoped pointer in step 3 above, it uses this order:
 
-1. Explicit runtime/session env vars such as `GSD_SESSION_KEY`, `CODEX_THREAD_ID`,
+1. Explicit runtime/session env vars such as `FVGSD_SESSION_KEY`, `CODEX_THREAD_ID`,
    `CLAUDE_SESSION_ID`, `CLAUDE_CODE_SSE_PORT`, `OPENCODE_SESSION_ID`,
    `GEMINI_SESSION_ID`, `CURSOR_SESSION_ID`, `WINDSURF_SESSION_ID`,
    `TERM_SESSION_ID`, `WT_SESSION`, `TMUX_PANE`, and `ZELLIJ_SESSION_NAME`
@@ -61,7 +61,7 @@ and broader temp hygiene is left to OS temp cleanup or future maintenance work.
 
 ## Routing Propagation
 
-All workflow routing commands include `${GSD_WS}` which:
+All workflow routing commands include `${FVGSD_WS}` which:
 - Expands to `--ws <name>` when a workstream is active
 - Expands to empty string in flat mode (backward compatible)
 
@@ -93,19 +93,19 @@ This ensures workstream scope chains automatically through the workflow:
 ## CLI Usage
 
 ```bash
-# All gsd-sdk query commands accept --ws
-gsd-sdk query state.json --ws feature-a
-gsd-sdk query find-phase 3 --ws feature-b
+# All fvgsd-sdk query commands accept --ws
+fvgsd-sdk query state.json --ws feature-a
+fvgsd-sdk query find-phase 3 --ws feature-b
 
 # Session-local switching without --ws on every command
-GSD_SESSION_KEY=my-terminal-a gsd-sdk query workstream.set feature-a
-GSD_SESSION_KEY=my-terminal-a gsd-sdk query state.json
-GSD_SESSION_KEY=my-terminal-b gsd-sdk query workstream.set feature-b
-GSD_SESSION_KEY=my-terminal-b gsd-sdk query state.json
+FVGSD_SESSION_KEY=my-terminal-a fvgsd-sdk query workstream.set feature-a
+FVGSD_SESSION_KEY=my-terminal-a fvgsd-sdk query state.json
+FVGSD_SESSION_KEY=my-terminal-b fvgsd-sdk query workstream.set feature-b
+FVGSD_SESSION_KEY=my-terminal-b fvgsd-sdk query state.json
 
 # Workstream CRUD
-gsd-sdk query workstream.create <name>
-gsd-sdk query workstream.list
-gsd-sdk query workstream.status <name>
-gsd-sdk query workstream.complete <name>
+fvgsd-sdk query workstream.create <name>
+fvgsd-sdk query workstream.list
+fvgsd-sdk query workstream.status <name>
+fvgsd-sdk query workstream.complete <name>
 ```

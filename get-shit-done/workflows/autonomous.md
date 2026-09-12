@@ -48,14 +48,14 @@ When `--interactive` is set, discuss runs inline with questions (not auto-answer
 Bootstrap via milestone-level init:
 
 ```bash
-INIT=$(gsd-sdk query init.milestone-op)
+INIT=$(fvgsd-sdk query init.milestone-op)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `roadmap_exists`, `state_exists`, `commit_docs`.
 
-**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/vgsd:new-milestone` first."
-**If `state_exists` is false:** Error — "No STATE.md found. Run `/vgsd:new-milestone` first."
+**If `roadmap_exists` is false:** Error — "No ROADMAP.md found. Run `/fvgsd:new-milestone` first."
+**If `state_exists` is false:** Error — "No STATE.md found. Run `/fvgsd:new-milestone` first."
 
 Display startup banner:
 
@@ -82,7 +82,7 @@ If `INTERACTIVE` is set, display: `Mode: Interactive (discuss inline, plan+execu
 Run phase discovery:
 
 ```bash
-ROADMAP=$(gsd-sdk query roadmap.analyze)
+ROADMAP=$(fvgsd-sdk query roadmap.analyze)
 ```
 
 Parse the JSON `phases` array.
@@ -141,7 +141,7 @@ Exit cleanly.
 **Fetch details for each phase:**
 
 ```bash
-DETAIL=$(gsd-sdk query roadmap.get-phase ${PHASE_NUM})
+DETAIL=$(fvgsd-sdk query roadmap.get-phase ${PHASE_NUM})
 ```
 
 Extract `phase_name`, `goal`, `success_criteria` from each. Store for use in execute_phase and transition messages.
@@ -169,7 +169,7 @@ Where N = current phase number (from the ROADMAP, e.g., 63), T = total milestone
 Check if CONTEXT.md already exists for this phase:
 
 ```bash
-PHASE_STATE=$(gsd-sdk query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$(fvgsd-sdk query init.phase-op ${PHASE_NUM})
 ```
 
 Parse `has_context` from JSON.
@@ -185,7 +185,7 @@ Proceed to 3b.
 **If has_context is false:** Check if discuss is disabled via settings:
 
 ```bash
-SKIP_DISCUSS=$(gsd-sdk query config-get workflow.skip_discuss 2>/dev/null || echo "false")
+SKIP_DISCUSS=$(fvgsd-sdk query config-get workflow.skip_discuss 2>/dev/null || echo "false")
 ```
 
 **If SKIP_DISCUSS is `true`:** Skip discuss entirely — the ROADMAP phase description is the spec. Display:
@@ -197,7 +197,7 @@ Phase ${PHASE_NUM}: Discuss skipped (workflow.skip_discuss=true) — using ROADM
 Write a minimal CONTEXT.md so downstream plan-phase has valid input. Get phase details:
 
 ```bash
-DETAIL=$(gsd-sdk query roadmap.get-phase ${PHASE_NUM})
+DETAIL=$(fvgsd-sdk query roadmap.get-phase ${PHASE_NUM})
 ```
 
 Extract `goal` and `requirements` from JSON. Write `${phase_dir}/${padded_phase}-CONTEXT.md` with:
@@ -249,7 +249,7 @@ None — discuss phase skipped.
 Commit the minimal context:
 
 ```bash
-gsd-sdk query commit "docs(${PADDED_PHASE}): auto-generated context (discuss skipped)" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+fvgsd-sdk query commit "docs(${PADDED_PHASE}): auto-generated context (discuss skipped)" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 Proceed to 3b.
@@ -262,7 +262,7 @@ The discuss step in `--auto` mode MUST NOT loop. If CONTEXT.md already exists af
 **If `INTERACTIVE` is set:** Run the standard discuss-phase skill inline (asks interactive questions, waits for user answers). This preserves user input on all design decisions while keeping plan+execute out of the main context:
 
 ```
-Skill(skill="vgsd-discuss-phase", args="${PHASE_NUM}")
+Skill(skill="fvgsd-discuss-phase", args="${PHASE_NUM}")
 ```
 
 **If `INTERACTIVE` is NOT set:** Execute the smart_discuss step for this phase (batch table proposals, auto-optimized).
@@ -270,7 +270,7 @@ Skill(skill="vgsd-discuss-phase", args="${PHASE_NUM}")
 After discuss completes (either mode), verify context was written:
 
 ```bash
-PHASE_STATE=$(gsd-sdk query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$(fvgsd-sdk query init.phase-op ${PHASE_NUM})
 ```
 
 Check `has_context`. If false → go to handle_blocker: "Discuss for phase ${PHASE_NUM} did not produce CONTEXT.md."
@@ -280,13 +280,13 @@ Check `has_context`. If false → go to handle_blocker: "Discuss for phase ${PHA
 Check if this phase has frontend indicators and whether a UI-SPEC already exists:
 
 ```bash
-PHASE_SECTION=$(gsd-sdk query roadmap.get-phase ${PHASE_NUM} 2>/dev/null)
+PHASE_SECTION=$(fvgsd-sdk query roadmap.get-phase ${PHASE_NUM} 2>/dev/null)
 # Shell-free word-boundary gate (#3718): Node.js helper — no locale env-var dependency.
 # Reads via stdin to avoid OS ARG_MAX limits on large phase text.
 # Path anchored to repo root; falls back to CWD if git is unavailable
 # Exit codes mirror grep: 0 = UI tokens found, 1 = not found.
-GSD_REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
-printf '%s' "$PHASE_SECTION" | node "${GSD_REPO_ROOT}/bin/lib/ui-safety-gate.cjs" > /dev/null 2>&1
+FVGSD_REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
+printf '%s' "$PHASE_SECTION" | node "${FVGSD_REPO_ROOT}/bin/lib/ui-safety-gate.cjs" > /dev/null 2>&1
 HAS_UI=$?
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 ```
@@ -294,7 +294,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 Check if UI phase workflow is enabled:
 
 ```bash
-UI_PHASE_CFG=$(gsd-sdk query config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_PHASE_CFG=$(fvgsd-sdk query config-get workflow.ui_phase 2>/dev/null || echo "true")
 ```
 
 **If `HAS_UI` is 0 (frontend indicators found) AND `UI_SPEC_FILE` is empty (no UI-SPEC exists) AND `UI_PHASE_CFG` is not `false`:**
@@ -306,7 +306,7 @@ Phase ${PHASE_NUM}: Frontend phase detected — generating UI design contract...
 ```
 
 ```
-Skill(skill="vgsd-ui-phase", args="${PHASE_NUM}")
+Skill(skill="fvgsd-ui-phase", args="${PHASE_NUM}")
 ```
 
 Verify UI-SPEC was created:
@@ -327,7 +327,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 Agent(
   description="Plan phase ${PHASE_NUM}: ${PHASE_NAME}",
   run_in_background=true,
-  prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"vgsd-plan-phase\", args=\"${PHASE_NUM}\")"
+  prompt="Run plan-phase for phase ${PHASE_NUM}: Skill(skill=\"fvgsd-plan-phase\", args=\"${PHASE_NUM}\")"
 )
 ```
 
@@ -336,7 +336,7 @@ Store the agent task_id. After discuss for the next phase completes (or if no ne
 **If `INTERACTIVE` is NOT set (default):** Run plan inline as before.
 
 ```
-Skill(skill="vgsd-plan-phase", args="${PHASE_NUM}")
+Skill(skill="fvgsd-plan-phase", args="${PHASE_NUM}")
 ```
 
 Verify plan produced output — re-run `init phase-op` and check `has_plans`. If false → go to handle_blocker: "Plan phase ${PHASE_NUM} did not produce any plans."
@@ -349,7 +349,7 @@ Verify plan produced output — re-run `init phase-op` and check `has_plans`. If
 Agent(
   description="Execute phase ${PHASE_NUM}: ${PHASE_NAME}",
   run_in_background=true,
-  prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"vgsd-execute-phase\", args=\"${PHASE_NUM} --no-transition\")"
+  prompt="Run execute-phase for phase ${PHASE_NUM}: Skill(skill=\"fvgsd-execute-phase\", args=\"${PHASE_NUM} --no-transition\")"
 )
 ```
 
@@ -358,7 +358,7 @@ Store the agent task_id. The workflow can now start discussing the next phase wh
 **If `INTERACTIVE` is NOT set (default):** Run execute inline as before.
 
 ```
-Skill(skill="vgsd-execute-phase", args="${PHASE_NUM} --no-transition")
+Skill(skill="fvgsd-execute-phase", args="${PHASE_NUM} --no-transition")
 ```
 
 **3c.5. Code Review and Fix**
@@ -367,17 +367,17 @@ Auto-invoke code review and fix chain. Autonomous mode chains both review and fi
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(gsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(fvgsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 If `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to 3d.
 
 ```
-Skill(skill="vgsd-code-review", args="${PHASE_NUM}")
+Skill(skill="fvgsd-code-review", args="${PHASE_NUM}")
 ```
 
 Parse status from REVIEW.md frontmatter. If "clean" or "skipped": proceed to 3d. If findings found: auto-invoke:
 ```
-Skill(skill="vgsd-code-review", args="${PHASE_NUM} --fix --auto")
+Skill(skill="fvgsd-code-review", args="${PHASE_NUM} --fix --auto")
 ```
 
 **Error handling:** If either Skill fails, catch the error, display as non-blocking, and proceed to 3d.
@@ -395,7 +395,7 @@ VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | h
 Where `PHASE_DIR` comes from the `init phase-op` call already made in step 3a. If the variable is not in scope, re-fetch:
 
 ```bash
-PHASE_STATE=$(gsd-sdk query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$(fvgsd-sdk query init.phase-op ${PHASE_NUM})
 ```
 
 Parse `phase_dir` from the JSON.
@@ -448,14 +448,14 @@ Ask user via AskUserQuestion:
 On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt):
 
 ```
-Skill(skill="vgsd-plan-phase", args="${PHASE_NUM} --gaps")
+Skill(skill="fvgsd-plan-phase", args="${PHASE_NUM} --gaps")
 ```
 
 Verify gap plans were created — re-run `init phase-op ${PHASE_NUM}` and check `has_plans`. If no new gap plans → go to handle_blocker: "Gap closure planning for phase ${PHASE_NUM} did not produce plans."
 
 Re-execute:
 ```
-Skill(skill="vgsd-execute-phase", args="${PHASE_NUM} --no-transition")
+Skill(skill="fvgsd-execute-phase", args="${PHASE_NUM} --no-transition")
 ```
 
 Re-read verification status:
@@ -491,7 +491,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 Check if UI review is enabled:
 
 ```bash
-UI_REVIEW_CFG=$(gsd-sdk query config-get workflow.ui_review 2>/dev/null || echo "true")
+UI_REVIEW_CFG=$(fvgsd-sdk query config-get workflow.ui_review 2>/dev/null || echo "true")
 ```
 
 **If `UI_SPEC_FILE` is not empty AND `UI_REVIEW_CFG` is not `false`:**
@@ -503,7 +503,7 @@ Phase ${PHASE_NUM}: Frontend phase with UI-SPEC — running UI review audit...
 ```
 
 ```
-Skill(skill="vgsd-ui-review", args="${PHASE_NUM}")
+Skill(skill="fvgsd-ui-review", args="${PHASE_NUM}")
 ```
 
 Display the review result summary (score from UI-REVIEW.md if produced). Continue to iterate step regardless of score — UI review is advisory, not blocking.
@@ -518,11 +518,11 @@ Display the review result summary (score from UI-REVIEW.md if produced). Continu
 
 > Full instructions are in `get-shit-done/references/autonomous-smart-discuss.md`. Read that file now and follow it exactly.
 
-Smart discuss is an autonomous-optimized variant of `vgsd-discuss-phase`. It proposes grey area answers in batch tables — the user accepts or overrides per area — and writes an identical CONTEXT.md to what discuss-phase produces.
+Smart discuss is an autonomous-optimized variant of `fvgsd-discuss-phase`. It proposes grey area answers in batch tables — the user accepts or overrides per area — and writes an identical CONTEXT.md to what discuss-phase produces.
 
 **Inputs:** `PHASE_NUM` from execute_phase.
 
-Read and execute: `$HOME/.claude/get-shit-done/references/autonomous-smart-discuss.md`
+Read and execute: `$HOME/.claude/fvgsd/references/autonomous-smart-discuss.md`
 
 </step>
 
@@ -542,7 +542,7 @@ Read and execute: `$HOME/.claude/get-shit-done/references/autonomous-smart-discu
  Completed through phase ${TO_PHASE} as requested.
  Remaining phases were not executed.
 
- Resume with: /vgsd:autonomous --from ${next_incomplete_phase}
+ Resume with: /fvgsd:autonomous --from ${next_incomplete_phase}
 ```
 
 Proceed directly to lifecycle step (which handles partial completion — skips audit/complete/cleanup since not all phases are done). Exit cleanly.
@@ -550,7 +550,7 @@ Proceed directly to lifecycle step (which handles partial completion — skips a
 **Otherwise:** After each phase completes, re-read ROADMAP.md to catch phases inserted mid-execution (decimal phases like 5.1):
 
 ```bash
-ROADMAP=$(gsd-sdk query roadmap.analyze)
+ROADMAP=$(fvgsd-sdk query roadmap.analyze)
 ```
 
 Re-filter incomplete phases using the same logic as discover_phases:
@@ -594,7 +594,7 @@ If all phases complete, proceed to lifecycle step.
  Phase ${ONLY_PHASE}: ${PHASE_NAME} — Done
  Mode: Single phase (--only)
 
- Lifecycle skipped — run /vgsd:autonomous without --only
+ Lifecycle skipped — run /fvgsd:autonomous without --only
  after all phases complete to trigger audit/complete/cleanup.
 ```
 
@@ -616,7 +616,7 @@ Display lifecycle transition banner:
 **5a. Audit**
 
 ```
-Skill(skill="vgsd-audit-milestone")
+Skill(skill="fvgsd-audit-milestone")
 ```
 
 After audit completes, detect the result:
@@ -652,7 +652,7 @@ Ask user via AskUserQuestion:
 
 On **"Continue anyway"**: Display `Audit ⏭ Gaps accepted — proceeding to complete milestone` and proceed to 5b.
 
-On **"Stop"**: Go to handle_blocker with "User stopped — audit gaps remain. Run /vgsd:audit-milestone to review, then /vgsd:complete-milestone when ready."
+On **"Stop"**: Go to handle_blocker with "User stopped — audit gaps remain. Run /fvgsd:audit-milestone to review, then /fvgsd:complete-milestone when ready."
 
 **If `tech_debt`:**
 
@@ -667,12 +667,12 @@ Show the summary, then ask user via AskUserQuestion:
 
 On **"Continue with tech debt"**: Display `Audit ⏭ Tech debt acknowledged — proceeding to complete milestone` and proceed to 5b.
 
-On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address. Run /vgsd:audit-milestone to review details."
+On **"Stop"**: Go to handle_blocker with "User stopped — tech debt to address. Run /fvgsd:audit-milestone to review details."
 
 **5b. Complete Milestone**
 
 ```
-Skill(skill="vgsd-complete-milestone", args="${milestone_version}")
+Skill(skill="fvgsd-complete-milestone", args="${milestone_version}")
 ```
 
 After complete-milestone returns, verify it produced output:
@@ -686,7 +686,7 @@ If the archive file does not exist, go to handle_blocker: "Complete milestone di
 **5c. Cleanup**
 
 ```
-Skill(skill="vgsd-cleanup")
+Skill(skill="fvgsd-cleanup")
 ```
 
 Cleanup shows its own dry-run and asks user for approval internally — this is an acceptable pause per CTRL-01 since it's an explicit decision about file deletion.
@@ -737,7 +737,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
  Skipped: {list of skipped phases}
  Remaining: {list of remaining phases}
 
- Resume with: /vgsd:autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
+ Resume with: /fvgsd:autonomous ${ONLY_PHASE ? "--only " + ONLY_PHASE : "--from " + next_phase}${TO_PHASE ? " --to " + TO_PHASE : ""}
 ```
 
 </step>
@@ -761,7 +761,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 - [ ] Final completion or stop summary displayed
 - [ ] After all phases complete, lifecycle step is invoked (not manual suggestion)
 - [ ] Lifecycle transition banner displayed before audit
-- [ ] Audit invoked via Skill(skill="vgsd-audit-milestone")
+- [ ] Audit invoked via Skill(skill="fvgsd-audit-milestone")
 - [ ] Audit result routing: passed → auto-continue, gaps_found → user decides, tech_debt → user decides
 - [ ] Audit technical failure (no file/no status) routes to handle_blocker
 - [ ] Complete-milestone invoked via Skill() with ${milestone_version} arg
@@ -785,7 +785,7 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 - [ ] `--to N` compatible with `--from N` (run phases from M to N)
 - [ ] `--to N` handle_blocker resume message preserves --to flag
 - [ ] `--to N` skips lifecycle when not all milestone phases complete
-- [ ] `--interactive` runs discuss inline via vgsd-discuss-phase (asks questions, waits for user)
+- [ ] `--interactive` runs discuss inline via fvgsd-discuss-phase (asks questions, waits for user)
 - [ ] `--interactive` dispatches plan and execute as background agents (context isolation)
 - [ ] `--interactive` enables pipeline parallelism: discuss Phase N+1 while Phase N builds
 - [ ] `--interactive` main context only accumulates discuss conversations (lean)

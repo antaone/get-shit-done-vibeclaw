@@ -32,7 +32,7 @@ describe('verifyKeyLinks', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-validate-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-validate-'));
   });
 
   afterEach(async () => {
@@ -212,7 +212,7 @@ must_haves:
     expect(links[0].detail).toBe('Target referenced in source');
   });
 
-  it('reports invalid regex like gsd-tools.cjs (try/catch on new RegExp)', async () => {
+  it('reports invalid regex like fvgsd-tools.cjs (try/catch on new RegExp)', async () => {
     await writeFile(join(tmpDir, 'source.ts'), 'const x = 1;');
     await writeFile(join(tmpDir, 'target.ts'), 'const y = 2;');
 
@@ -271,7 +271,7 @@ describe('validateConsistency', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-consistency-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-consistency-'));
   });
 
   afterEach(async () => {
@@ -446,7 +446,7 @@ describe('validateHealth', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-health-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-health-'));
   });
 
   afterEach(async () => {

@@ -16,15 +16,15 @@ function readAgent(name) {
 
 describe('project skills awareness', () => {
   const agentsRequiringSkills = [
-    'gsd-debugger',
-    'gsd-integration-checker',
-    'gsd-security-auditor',
-    'gsd-nyquist-auditor',
-    'gsd-codebase-mapper',
-    'gsd-roadmapper',
-    'gsd-eval-auditor',
-    'gsd-intel-updater',
-    'gsd-doc-writer',
+    'fvgsd-debugger',
+    'fvgsd-integration-checker',
+    'fvgsd-security-auditor',
+    'fvgsd-nyquist-auditor',
+    'fvgsd-codebase-mapper',
+    'fvgsd-roadmapper',
+    'fvgsd-eval-auditor',
+    'fvgsd-intel-updater',
+    'fvgsd-doc-writer',
   ];
 
   for (const agentName of agentsRequiringSkills) {
@@ -42,11 +42,11 @@ describe('project skills awareness', () => {
     });
   }
 
-  test('gsd-doc-writer has security note about doc_assignment user data', () => {
-    const content = readAgent('gsd-doc-writer');
+  test('fvgsd-doc-writer has security note about doc_assignment user data', () => {
+    const content = readAgent('fvgsd-doc-writer');
     assert.ok(
       content.includes('doc_assignment') && content.includes('SECURITY'),
-      'gsd-doc-writer missing security note for doc_assignment block'
+      'fvgsd-doc-writer missing security note for doc_assignment block'
     );
   });
 });

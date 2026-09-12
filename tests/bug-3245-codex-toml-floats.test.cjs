@@ -20,10 +20,10 @@
  *     Codex-specific mutation, and extend the rollback to cover all of them.
  */
 
-// GSD_TEST_MODE must be set before require('../bin/install.js') so the module
+// FVGSD_TEST_MODE must be set before require('../bin/install.js') so the module
 // skips the main CLI entry point and exports its internals.
-const previousGsdTestMode = process.env.GSD_TEST_MODE;
-process.env.GSD_TEST_MODE = '1';
+const previousGsdTestMode = process.env.FVGSD_TEST_MODE;
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -36,9 +36,9 @@ const { parseTomlToObject, validateCodexConfigSchema, install } = require('../bi
 const installModule = require('../bin/install.js');
 
 if (previousGsdTestMode === undefined) {
-  delete process.env.GSD_TEST_MODE;
+  delete process.env.FVGSD_TEST_MODE;
 } else {
-  process.env.GSD_TEST_MODE = previousGsdTestMode;
+  process.env.FVGSD_TEST_MODE = previousGsdTestMode;
 }
 
 // Ensure hooks/dist/ is populated — mirrors the pattern used by codex-config.test.cjs.
@@ -219,7 +219,7 @@ describe('#3245 — install succeeds with TOML float in pre-existing config', { 
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3245-float-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3245-float-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -347,7 +347,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3245-rollback-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3245-rollback-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -381,7 +381,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
     const skillsDir = path.join(codexHome, 'skills');
     if (fs.existsSync(skillsDir)) {
       const gsdSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
-        .filter(e => e.isDirectory() && e.name.startsWith('gsd-'));
+        .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'));
       assert.strictEqual(
         gsdSkills.length,
         0,
@@ -393,7 +393,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
     const agentsDir = path.join(codexHome, 'agents');
     if (fs.existsSync(agentsDir)) {
       const gsdAgents = fs.readdirSync(agentsDir)
-        .filter(f => f.startsWith('gsd-') && (f.endsWith('.md') || f.endsWith('.toml')));
+        .filter(f => f.startsWith('fvgsd-') && (f.endsWith('.md') || f.endsWith('.toml')));
       assert.strictEqual(
         gsdAgents.length,
         0,
@@ -434,7 +434,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
     const skillsDir = path.join(codexHome, 'skills');
     const remainingGsdSkills = fs.existsSync(skillsDir)
       ? fs.readdirSync(skillsDir, { withFileTypes: true })
-          .filter((e) => e.isDirectory() && e.name.startsWith('gsd-'))
+          .filter((e) => e.isDirectory() && e.name.startsWith('fvgsd-'))
           .map((e) => e.name)
       : [];
     assert.deepStrictEqual(

@@ -5,10 +5,10 @@
 // IS the runtime contract. Checking frontmatter fields checks deployed behaviour.
 
 /**
- * #3156 — plan-phase auto-dispatches to gsd-planner subagent on OpenCode,
+ * #3156 — plan-phase auto-dispatches to fvgsd-planner subagent on OpenCode,
  * losing Task tool access.
  *
- * Root cause: commands/gsd/plan-phase.md had `agent: gsd-planner` in its
+ * Root cause: commands/gsd/plan-phase.md had `agent: fvgsd-planner` in its
  * frontmatter. Per OpenCode docs, `agent: <name>` in a command causes
  * auto-dispatch to a subagent context where the Agent (Task spawner) tool is
  * unavailable. Orchestrator commands that need to spawn subagents via the

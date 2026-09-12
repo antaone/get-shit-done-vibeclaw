@@ -24,10 +24,10 @@ GSD の discuss フェーズには、プランニング前に実装コンテキ�
 
 ```bash
 # assumptions モードを有効にする
-gsd-tools config-set workflow.discuss_mode assumptions
+fvgsd-tools config-set workflow.discuss_mode assumptions
 
 # interview モードに戻す
-gsd-tools config-set workflow.discuss_mode discuss
+fvgsd-tools config-set workflow.discuss_mode discuss
 ```
 
 この設定はプロジェクト単位です（`.planning/config.json` に保存されます）。

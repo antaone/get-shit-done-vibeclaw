@@ -11,11 +11,11 @@ const { createHub, ERROR_KINDS } = require('./command-routing-hub.cjs');
 
 /**
  * Manifest-backed phase subcommand router.
- * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving existing command semantics.
  *
  * Phase 6: all CJS-handled phase subcommands are dispatched via executeForCjs
  * when the SDK is available. CJS fallback retained when:
- * - GSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
+ * - FVGSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
  * - SDK is unavailable (build not present).
  *
  * SDK-only (unsupported in CJS router):
@@ -29,14 +29,14 @@ const { createHub, ERROR_KINDS } = require('./command-routing-hub.cjs');
  * and observable CLI behaviour are unchanged.
  */
 function routePhaseCommand({ phase, args, cwd, raw, error }) {
-  const activeWorkstream = process.env.GSD_WORKSTREAM;
+  const activeWorkstream = process.env.FVGSD_WORKSTREAM;
   const sdkAvailable = !activeWorkstream && tryLoadSdk();
 
   // ── Unsupported / SDK-only subcommands ─────────────────────────────────────
   // Resolved before dispatch so the error message matches the pre-#3788 text.
   const UNSUPPORTED = {
-    'list-plans': 'phase list-plans is SDK-only. Use: gsd-sdk query phase.list-plans ...',
-    'list-artifacts': 'phase list-artifacts is SDK-only. Use: gsd-sdk query phase.list-artifacts ...',
+    'list-plans': 'phase list-plans is SDK-only. Use: fvgsd-sdk query phase.list-plans ...',
+    'list-artifacts': 'phase list-artifacts is SDK-only. Use: fvgsd-sdk query phase.list-artifacts ...',
     scaffold: 'phase scaffold is routed through the top-level scaffold command.',
   };
 

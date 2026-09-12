@@ -28,13 +28,13 @@ describe('Playwright-MCP UI verification integration', () => {
     );
   });
 
-  test('gsd-ui-auditor.md includes automated screenshot guidance', () => {
+  test('fvgsd-ui-auditor.md includes automated screenshot guidance', () => {
     const content = fs.readFileSync(
-      path.join(__dirname, '..', 'agents', 'gsd-ui-auditor.md'), 'utf-8'
+      path.join(__dirname, '..', 'agents', 'fvgsd-ui-auditor.md'), 'utf-8'
     );
     assert.ok(
       content.toLowerCase().includes('playwright') || content.includes('screenshot') || content.includes('automated'),
-      'gsd-ui-auditor.md should mention automated screenshot verification'
+      'fvgsd-ui-auditor.md should mention automated screenshot verification'
     );
   });
 

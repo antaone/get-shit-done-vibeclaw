@@ -31,7 +31,7 @@ const WORKFLOW_PATH = path.join(
 
 describe('#3086: git.create_tag config key', () => {
   test('A. fresh project: config-get git.create_tag returns true (default)', (t) => {
-    const tmpDir = createTempProject('gsd-3086-default-');
+    const tmpDir = createTempProject('fvgsd-3086-default-');
     t.after(() => cleanup(tmpDir));
 
     const result = runGsdTools(['config-get', 'git.create_tag'], tmpDir, { HOME: tmpDir });
@@ -44,7 +44,7 @@ describe('#3086: git.create_tag config key', () => {
   });
 
   test('B. config-set git.create_tag false → config-get returns false', (t) => {
-    const tmpDir = createTempProject('gsd-3086-set-false-');
+    const tmpDir = createTempProject('fvgsd-3086-set-false-');
     t.after(() => cleanup(tmpDir));
 
     const setResult = runGsdTools(['config-set', 'git.create_tag', 'false'], tmpDir, {
@@ -62,7 +62,7 @@ describe('#3086: git.create_tag config key', () => {
   });
 
   test('C. config-set git.create_tag with invalid value "maybe" is rejected', (t) => {
-    const tmpDir = createTempProject('gsd-3086-invalid-');
+    const tmpDir = createTempProject('fvgsd-3086-invalid-');
     t.after(() => cleanup(tmpDir));
 
     const result = runGsdTools(['config-set', 'git.create_tag', 'maybe'], tmpDir, {

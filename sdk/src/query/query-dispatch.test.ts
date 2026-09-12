@@ -207,7 +207,7 @@ describe('stage: formatting', () => {
 describe('stage: error-mapping', () => {
   it('mapNativeDispatchError maps string-pattern timeout to native_timeout', () => {
     const err = mapNativeDispatchError(
-      new Error('gsd-tools timed out after 30000ms: state load'),
+      new Error('fvgsd-tools timed out after 30000ms: state load'),
       'state.load',
       [],
     );
@@ -396,7 +396,7 @@ describe('end-to-end IR contract', () => {
     expect(out.ok).toBe(true);
     if (!out.ok) throw new Error('expected success');
     expect(out.stdout).toBe('USAGE: help text\n');
-    expect(out.stderr[0]).toContain('falling back to gsd-tools.cjs');
+    expect(out.stderr[0]).toContain('falling back to fvgsd-tools.cjs');
   });
 
   it('returns structured fallback failure when resolveGsdToolsPath throws', async () => {
@@ -443,7 +443,7 @@ describe('end-to-end IR contract', () => {
       projectDir: tmpDir,
       cjsFallbackEnabled: true,
       resolveGsdToolsPath: () => '',
-      dispatchNative: async () => { throw new Error('gsd-tools timed out after 30000ms: state load'); },
+      dispatchNative: async () => { throw new Error('fvgsd-tools timed out after 30000ms: state load'); },
       topology: createCommandTopology(registry),
     }, ['state', 'load']);
 

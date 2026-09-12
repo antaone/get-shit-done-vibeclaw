@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Behavior-based regression guard for #2962-class bugs.
@@ -32,7 +32,7 @@ describe('Windows parity guard for trySelfLinkGsdSdk (#2962)', () => {
   let origExecSync;
 
   before(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-win32-guard-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-win32-guard-'));
     origPlatform = process.platform;
     origExecSync = cp.execSync;
     // Override process.platform to simulate Windows. process.platform is a
@@ -53,7 +53,7 @@ describe('Windows parity guard for trySelfLinkGsdSdk (#2962)', () => {
   });
 
   test('trySelfLinkGsdSdk dispatches to the Windows handler and writes shims (does NOT silently return null)', () => {
-    const shimSrc = path.join(ROOT, 'bin', 'gsd-sdk.js');
+    const shimSrc = path.join(ROOT, 'bin', 'fvgsd-sdk.js');
     const result = installModule.trySelfLinkGsdSdk(shimSrc);
 
     assert.notEqual(
@@ -63,8 +63,8 @@ describe('Windows parity guard for trySelfLinkGsdSdk (#2962)', () => {
         'a no-op skip is a missed-parity regression (see #2962, #2775).',
     );
     assert.ok(
-      fs.existsSync(path.join(tmpDir, 'gsd-sdk.cmd')),
-      'Windows dispatch must materialize gsd-sdk.cmd in the npm global bin',
+      fs.existsSync(path.join(tmpDir, 'fvgsd-sdk.cmd')),
+      'Windows dispatch must materialize fvgsd-sdk.cmd in the npm global bin',
     );
   });
 });

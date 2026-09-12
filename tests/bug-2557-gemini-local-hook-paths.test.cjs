@@ -40,7 +40,7 @@ describe('bug #2557: Gemini/Antigravity local hooks use relative paths (not $CLA
     const prefix = projectLocalHookPrefix({ runtime: 'gemini', dirName: '.gemini' });
     const command = projectShellCommandText({
       runnerToken: '"/usr/local/bin/node"',
-      argTokens: [`${prefix}/hooks/gsd-check-update.js`],
+      argTokens: [`${prefix}/hooks/fvgsd/check-update.js`],
       runtime: 'gemini',
       platform: 'linux',
     });

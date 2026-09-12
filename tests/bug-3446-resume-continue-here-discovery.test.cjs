@@ -50,7 +50,7 @@ describe('bug #3446: resume-project detects non-phase and legacy continue-here h
 
   before(() => {
     snippet = extractCheckBlock();
-    tmpDir = createTempDir('gsd-bug-3446-');
+    tmpDir = createTempDir('fvgsd-bug-3446-');
 
     // Plant the three discovery surfaces that bug #3446 was originally
     // filed to cover.

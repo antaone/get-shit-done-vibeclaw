@@ -91,7 +91,7 @@ function command(program, args, context, extraEnv = {}) {
     env: {
       VIBE_CANDIDATE_ID: context.candidate_id,
       VIBE_TOOL: context.tool.id,
-      GSD_RUNTIME: context.tool.id,
+      FVGSD_RUNTIME: context.tool.id,
       ...extraEnv,
     },
   };

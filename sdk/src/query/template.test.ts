@@ -17,7 +17,7 @@ import type { GSDEvent } from '../types.js';
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = join(tmpdir(), `gsd-template-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tmpDir = join(tmpdir(), `fvgsd-template-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   await mkdir(join(tmpDir, '.planning', 'phases', '09-foundation'), { recursive: true });
   // Create minimal STATE.md
   await writeFile(join(tmpDir, '.planning', 'STATE.md'), '---\nstatus: executing\n---\n\n# Project State\n');

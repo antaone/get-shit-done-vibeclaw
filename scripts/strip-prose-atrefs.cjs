@@ -2,7 +2,7 @@
 /**
  * strip-prose-atrefs.cjs
  *
- * Removes redundant @~/.claude/get-shit-done/ path tokens from prose lines
+ * Removes redundant @~/.claude/fvgsd/ path tokens from prose lines
  * in <process> and <context> blocks. The path is already declared in
  * <execution_context> where it actually loads the file. Prose copies are
  * inert and add ~900 tokens/invocation of dead weight.

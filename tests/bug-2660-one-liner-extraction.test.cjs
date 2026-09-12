@@ -1,5 +1,5 @@
 /**
- * Bug #2660: `gsd-tools milestone complete <version>` writes MILESTONES.md
+ * Bug #2660: `fvgsd-tools milestone complete <version>` writes MILESTONES.md
  * bullets that read "- One-liner:" (the literal label) instead of the prose
  * after the label.
  *

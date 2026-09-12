@@ -1,7 +1,7 @@
 <purpose>
 Spike an idea through experiential exploration — build focused experiments to feel the pieces
 of a future app, validate feasibility, and produce verified knowledge for the real build.
-Saves artifacts to `.planning/spikes/`. Companion to `/vgsd:spike --wrap-up`.
+Saves artifacts to `.planning/spikes/`. Companion to `/fvgsd:spike --wrap-up`.
 
 Supports two modes:
 - **Idea mode** (default) — user describes an idea to spike
@@ -96,7 +96,7 @@ ls -d .planning/spikes/[0-9][0-9][0-9]-* 2>/dev/null | sort | tail -1
 
 Check `commit_docs` config:
 ```bash
-COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -334,7 +334,7 @@ tags: [tag1, tag2]
 
 **i.** Commit (if `COMMIT_DOCS` is true):
 ```bash
-gsd-sdk query commit "docs(spike-NNN): [VERDICT] — [key finding]" --files .planning/spikes/NNN-descriptive-name/ .planning/spikes/MANIFEST.md
+fvgsd-sdk query commit "docs(spike-NNN): [VERDICT] — [key finding]" --files .planning/spikes/NNN-descriptive-name/ .planning/spikes/MANIFEST.md
 ```
 
 **j.** Report:
@@ -388,7 +388,7 @@ Only include patterns that repeated across 2+ spikes or were explicitly chosen b
 
 Commit (if `COMMIT_DOCS` is true):
 ```bash
-gsd-sdk query commit "docs(spikes): update conventions" --files .planning/spikes/CONVENTIONS.md
+fvgsd-sdk query commit "docs(spikes): update conventions" --files .planning/spikes/CONVENTIONS.md
 ```
 </step>
 
@@ -421,14 +421,14 @@ gsd-sdk query commit "docs(spikes): update conventions" --files .planning/spikes
 
 **Package findings** — wrap spike knowledge into an implementation blueprint
 
-`/vgsd:spike --wrap-up`
+`/fvgsd:spike --wrap-up`
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd:spike` — spike more ideas (or run with no argument for frontier mode)
-- `/vgsd:plan-phase` — start planning the real implementation
-- `/vgsd:explore` — continue exploring the idea
+- `/fvgsd:spike` — spike more ideas (or run with no argument for frontier mode)
+- `/fvgsd:plan-phase` — start planning the real implementation
+- `/fvgsd:explore` — continue exploring the idea
 
 ───────────────────────────────────────────────────────────────
 </step>

@@ -20,7 +20,7 @@ export type ProfileSampleResult = {
 };
 
 /**
- * Port of `cmdProfileSample` — same JSON + JSONL file shape as `gsd-tools profile-sample`.
+ * Port of `cmdProfileSample` — same JSON + JSONL file shape as `fvgsd-tools profile-sample`.
  */
 export async function runProfileSample(
   overridePath: string | null,
@@ -166,7 +166,7 @@ export async function runProfileSample(
     }
   }
 
-  const tmpDir = mkdtempSync(join(tmpdir(), 'gsd-profile-'));
+  const tmpDir = mkdtempSync(join(tmpdir(), 'fvgsd-profile-'));
   const outputPath = join(tmpDir, 'profile-sample.jsonl');
   for (const msg of allMessages) {
     appendFileSync(outputPath, JSON.stringify(msg) + '\n');

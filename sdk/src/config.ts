@@ -28,7 +28,7 @@ export interface WorkflowConfig {
   plan_check: boolean;
   verifier: boolean;
   nyquist_validation: boolean;
-  /** Mirrors gsd-tools flat `config.tdd_mode` (from `workflow.tdd_mode`). */
+  /** Mirrors fvgsd-tools flat `config.tdd_mode` (from `workflow.tdd_mode`). */
   tdd_mode: boolean;
   /**
    * Issue #3309. `end-of-phase` (default) suppresses mid-flight
@@ -82,9 +82,9 @@ export interface GSDConfig {
   workflow: WorkflowConfig;
   hooks: HooksConfig;
   agent_skills: Record<string, unknown>;
-  /** Project slug for branch templates; mirrors gsd-tools `config.project_code`. */
+  /** Project slug for branch templates; mirrors fvgsd-tools `config.project_code`. */
   project_code?: string | null;
-  /** Interactive vs headless; mirrors gsd-tools flat `config.mode`. */
+  /** Interactive vs headless; mirrors fvgsd-tools flat `config.mode`. */
   mode?: string;
   [key: string]: unknown;
 }
@@ -173,7 +173,7 @@ export async function loadConfig(projectDir: string, workstream?: string): Promi
   }
 
   // Project config exists — user-level defaults are ignored (CJS parity).
-  // `buildNewProjectConfig` already baked them into config.json at /vgsd-new-project.
+  // `buildNewProjectConfig` already baked them into config.json at /fvgsd-new-project.
   // Normalize legacy top-level keys (branching_strategy → git.branching_strategy, etc.)
   // before merging with defaults, matching the Configuration Module's loadConfig pipeline.
   const { parsed: normalized } = normalizeLegacyKeys(parsed);

@@ -118,7 +118,7 @@ function extractHandleBranchingBash() {
  * same treatment in 80f14cac; this test deserves the same coverage).
  */
 function setupFixture(defaultBranch = 'main') {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2916-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2916-'));
   const seedPath = path.join(root, 'seed');
   const originPath = path.join(root, 'origin.git');
   const clonePath = path.join(root, 'clone');
@@ -152,7 +152,7 @@ function runHandleBranchingStep(bash, cwd, branchName) {
   // Write the script to a sibling tempdir, not inside the repo — putting it in
   // `cwd` would create an untracked file that trips `git status --porcelain`
   // and steers the step into its dirty-tree fallback path.
-  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2916-step-'));
+  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2916-step-'));
   const scriptPath = path.join(scriptDir, 'handle-branching.sh');
   const script = `#!/usr/bin/env bash\nset -uo pipefail\nBRANCH_NAME="${branchName}"\n${bash}\n`;
   fs.writeFileSync(scriptPath, script, { mode: 0o755 });

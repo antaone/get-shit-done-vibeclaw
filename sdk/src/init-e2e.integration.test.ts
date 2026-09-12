@@ -1,6 +1,6 @@
 /**
  * E2E integration test — proves InitRunner.run() drives real Agent SDK
- * sessions for the gsd-sdk init workflow.
+ * sessions for the fvgsd-sdk init workflow.
  *
  * Requires Claude Code CLI (`claude`) installed and authenticated.
  * Skips gracefully if CLI is unavailable.
@@ -19,7 +19,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { InitRunner } from './init-runner.js';
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { GSDTools, resolveGsdToolsPath } from './fvgsd-tools.js';
 import { GSDEventStream } from './event-stream.js';
 import { GSDEventType } from './types.js';
 import type { GSDEvent } from './types.js';
@@ -34,12 +34,12 @@ try {
   cliAvailable = false;
 }
 
-const e2eEnabled = process.env.GSD_ENABLE_E2E === '1';
+const e2eEnabled = process.env.FVGSD_ENABLE_E2E === '1';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
-const GSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
-const gsdToolsAvailable = existsSync(GSD_TOOLS_PATH);
+const FVGSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
+const gsdToolsAvailable = existsSync(FVGSD_TOOLS_PATH);
 
 // ─── Test suite ──────────────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable || !e2eEnabled)('E2E: InitRu
   let events: GSDEvent[];
 
   beforeAll(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-init-e2e-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-init-e2e-'));
 
     // Initialize git in the temp dir (required by InitRunner)
     execSync('git init', { cwd: tmpDir, stdio: 'ignore' });
@@ -69,7 +69,7 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable || !e2eEnabled)('E2E: InitRu
 
     const tools = new GSDTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      gsdToolsPath: FVGSD_TOOLS_PATH,
       timeoutMs: 30_000,
     });
 

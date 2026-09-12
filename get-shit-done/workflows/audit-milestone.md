@@ -8,7 +8,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-integration-checker — Checks cross-phase integration
+- fvgsd-integration-checker — Checks cross-phase integration
 </available_agent_types>
 
 <process>
@@ -16,23 +16,23 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ## 0. Initialize Milestone Context
 
 ```bash
-INIT=$(gsd-sdk query init.milestone-op)
+INIT=$(fvgsd-sdk query init.milestone-op)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_CHECKER=$(gsd-sdk query agent-skills gsd-integration-checker)
+AGENT_SKILLS_CHECKER=$(fvgsd-sdk query agent-skills fvgsd-integration-checker)
 ```
 
 Extract from init JSON: `milestone_version`, `milestone_name`, `phase_count`, `completed_phases`, `commit_docs`.
 
 Resolve integration checker model:
 ```bash
-integration_checker_model=$(gsd-sdk query resolve-model gsd-integration-checker --raw)
+integration_checker_model=$(fvgsd-sdk query resolve-model fvgsd-integration-checker --raw)
 ```
 
 ## 1. Determine Milestone Scope
 
 ```bash
 # Get phases in milestone (sorted numerically, handles decimals)
-gsd-sdk query phases.list
+fvgsd-sdk query phases.list
 ```
 
 - Parse version from arguments or detect current from ROADMAP.md
@@ -46,7 +46,7 @@ For each phase directory, read the VERIFICATION.md:
 
 ```bash
 # For each phase, use find-phase to resolve the directory (handles archived phases)
-PHASE_INFO=$(gsd-sdk query find-phase 01 --raw)
+PHASE_INFO=$(fvgsd-sdk query find-phase 01 --raw)
 # Extract directory from JSON, then read VERIFICATION.md from that directory
 # Repeat for each phase number from ROADMAP.md
 ```
@@ -81,7 +81,7 @@ MUST map each integration finding to affected requirement IDs where applicable.
 
 Verify cross-phase wiring and E2E user flows.
 ${AGENT_SKILLS_CHECKER}",
-  subagent_type="gsd-integration-checker",
+  subagent_type="fvgsd-integration-checker",
   model="{integration_checker_model}"
 )
 ```
@@ -115,7 +115,7 @@ For each phase's SUMMARY.md, extract `requirements-completed` from YAML frontmat
 ```bash
 for summary in .planning/phases/*-*/*-SUMMARY.md; do
   [ -e "$summary" ] || continue
-  gsd-sdk query summary-extract "$summary" --fields requirements_completed --pick requirements_completed
+  fvgsd-sdk query summary-extract "$summary" --fields requirements_completed --pick requirements_completed
 done
 ```
 
@@ -143,7 +143,7 @@ For each REQ-ID, determine status using all three sources:
 Skip if `workflow.nyquist_validation` is explicitly `false` (absent = enabled).
 
 ```bash
-NYQUIST_CONFIG=$(gsd-sdk query config-get workflow.nyquist_validation --raw 2>/dev/null)
+NYQUIST_CONFIG=$(fvgsd-sdk query config-get workflow.nyquist_validation --raw 2>/dev/null)
 ```
 
 If `false`: skip entirely.
@@ -160,7 +160,7 @@ Classify per phase:
 
 Add to audit YAML: `nyquist: { compliant_phases, partial_phases, missing_phases, overall }`
 
-Discovery only — never auto-calls `/vgsd:validate-phase`.
+Discovery only — never auto-calls `/fvgsd:validate-phase`.
 
 ## 6. Aggregate into v{version}-MILESTONE-AUDIT.md
 
@@ -233,7 +233,7 @@ All requirements covered. Cross-phase integration verified. E2E flows complete.
 
 /clear then:
 
-/vgsd:complete-milestone {version}
+/fvgsd:complete-milestone {version}
 
 ───────────────────────────────────────────────────────────────
 
@@ -266,9 +266,9 @@ All requirements covered. Cross-phase integration verified. E2E flows complete.
 
 | Phase | VALIDATION.md | Compliant | Action |
 |-------|---------------|-----------|--------|
-| {phase} | exists/missing | true/false/partial | `/vgsd:validate-phase {N}` |
+| {phase} | exists/missing | true/false/partial | `/fvgsd:validate-phase {N}` |
 
-Phases needing validation: run `/vgsd:validate-phase {N}` for each flagged phase.
+Phases needing validation: run `/fvgsd:validate-phase {N}` for each flagged phase.
 
 ───────────────────────────────────────────────────────────────
 
@@ -281,13 +281,13 @@ per group of related gaps) using the standard phase chain:
 
 /clear then:
 
-/vgsd:phase --insert <N> "Close gap: <REQ-ID> — <description>"
-/vgsd:discuss-phase <N>
-/vgsd:plan-phase <N>
-/vgsd:execute-phase <N>
+/fvgsd:phase --insert <N> "Close gap: <REQ-ID> — <description>"
+/fvgsd:discuss-phase <N>
+/fvgsd:plan-phase <N>
+/fvgsd:execute-phase <N>
 
 For Nyquist-coverage gaps flagged in the table above, prefer running
-`/vgsd:validate-phase <N>` for each flagged phase (and `/vgsd:secure-phase
+`/fvgsd:validate-phase <N>` for each flagged phase (and `/fvgsd:secure-phase
 <N>` if SECURITY.md was flagged) before inserting a new closure phase —
 they may close the gap retroactively without a new phase.
 
@@ -295,7 +295,7 @@ they may close the gap retroactively without a new phase.
 
 **Also available:**
 - cat .planning/v{version}-MILESTONE-AUDIT.md — see full report
-- /vgsd:complete-milestone {version} — proceed anyway (accept tech debt)
+- /fvgsd:complete-milestone {version} — proceed anyway (accept tech debt)
 
 ───────────────────────────────────────────────────────────────
 
@@ -325,17 +325,17 @@ All requirements met. No critical blockers. Accumulated tech debt needs review.
 
 **A. Complete milestone** — accept debt, track in backlog
 
-/vgsd:complete-milestone {version}
+/fvgsd:complete-milestone {version}
 
 **B. Plan a cleanup phase** — address the debt above before completing.
 Insert a closure phase using the standard chain:
 
 /clear then:
 
-/vgsd:phase --insert <N> "Address tech debt: <area>"
-/vgsd:discuss-phase <N>
-/vgsd:plan-phase <N>
-/vgsd:execute-phase <N>
+/fvgsd:phase --insert <N> "Address tech debt: <area>"
+/fvgsd:discuss-phase <N>
+/fvgsd:plan-phase <N>
+/fvgsd:execute-phase <N>
 
 ───────────────────────────────────────────────────────────────
 </offer_next>

@@ -5,15 +5,15 @@
  * references in user-facing runtime output (recommended-actions JSON, persisted
  * ROADMAP.md entries, verify/validate fix hints, error messages, etc.).
  *
- * VibeClaw installs GSD commands under the collision-free `vgsd` namespace.
+ * VibeClaw installs GSD commands under the collision-free `fvgsd` namespace.
  * The legacy `gsd` prefix is still accepted as input here so persisted data
  * from an older install can be upgraded in place, but it is never emitted.
  * This module is the only place runtime output should decide which invocation
  * shape to emit.
  *
- *   - codex:                                   $vgsd-<cmd>  (skill syntax)
- *   - gemini:                                  /vgsd:<cmd>  (directory namespace)
- *   - claude, cursor, opencode, kilo, etc.:    /vgsd-<cmd>
+ *   - codex:                                   $fvgsd-<cmd>  (skill syntax)
+ *   - gemini:                                  /fvgsd:<cmd>  (directory namespace)
+ *   - claude, cursor, opencode, kilo, etc.:    /fvgsd-<cmd>
  *
  * Gemini is the only runtime that receives the colon form because its command
  * loader derives namespaces from directories.
@@ -24,12 +24,12 @@ function formatGsdSlash(commandName, runtime) {
   if (commandName === '') return commandName;
 
   // Strip any existing leading prefix so the helper is idempotent and accepts
-  // both legacy `/vgsd:<name>` and canonical hyphen-form input (plus the bare
-  // `gsd:<name>` shorthand and codex `$vgsd-<name>` shell-var input).
-  const stripped = commandName.replace(/^[/$]?(?:vgsd|gsd)[-:]/i, '');
+  // both legacy `/fvgsd:<name>` and canonical hyphen-form input (plus the bare
+  // `gsd:<name>` shorthand and codex `$fvgsd-<name>` shell-var input).
+  const stripped = commandName.replace(/^[/$]?(?:fvgsd|gsd)[-:]/i, '');
   // If the regex matched nothing (no prefix), the input is already a bare name.
   const bare = stripped === commandName ? commandName : stripped;
-  // Defensive: a degenerate input like `/vgsd:`, `gsd-`, or whitespace-only
+  // Defensive: a degenerate input like `/fvgsd:`, `fvgsd-`, or whitespace-only
   // normalizes to empty. Returning the original colon-form would re-emit the
   // deprecated shape that this module exists to suppress (#3584). Return an
   // empty string so callers see "no command" rather than the broken input.
@@ -46,19 +46,19 @@ function formatGsdSlash(commandName, runtime) {
 
   const rt = String(runtime || 'claude').toLowerCase();
   if (rt === 'codex') {
-    // Codex skills are invoked as $vgsd-<cmd> (skill syntax). The command
+    // Codex skills are invoked as $fvgsd-<cmd> (skill syntax). The command
     // token is lowercased because shell-var identifiers are conventionally
     // lowercase; matches the convertCodexSlash() projection in bin/install.js.
-    return `$vgsd-${token.toLowerCase()}${tail}`;
+    return `$fvgsd-${token.toLowerCase()}${tail}`;
   }
-  if (rt === 'gemini') return `/vgsd:${token}${tail}`;
-  return `/vgsd-${token}${tail}`;
+  if (rt === 'gemini') return `/fvgsd:${token}${tail}`;
+  return `/fvgsd-${token}${tail}`;
 }
 
 /**
  * Resolve the effective runtime for a project directory.
  *
- *   process.env.GSD_RUNTIME  >  config.runtime  >  'claude'
+ *   process.env.FVGSD_RUNTIME  >  config.runtime  >  'claude'
  *
  * Mirrors the precedence already used by profile-output.cjs and the rest of
  * the runtime resolution chain. Returns a lowercased string so downstream
@@ -68,8 +68,8 @@ function formatGsdSlash(commandName, runtime) {
  * @returns {string}
  */
 function resolveRuntime(projectDir) {
-  if (process.env.GSD_RUNTIME) {
-    return String(process.env.GSD_RUNTIME).toLowerCase();
+  if (process.env.FVGSD_RUNTIME) {
+    return String(process.env.FVGSD_RUNTIME).toLowerCase();
   }
   if (projectDir) {
     try {

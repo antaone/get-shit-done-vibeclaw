@@ -14,7 +14,7 @@ describe('workstreamList', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-ws-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-ws-'));
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
     await writeFile(join(tmpDir, '.planning', 'config.json'), JSON.stringify({ model_profile: 'balanced' }));
   });
@@ -35,7 +35,7 @@ describe('workstreamProgress', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-ws-progress-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-ws-progress-'));
     const wsDir = join(tmpDir, '.planning', 'workstreams', 'overflow');
     await mkdir(join(wsDir, 'phases', '01-one'), { recursive: true });
     await mkdir(join(wsDir, 'phases', '02-two'), { recursive: true });
@@ -63,7 +63,7 @@ describe('workstreamCreate', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-ws2-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-ws2-'));
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
     await writeFile(join(tmpDir, '.planning', 'config.json'), JSON.stringify({ model_profile: 'balanced' }));
   });
@@ -83,7 +83,7 @@ describe('workstreamSet root STATE.md mirror sync (#2618 gap 2)', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-ws-set-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-ws-set-'));
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
     await writeFile(
       join(tmpDir, '.planning', 'config.json'),

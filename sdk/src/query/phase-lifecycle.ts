@@ -460,7 +460,7 @@ export const phaseInsert: QueryHandler = async (args, projectDir, workstream) =>
     await ensureDirectoryWithGitkeep(dirPath);
 
     // Build phase entry
-    const phaseEntry = `\n### Phase ${decimalPhase}: ${description} (INSERTED)\n\n**Goal:** [Urgent work - to be planned]\n**Requirements**: TBD\n**Depends on:** Phase ${afterPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run /vgsd-plan-phase ${decimalPhase} to break down)\n`;
+    const phaseEntry = `\n### Phase ${decimalPhase}: ${description} (INSERTED)\n\n**Goal:** [Urgent work - to be planned]\n**Requirements**: TBD\n**Depends on:** Phase ${afterPhase}\n**Plans:** 0 plans\n\nPlans:\n- [ ] TBD (run /fvgsd-plan-phase ${decimalPhase} to break down)\n`;
 
     // Insert after the target phase section
     const headerPattern = new RegExp(`(#{2,4}\\s*Phase\\s+0*${afterPhaseEscaped}:[^\\n]*\\n)`, 'i');
@@ -536,7 +536,7 @@ async function findPhaseDir(
  * Port of cmdScaffold from commands.cjs lines 750-806.
  * Creates template files (context, uat, verification) or phase directories.
  *
- * @param args - Positional `[type, phase, name?]` **or** gsd-tools style
+ * @param args - Positional `[type, phase, name?]` **or** fvgsd-tools style
  *   `[type, '--phase', N, '--name', title]` (name may be multiple words).
  * @param projectDir - Project root directory
  * @returns QueryResult with { created, path } or { created: false, reason: 'already_exists' }
@@ -633,7 +633,7 @@ export const phaseScaffold: QueryHandler = async (args, projectDir, workstream) 
   switch (type) {
     case 'context': {
       filePath = join(phaseDir, `${padded}-CONTEXT.md`);
-      content = `---\nphase: "${padded}"\nname: "${phaseName}"\ncreated: ${today}\n---\n\n# Phase ${phase}: ${phaseName} — Context\n\n## Decisions\n\n_Decisions will be captured during /vgsd-discuss-phase ${phase}_\n\n## Discretion Areas\n\n_Areas where the executor can use judgment_\n\n## Deferred Ideas\n\n_Ideas to consider later_\n`;
+      content = `---\nphase: "${padded}"\nname: "${phaseName}"\ncreated: ${today}\n---\n\n# Phase ${phase}: ${phaseName} — Context\n\n## Decisions\n\n_Decisions will be captured during /fvgsd-discuss-phase ${phase}_\n\n## Discretion Areas\n\n_Areas where the executor can use judgment_\n\n## Deferred Ideas\n\n_Ideas to consider later_\n`;
       break;
     }
     case 'uat': {
@@ -1880,7 +1880,7 @@ export const milestoneComplete: QueryHandler = async (args, projectDir, workstre
   // any disk write, regardless of whether the dispatcher guard intercepted first.
   if (version === '--help' || version === '-h') {
     throw new GSDError(
-      `"${version}" is not a valid milestone version; see \`gsd-sdk query --help\` for command list`,
+      `"${version}" is not a valid milestone version; see \`fvgsd-sdk query --help\` for command list`,
       ErrorClassification.Validation,
     );
   }
@@ -2021,10 +2021,10 @@ export const milestoneComplete: QueryHandler = async (args, projectDir, workstre
       if (operatorPattern.test(next)) {
         next = next.replace(
           operatorPattern,
-          `$1\n- Start the next milestone with /vgsd-new-milestone\n\n`,
+          `$1\n- Start the next milestone with /fvgsd-new-milestone\n\n`,
         );
       } else {
-        next = `${next.trimEnd()}\n\n## Operator Next Steps\n\n- Start the next milestone with /vgsd-new-milestone\n`;
+        next = `${next.trimEnd()}\n\n## Operator Next Steps\n\n- Start the next milestone with /fvgsd-new-milestone\n`;
       }
 
       return next;

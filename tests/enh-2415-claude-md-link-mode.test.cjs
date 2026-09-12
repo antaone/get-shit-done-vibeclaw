@@ -19,7 +19,7 @@ const os = require('node:os');
 const { cmdGenerateClaudeMd } = require('../get-shit-done/bin/lib/profile-output.cjs');
 
 function makeTempProject(files = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2415-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2415-'));
   fs.mkdirSync(path.join(dir, '.planning', 'codebase'), { recursive: true });
   for (const [rel, content] of Object.entries(files)) {
     const abs = path.join(dir, rel);

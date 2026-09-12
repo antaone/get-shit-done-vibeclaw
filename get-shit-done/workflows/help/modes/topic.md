@@ -9,28 +9,28 @@ Emit a section from the full reference for the topic in `$ARGUMENTS`. Read `work
 |---|---|
 | `workflow`, `core`, `core-workflow` | `## Core Workflow` (entire section through end of `### Quick Mode`) |
 | `init`, `new-project` | `### Project Initialization` |
-| `map`, `map-codebase` | The `/vgsd:map-codebase` block under `### Project Initialization` |
-| `discuss`, `discuss-phase` | The `/vgsd:discuss-phase` block under `### Phase Planning` |
+| `map`, `map-codebase` | The `/fvgsd:map-codebase` block under `### Project Initialization` |
+| `discuss`, `discuss-phase` | The `/fvgsd:discuss-phase` block under `### Phase Planning` |
 | `plan`, `planning`, `plan-phase` | `### Phase Planning` |
 | `execute`, `exec`, `execute-phase` | `### Execution` |
 | `progress`, `route` | `### Progress Tracking` plus `### Smart Router` |
 | `quick`, `quick-mode` | `### Quick Mode` |
-| `fast` | The `/vgsd:fast` block under `### Quick Mode` |
+| `fast` | The `/fvgsd:fast` block under `### Quick Mode` |
 | `phase`, `phases`, `roadmap` | `### Roadmap Management` |
 | `milestone`, `milestones` | `### Milestone Management` plus `### Milestone Auditing` |
 | `session`, `pause`, `resume` | `### Session Management` |
 | `debug`, `debugging` | `### Debugging` |
-| `spike` | The `/vgsd:spike` and `/vgsd:spike --wrap-up` blocks under `### Spiking & Sketching` |
-| `sketch` | The `/vgsd:sketch` and `/vgsd:sketch --wrap-up` blocks under `### Spiking & Sketching` |
+| `spike` | The `/fvgsd:spike` and `/fvgsd:spike --wrap-up` blocks under `### Spiking & Sketching` |
+| `sketch` | The `/fvgsd:sketch` and `/fvgsd:sketch --wrap-up` blocks under `### Spiking & Sketching` |
 | `spike-sketch`, `experiments` | `### Spiking & Sketching` |
 | `capture`, `notes`, `todos` | `### Capturing Ideas, Notes, and Todos` |
-| `verify`, `verify-work`, `uat` | `### User Acceptance Testing` plus the `/vgsd:audit-uat` block |
-| `ship`, `pr` | `### Ship Work` plus the `/vgsd:pr-branch` block |
-| `review`, `peer-review` | The `/vgsd:review` block under `### Ship Work` |
+| `verify`, `verify-work`, `uat` | `### User Acceptance Testing` plus the `/fvgsd:audit-uat` block |
+| `ship`, `pr` | `### Ship Work` plus the `/fvgsd:pr-branch` block |
+| `review`, `peer-review` | The `/fvgsd:review` block under `### Ship Work` |
 | `audit`, `auditing`, `audit-milestone` | `### Milestone Auditing` |
 | `config`, `settings`, `configuration` | `### Configuration` |
-| `cleanup` | The `/vgsd:cleanup` block under `### Utility Commands` |
-| `update` | The `/vgsd:update` block under `### Utility Commands` |
+| `cleanup` | The `/fvgsd:cleanup` block under `### Utility Commands` |
+| `update` | The `/fvgsd:update` block under `### Utility Commands` |
 | `files`, `structure`, `layout` | `## Files & Structure` |
 | `modes`, `interactive`, `yolo` | `## Workflow Modes` |
 | `planning-config` | `## Planning Configuration` |
@@ -41,7 +41,7 @@ Emit a section from the full reference for the topic in `$ARGUMENTS`. Read `work
 
 1. Parse `$ARGUMENTS`: detect a `--brief` (or `-b`) flag — this selects **compact scope**. Otherwise scope is **full**. Strip the flag, then take the remaining token (with a single leading `--` stripped) as the topic alias.
 2. Resolve the alias against the table.
-3. If no match: emit a one-line error followed by a comma-separated list of the canonical topic names from the leftmost column (one per row, deduplicated). Suggest `/vgsd:help --full` for the complete reference. Stop.
+3. If no match: emit a one-line error followed by a comma-separated list of the canonical topic names from the leftmost column (one per row, deduplicated). Suggest `/fvgsd:help --full` for the complete reference. Stop.
 4. If matched: emit a single resolved-routing preamble line so the user sees what was matched:
 
    ```text
@@ -54,12 +54,12 @@ Emit a section from the full reference for the topic in `$ARGUMENTS`. Read `work
 
    5a. **Single section** (cell contains a single `` `## Heading` `` or `` `### Heading` ``):
    - *Full scope:* emit from that heading up to (but not including) the next sibling or higher-level heading.
-   - *Compact scope:* emit the heading, then the first `` **`/vgsd:...`** `` bold line within the section (the signature) and the single non-blank line immediately after it (the one-line summary). If the section has no `` **`/vgsd:...`** `` bold line, emit the heading and the first paragraph.
+   - *Compact scope:* emit the heading, then the first `` **`/fvgsd:...`** `` bold line within the section (the signature) and the single non-blank line immediately after it (the one-line summary). If the section has no `` **`/fvgsd:...`** `` bold line, emit the heading and the first paragraph.
 
    5b. **Multiple sections joined by "plus"**: apply rule 5a to each listed section in document order and emit them sequentially with no gap between them.
 
-   5c. **Sub-block** (cell says `the /vgsd:X block under ### Heading` or `the /vgsd:X ... blocks under ### Heading`): within the named heading's section, start at each `` **`/vgsd:X ...`** `` bold line.
-   - *Full scope:* stop immediately before the next `` **`/vgsd:...`** `` bold line or the next heading, whichever comes first.
+   5c. **Sub-block** (cell says `the /fvgsd:X block under ### Heading` or `the /fvgsd:X ... blocks under ### Heading`): within the named heading's section, start at each `` **`/fvgsd:X ...`** `` bold line.
+   - *Full scope:* stop immediately before the next `` **`/fvgsd:...`** `` bold line or the next heading, whichever comes first.
    - *Compact scope:* emit the bold line and the single non-blank line immediately after it (the one-line summary).
 
    For cells listing multiple sub-blocks, emit them sequentially.
@@ -67,7 +67,7 @@ Emit a section from the full reference for the topic in `$ARGUMENTS`. Read `work
 6. After the section content, emit a single closing line:
 
    ```text
-   More: /vgsd:help --full · /vgsd:help <topic> · /vgsd:help --brief <topic>
+   More: /fvgsd:help --full · /fvgsd:help <topic> · /fvgsd:help --brief <topic>
    ```
 
 7. No project-specific commentary, no follow-up questions.

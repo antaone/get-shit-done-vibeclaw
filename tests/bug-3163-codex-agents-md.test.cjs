@@ -3,7 +3,7 @@
 /**
  * Bug #3163: generate-claude-md should write to AGENTS.md on Codex runtime.
  *
- * When config.runtime === 'codex' (or GSD_RUNTIME=codex), the generate-claude-md
+ * When config.runtime === 'codex' (or FVGSD_RUNTIME=codex), the generate-claude-md
  * handler must resolve the output path to AGENTS.md, not CLAUDE.md.
  */
 
@@ -54,7 +54,7 @@ describe('bug #3163: generate-claude-md uses AGENTS.md for Codex runtime', () =>
     assert.ok(!fs.existsSync(path.join(realTmpDir, 'CLAUDE.md')), 'CLAUDE.md must not be created for Codex runtime');
   });
 
-  test('writes to AGENTS.md when GSD_RUNTIME=codex env var is set (env takes precedence over config)', () => {
+  test('writes to AGENTS.md when FVGSD_RUNTIME=codex env var is set (env takes precedence over config)', () => {
     const configPath = path.join(tmpDir, '.planning', 'config.json');
     // Config says runtime: claude but env overrides to codex
     fs.writeFileSync(
@@ -63,7 +63,7 @@ describe('bug #3163: generate-claude-md uses AGENTS.md for Codex runtime', () =>
       'utf-8'
     );
 
-    const result = runGsdTools('generate-claude-md', tmpDir, { HOME: tmpDir, GSD_RUNTIME: 'codex' });
+    const result = runGsdTools('generate-claude-md', tmpDir, { HOME: tmpDir, FVGSD_RUNTIME: 'codex' });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const parsed = JSON.parse(result.output);
@@ -74,7 +74,7 @@ describe('bug #3163: generate-claude-md uses AGENTS.md for Codex runtime', () =>
       `Expected output path to be AGENTS.md but got: ${parsed.claude_md_path}`
     );
     assert.ok(fs.existsSync(expectedAgentsPath), 'AGENTS.md must exist after generation');
-    assert.ok(!fs.existsSync(path.join(realTmpDir, 'CLAUDE.md')), 'CLAUDE.md must not be created when GSD_RUNTIME=codex');
+    assert.ok(!fs.existsSync(path.join(realTmpDir, 'CLAUDE.md')), 'CLAUDE.md must not be created when FVGSD_RUNTIME=codex');
   });
 
   test('--output flag overrides runtime detection when explicitly provided', () => {

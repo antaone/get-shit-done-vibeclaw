@@ -21,7 +21,7 @@ function runLint(args = []) {
 }
 
 function createFixtureDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lint-deps-fixture-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-lint-deps-fixture-'));
 }
 
 function writeSkillFile(dir, stem, { description = 'Test skill', requires = null, body = '' }) {

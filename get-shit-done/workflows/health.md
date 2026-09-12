@@ -49,7 +49,7 @@ available — replace the prompt with a plain-text two-question sequence
 plain text from the user's response.
 
 ```bash
-gsd-sdk query validate.context \
+fvgsd-sdk query validate.context \
   --tokens-used "$TOKENS_USED" \
   --context-window "$CONTEXT_WINDOW"
 ```
@@ -64,7 +64,7 @@ health output, the two modes are independent diagnostics.
 **Run health validation:**
 
 ```bash
-gsd-sdk query validate.health $REPAIR_FLAG $BACKFILL_FLAG
+fvgsd-sdk query validate.health $REPAIR_FLAG $BACKFILL_FLAG
 ```
 
 Parse JSON output:
@@ -101,10 +101,10 @@ Errors: N | Warnings: N | Info: N
 ## Errors
 
 - [E001] config.json: JSON parse error at line 5
-  Fix: Run /vgsd:health --repair to reset to defaults
+  Fix: Run /fvgsd:health --repair to reset to defaults
 
 - [E002] PROJECT.md not found
-  Fix: Run /vgsd:new-project to create
+  Fix: Run /fvgsd:new-project to create
 ```
 
 **If warnings exist:**
@@ -129,7 +129,7 @@ Errors: N | Warnings: N | Info: N
 **Footer (if repairable issues exist and --repair was NOT used):**
 ```
 ---
-N issues can be auto-repaired. Run: /vgsd:health --repair
+N issues can be auto-repaired. Run: /fvgsd:health --repair
 ```
 </step>
 
@@ -139,7 +139,7 @@ N issues can be auto-repaired. Run: /vgsd:health --repair
 Ask user if they want to run repairs:
 
 ```
-Would you like to run /vgsd:health --repair to fix N issues automatically?
+Would you like to run /fvgsd:health --repair to fix N issues automatically?
 ```
 
 If yes, re-run with --repair flag and display results.
@@ -151,7 +151,7 @@ If yes, re-run with --repair flag and display results.
 Re-run health check without --repair to confirm issues are resolved:
 
 ```bash
-gsd-sdk query validate.health
+fvgsd-sdk query validate.health
 ```
 
 Report final status.

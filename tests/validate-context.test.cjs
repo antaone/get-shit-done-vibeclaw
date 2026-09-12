@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * SDK CLI integration tests for `gsd-tools validate context`.
+ * SDK CLI integration tests for `fvgsd-tools validate context`.
  *
  * The pure classifier's behavior is covered by
  * tests/context-utilization.test.cjs — these tests focus on what the CLI
@@ -13,7 +13,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const { runGsdTools } = require('./helpers.cjs');
 
-describe('gsd-tools validate context — CLI argument errors', () => {
+describe('fvgsd-tools validate context — CLI argument errors', () => {
   test('missing --tokens-used fails with named flag in stderr', () => {
     const r = runGsdTools(['validate', 'context', '--context-window', '200000']);
     assert.strictEqual(r.success, false);
@@ -39,7 +39,7 @@ describe('gsd-tools validate context — CLI argument errors', () => {
   });
 });
 
-describe('gsd-tools validate context — JSON vs human rendering', () => {
+describe('fvgsd-tools validate context — JSON vs human rendering', () => {
   test('--json emits the classifier result plus a recommendation field', () => {
     // Single round-trip test confirms (a) classifier integration,
     // (b) JSON serialization, and (c) recommendation lookup. Per-state
@@ -70,7 +70,7 @@ describe('gsd-tools validate context — JSON vs human rendering', () => {
   });
 });
 
-describe('gsd-tools validate context — recommendation copy per state', () => {
+describe('fvgsd-tools validate context — recommendation copy per state', () => {
   // The CLI owns the recommendation strings (the classifier does not).
   // These tests pin the wording so a regression to the prose is caught.
   test('warning state recommends /gsd-thread', () => {

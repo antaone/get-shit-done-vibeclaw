@@ -107,13 +107,13 @@ describe('few-shot calibration examples', () => {
 
   // ── Agent reference lines ──────────────────────────────────────
   describe('agent files reference few-shot examples', () => {
-    test('gsd-plan-checker.md contains reference to plan-checker few-shot examples', () => {
-      const content = readFile(path.join(AGENTS_DIR, 'gsd-plan-checker.md'));
+    test('fvgsd-plan-checker.md contains reference to plan-checker few-shot examples', () => {
+      const content = readFile(path.join(AGENTS_DIR, 'fvgsd-plan-checker.md'));
       assert.match(content, /@~\/\.claude\/get-shit-done\/references\/few-shot-examples\/plan-checker\.md/);
     });
 
-    test('gsd-verifier.md contains reference to verifier few-shot examples', () => {
-      const content = readFile(path.join(AGENTS_DIR, 'gsd-verifier.md'));
+    test('fvgsd-verifier.md contains reference to verifier few-shot examples', () => {
+      const content = readFile(path.join(AGENTS_DIR, 'fvgsd-verifier.md'));
       assert.match(content, /@~\/\.claude\/get-shit-done\/references\/few-shot-examples\/verifier\.md/);
     });
   });

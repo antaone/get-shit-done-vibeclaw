@@ -19,8 +19,8 @@ const fs = require('fs');
 const path = require('path');
 
 const EXECUTE_PHASE = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'execute-phase.md');
-const EXECUTOR_AGENT = path.join(__dirname, '..', 'agents', 'gsd-executor.md');
-const PLANNER_AGENT = path.join(__dirname, '..', 'agents', 'gsd-planner.md');
+const EXECUTOR_AGENT = path.join(__dirname, '..', 'agents', 'fvgsd-executor.md');
+const PLANNER_AGENT = path.join(__dirname, '..', 'agents', 'fvgsd-planner.md');
 const EXECUTOR_EXAMPLES_REF = path.join(__dirname, '..', 'get-shit-done', 'references', 'executor-examples.md');
 const PLANNER_ANTIPATTERNS_REF = path.join(__dirname, '..', 'get-shit-done', 'references', 'planner-antipatterns.md');
 
@@ -52,22 +52,22 @@ describe('prompt thinning — sub-200K context window support (#1978)', () => {
     });
   });
 
-  describe('gsd-executor.md — reference to extracted examples', () => {
+  describe('fvgsd-executor.md — reference to extracted examples', () => {
     test('references executor-examples.md for extended examples', () => {
       const content = fs.readFileSync(EXECUTOR_AGENT, 'utf-8');
       assert.ok(
         content.includes('executor-examples.md'),
-        'gsd-executor.md must reference executor-examples.md for extended deviation/checkpoint examples'
+        'fvgsd-executor.md must reference executor-examples.md for extended deviation/checkpoint examples'
       );
     });
   });
 
-  describe('gsd-planner.md — reference to extracted anti-patterns', () => {
+  describe('fvgsd-planner.md — reference to extracted anti-patterns', () => {
     test('references planner-antipatterns.md for extended anti-patterns', () => {
       const content = fs.readFileSync(PLANNER_AGENT, 'utf-8');
       assert.ok(
         content.includes('planner-antipatterns.md'),
-        'gsd-planner.md must reference planner-antipatterns.md for extended checkpoint anti-patterns and specificity examples'
+        'fvgsd-planner.md must reference planner-antipatterns.md for extended checkpoint anti-patterns and specificity examples'
       );
     });
   });

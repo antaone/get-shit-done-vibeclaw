@@ -20,7 +20,7 @@ const INVENTORY_MD = fs.readFileSync(path.join(ROOT, 'docs', 'INVENTORY.md'), 'u
 
 const agentFiles = fs
   .readdirSync(AGENTS_DIR)
-  .filter((f) => /^gsd-.*\.md$/.test(f));
+  .filter((f) => /^fvgsd-.*\.md$/.test(f));
 
 function mentionedInInventoryAgents(name) {
   // Row form in the Agents table: `| agent-name | role | ... |`

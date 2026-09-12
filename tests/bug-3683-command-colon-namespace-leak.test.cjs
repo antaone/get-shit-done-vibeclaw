@@ -26,7 +26,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -47,11 +47,11 @@ const { readCmdNames } = require(path.join(REPO_ROOT, 'scripts', 'fix-slash-comm
 
 /**
  * Run `node install.js --claude --local --no-sdk` in tmpDir.
- * GSD_TEST_MODE must be cleared so the install() main block executes.
+ * FVGSD_TEST_MODE must be cleared so the install() main block executes.
  */
 function runClaudeLocalInstall(cwd) {
   const env = { ...process.env };
-  delete env.GSD_TEST_MODE;
+  delete env.FVGSD_TEST_MODE;
   execFileSync(process.execPath, [INSTALL_PATH, '--claude', '--local', '--no-sdk'], {
     cwd,
     encoding: 'utf-8',
@@ -143,7 +143,7 @@ describe('bug #3683 — command body colon-namespace leak (Claude local install)
     const rosterRegex = buildRosterRegex(cmdNames);
 
     before(() => {
-      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3683-'));
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3683-'));
       runClaudeLocalInstall(tmpDir);
     });
 

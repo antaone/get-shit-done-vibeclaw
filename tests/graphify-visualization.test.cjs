@@ -469,16 +469,16 @@ describe('regressions', () => {
       'a bash code block must invoke `graphify update .`'
     );
     assert.ok(
-      bashBlocks.some(b => /gsd-tools\.cjs["']?\s+graphify build snapshot/.test(b.content)),
-      'a bash code block must invoke `gsd-tools.cjs graphify build snapshot`'
+      bashBlocks.some(b => /fvgsd-tools\.cjs["']?\s+graphify build snapshot/.test(b.content)),
+      'a bash code block must invoke `fvgsd-tools.cjs graphify build snapshot`'
     );
   });
 
   // ── Regression for #3579 ────────────────────────────────────────────────────
   // graphify auto-update hook was dead-on-arrival in 1.50.0-canary.x because:
   //   Gap 1: scripts/build-hooks.js HOOKS_TO_COPY did not include
-  //           gsd-graphify-update.sh
-  //   Gap 2: hooks/lib/gsd-graphify-rebuild.sh not copied by installer
+  //           fvgsd/graphify-update.sh
+  //   Gap 2: hooks/fvgsd/lib/graphify-rebuild.sh not copied by installer
   // Test strategy: run the actual build and assert filesystem outcomes.
 
   const REPO_ROOT_3579 = path.resolve(__dirname, '..');
@@ -511,17 +511,17 @@ describe('regressions', () => {
       );
     });
 
-    test('hooks/dist/gsd-graphify-update.sh exists after build', () => {
+    test('hooks/dist/fvgsd/graphify-update.sh exists after build', () => {
       assert.ok(
-        fs.existsSync(path.join(DIST_DIR_3579, 'gsd-graphify-update.sh')),
-        'expected hooks/dist/gsd-graphify-update.sh to exist after build (Gap 1)'
+        fs.existsSync(path.join(DIST_DIR_3579, 'fvgsd/graphify-update.sh')),
+        'expected hooks/dist/fvgsd/graphify-update.sh to exist after build (Gap 1)'
       );
     });
 
-    test('hooks/dist/lib/gsd-graphify-rebuild.sh exists after build', () => {
+    test('hooks/dist/lib/graphify-rebuild.sh exists after build', () => {
       assert.ok(
-        fs.existsSync(path.join(DIST_DIR_3579, 'lib', 'gsd-graphify-rebuild.sh')),
-        'expected hooks/dist/lib/gsd-graphify-rebuild.sh to exist after build (Gap 2)'
+        fs.existsSync(path.join(DIST_DIR_3579, 'lib', 'graphify-rebuild.sh')),
+        'expected hooks/dist/lib/graphify-rebuild.sh to exist after build (Gap 2)'
       );
     });
   });
@@ -533,7 +533,7 @@ describe('regressions', () => {
 
     before(() => {
       execFileSync(process.execPath, [BUILD_SCRIPT_3579], { encoding: 'utf-8', stdio: 'pipe' });
-      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3579-install-'));
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3579-install-'));
       installStdout = execFileSync(
         process.execPath,
         [INSTALL_SCRIPT_3579, '--claude', '--global', '--yes', '--no-sdk'],
@@ -551,24 +551,24 @@ describe('regressions', () => {
       }
     });
 
-    test('hooks/gsd-graphify-update.sh present at install target', () => {
-      const dest = path.join(tmpDir, 'hooks', 'gsd-graphify-update.sh');
+    test('hooks/fvgsd/graphify-update.sh present at install target', () => {
+      const dest = path.join(tmpDir, 'hooks', 'fvgsd/graphify-update.sh');
       assert.ok(fs.existsSync(dest), `expected ${dest} to exist after install`);
     });
 
-    test('hooks/lib/gsd-graphify-rebuild.sh present at install target', () => {
-      const dest = path.join(tmpDir, 'hooks', 'lib', 'gsd-graphify-rebuild.sh');
+    test('hooks/fvgsd/lib/graphify-rebuild.sh present at install target', () => {
+      const dest = path.join(tmpDir, 'hooks', 'lib', 'graphify-rebuild.sh');
       assert.ok(fs.existsSync(dest), `expected ${dest} to exist after install`);
     });
 
-    test('installer does not warn about missing gsd-graphify-update.sh', () => {
+    test('installer does not warn about missing fvgsd/graphify-update.sh', () => {
       assert.ok(
-        !installStdout.includes('Missing expected hook: gsd-graphify-update.sh'),
+        !installStdout.includes('Missing expected hook: fvgsd/graphify-update.sh'),
         `installer output must not warn about missing graphify hook; got:\n${installStdout}`
       );
       assert.ok(
         !installStdout.includes(
-          'Skipped graphify auto-update hook — gsd-graphify-update.sh not found'
+          'Skipped graphify auto-update hook — fvgsd/graphify-update.sh not found'
         ),
         `installer must not skip graphify hook configuration; got:\n${installStdout}`
       );

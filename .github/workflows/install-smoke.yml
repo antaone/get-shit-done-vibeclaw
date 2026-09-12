@@ -1,8 +1,8 @@
 name: Install Smoke
 
 # Exercises the real install paths:
-#   tarball: `npm pack` → `npm install -g <tarball>` → assert gsd-sdk on PATH
-#   unpacked: `npm install -g <dir>` (no pack) → assert gsd-sdk on PATH + executable
+#   tarball: `npm pack` → `npm install -g <tarball>` → assert fvgsd-sdk on PATH
+#   unpacked: `npm install -g <dir>` (no pack) → assert fvgsd-sdk on PATH + executable
 #
 # The tarball path is the canonical ship path. The unpacked path reproduces the
 # mode-644 failure class (issue #2453): npm does NOT chmod bin targets when
@@ -19,7 +19,7 @@ on:
       - main
     paths:
       - 'bin/install.js'
-      - 'bin/gsd-sdk.js'
+      - 'bin/fvgsd-sdk.js'
       - 'sdk/**'
       - 'package.json'
       - 'package-lock.json'
@@ -127,7 +127,7 @@ jobs:
       # Isolated SDK typecheck — if the build fails, emit a clear "stale base
       # or real type error" diagnostic instead of letting the failure cascade
       # into the tarball install step, where the downstream PATH assertion
-      # misreports it as "gsd-sdk not on PATH — installSdkIfNeeded regression".
+      # misreports it as "fvgsd-sdk not on PATH — installSdkIfNeeded regression".
       - name: SDK typecheck (fails fast on type regressions)
         if: steps.skip.outputs.skip != 'true'
         shell: bash
@@ -171,37 +171,37 @@ jobs:
           TMPDIR_ROOT=$(mktemp -d)
           cd "$TMPDIR_ROOT"
           npm install -g "$WORKSPACE/$TARBALL"
-          command -v get-shit-done-cc
+          command -v fvgsd
           # `--claude --local` is the non-interactive code path. Don't swallow
           # non-zero exit — if the installer fails, that IS the CI failure, and
           # its own error message is more useful than the downstream "shim
           # regression" assertion masking the real cause.
-          if ! get-shit-done-cc --claude --local; then
-            echo "::error::get-shit-done-cc --claude --local failed. See the install.js output above for the real error (SDK build, PATH resolution, chmod, etc.)."
+          if ! fvgsd --claude --local; then
+            echo "::error::fvgsd --claude --local failed. See the install.js output above for the real error (SDK build, PATH resolution, chmod, etc.)."
             exit 1
           fi
 
-      - name: Assert gsd-sdk resolves on PATH
+      - name: Assert fvgsd-sdk resolves on PATH
         if: steps.skip.outputs.skip != 'true'
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v gsd-sdk >/dev/null 2>&1; then
-            echo "::error::gsd-sdk is not on PATH after tarball install — shim regression"
+          if ! command -v fvgsd-sdk >/dev/null 2>&1; then
+            echo "::error::fvgsd-sdk is not on PATH after tarball install — shim regression"
             NPM_BIN="$(npm config get prefix)/bin"
             echo "npm global bin: $NPM_BIN"
             ls -la "$NPM_BIN" | grep -i gsd || true
             exit 1
           fi
-          echo "✓ gsd-sdk resolves at: $(command -v gsd-sdk)"
+          echo "✓ fvgsd-sdk resolves at: $(command -v fvgsd-sdk)"
 
-      - name: Assert gsd-sdk is executable
+      - name: Assert fvgsd-sdk is executable
         if: steps.skip.outputs.skip != 'true'
         shell: bash
         run: |
           set -euo pipefail
-          gsd-sdk --version || gsd-sdk --help
-          echo "✓ gsd-sdk is executable"
+          fvgsd-sdk --version || fvgsd-sdk --help
+          echo "✓ fvgsd-sdk is executable"
 
       - name: Lifecycle smoke
         if: steps.skip.outputs.skip != 'true'
@@ -290,28 +290,28 @@ jobs:
           TMPDIR_ROOT=$(mktemp -d)
           cd "$TMPDIR_ROOT"
           npm install -g "$GITHUB_WORKSPACE"
-          command -v get-shit-done-cc
-          get-shit-done-cc --claude --local || true
+          command -v fvgsd
+          fvgsd --claude --local || true
 
-      - name: Assert gsd-sdk resolves on PATH after unpacked install
+      - name: Assert fvgsd-sdk resolves on PATH after unpacked install
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v gsd-sdk >/dev/null 2>&1; then
-            echo "::error::gsd-sdk is not on PATH after unpacked install — #2453 regression"
+          if ! command -v fvgsd-sdk >/dev/null 2>&1; then
+            echo "::error::fvgsd-sdk is not on PATH after unpacked install — #2453 regression"
             NPM_BIN="$(npm config get prefix)/bin"
             ls -la "$NPM_BIN" | grep -i gsd || true
             exit 1
           fi
-          echo "✓ gsd-sdk resolves at: $(command -v gsd-sdk)"
+          echo "✓ fvgsd-sdk resolves at: $(command -v fvgsd-sdk)"
 
-      - name: Assert gsd-sdk is executable after unpacked install (#2453)
+      - name: Assert fvgsd-sdk is executable after unpacked install (#2453)
         shell: bash
         run: |
           set -euo pipefail
           # This is the exact check that would have caught #2453 before release.
-          # The shim (bin/gsd-sdk.js) invokes sdk/dist/cli.js via `node`, so
+          # The shim (bin/fvgsd-sdk.js) invokes sdk/dist/cli.js via `node`, so
           # the execute bit on cli.js is not needed for the shim path. However
           # installSdkIfNeeded() also chmods cli.js in-place as a safety net.
-          gsd-sdk --version || gsd-sdk --help
-          echo "✓ gsd-sdk is executable after unpacked install"
+          fvgsd-sdk --version || fvgsd-sdk --help
+          echo "✓ fvgsd-sdk is executable after unpacked install"

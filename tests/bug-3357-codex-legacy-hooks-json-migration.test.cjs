@@ -9,7 +9,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -39,7 +39,7 @@ function legacyGsdHook(codexHome) {
   return {
     hooks: [{
       type: 'command',
-      command: `node "${path.join(codexHome, 'hooks', 'gsd-check-update.js')}"`,
+      command: `node "${path.join(codexHome, 'hooks', 'fvgsd/check-update.js')}"`,
     }],
   };
 }
@@ -58,7 +58,7 @@ function tomlGsdHookCount(codexHome) {
   const sessionStart = parsed.hooks?.SessionStart ?? [];
   return sessionStart
     .flatMap((entry) => Array.isArray(entry.hooks) ? entry.hooks : [])
-    .filter((hook) => typeof hook.command === 'string' && hook.command.includes('gsd-check-update'))
+    .filter((hook) => typeof hook.command === 'string' && hook.command.includes('fvgsd/check-update'))
     .length;
 }
 
@@ -70,7 +70,7 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
     if (!fs.existsSync(HOOKS_DIST) || fs.readdirSync(HOOKS_DIST).length === 0) {
       execFileSync(process.execPath, [BUILD_HOOKS_SCRIPT], { stdio: 'pipe' });
     }
-    tmpRoot = createTempDir('gsd-3357-');
+    tmpRoot = createTempDir('fvgsd-3357-');
     codexHome = path.join(tmpRoot, '.codex');
     fs.mkdirSync(codexHome, { recursive: true });
   });
@@ -90,7 +90,7 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
     const commands = hooksJson.hooks.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
-    const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('gsd-check-update'));
+    const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('fvgsd/check-update'));
     assert.equal(Object.hasOwn(hooksJson, 'SessionStart'), false);
     assert.equal(managed.length, 1);
     assert.equal(tomlGsdHookCount(codexHome), 0);
@@ -108,7 +108,7 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
     const userOwnedSameBasenameHook = {
       hooks: [{
         type: 'command',
-        command: 'node "/Users/example/bin/gsd-check-update.js"',
+        command: 'node "/Users/example/bin/fvgsd/check-update.js"',
       }],
     };
     fs.writeFileSync(
@@ -124,13 +124,13 @@ describe('#3357 — Codex install removes legacy GSD hooks.json entries', { conc
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(codexHome, 'hooks.json'), 'utf8'));
     const commands = hooksJson.hooks.SessionStart.flatMap((entry) => entry.hooks).map((hook) => hook.command);
-    const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('gsd-check-update'));
+    const managed = commands.filter((cmd) => typeof cmd === 'string' && cmd.includes('fvgsd/check-update'));
     assert.equal(Object.hasOwn(hooksJson, 'SessionStart'), false);
     assert.equal(Object.hasOwn(hooksJson, 'Stop'), false);
     assert.equal(hooksJson.description, 'keep user metadata');
     assert.equal(hooksJson.hooks.Stop[0].hooks[0].command, 'node "/Users/example/bin/user-hook.js"');
     assert.equal(commands.includes('node "/Users/example/bin/user-hook.js"'), true);
-    assert.equal(commands.includes('node "/Users/example/bin/gsd-check-update.js"'), true);
+    assert.equal(commands.includes('node "/Users/example/bin/fvgsd/check-update.js"'), true);
     assert.equal(managed.length, 2);
     assert.equal(tomlGsdHookCount(codexHome), 0);
   });

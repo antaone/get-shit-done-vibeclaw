@@ -2,7 +2,7 @@
  * Unit tests for utility query handlers.
  *
  * Covers: generateSlug and currentTimestamp functions with output parity
- * to gsd-tools.cjs cmdGenerateSlug and cmdCurrentTimestamp.
+ * to fvgsd-tools.cjs cmdGenerateSlug and cmdCurrentTimestamp.
  */
 
 import { describe, it, expect } from 'vitest';

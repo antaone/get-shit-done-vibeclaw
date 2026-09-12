@@ -1,24 +1,24 @@
 /**
  * Regression tests for bug #3231.
  *
- * `npx get-shit-done-cc@latest` prints `✓ GSD SDK ready (sdk/dist/cli.js)` on
- * Linux but no persistent `gsd-sdk` shim is created. Two sub-bugs:
+ * `npx fvgsd@latest` prints `✓ GSD SDK ready (sdk/dist/cli.js)` on
+ * Linux but no persistent `fvgsd-sdk` shim is created. Two sub-bugs:
  *
  * 1. Transient npx PATH + null login-shell PATH → false success
  *    The initial isGsdSdkOnPath() call uses process.env.PATH, which includes
  *    `~/.npm/_npx/<hash>/node_modules/.bin` — a transient dir npx injects.
- *    If that dir has a `gsd-sdk` entry, onPath = true and trySelfLinkGsdSdk
+ *    If that dir has a `fvgsd-sdk` entry, onPath = true and trySelfLinkGsdSdk
  *    is skipped (no persistent shim). Then getUserShellPath() returns null
  *    (Linux, slow rc files or unset $SHELL). The guard
  *    `onPath && userShellPath !== null` is FALSE, leaving onPath = true →
  *    false `✓ GSD SDK ready` is printed.
  *
- * 2. Stale legacy symlink → installer treats gsd-sdk as "on PATH" and skips
- *    materializing a modern SDK shim. The legacy binary (`gsd-tools.cjs`) has
+ * 2. Stale legacy symlink → installer treats fvgsd-sdk as "on PATH" and skips
+ *    materializing a modern SDK shim. The legacy binary (`fvgsd-tools.cjs`) has
  *    an `@deprecated` marker in its first bytes, lacks the `query` registry,
  *    and causes "Unknown command: query" for every workflow call.
  *
- * 3. Clean path: sdk/dist/cli.js present + gsd-sdk self-linked into a
+ * 3. Clean path: sdk/dist/cli.js present + fvgsd-sdk self-linked into a
  *    persistent PATH dir → installer DOES print success.
  *
  * All assertions use typed-IR / behavioral testing. No source-grep, no
@@ -27,7 +27,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -75,14 +75,14 @@ describe('bug #3231: transient npx PATH + null login-shell PATH',
   let savedEnv;
 
   beforeEach(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3231-a-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3231-a-'));
     sdkDir = makeSdkDir(tmpRoot);
 
     // Simulate an npx-injected PATH: a transient _npx directory that happens
-    // to contain a gsd-sdk executable. This is NOT a persistent user location.
+    // to contain a fvgsd-sdk executable. This is NOT a persistent user location.
     const npxBinDir = path.join(tmpRoot, '.npm', '_npx', 'abc123', 'node_modules', '.bin');
     fs.mkdirSync(npxBinDir, { recursive: true });
-    const shimName = process.platform === 'win32' ? 'gsd-sdk.cmd' : 'gsd-sdk';
+    const shimName = process.platform === 'win32' ? 'fvgsd-sdk.cmd' : 'fvgsd-sdk';
     const shimPath = path.join(npxBinDir, shimName);
     fs.writeFileSync(
       shimPath,
@@ -116,8 +116,8 @@ describe('bug #3231: transient npx PATH + null login-shell PATH',
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('does NOT print "GSD SDK ready" when only a transient _npx PATH entry has gsd-sdk', () => {
-    // Pre-fix: isGsdSdkOnPath() finds gsd-sdk in the npx-injected dir,
+  test('does NOT print "GSD SDK ready" when only a transient _npx PATH entry has fvgsd-sdk', () => {
+    // Pre-fix: isGsdSdkOnPath() finds fvgsd-sdk in the npx-injected dir,
     // onPath = true, trySelfLinkGsdSdk is skipped, getUserShellPath() returns
     // null (SHELL unset), the guard is short-circuited, and the false ✓ is
     // printed. Post-fix: _npx dirs must be excluded from the initial check
@@ -128,16 +128,16 @@ describe('bug #3231: transient npx PATH + null login-shell PATH',
     const combined = `${stdout}\n${stderr}`;
 
     // Primary behavioral assertion: the installer must NOT falsely report
-    // "GSD SDK ready" when gsd-sdk is only reachable via a transient npx
+    // "GSD SDK ready" when fvgsd-sdk is only reachable via a transient npx
     // cache directory (not a persistent user PATH entry).
     assert.ok(
       !/GSD SDK ready/.test(combined),
-      'installer must NOT print "GSD SDK ready" when only the transient _npx dir has gsd-sdk. Got: ' + combined,
+      'installer must NOT print "GSD SDK ready" when only the transient _npx dir has fvgsd-sdk. Got: ' + combined,
     );
 
     // Secondary assertion: the installer must emit a warning or fallback
     // diagnostic rather than silently succeeding. The warning path prints
-    // "GSD SDK files are present but gsd-sdk is not on your PATH" when
+    // "GSD SDK files are present but fvgsd-sdk is not on your PATH" when
     // self-link fails; a successful self-link into a non-PATH dir prints the
     // same warning. Either way, some output must be produced.
     assert.ok(
@@ -182,9 +182,9 @@ describe('bug #3231: transient npx PATH + null login-shell PATH',
 });
 
 // ---------------------------------------------------------------------------
-// Bug 2: stale legacy symlink pointing at gsd-tools.cjs (deprecated binary)
+// Bug 2: stale legacy symlink pointing at fvgsd-tools.cjs (deprecated binary)
 // ---------------------------------------------------------------------------
-describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
+describe('bug #3231: stale legacy symlink to deprecated fvgsd-tools.cjs',
   { skip: isWindows ? 'POSIX-only: relies on fs.symlinkSync + mode bits + bare shim filename' : false },
   () => {
   let tmpRoot;
@@ -192,7 +192,7 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
   let savedEnv;
 
   beforeEach(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3231-b-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3231-b-'));
     sdkDir = makeSdkDir(tmpRoot);
 
     const homeDir = path.join(tmpRoot, 'home');
@@ -217,18 +217,18 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('isLegacyGsdSdkShim detects the deprecated gsd-tools.cjs marker', () => {
+  test('isLegacyGsdSdkShim detects the deprecated fvgsd-tools.cjs marker', () => {
     // The legacy binary starts with or contains the @deprecated marker
-    // referencing gsd-tools.cjs in the first 512 bytes.
+    // referencing fvgsd-tools.cjs in the first 512 bytes.
     assert.equal(typeof isLegacyGsdSdkShim, 'function', 'isLegacyGsdSdkShim must be exported');
 
-    const legacyFile = path.join(tmpRoot, 'gsd-sdk-legacy');
+    const legacyFile = path.join(tmpRoot, 'fvgsd-sdk-legacy');
     fs.writeFileSync(
       legacyFile,
       [
         '#!/usr/bin/env node',
-        '// @deprecated — use gsd-tools.cjs directly',
-        "require('/usr/local/lib/gsd-tools.cjs');",
+        '// @deprecated — use fvgsd-tools.cjs directly',
+        "require('/usr/local/lib/fvgsd-tools.cjs');",
         '',
       ].join('\n'),
     );
@@ -239,12 +239,12 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
   test('isLegacyGsdSdkShim returns false for a modern SDK shim', () => {
     assert.equal(typeof isLegacyGsdSdkShim, 'function');
 
-    const modernFile = path.join(tmpRoot, 'gsd-sdk-modern');
+    const modernFile = path.join(tmpRoot, 'fvgsd-sdk-modern');
     fs.writeFileSync(
       modernFile,
       [
         '#!/usr/bin/env node',
-        "require('/usr/local/lib/node_modules/get-shit-done-cc/bin/gsd-sdk.js');",
+        "require('/usr/local/lib/node_modules/fvgsd/bin/fvgsd-sdk.js');",
         '',
       ].join('\n'),
     );
@@ -259,28 +259,28 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
   });
 
   test('installer replaces a stale legacy symlink and attempts self-link with modern SDK', () => {
-    // Set up: persistent PATH dir exists and contains a gsd-sdk symlink
-    // pointing at a fake "legacy" gsd-tools.cjs binary with the @deprecated
+    // Set up: persistent PATH dir exists and contains a fvgsd-sdk symlink
+    // pointing at a fake "legacy" fvgsd-tools.cjs binary with the @deprecated
     // marker. The installer must detect this, treat it as "not the right SDK",
     // and replace it with a modern shim.
     const persistentBin = path.join(tmpRoot, 'localbin');
     fs.mkdirSync(persistentBin, { recursive: true });
 
     // Write a fake legacy binary
-    const legacyBin = path.join(tmpRoot, 'gsd-tools.cjs');
+    const legacyBin = path.join(tmpRoot, 'fvgsd-tools.cjs');
     fs.writeFileSync(
       legacyBin,
       [
         '#!/usr/bin/env node',
-        '// @deprecated — use gsd-tools.cjs directly',
+        '// @deprecated — use fvgsd-tools.cjs directly',
         "console.log('legacy');",
         '',
       ].join('\n'),
       { mode: 0o755 },
     );
 
-    // Place a gsd-sdk symlink in the persistent dir pointing at the legacy binary.
-    const legacyShimPath = path.join(persistentBin, 'gsd-sdk');
+    // Place a fvgsd-sdk symlink in the persistent dir pointing at the legacy binary.
+    const legacyShimPath = path.join(persistentBin, 'fvgsd-sdk');
     try {
       fs.symlinkSync(legacyBin, legacyShimPath);
     } catch {
@@ -289,7 +289,7 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
         legacyShimPath,
         [
           '#!/usr/bin/env node',
-          '// @deprecated — use gsd-tools.cjs directly',
+          '// @deprecated — use fvgsd-tools.cjs directly',
           "console.log('legacy');",
           '',
         ].join('\n'),
@@ -332,17 +332,17 @@ describe('bug #3231: stale legacy symlink to deprecated gsd-tools.cjs',
 });
 
 // ---------------------------------------------------------------------------
-// Test 3: clean install with gsd-sdk self-linked into a persistent PATH dir
+// Test 3: clean install with fvgsd-sdk self-linked into a persistent PATH dir
 // ---------------------------------------------------------------------------
-describe('bug #3231: clean install — gsd-sdk self-linked into persistent PATH dir',
-  { skip: isWindows ? 'POSIX-only: asserts bare gsd-sdk shim in ~/.local/bin' : false },
+describe('bug #3231: clean install — fvgsd-sdk self-linked into persistent PATH dir',
+  { skip: isWindows ? 'POSIX-only: asserts bare fvgsd-sdk shim in ~/.local/bin' : false },
   () => {
   let tmpRoot;
   let sdkDir;
   let savedEnv;
 
   beforeEach(() => {
-    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3231-c-'));
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3231-c-'));
     sdkDir = makeSdkDir(tmpRoot);
     const homeDir = path.join(tmpRoot, 'home');
     fs.mkdirSync(homeDir, { recursive: true });
@@ -366,7 +366,7 @@ describe('bug #3231: clean install — gsd-sdk self-linked into persistent PATH 
     try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
   });
 
-  test('prints "GSD SDK ready" when gsd-sdk is self-linked into a persistent dir on PATH', () => {
+  test('prints "GSD SDK ready" when fvgsd-sdk is self-linked into a persistent dir on PATH', () => {
     const homeDir = process.env.HOME;
     const localBin = path.join(homeDir, '.local', 'bin');
     fs.mkdirSync(localBin, { recursive: true });
@@ -378,17 +378,17 @@ describe('bug #3231: clean install — gsd-sdk self-linked into persistent PATH 
     });
     const combined = `${stdout}\n${stderr}`;
 
-    const shimPath = path.join(localBin, 'gsd-sdk');
+    const shimPath = path.join(localBin, 'fvgsd-sdk');
     // Behavioral assertions: shim exists and is recognized as a modern (non-legacy) shim
     // reachable from the persistent filtered PATH.
     assert.ok(
       fs.existsSync(shimPath),
-      'installer must materialize gsd-sdk shim in the persistent PATH dir',
+      'installer must materialize fvgsd-sdk shim in the persistent PATH dir',
     );
     assert.equal(
       isGsdSdkOnPath(filterNpxFromPath(localBin)),
       true,
-      'installer must make gsd-sdk reachable on the persistent filtered PATH',
+      'installer must make fvgsd-sdk reachable on the persistent filtered PATH',
     );
 
     // Primary behavioral assertion: the installer MUST print "GSD SDK ready"

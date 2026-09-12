@@ -16,7 +16,7 @@ Analyze completed phase artifacts (PLAN.md, SUMMARY.md, VERIFICATION.md, UAT.md,
 Parse arguments and load project state:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -189,7 +189,7 @@ The body follows this structure:
 Update STATE.md to reflect the learning extraction:
 
 ```bash
-gsd-sdk query state.update "Last Activity" "$(date +%Y-%m-%d)"
+fvgsd-sdk query state.update "Last Activity" "$(date +%Y-%m-%d)"
 ```
 </step>
 
@@ -211,8 +211,8 @@ Missing artifacts: {list or "none"}
 
 Next steps:
 - Review extracted learnings for accuracy
-- /vgsd:progress — see overall project state
-- /vgsd:execute-phase {next} — continue to next phase
+- /fvgsd:progress — see overall project state
+- /fvgsd:execute-phase {next} — continue to next phase
 
 ---------------------------------------------------------------
 ```

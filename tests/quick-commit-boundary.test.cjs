@@ -33,7 +33,7 @@ describe('quick workflow commit boundary (#1503)', () => {
   test('Step 8 explicitly stages artifacts with git add before commit', () => {
     assert.ok(
       content.includes('git add ${file_list}'),
-      'Step 8 should explicitly git add the file list before gsd-tools commit'
+      'Step 8 should explicitly git add the file list before fvgsd-tools commit'
     );
   });
 

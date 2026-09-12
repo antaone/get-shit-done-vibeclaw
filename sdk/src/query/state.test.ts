@@ -85,7 +85,7 @@ let tmpDir: string;
 // ─── Setup / Teardown ──────────────────────────────────────────────────────
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-test-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-test-'));
   const planningDir = join(tmpDir, '.planning');
   const phasesDir = join(planningDir, 'phases');
 
@@ -216,7 +216,7 @@ Plan: 2 of 3
   });
 
   it('returns error object when STATE.md not found', async () => {
-    const emptyDir = await mkdtemp(join(tmpdir(), 'gsd-state-empty-'));
+    const emptyDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-empty-'));
     await mkdir(join(emptyDir, '.planning'), { recursive: true });
 
     const result = await stateJson([], emptyDir);
@@ -352,7 +352,7 @@ describe('stateSnapshot', () => {
   });
 
   it('returns error when STATE.md not found', async () => {
-    const emptyDir = await mkdtemp(join(tmpdir(), 'gsd-snap-empty-'));
+    const emptyDir = await mkdtemp(join(tmpdir(), 'fvgsd-snap-empty-'));
     await mkdir(join(emptyDir, '.planning'), { recursive: true });
 
     const result = await stateSnapshot([], emptyDir);
@@ -401,7 +401,7 @@ describe('stateSnapshot — bug #3265 frontmatter precedence', () => {
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3265-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3265-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -429,7 +429,7 @@ describe('stateSnapshot — bug #3265 frontmatter precedence', () => {
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3265b-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3265b-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -451,7 +451,7 @@ describe('stateSnapshot — bug #3265 frontmatter precedence', () => {
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3265c-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3265c-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -479,7 +479,7 @@ describe('stateSnapshot — bug #3265 frontmatter precedence', () => {
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3265d-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3265d-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -548,7 +548,7 @@ describe('stateSnapshot — CR #3275 fmScalar non-string scalar coercion', () =>
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3275a-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3275a-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -575,7 +575,7 @@ describe('stateSnapshot — CR #3275 fmScalar non-string scalar coercion', () =>
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3275b-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3275b-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 
@@ -602,7 +602,7 @@ describe('stateSnapshot — CR #3275 fmScalar non-string scalar coercion', () =>
       '',
     ].join('\n');
 
-    const localDir = await mkdtemp(join(tmpdir(), 'gsd-3275c-'));
+    const localDir = await mkdtemp(join(tmpdir(), 'fvgsd-3275c-'));
     await mkdir(join(localDir, '.planning'), { recursive: true });
     await writeFile(join(localDir, '.planning', 'STATE.md'), stateContent);
 

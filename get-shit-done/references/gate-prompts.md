@@ -47,7 +47,7 @@ Simple 2-option confirmation for re-planning, rebuild, replace plans, commit.
 4-option escalation for review escalation (max retries exceeded).
 - question: "Phase {N} has failed verification {attempt} times. How should we proceed?"
 - header: "Escalate"
-- options: Accept gaps | Re-plan (via /vgsd:plan-phase) | Debug (via /vgsd:debug) | Retry
+- options: Accept gaps | Re-plan (via /fvgsd:plan-phase) | Debug (via /fvgsd:debug) | Retry
 
 ## Pattern: multi-option-gaps
 4-option gap handler for review gaps-found.
@@ -78,7 +78,7 @@ Up to 4 suggested next actions with selection (status, resume workflows).
 3-option confirmation for quick task scope validation.
 - question: "This task looks complex. Proceed as quick task or use full planning?"
 - header: "Scope"
-- options: Quick task | Full plan (via /vgsd:plan-phase) | Revise
+- options: Quick task | Full plan (via /fvgsd:plan-phase) | Revise
 
 ## Pattern: depth-select
 3-option depth selection for planning workflow preferences.

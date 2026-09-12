@@ -453,7 +453,7 @@ describe('validateFieldName', () => {
 });
 
 // ─── Hook session_id path traversal (#1533) ────────────────────────────────
-// Verify that gsd-context-monitor and gsd-statusline reject session_id values
+// Verify that fvgsd/context-monitor and fvgsd/statusline reject session_id values
 // containing path traversal sequences before constructing temp file paths.
 
 const { execFileSync } = require('child_process');
@@ -472,8 +472,8 @@ function runHook(hookPath, inputJson) {
   }
 }
 
-describe('gsd-context-monitor session_id path traversal', () => {
-  const monitorPath = path.join(__dirname, '..', 'hooks', 'gsd-context-monitor.js');
+describe('fvgsd/context-monitor session_id path traversal', () => {
+  const monitorPath = path.join(__dirname, '..', 'hooks', 'fvgsd/context-monitor.js');
   const tmpDir = os.tmpdir();
 
   test('exits silently for session_id with ../ traversal', () => {
@@ -500,8 +500,8 @@ describe('gsd-context-monitor session_id path traversal', () => {
   });
 });
 
-describe('gsd-statusline session_id path traversal', () => {
-  const statuslinePath = path.join(__dirname, '..', 'hooks', 'gsd-statusline.js');
+describe('fvgsd/statusline session_id path traversal', () => {
+  const statuslinePath = path.join(__dirname, '..', 'hooks', 'fvgsd/statusline.js');
   const tmpDir = os.tmpdir();
 
   const baseInput = {
@@ -707,7 +707,7 @@ describe('validatePromptStructure', () => {
     const text = [
       '<purpose>Act as a planner</purpose>',
       '<required_reading>PLAN.md</required_reading>',
-      '<available_agent_types>gsd-executor</available_agent_types>',
+      '<available_agent_types>fvgsd-executor</available_agent_types>',
     ].join('\n');
     const result = validatePromptStructure(text, 'agent');
     assert.ok(result.valid);

@@ -9,7 +9,7 @@ import type { GSDLogger } from './logger.js';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function createTempProject(): Promise<string> {
-  return mkdtemp(join(tmpdir(), 'gsd-ctx-'));
+  return mkdtemp(join(tmpdir(), 'fvgsd-ctx-'));
 }
 
 async function createPlanningDir(projectDir: string, files: Record<string, string>): Promise<void> {

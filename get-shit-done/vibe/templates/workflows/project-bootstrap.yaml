@@ -20,4 +20,4 @@ stages:
       - planning artifacts committed on the candidate branch
       - candidate summary written
     gsd:
-      command: vgsd:new-project
+      command: fvgsd:new-project

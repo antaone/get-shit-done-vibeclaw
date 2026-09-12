@@ -1,6 +1,6 @@
 # Debug Subagent Prompt Template
 
-Template for spawning gsd-debugger agent. The agent contains all debugging expertise - this template provides problem context only.
+Template for spawning fvgsd-debugger agent. The agent contains all debugging expertise - this template provides problem context only.
 
 ---
 
@@ -51,18 +51,18 @@ Create: .planning/debug/{slug}.md
 
 ## Usage
 
-**From /vgsd:debug:**
+**From /fvgsd:debug:**
 ```python
 Task(
   prompt=filled_template,
-  subagent_type="gsd-debugger",
+  subagent_type="fvgsd-debugger",
   description="Debug {slug}"
 )
 ```
 
 **From diagnose-issues (UAT):**
 ```python
-Task(prompt=template, subagent_type="gsd-debugger", description="Debug UAT-001")
+Task(prompt=template, subagent_type="fvgsd-debugger", description="Debug UAT-001")
 ```
 
 ---

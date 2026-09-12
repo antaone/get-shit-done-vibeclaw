@@ -9,12 +9,12 @@ They are not executed and contain no real secrets.
 
 | File | Attack class | Consumed by |
 |------|--------------|-------------|
-| `context-instruction-override.md` | Fake instruction override + role manipulation | gsd-read-injection-scanner.js, gsd-prompt-guard.js |
-| `plan-fake-system-tags.md` | `<system>`/`<assistant>` boundary mimicry | sanitizeForPrompt, gsd-prompt-guard.js |
-| `roadmap-heredoc-breakout.md` | Heredoc-shaped payload inside a planning doc | gsd-read-injection-scanner.js |
-| `plan-fake-frontmatter.md` | Frontmatter fields that try to override intent | gsd-read-injection-scanner.js |
-| `context-malicious-markdown-link.md` | Markdown links with `javascript:` and embedded creds | gsd-read-injection-scanner.js |
-| `context-invisible-unicode.md` | Zero-width chars hiding instructions | gsd-read-injection-scanner.js, sanitizeForPrompt |
+| `context-instruction-override.md` | Fake instruction override + role manipulation | fvgsd/read-injection-scanner.js, fvgsd/prompt-guard.js |
+| `plan-fake-system-tags.md` | `<system>`/`<assistant>` boundary mimicry | sanitizeForPrompt, fvgsd/prompt-guard.js |
+| `roadmap-heredoc-breakout.md` | Heredoc-shaped payload inside a planning doc | fvgsd/read-injection-scanner.js |
+| `plan-fake-frontmatter.md` | Frontmatter fields that try to override intent | fvgsd/read-injection-scanner.js |
+| `context-malicious-markdown-link.md` | Markdown links with `javascript:` and embedded creds | fvgsd/read-injection-scanner.js |
+| `context-invisible-unicode.md` | Zero-width chars hiding instructions | fvgsd/read-injection-scanner.js, sanitizeForPrompt |
 
 The fake-token values used in CLI redaction probes
 (`ghp_AAAA…`, `sk-AAAA…`) are constructed inline by the test, not stored

@@ -25,7 +25,7 @@ function normalizeDocsInitPayload(rawPayload: unknown): Record<string, unknown> 
   return parsed;
 }
 
-/** Agent install scan differs between gsd-tools subprocess vs in-process (paths / env); compare the rest. */
+/** Agent install scan differs between fvgsd-tools subprocess vs in-process (paths / env); compare the rest. */
 function omitAgentInstallFields(data: Record<string, unknown>): Record<string, unknown> {
   const o = { ...data };
   delete o.agents_installed;
@@ -104,7 +104,7 @@ async function setupPhasesFixture(root: string): Promise<void> {
 
 describe('Golden file tests', () => {
   describe('generate-slug', () => {
-    it('SDK output matches gsd-tools.cjs and checked-in golden fixture (fixture must track CLI, not SDK alone)', async () => {
+    it('SDK output matches fvgsd-tools.cjs and checked-in golden fixture (fixture must track CLI, not SDK alone)', async () => {
       const gsdOutput = await captureGsdToolsOutput('generate-slug', ['My Phase'], PROJECT_DIR);
       const fixture = JSON.parse(
         await readFile(resolve(__dirname, 'fixtures', 'generate-slug.golden.json'), 'utf-8'),
@@ -143,7 +143,7 @@ describe('Golden file tests', () => {
     let tmpDir: string;
 
     beforeEach(async () => {
-      tmpDir = join(tmpdir(), `gsd-golden-cfgget-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      tmpDir = join(tmpdir(), `fvgsd-golden-cfgget-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(join(tmpDir, '.planning'), { recursive: true });
       await writeFile(
         join(tmpDir, '.planning', 'config.json'),
@@ -156,7 +156,7 @@ describe('Golden file tests', () => {
       await rm(tmpDir, { recursive: true, force: true });
     });
 
-    it('SDK output matches gsd-tools.cjs for top-level key', async () => {
+    it('SDK output matches fvgsd-tools.cjs for top-level key', async () => {
       const gsdOutput = await captureGsdToolsOutput('config-get', ['model_profile'], tmpDir);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('config-get', ['model_profile'], tmpDir);
@@ -165,7 +165,7 @@ describe('Golden file tests', () => {
   });
 
   describe('find-phase', () => {
-    it('SDK output matches gsd-tools.cjs for core fields', async () => {
+    it('SDK output matches fvgsd-tools.cjs for core fields', async () => {
       const gsdOutput = await captureGsdToolsOutput('find-phase', ['9'], REPO_ROOT) as Record<string, unknown>;
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('find-phase', ['9'], REPO_ROOT);
@@ -180,7 +180,7 @@ describe('Golden file tests', () => {
   });
 
   describe('roadmap.analyze', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('roadmap', ['analyze'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('roadmap.analyze', [], REPO_ROOT);
@@ -191,14 +191,14 @@ describe('Golden file tests', () => {
   describe('roadmap parity (subprocess parity)', () => {
     async function withFreshRoadmapProjects(): Promise<{ gsdDir: string; sdkDir: string }> {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-roadmap-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-roadmap-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-roadmap-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-roadmap-sdk-${suffix}`);
       await setupPhasesFixture(gsdDir);
       await setupPhasesFixture(sdkDir);
       return { gsdDir, sdkDir };
     }
 
-    it('roadmap.get-phase matches gsd-tools.cjs on fixture', async () => {
+    it('roadmap.get-phase matches fvgsd-tools.cjs on fixture', async () => {
       const { gsdDir, sdkDir } = await withFreshRoadmapProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('roadmap', ['get-phase', '10'], gsdDir);
@@ -211,7 +211,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('roadmap.update-plan-progress matches gsd-tools.cjs on fixture', async () => {
+    it('roadmap.update-plan-progress matches fvgsd-tools.cjs on fixture', async () => {
       const { gsdDir, sdkDir } = await withFreshRoadmapProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('roadmap', ['update-plan-progress', '10'], gsdDir);
@@ -226,7 +226,7 @@ describe('Golden file tests', () => {
   });
 
   describe('progress', () => {
-    it('SDK JSON matches gsd-tools.cjs (`progress json`)', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs (`progress json`)', async () => {
       const gsdOutput = await captureGsdToolsOutput('progress', ['json'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('progress', [], REPO_ROOT);
@@ -237,7 +237,7 @@ describe('Golden file tests', () => {
   // ─── Mutation command golden tests ──────────────────────────────────────
 
   describe('frontmatter.validate (mutation)', () => {
-    it('SDK JSON matches gsd-tools.cjs (plan schema)', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs (plan schema)', async () => {
       const testFile = '.planning/phases/11-state-mutations/11-03-PLAN.md';
       const gsdOutput = await captureGsdToolsOutput('frontmatter', ['validate', testFile, '--schema', 'plan'], REPO_ROOT);
       const registry = createRegistry();
@@ -250,7 +250,7 @@ describe('Golden file tests', () => {
     let tmpDir: string;
 
     beforeEach(async () => {
-      tmpDir = join(tmpdir(), `gsd-golden-config-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      tmpDir = join(tmpdir(), `fvgsd-golden-config-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(join(tmpDir, '.planning'), { recursive: true });
       await writeFile(join(tmpDir, '.planning', 'config.json'), '{"model_profile":"balanced","workflow":{"research":true}}');
     });
@@ -259,7 +259,7 @@ describe('Golden file tests', () => {
       await rm(tmpDir, { recursive: true, force: true });
     });
 
-    it('SDK config-set JSON matches gsd-tools.cjs (fresh tree per capture)', async () => {
+    it('SDK config-set JSON matches fvgsd-tools.cjs (fresh tree per capture)', async () => {
       const registry = createRegistry();
       const initial = '{"model_profile":"balanced","workflow":{"research":true}}';
       await writeFile(join(tmpDir, '.planning', 'config.json'), initial);
@@ -276,7 +276,7 @@ describe('Golden file tests', () => {
     let tmpDir: string;
 
     beforeEach(async () => {
-      tmpDir = join(tmpdir(), `gsd-golden-state-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      tmpDir = join(tmpdir(), `fvgsd-golden-state-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await setupMinimalStateProject(tmpDir);
     });
 
@@ -284,21 +284,21 @@ describe('Golden file tests', () => {
       await rm(tmpDir, { recursive: true, force: true });
     });
 
-    it('state.update matches gsd-tools.cjs', async () => {
+    it('state.update matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('state', ['update', 'Status', 'Executing SDK'], tmpDir);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('state.update', ['Status', 'Executing SDK'], tmpDir);
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.patch matches gsd-tools.cjs', async () => {
+    it('state.patch matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('state', ['patch', '--status', 'Patched via parity'], tmpDir);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('state.patch', ['--status', 'Patched via parity'], tmpDir);
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.begin-phase matches gsd-tools.cjs', async () => {
+    it('state.begin-phase matches fvgsd-tools.cjs', async () => {
       const argv = ['begin-phase', '--phase', '11', '--name', 'State Pilot', '--plans', '3'];
       const gsdOutput = await captureGsdToolsOutput('state', argv, tmpDir);
       const registry = createRegistry();
@@ -306,7 +306,7 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.sync --verify matches gsd-tools.cjs', async () => {
+    it('state.sync --verify matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('state', ['sync', '--verify'], tmpDir);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('state.sync', ['--verify'], tmpDir);
@@ -315,7 +315,7 @@ describe('Golden file tests', () => {
 
     // ─── Phase 5.1: 12 additional state subcommand parity tests ────────────
 
-    it('state.advance-plan matches gsd-tools.cjs', async () => {
+    it('state.advance-plan matches fvgsd-tools.cjs', async () => {
       // Setup: add compound Plan field so advance-plan can parse it
       const statePath = join(tmpDir, '.planning', 'STATE.md');
       const content = await readFile(statePath, 'utf-8');
@@ -336,7 +336,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('state.update-progress matches gsd-tools.cjs', async () => {
+    it('state.update-progress matches fvgsd-tools.cjs', async () => {
       // Both update the progress bar. Phase dir is empty so percent=0.
       const gsdOutput = await captureGsdToolsOutput('state', ['update-progress'], tmpDir);
       // Restore state for SDK call (CJS mutates the file)
@@ -347,7 +347,7 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.add-decision matches gsd-tools.cjs', async () => {
+    it('state.add-decision matches fvgsd-tools.cjs', async () => {
       // Setup: add a Decisions section to STATE.md body
       const statePath = join(tmpDir, '.planning', 'STATE.md');
       const withDecisions = MINIMAL_STATE + '\n## Decisions\n\nNone yet.\n';
@@ -360,7 +360,7 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.add-blocker matches gsd-tools.cjs', async () => {
+    it('state.add-blocker matches fvgsd-tools.cjs', async () => {
       // Setup: add a Blockers section to STATE.md body
       const statePath = join(tmpDir, '.planning', 'STATE.md');
       const withBlockers = MINIMAL_STATE + '\n## Blockers\n\nNone\n';
@@ -373,7 +373,7 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.resolve-blocker matches gsd-tools.cjs', async () => {
+    it('state.resolve-blocker matches fvgsd-tools.cjs', async () => {
       // Setup: add a Blockers section that has a blocker entry to remove
       const statePath = join(tmpDir, '.planning', 'STATE.md');
       const withBlocker = MINIMAL_STATE + '\n## Blockers\n\n- SDK parity blocker to resolve\n';
@@ -386,7 +386,7 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.record-session matches gsd-tools.cjs', async () => {
+    it('state.record-session matches fvgsd-tools.cjs', async () => {
       // Setup: add session fields to STATE.md body
       const statePath = join(tmpDir, '.planning', 'STATE.md');
       const withSession = MINIMAL_STATE + '\nLast session: 2026-05-01T00:00:00.000Z\n';
@@ -408,7 +408,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('state.signal-waiting matches gsd-tools.cjs', async () => {
+    it('state.signal-waiting matches fvgsd-tools.cjs', async () => {
       const argv = ['signal-waiting', '--type', 'decision_point', '--question', 'Which SDK approach?', '--phase', '10'];
       const gsdOutput = await captureGsdToolsOutput('state', argv, tmpDir);
       const registry = createRegistry();
@@ -421,10 +421,10 @@ describe('Golden file tests', () => {
       expect(typeof gsdData.path).toBe('string');
     });
 
-    it('state.signal-resume matches gsd-tools.cjs', async () => {
+    it('state.signal-resume matches fvgsd-tools.cjs', async () => {
       // First signal so resume has something to remove
-      const gsdDir2 = join(tmpdir(), `gsd-golden-state-resume-gsd-${Date.now()}`);
-      const sdkDir2 = join(tmpdir(), `gsd-golden-state-resume-sdk-${Date.now()}`);
+      const gsdDir2 = join(tmpdir(), `fvgsd-golden-state-resume-gsd-${Date.now()}`);
+      const sdkDir2 = join(tmpdir(), `fvgsd-golden-state-resume-sdk-${Date.now()}`);
       try {
         await setupMinimalStateProject(gsdDir2);
         await setupMinimalStateProject(sdkDir2);
@@ -443,7 +443,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('state.planned-phase matches gsd-tools.cjs', async () => {
+    it('state.planned-phase matches fvgsd-tools.cjs', async () => {
       const argv = ['planned-phase', '--phase', '11', '--plans', '4'];
       const gsdOutput = await captureGsdToolsOutput('state', argv, tmpDir);
       const statePath = join(tmpDir, '.planning', 'STATE.md');
@@ -453,9 +453,9 @@ describe('Golden file tests', () => {
       expect(sdkResult.data).toEqual(gsdOutput);
     });
 
-    it('state.milestone-switch matches gsd-tools.cjs', async () => {
-      const gsdDir2 = join(tmpdir(), `gsd-golden-state-ms-gsd-${Date.now()}`);
-      const sdkDir2 = join(tmpdir(), `gsd-golden-state-ms-sdk-${Date.now()}`);
+    it('state.milestone-switch matches fvgsd-tools.cjs', async () => {
+      const gsdDir2 = join(tmpdir(), `fvgsd-golden-state-ms-gsd-${Date.now()}`);
+      const sdkDir2 = join(tmpdir(), `fvgsd-golden-state-ms-sdk-${Date.now()}`);
       try {
         await setupMinimalStateProject(gsdDir2);
         await setupMinimalStateProject(sdkDir2);
@@ -475,13 +475,13 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('state.prune dry-run matches gsd-tools.cjs', async () => {
+    it('state.prune dry-run matches fvgsd-tools.cjs', async () => {
       // Both CJS and SDK read `Current Phase` from the STATE.md body text
       // (CJS: stateExtractField(content, 'Current Phase'), SDK: same).
       // MINIMAL_STATE has no `Current Phase:` field → both default to 0 →
       // cutoff = 0 - 3 = -3 ≤ 0 → "Only 0 phases — nothing to prune with --keep-recent 3".
-      const gsdDir2 = join(tmpdir(), `gsd-golden-prune-gsd-${Date.now()}`);
-      const sdkDir2 = join(tmpdir(), `gsd-golden-prune-sdk-${Date.now()}`);
+      const gsdDir2 = join(tmpdir(), `fvgsd-golden-prune-gsd-${Date.now()}`);
+      const sdkDir2 = join(tmpdir(), `fvgsd-golden-prune-sdk-${Date.now()}`);
       try {
         await setupMinimalStateProject(gsdDir2);
         await setupMinimalStateProject(sdkDir2);
@@ -497,12 +497,12 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('state.record-metric matches gsd-tools.cjs (no-metrics-section → SDK auto-creates like CJS)', async () => {
+    it('state.record-metric matches fvgsd-tools.cjs (no-metrics-section → SDK auto-creates like CJS)', async () => {
       // SDK now auto-creates the ## Performance Metrics section when absent,
       // matching CJS DWIM behavior. Test with no pre-seeded section to exercise
       // the auto-create path on both sides.
-      const gsdDir2 = join(tmpdir(), `gsd-golden-state-metric-gsd-${Date.now()}`);
-      const sdkDir2 = join(tmpdir(), `gsd-golden-state-metric-sdk-${Date.now()}`);
+      const gsdDir2 = join(tmpdir(), `fvgsd-golden-state-metric-gsd-${Date.now()}`);
+      const sdkDir2 = join(tmpdir(), `fvgsd-golden-state-metric-sdk-${Date.now()}`);
       try {
         // Use MINIMAL_STATE (no metrics section) — both sides should auto-create it.
         await mkdir(join(gsdDir2, '.planning', 'phases'), { recursive: true });
@@ -530,14 +530,14 @@ describe('Golden file tests', () => {
   describe('phase mutations (subprocess parity)', () => {
     async function withFreshPhaseProjects(): Promise<{ gsdDir: string; sdkDir: string }> {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-phase-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-phase-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-phase-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-phase-sdk-${suffix}`);
       await setupMinimalStateProject(gsdDir);
       await setupMinimalStateProject(sdkDir);
       return { gsdDir, sdkDir };
     }
 
-    it('phase.add matches gsd-tools.cjs', async () => {
+    it('phase.add matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhaseProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phase', ['add', 'Phase parity add'], gsdDir);
@@ -550,7 +550,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phase.add-batch matches gsd-tools.cjs', async () => {
+    it('phase.add-batch matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhaseProjects();
       try {
         const argv = ['add-batch', '--descriptions', '["Batch A","Batch B"]'];
@@ -564,7 +564,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phase.insert matches gsd-tools.cjs', async () => {
+    it('phase.insert matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhaseProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phase', ['insert', '10', 'Inserted parity phase'], gsdDir);
@@ -581,14 +581,14 @@ describe('Golden file tests', () => {
   describe('phases parity (subprocess parity)', () => {
     async function withFreshPhasesProjects(): Promise<{ gsdDir: string; sdkDir: string }> {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-phases-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-phases-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-phases-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-phases-sdk-${suffix}`);
       await setupPhasesFixture(gsdDir);
       await setupPhasesFixture(sdkDir);
       return { gsdDir, sdkDir };
     }
 
-    it('phases.list matches gsd-tools.cjs', async () => {
+    it('phases.list matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['list'], gsdDir);
@@ -601,7 +601,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phases.list --type plans matches gsd-tools.cjs', async () => {
+    it('phases.list --type plans matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['list', '--type', 'plans'], gsdDir);
@@ -614,7 +614,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phases.list --type summaries matches gsd-tools.cjs', async () => {
+    it('phases.list --type summaries matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['list', '--type', 'summaries'], gsdDir);
@@ -627,7 +627,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phases.list --phase 10 matches gsd-tools.cjs', async () => {
+    it('phases.list --phase 10 matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['list', '--phase', '10'], gsdDir);
@@ -640,7 +640,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phases.list --include-archived matches gsd-tools.cjs', async () => {
+    it('phases.list --include-archived matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['list', '--include-archived'], gsdDir);
@@ -653,7 +653,7 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phases.clear --confirm matches gsd-tools.cjs', async () => {
+    it('phases.clear --confirm matches fvgsd-tools.cjs', async () => {
       const { gsdDir, sdkDir } = await withFreshPhasesProjects();
       try {
         const gsdOutput = await captureGsdToolsOutput('phases', ['clear', '--confirm'], gsdDir);
@@ -668,7 +668,7 @@ describe('Golden file tests', () => {
   });
 
   describe('current-timestamp', () => {
-    it('SDK full format matches gsd-tools.cjs output structure', async () => {
+    it('SDK full format matches fvgsd-tools.cjs output structure', async () => {
       const gsdOutput = await captureGsdToolsOutput('current-timestamp', ['full'], PROJECT_DIR) as { timestamp: string };
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('current-timestamp', ['full'], PROJECT_DIR);
@@ -682,7 +682,7 @@ describe('Golden file tests', () => {
       expect(new Date(gsdOutput.timestamp).toISOString()).toBe(gsdOutput.timestamp);
     });
 
-    it('SDK date format matches gsd-tools.cjs output structure', async () => {
+    it('SDK date format matches fvgsd-tools.cjs output structure', async () => {
       const gsdOutput = await captureGsdToolsOutput('current-timestamp', ['date'], PROJECT_DIR) as { timestamp: string };
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('current-timestamp', ['date'], PROJECT_DIR);
@@ -695,7 +695,7 @@ describe('Golden file tests', () => {
       expect(sdkData.timestamp).toBe(gsdOutput.timestamp);
     });
 
-    it('SDK filename format matches gsd-tools.cjs (same subprocess round-trip)', async () => {
+    it('SDK filename format matches fvgsd-tools.cjs (same subprocess round-trip)', async () => {
       const gsdOutput = await captureGsdToolsOutput('current-timestamp', ['filename'], PROJECT_DIR);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('current-timestamp', ['filename'], PROJECT_DIR);
@@ -706,7 +706,7 @@ describe('Golden file tests', () => {
   // ─── Verification handler golden tests ──────────────────────────────────
 
   describe('verify.plan-structure', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testFile = '.planning/phases/09-foundation-and-test-infrastructure/09-01-PLAN.md';
       const gsdOutput = await captureGsdToolsOutput('verify', ['plan-structure', testFile], REPO_ROOT);
       const registry = createRegistry();
@@ -725,7 +725,7 @@ describe('Golden file tests', () => {
   };
 
   describe('validate.consistency', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('validate', ['consistency'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('validate.consistency', [], REPO_ROOT);
@@ -741,7 +741,7 @@ describe('Golden file tests', () => {
   });
 
   describe('validate.health', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('validate', ['health'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('validate.health', [], REPO_ROOT);
@@ -750,7 +750,7 @@ describe('Golden file tests', () => {
   });
 
   describe('validate.agents', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('validate', ['agents'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('validate.agents', [], REPO_ROOT);
@@ -761,7 +761,7 @@ describe('Golden file tests', () => {
   // ─── Init composition handler golden tests ─────────────────────────────
 
   describe('init.execute-phase', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('init', ['execute-phase', '9'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('init.execute-phase', ['9'], REPO_ROOT);
@@ -770,7 +770,7 @@ describe('Golden file tests', () => {
   });
 
   describe('init.plan-phase', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('init', ['plan-phase', '9'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('init.plan-phase', ['9'], REPO_ROOT);
@@ -779,7 +779,7 @@ describe('Golden file tests', () => {
   });
 
   describe('init.quick', () => {
-    it('SDK JSON matches gsd-tools.cjs except clock-derived quick fields', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs except clock-derived quick fields', async () => {
       const gsdOutput = await captureGsdToolsOutput('init', ['quick', 'test-task'], REPO_ROOT) as Record<string, unknown>;
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('init.quick', ['test-task'], REPO_ROOT);
@@ -791,7 +791,7 @@ describe('Golden file tests', () => {
   });
 
   describe('init.resume', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('init', ['resume'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('init.resume', [], REPO_ROOT);
@@ -800,7 +800,7 @@ describe('Golden file tests', () => {
   });
 
   describe('init.verify-work', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('init', ['verify-work', '9'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('init.verify-work', ['9'], REPO_ROOT);
@@ -809,7 +809,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.phase-completeness', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('verify', ['phase-completeness', '9'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('verify.phase-completeness', ['9'], REPO_ROOT);
@@ -820,7 +820,7 @@ describe('Golden file tests', () => {
   // ─── State validate / sync (read + dry-run mutation parity) ─────────────
 
   describe('state.validate', () => {
-    it('SDK output matches gsd-tools.cjs', async () => {
+    it('SDK output matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('state', ['validate'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('state.validate', [], REPO_ROOT);
@@ -829,7 +829,7 @@ describe('Golden file tests', () => {
   });
 
   describe('state.sync --verify', () => {
-    it('SDK dry-run output matches gsd-tools.cjs', async () => {
+    it('SDK dry-run output matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('state', ['sync', '--verify'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('state.sync', ['--verify'], REPO_ROOT);
@@ -843,9 +843,9 @@ describe('Golden file tests', () => {
     let tmpDir: string;
 
     beforeEach(async () => {
-      tmpDir = join(tmpdir(), `gsd-golden-dcf-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      tmpDir = join(tmpdir(), `fvgsd-golden-dcf-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await mkdir(join(tmpDir, 'agents'), { recursive: true });
-      await writeFile(join(tmpDir, 'gsd-file-manifest.json'), JSON.stringify({ version: 1, files: {} }), 'utf-8');
+      await writeFile(join(tmpDir, 'fvgsd-file-manifest.json'), JSON.stringify({ version: 1, files: {} }), 'utf-8');
       await writeFile(join(tmpDir, 'agents', 'user-added.md'), '# custom\n', 'utf-8');
     });
 
@@ -853,7 +853,7 @@ describe('Golden file tests', () => {
       await rm(tmpDir, { recursive: true, force: true });
     });
 
-    it('SDK output matches gsd-tools.cjs for manifest + custom file', async () => {
+    it('SDK output matches fvgsd-tools.cjs for manifest + custom file', async () => {
       const args = ['--config-dir', tmpDir];
       const gsdOutput = await captureGsdToolsOutput('detect-custom-files', args, PROJECT_DIR);
       const registry = createRegistry();
@@ -865,7 +865,7 @@ describe('Golden file tests', () => {
   // ─── docs-init ─────────────────────────────────────────────────────────
 
   describe('docs-init', () => {
-    it('SDK output matches gsd-tools.cjs (normalized existing_docs order)', async () => {
+    it('SDK output matches fvgsd-tools.cjs (normalized existing_docs order)', async () => {
       const gsdOutput = await captureGsdToolsOutput('docs-init', [], REPO_ROOT) as Record<string, unknown>;
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('docs-init', [], REPO_ROOT);
@@ -880,7 +880,7 @@ describe('Golden file tests', () => {
   // ─── intel.update (JSON parity with `intel.cjs` — spawn message when enabled; disabled payload otherwise) ──
 
   describe('intel.update', () => {
-    it('SDK JSON matches gsd-tools.cjs (`intel update`)', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs (`intel update`)', async () => {
       const gsdOutput = await captureGsdToolsOutput('intel', ['update'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('intel.update', [], REPO_ROOT);
@@ -891,7 +891,7 @@ describe('Golden file tests', () => {
   // ─── Phase 6: verify.* parity tests ────────────────────────────────────────
 
   describe('verify.references', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testPhase = '9';
       const gsdOutput = await captureGsdToolsOutput('verify', ['references', testPhase], REPO_ROOT);
       const registry = createRegistry();
@@ -901,7 +901,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.commits', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testPhase = '9';
       const gsdOutput = await captureGsdToolsOutput('verify', ['commits', testPhase], REPO_ROOT);
       const registry = createRegistry();
@@ -911,7 +911,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.artifacts', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testPhase = '9';
       const gsdOutput = await captureGsdToolsOutput('verify', ['artifacts', testPhase], REPO_ROOT);
       const registry = createRegistry();
@@ -921,7 +921,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.key-links', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testPhase = '9';
       const gsdOutput = await captureGsdToolsOutput('verify', ['key-links', testPhase], REPO_ROOT);
       const registry = createRegistry();
@@ -931,7 +931,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.schema-drift', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const testPhase = '9';
       const gsdOutput = await captureGsdToolsOutput('verify', ['schema-drift', testPhase], REPO_ROOT);
       const registry = createRegistry();
@@ -941,7 +941,7 @@ describe('Golden file tests', () => {
   });
 
   describe('verify.codebase-drift', () => {
-    it('SDK JSON matches gsd-tools.cjs', async () => {
+    it('SDK JSON matches fvgsd-tools.cjs', async () => {
       const gsdOutput = await captureGsdToolsOutput('verify', ['codebase-drift'], REPO_ROOT);
       const registry = createRegistry();
       const sdkResult = await registry.dispatch('verify.codebase-drift', [], REPO_ROOT);
@@ -952,10 +952,10 @@ describe('Golden file tests', () => {
   // ─── Phase 6: roadmap.* parity tests ───────────────────────────────────────
 
   describe('roadmap.annotate-dependencies', () => {
-    it('roadmap.annotate-dependencies matches gsd-tools.cjs on fixture', async () => {
+    it('roadmap.annotate-dependencies matches fvgsd-tools.cjs on fixture', async () => {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-roadmap-annotate-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-roadmap-annotate-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-roadmap-annotate-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-roadmap-annotate-sdk-${suffix}`);
       try {
         await setupPhasesFixture(gsdDir);
         await setupPhasesFixture(sdkDir);
@@ -973,10 +973,10 @@ describe('Golden file tests', () => {
   // ─── Phase 6: phase.* parity tests ────────────────────────────────────────
 
   describe('phase.next-decimal', () => {
-    it('phase.next-decimal matches gsd-tools.cjs on fixture', async () => {
+    it('phase.next-decimal matches fvgsd-tools.cjs on fixture', async () => {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-phase-nd-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-phase-nd-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-phase-nd-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-phase-nd-sdk-${suffix}`);
       try {
         await setupMinimalStateProject(gsdDir);
         await setupMinimalStateProject(sdkDir);
@@ -992,10 +992,10 @@ describe('Golden file tests', () => {
   });
 
   describe('phase.remove and phase.complete', () => {
-    it('phase.remove matches gsd-tools.cjs on fixture', async () => {
+    it('phase.remove matches fvgsd-tools.cjs on fixture', async () => {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-phase-rm-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-phase-rm-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-phase-rm-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-phase-rm-sdk-${suffix}`);
       try {
         await setupPhasesFixture(gsdDir);
         await setupPhasesFixture(sdkDir);
@@ -1010,10 +1010,10 @@ describe('Golden file tests', () => {
       }
     });
 
-    it('phase.complete matches gsd-tools.cjs on fixture', async () => {
+    it('phase.complete matches fvgsd-tools.cjs on fixture', async () => {
       const suffix = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const gsdDir = join(tmpdir(), `gsd-golden-phase-complete-gsd-${suffix}`);
-      const sdkDir = join(tmpdir(), `gsd-golden-phase-complete-sdk-${suffix}`);
+      const gsdDir = join(tmpdir(), `fvgsd-golden-phase-complete-gsd-${suffix}`);
+      const sdkDir = join(tmpdir(), `fvgsd-golden-phase-complete-sdk-${suffix}`);
       try {
         await setupPhasesFixture(gsdDir);
         await setupPhasesFixture(sdkDir);

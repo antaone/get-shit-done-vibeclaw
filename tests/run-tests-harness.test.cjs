@@ -8,7 +8,7 @@
 // Drives the harness through its subprocess seam — the same seam CI uses —
 // rather than importing internals. Each test seeds a temporary directory
 // with mock `.test.cjs` files (each one a trivial node:test no-op) and
-// runs the harness against it via GSD_TEST_DIR.
+// runs the harness against it via FVGSD_TEST_DIR.
 
 'use strict';
 
@@ -37,7 +37,7 @@ function seed(dir, names) {
 function runHarness(testDir, args = [], extraEnv = {}) {
   // Clear node:test parent-context env so the harness's child `node --test`
   // doesn't refuse to run with "recursive run() skipping running files".
-  const env = { ...process.env, GSD_TEST_DIR: testDir, ...extraEnv };
+  const env = { ...process.env, FVGSD_TEST_DIR: testDir, ...extraEnv };
   delete env.NODE_TEST_CONTEXT;
   return spawnSync(process.execPath, [HARNESS, ...args], {
     cwd: path.join(__dirname, '..'),
@@ -50,7 +50,7 @@ describe('run-tests.cjs harness (issue #3597)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-3597-harness-');
+    tmpDir = createTempDir('fvgsd-3597-harness-');
   });
 
   afterEach(() => {

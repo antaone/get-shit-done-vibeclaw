@@ -9,9 +9,9 @@ const {
 } = require('./installer-migration-authoring.cjs');
 const { platformWriteSync } = require('./shell-command-projection.cjs');
 
-const MANIFEST_NAME = 'gsd-file-manifest.json';
-const INSTALL_STATE_NAME = 'gsd-install-state.json';
-const INSTALL_MIGRATION_LOCK_NAME = 'gsd-install-migration.lock';
+const MANIFEST_NAME = 'fvgsd-file-manifest.json';
+const INSTALL_STATE_NAME = 'fvgsd-install-state.json';
+const INSTALL_MIGRATION_LOCK_NAME = 'fvgsd-install-migration.lock';
 const DEFAULT_MIGRATIONS_DIR = path.join(__dirname, 'installer-migrations');
 const DEFAULT_LOCK_TIMEOUT_MS = 30_000;
 const STRICT_JSON = Symbol('strict-json');
@@ -535,11 +535,11 @@ function applyInstallerMigrationPlan({ configDir, plan, now = () => new Date().t
 
   const appliedAt = now();
   const runId = migrationRunId(appliedAt);
-  const journalRelPath = path.posix.join('gsd-migration-journal', `${runId}.json`);
+  const journalRelPath = path.posix.join('fvgsd-migration-journal', `${runId}.json`);
   const journalPath = path.join(configDir, journalRelPath);
-  const rollbackRootRelPath = path.posix.join('gsd-migration-journal', `${runId}-rollback`);
+  const rollbackRootRelPath = path.posix.join('fvgsd-migration-journal', `${runId}-rollback`);
   const rollbackRoot = path.join(configDir, rollbackRootRelPath);
-  const backupRootRelPath = path.posix.join('gsd-migration-journal', `${runId}-backups`);
+  const backupRootRelPath = path.posix.join('fvgsd-migration-journal', `${runId}-backups`);
   const backupRoot = path.join(configDir, backupRootRelPath);
   const journal = {
     schemaVersion: 1,

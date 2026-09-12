@@ -3,9 +3,9 @@
 // runtime loads — testing text content tests the deployed contract.
 
 /**
- * Bug #2419: gsd-project-researcher agent type not found
+ * Bug #2419: fvgsd-project-researcher agent type not found
  *
- * When gsd-new-project spawns gsd-project-researcher subagents, it fails with
+ * When gsd-new-project spawns fvgsd-project-researcher subagents, it fails with
  * "agent type not found" if the user has a local-only install (agents in
  * .claude/agents/ of a different project, not the global ~/.claude/agents/).
  *
@@ -23,20 +23,20 @@ const NEW_PROJECT_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows'
 const NEW_MILESTONE_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'new-milestone.md');
 const AGENTS_DIR = path.join(__dirname, '..', 'agents');
 
-describe('gsd-project-researcher agent registration (#2419)', () => {
-  test('gsd-project-researcher.md exists in agents source dir', () => {
-    const agentFile = path.join(AGENTS_DIR, 'gsd-project-researcher.md');
+describe('fvgsd-project-researcher agent registration (#2419)', () => {
+  test('fvgsd-project-researcher.md exists in agents source dir', () => {
+    const agentFile = path.join(AGENTS_DIR, 'fvgsd-project-researcher.md');
     assert.ok(
       fs.existsSync(agentFile),
-      'agents/gsd-project-researcher.md must exist in the source agents directory'
+      'agents/fvgsd-project-researcher.md must exist in the source agents directory'
     );
   });
 
-  test('gsd-project-researcher.md has correct name in frontmatter', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-project-researcher.md'), 'utf-8');
+  test('fvgsd-project-researcher.md has correct name in frontmatter', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-project-researcher.md'), 'utf-8');
     assert.ok(
-      content.includes('name: gsd-project-researcher'),
-      'agents/gsd-project-researcher.md must have name: gsd-project-researcher in frontmatter'
+      content.includes('name: fvgsd-project-researcher'),
+      'agents/fvgsd-project-researcher.md must have name: fvgsd-project-researcher in frontmatter'
     );
   });
 
@@ -90,23 +90,23 @@ describe('gsd-project-researcher agent registration (#2419)', () => {
     );
   });
 
-  test('new-project.md lists gsd-project-researcher in available_agent_types', () => {
+  test('new-project.md lists fvgsd-project-researcher in available_agent_types', () => {
     const content = fs.readFileSync(NEW_PROJECT_PATH, 'utf-8');
     const agentTypesMatch = content.match(/<available_agent_types>([\s\S]*?)<\/available_agent_types>/);
     assert.ok(agentTypesMatch, 'new-project.md must have <available_agent_types> section');
     assert.ok(
-      agentTypesMatch[1].includes('gsd-project-researcher'),
-      'new-project.md <available_agent_types> must list gsd-project-researcher'
+      agentTypesMatch[1].includes('fvgsd-project-researcher'),
+      'new-project.md <available_agent_types> must list fvgsd-project-researcher'
     );
   });
 
-  test('new-milestone.md lists gsd-project-researcher in available_agent_types', () => {
+  test('new-milestone.md lists fvgsd-project-researcher in available_agent_types', () => {
     const content = fs.readFileSync(NEW_MILESTONE_PATH, 'utf-8');
     const agentTypesMatch = content.match(/<available_agent_types>([\s\S]*?)<\/available_agent_types>/);
     assert.ok(agentTypesMatch, 'new-milestone.md must have <available_agent_types> section');
     assert.ok(
-      agentTypesMatch[1].includes('gsd-project-researcher'),
-      'new-milestone.md <available_agent_types> must list gsd-project-researcher'
+      agentTypesMatch[1].includes('fvgsd-project-researcher'),
+      'new-milestone.md <available_agent_types> must list fvgsd-project-researcher'
     );
   });
 });

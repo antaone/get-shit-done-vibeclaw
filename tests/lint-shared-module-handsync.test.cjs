@@ -58,7 +58,7 @@ function runLintJson(extraArgs = []) {
 //     scripts/shared-module-handsync-allowlist.json  (custom allowlist)
 // ---------------------------------------------------------------------------
 function createFixture({ cjsName, tsName, tsInQuery = true, allowlistExtra = {} }) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lint-handsync-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-lint-handsync-'));
 
   const cjsDir = path.join(tmpDir, 'get-shit-done', 'bin', 'lib');
   fs.mkdirSync(cjsDir, { recursive: true });
@@ -278,7 +278,7 @@ describe('lint-shared-module-handsync: allowlist entry honored', () => {
   test('reports unallowlisted ts sibling when another ts sibling for the same cjs IS allowlisted (#3632)', () => {
     const cjsName = 'multi-sibling';
     const tsName = 'multi-sibling';
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lint-multi-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-lint-multi-'));
     try {
       const cjsDir = path.join(tmpDir, 'get-shit-done', 'bin', 'lib');
       fs.mkdirSync(cjsDir, { recursive: true });
@@ -340,7 +340,7 @@ describe('lint-shared-module-handsync: allowlist entry honored', () => {
   });
 
   test('generated .cjs files are excluded from pair detection', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lint-gen-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-lint-gen-'));
     try {
       const cjsDir = path.join(tmpDir, 'get-shit-done', 'bin', 'lib');
       fs.mkdirSync(cjsDir, { recursive: true });

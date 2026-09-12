@@ -3,7 +3,7 @@
 /**
  * CJS Command Router Adapter Module
  *
- * Compatibility routing for gsd-tools.cjs command families. Uses generated
+ * Compatibility routing for fvgsd-tools.cjs command families. Uses generated
  * command metadata for availability and small family-local argument shapers for
  * CJS handler calls.
  */

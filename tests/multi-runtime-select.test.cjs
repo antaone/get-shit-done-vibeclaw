@@ -10,7 +10,7 @@
  * instead of regexing bin/install.js source text.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');

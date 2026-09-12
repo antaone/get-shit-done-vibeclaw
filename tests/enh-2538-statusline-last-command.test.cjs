@@ -18,7 +18,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const statusline = require('../hooks/gsd-statusline.js');
+const statusline = require('../hooks/fvgsd/statusline.js');
 const { VALID_CONFIG_KEYS } = require('../get-shit-done/bin/lib/config-schema.cjs');
 
 function makeProject({ flag, transcript }) {
@@ -87,7 +87,7 @@ test('flag=true picks the MOST RECENT command when multiple are present', () => 
   const { dir, transcriptPath, cleanup } = makeProject({ flag: true, transcript });
   try {
     const out = statusline.renderStatusline(buildInput(dir, transcriptPath));
-    assert.ok(out.includes('last: /gsd-execute-phase'), `expected most-recent "gsd-execute-phase"; got: ${out}`);
+    assert.ok(out.includes('last: /gsd-execute-phase'), `expected most-recent "fvgsd-execute-phase"; got: ${out}`);
     assert.ok(!out.includes('last: /gsd-discuss-phase'), `should not show stale command; got: ${out}`);
   } finally {
     cleanup();

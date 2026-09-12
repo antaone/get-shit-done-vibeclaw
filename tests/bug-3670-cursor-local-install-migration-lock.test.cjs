@@ -1,6 +1,6 @@
 /**
  * Regression tests for issue #3670: --cursor --local install self-deadlocks
- * on gsd-install-migration.lock.
+ * on fvgsd-install-migration.lock.
  *
  * Root cause: On Windows, `fs.rmSync(lockPath, { force: true })` in the lock
  * release closure silently swallows EPERM errors that NTFS returns when a
@@ -63,7 +63,7 @@ const {
 // ---------------------------------------------------------------------------
 
 function createTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3670-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3670-'));
 }
 
 function cleanup(dir) {

@@ -17,7 +17,7 @@ body:
     id: version
     attributes:
       label: GSD Version
-      description: "Run: `npm list -g get-shit-done-cc` or check `npx get-shit-done-cc --version`"
+      description: "Run: `npm list -g fvgsd` or check `npx fvgsd --version`"
       placeholder: "e.g., 1.18.0"
     validations:
       required: true
@@ -78,8 +78,8 @@ body:
     attributes:
       label: Installation Method
       options:
-        - npx get-shit-done-cc@latest (fresh run)
-        - npm install -g get-shit-done-cc
+        - npx fvgsd@latest (fresh run)
+        - npm install -g fvgsd
         - Updated from a previous version
     validations:
       required: true
@@ -109,7 +109,7 @@ body:
       description: |
         Exact steps to reproduce the issue. Include the GSD command used.
       placeholder: |
-        1. Install GSD with `npx get-shit-done-cc@latest`
+        1. Install GSD with `npx fvgsd@latest`
         2. Select runtime: Claude Code
         3. Run `/gsd-init` with a new project
         4. Run `/gsd-plan`
@@ -215,9 +215,9 @@ body:
         Anything else — screenshots, screen recordings, related issues, or links.
 
         **Useful diagnostics to include (if applicable):**
-        - `npm list -g get-shit-done-cc` — confirms installed version
-        - `ls -la ~/.claude/get-shit-done/` — confirms installation files (Claude Code)
-        - `cat ~/.claude/get-shit-done/gsd-file-manifest.json` — file manifest for debugging install issues
+        - `npm list -g fvgsd` — confirms installed version
+        - `ls -la ~/.claude/fvgsd/` — confirms installation files (Claude Code)
+        - `cat ~/.claude/fvgsd/fvgsd-file-manifest.json` — file manifest for debugging install issues
         - `ls -la .planning/` — confirms planning directory state
 
         **⚠️ PII Warning:** File listings and manifests contain your home directory path. Replace your username with `REDACTED`.

@@ -105,46 +105,46 @@ describe('debug session management implementation', () => {
     );
   });
 
-  test('gsd-debugger contains structured reasoning checkpoint', () => {
+  test('fvgsd-debugger contains structured reasoning checkpoint', () => {
     const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents/gsd-debugger.md'),
+      path.join(process.cwd(), 'agents/fvgsd-debugger.md'),
       'utf8'
     );
-    assert.ok(content.includes('reasoning_checkpoint'), 'gsd-debugger.md must contain reasoning_checkpoint');
+    assert.ok(content.includes('reasoning_checkpoint'), 'fvgsd-debugger.md must contain reasoning_checkpoint');
   });
 
-  test('gsd-debugger contains TDD checkpoint mode', () => {
+  test('fvgsd-debugger contains TDD checkpoint mode', () => {
     const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents/gsd-debugger.md'),
+      path.join(process.cwd(), 'agents/fvgsd-debugger.md'),
       'utf8'
     );
-    assert.ok(content.includes('tdd_mode'), 'gsd-debugger.md must contain tdd_mode');
-    assert.ok(content.includes('TDD CHECKPOINT'), 'gsd-debugger.md must contain TDD CHECKPOINT return format');
+    assert.ok(content.includes('tdd_mode'), 'fvgsd-debugger.md must contain tdd_mode');
+    assert.ok(content.includes('TDD CHECKPOINT'), 'fvgsd-debugger.md must contain TDD CHECKPOINT return format');
   });
 
-  test('gsd-debugger contains delta debugging technique', () => {
+  test('fvgsd-debugger contains delta debugging technique', () => {
     const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents/gsd-debugger.md'),
+      path.join(process.cwd(), 'agents/fvgsd-debugger.md'),
       'utf8'
     );
-    assert.ok(content.includes('Delta Debugging'), 'gsd-debugger.md must contain Delta Debugging technique');
+    assert.ok(content.includes('Delta Debugging'), 'fvgsd-debugger.md must contain Delta Debugging technique');
   });
 
-  test('gsd-debugger contains security note about DATA_START', () => {
+  test('fvgsd-debugger contains security note about DATA_START', () => {
     const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents/gsd-debugger.md'),
+      path.join(process.cwd(), 'agents/fvgsd-debugger.md'),
       'utf8'
     );
-    assert.ok(content.includes('DATA_START'), 'gsd-debugger.md must contain DATA_START security reference');
+    assert.ok(content.includes('DATA_START'), 'fvgsd-debugger.md must contain DATA_START security reference');
   });
 });
 
 // Tests for #2148 and #2151
 describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
-  test('gsd-debugger ROOT CAUSE FOUND format includes specialist_hint field', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debugger.md'), 'utf8');
-    assert.ok(content.includes('specialist_hint'), 'gsd-debugger missing specialist_hint in ROOT CAUSE FOUND');
-    assert.ok(content.includes('swift_concurrency'), 'gsd-debugger missing specialist_hint derivation guidance');
+  test('fvgsd-debugger ROOT CAUSE FOUND format includes specialist_hint field', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debugger.md'), 'utf8');
+    assert.ok(content.includes('specialist_hint'), 'fvgsd-debugger missing specialist_hint in ROOT CAUSE FOUND');
+    assert.ok(content.includes('swift_concurrency'), 'fvgsd-debugger missing specialist_hint derivation guidance');
   });
 
   test('debug.md orchestrator has specialist skill dispatch step', () => {
@@ -159,36 +159,36 @@ describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
       'debug.md specialist dispatch prompt missing security boundaries');
   });
 
-  test('gsd-debug-session-manager agent exists with correct tools', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
-    assert.ok(content.includes('Agent'), 'gsd-debug-session-manager missing Agent tool');
-    assert.ok(content.includes('AskUserQuestion'), 'gsd-debug-session-manager missing AskUserQuestion tool');
+  test('fvgsd-debug-session-manager agent exists with correct tools', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debug-session-manager.md'), 'utf8');
+    assert.ok(content.includes('Agent'), 'fvgsd-debug-session-manager missing Agent tool');
+    assert.ok(content.includes('AskUserQuestion'), 'fvgsd-debug-session-manager missing AskUserQuestion tool');
   });
 
-  test('gsd-debug-session-manager spawns debugger with Agent() dispatcher', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
+  test('fvgsd-debug-session-manager spawns debugger with Agent() dispatcher', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debug-session-manager.md'), 'utf8');
     assert.ok(content.includes('\nAgent('), 'session manager must dispatch debugger with Agent(');
   });
 
-  test('gsd-debug-session-manager uses DATA_START/DATA_END for checkpoint responses', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
+  test('fvgsd-debug-session-manager uses DATA_START/DATA_END for checkpoint responses', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debug-session-manager.md'), 'utf8');
     assert.ok(content.includes('DATA_START') && content.includes('DATA_END'),
-      'gsd-debug-session-manager missing security boundaries on checkpoint responses');
+      'fvgsd-debug-session-manager missing security boundaries on checkpoint responses');
   });
 
-  test('gsd-debug-session-manager has compact summary output format', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
+  test('fvgsd-debug-session-manager has compact summary output format', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debug-session-manager.md'), 'utf8');
     assert.ok(content.includes('DEBUG SESSION COMPLETE'), 'session manager missing compact summary format');
   });
 
-  test('gsd-debug-session-manager includes anti-heredoc rule', () => {
-    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
+  test('fvgsd-debug-session-manager includes anti-heredoc rule', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'fvgsd-debug-session-manager.md'), 'utf8');
     assert.ok(content.includes('heredoc'), 'session manager missing anti-heredoc rule');
   });
 
-  test('debug.md delegates to gsd-debug-session-manager', () => {
+  test('debug.md delegates to fvgsd-debug-session-manager', () => {
     const content = fs.readFileSync(path.join(process.cwd(), 'get-shit-done/workflows/debug.md'), 'utf8');
-    assert.ok(content.includes('gsd-debug-session-manager'),
+    assert.ok(content.includes('fvgsd-debug-session-manager'),
       'debug.md does not delegate to session manager');
   });
 });

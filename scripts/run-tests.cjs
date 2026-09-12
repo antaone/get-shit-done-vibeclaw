@@ -94,8 +94,8 @@ function main() {
     process.exit(2);
   }
 
-  const testDir = process.env.GSD_TEST_DIR
-    ? process.env.GSD_TEST_DIR
+  const testDir = process.env.FVGSD_TEST_DIR
+    ? process.env.FVGSD_TEST_DIR
     : join(__dirname, '..', 'tests');
 
   const allFiles = readdirSync(testDir)

@@ -41,7 +41,7 @@ When a milestone completes:
 Before proceeding with milestone close, run the comprehensive open artifact audit.
 
 ```bash
-gsd-sdk query audit-open
+fvgsd-sdk query audit-open
 ```
 
 If the output contains open items (any section with count > 0):
@@ -51,13 +51,13 @@ Display the full audit report to the user.
 Then ask:
 ```
 These items are open. Choose an action:
-[R] Resolve — stop and fix items, then re-run /vgsd:complete-milestone
+[R] Resolve — stop and fix items, then re-run /fvgsd:complete-milestone
 [A] Acknowledge all — document as deferred and proceed with close
 [C] Cancel — exit without closing
 ```
 
 If user chooses [A] (Acknowledge):
-1. Re-run `gsd-sdk query audit-open --json` to get structured data
+1. Re-run `fvgsd-sdk query audit-open --json` to get structured data
 2. Write acknowledged items to STATE.md under `## Deferred Items` section:
    ```markdown
    ## Deferred Items
@@ -76,7 +76,7 @@ If user chooses [A] (Acknowledge):
 
 If output shows all clear (no open items): print `All artifact types clear.` and proceed.
 
-SECURITY: Audit JSON output is structured data from the `audit-open` query handler (same JSON contract as legacy `gsd-tools.cjs audit-open`) — validated and sanitized at source. When writing to STATE.md, item slugs and descriptions are sanitized via `sanitizeForDisplay()` before inclusion. Never inject raw user-supplied content into STATE.md without sanitization.
+SECURITY: Audit JSON output is structured data from the `audit-open` query handler (same JSON contract as legacy `fvgsd-tools.cjs audit-open`) — validated and sanitized at source. When writing to STATE.md, item slugs and descriptions are sanitized via `sanitizeForDisplay()` before inclusion. Never inject raw user-supplied content into STATE.md without sanitization.
 </step>
 
 <step name="verify_readiness">
@@ -84,7 +84,7 @@ SECURITY: Audit JSON output is structured data from the `audit-open` query handl
 **Use `roadmap analyze` for comprehensive readiness check:**
 
 ```bash
-ROADMAP=$(gsd-sdk query roadmap.analyze)
+ROADMAP=$(fvgsd-sdk query roadmap.analyze)
 ```
 
 This returns all phases with plan/summary counts and disk status. Use this to verify:
@@ -124,7 +124,7 @@ Requirements: {N}/{M} v1 requirements checked off
 
 MUST present 3 options:
 1. **Proceed anyway** — mark milestone complete with known gaps
-2. **Run audit first** — `/vgsd:audit-milestone` to assess gap severity
+2. **Run audit first** — `/fvgsd:audit-milestone` to assess gap severity
 3. **Abort** — return to development
 
 If user selects "Proceed anyway": note incomplete requirements in MILESTONES.md under `### Known Gaps` with REQ-IDs and descriptions.
@@ -199,7 +199,7 @@ Extract one-liners from SUMMARY.md files using summary-extract:
 # For each phase in milestone, extract one-liner
 for summary in .planning/phases/*-*/*-SUMMARY.md; do
   [ -e "$summary" ] || continue
-  gsd-sdk query summary-extract "$summary" --fields one_liner --pick one_liner
+  fvgsd-sdk query summary-extract "$summary" --fields one_liner --pick one_liner
 done
 ```
 
@@ -218,7 +218,7 @@ Key accomplishments for this milestone:
 
 <step name="create_milestone_entry">
 
-**Note:** MILESTONES.md entry is now created automatically by `gsd-sdk query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
+**Note:** MILESTONES.md entry is now created automatically by `fvgsd-sdk query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
 
 If additional details are needed (e.g., user-provided "Delivered" summary, git range, LOC stats), add them manually after the CLI creates the base entry.
 
@@ -409,10 +409,10 @@ Update `.planning/ROADMAP.md` — group completed milestone phases:
 
 <step name="archive_milestone">
 
-**Delegate archival to `gsd-sdk query milestone.complete`:**
+**Delegate archival to `fvgsd-sdk query milestone.complete`:**
 
 ```bash
-ARCHIVE=$(gsd-sdk query milestone.complete "v[X.Y]" --name "[Milestone Name]")
+ARCHIVE=$(fvgsd-sdk query milestone.complete "v[X.Y]" --name "[Milestone Name]")
 ```
 
 The CLI handles:
@@ -441,7 +441,7 @@ mv .planning/phases/{phase-dir} .planning/milestones/v[X.Y]-phases/
 ```
 Verify: `✅ Phase directories archived to .planning/milestones/v[X.Y]-phases/`
 
-If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/vgsd:cleanup` later to archive retroactively.
+If "Skip": Phase directories remain in `.planning/phases/` as raw execution history. Use `/fvgsd:cleanup` later to archive retroactively.
 
 After archival, the AI still handles:
 - Reorganizing ROADMAP.md with milestone grouping (requires judgment) — overwrite in place after extracting Backlog section
@@ -494,7 +494,7 @@ Append the extracted Backlog content verbatim to the end of the newly written RO
 **Safety commit — commit archive files BEFORE deleting any originals:**
 
 ```bash
-gsd-sdk query commit "chore: archive v[X.Y] milestone files" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md .planning/ROADMAP.md
+fvgsd-sdk query commit "chore: archive v[X.Y] milestone files" --files .planning/milestones/v[X.Y]-ROADMAP.md .planning/milestones/v[X.Y]-REQUIREMENTS.md .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md .planning/MILESTONES.md .planning/PROJECT.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
 This creates a durable checkpoint in git history. If anything fails after this point, the working tree can be reconstructed from git.
@@ -518,7 +518,7 @@ ls .planning/RETROSPECTIVE.md 2>/dev/null || true
 
 **If exists:** Read the file, append new milestone section before the "## Cross-Milestone Trends" section.
 
-**If doesn't exist:** Create from template at `~/.claude/get-shit-done/templates/retrospective.md`.
+**If doesn't exist:** Create from template at `~/.claude/fvgsd/templates/retrospective.md`.
 
 **Gather retrospective data:**
 
@@ -563,7 +563,7 @@ If the "## Cross-Milestone Trends" section exists, update the tables with new da
 
 **Commit:**
 ```bash
-gsd-sdk query commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
+fvgsd-sdk query commit "docs: update retrospective for v${VERSION}" --files .planning/RETROSPECTIVE.md
 ```
 
 </step>
@@ -597,7 +597,7 @@ Check branching strategy and offer merge options.
 Use `init milestone-op` for context, or load config directly:
 
 ```bash
-INIT=$(gsd-sdk query init.execute-phase "1")
+INIT=$(fvgsd-sdk query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -605,7 +605,7 @@ Extract `branching_strategy`, `phase_branch_template`, `milestone_branch_templat
 
 Detect base branch:
 ```bash
-BASE_BRANCH=$(gsd-sdk query config-get git.base_branch 2>/dev/null || echo "")
+BASE_BRANCH=$(fvgsd-sdk query config-get git.base_branch 2>/dev/null || echo "")
 if [ -z "$BASE_BRANCH" ] || [ "$BASE_BRANCH" = "null" ]; then
   BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
   BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -725,7 +725,7 @@ fi
 <step name="git_tag">
 
 <config-check>
-Read `git.create_tag` via `gsd-sdk query config-get git.create_tag 2>/dev/null || echo "true"`.
+Read `git.create_tag` via `fvgsd-sdk query config-get git.create_tag 2>/dev/null || echo "true"`.
 If the result is `false` → skip this step entirely and proceed to `git_commit_milestone`.
 </config-check>
 
@@ -793,7 +793,7 @@ Tag: v[X.Y]
 
 `/clear` then:
 
-`/vgsd:new-milestone`
+`/fvgsd:new-milestone`
 
 ---
 ```
@@ -849,6 +849,6 @@ Milestone completion is successful when:
 - [ ] Known gaps recorded in MILESTONES.md if user proceeded with incomplete requirements
 - [ ] RETROSPECTIVE.md updated with milestone section
 - [ ] Cross-milestone trends updated
-- [ ] User knows next step (/vgsd:new-milestone)
+- [ ] User knows next step (/fvgsd:new-milestone)
 
 </success_criteria>

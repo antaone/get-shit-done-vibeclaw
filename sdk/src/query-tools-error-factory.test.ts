@@ -19,7 +19,7 @@ describe('query tools error factory', () => {
   });
 
   it('maps timeout-like unknown errors to timeout classification', () => {
-    const err = toToolsErrorFromUnknown('state', ['load'], new Error('gsd-tools timed out after 50ms: state load'));
+    const err = toToolsErrorFromUnknown('state', ['load'], new Error('fvgsd-tools timed out after 50ms: state load'));
     expect(err.classification).toEqual({ kind: 'timeout', timeoutMs: 50 });
   });
 

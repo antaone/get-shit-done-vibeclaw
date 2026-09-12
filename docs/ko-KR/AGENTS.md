@@ -28,13 +28,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ## 에이전트 상세
 
-### gsd-project-researcher
+### fvgsd-project-researcher
 
 **역할:** 로드맵 생성 전에 도메인 생태계를 조사합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-new-project`, `/vgsd-new-milestone` |
+| **생성 주체** | `/fvgsd-new-project`, `/fvgsd-new-milestone` |
 | **병렬성** | 4개 인스턴스 (stack, features, architecture, pitfalls) |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -47,13 +47,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-phase-researcher
+### fvgsd-phase-researcher
 
 **역할:** 계획 수립 전에 특정 단계의 구현 방법을 조사합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-plan-phase` |
+| **생성 주체** | `/fvgsd-plan-phase` |
 | **병렬성** | 4개 인스턴스 (project-researcher와 동일한 집중 영역) |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -66,13 +66,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-ui-researcher
+### fvgsd-ui-researcher
 
 **역할:** 프론트엔드 단계를 위한 UI 디자인 계약서를 생성합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-ui-phase` |
+| **생성 주체** | `/fvgsd-ui-phase` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Sonnet |
@@ -87,7 +87,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-assumptions-analyzer
+### fvgsd-assumptions-analyzer
 
 **역할:** 단계에 대한 코드베이스를 심층 분석하고 증거, 신뢰 수준, 오류 시 결과를 포함한 구조화된 가정을 반환합니다.
 
@@ -110,7 +110,7 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-advisor-researcher
+### fvgsd-advisor-researcher
 
 **역할:** discuss-phase 어드바이저 모드에서 단일 회색 지대 결정을 조사하고 구조화된 비교 표를 반환합니다.
 
@@ -132,13 +132,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-research-synthesizer
+### fvgsd-research-synthesizer
 
 **역할:** 병렬 조사자들의 출력을 통합된 요약으로 합칩니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-new-project` (4개 조사자 완료 후) |
+| **생성 주체** | `/fvgsd-new-project` (4개 조사자 완료 후) |
 | **병렬성** | 단일 인스턴스 (조사자 이후 순차적) |
 | **도구** | Read, Write, Bash |
 | **모델 (balanced)** | Sonnet |
@@ -147,13 +147,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-planner
+### fvgsd-planner
 
 **역할:** 작업 분류, 의존성 분석, 목표 역방향 검증을 포함한 실행 가능한 단계 계획을 생성합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-plan-phase`, `/vgsd-quick` |
+| **생성 주체** | `/fvgsd-plan-phase`, `/fvgsd-quick` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **모델 (balanced)** | Opus |
@@ -169,13 +169,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-roadmapper
+### fvgsd-roadmapper
 
 **역할:** 단계 분류 및 요구 사항 매핑을 포함한 프로젝트 로드맵을 생성합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-new-project` |
+| **생성 주체** | `/fvgsd-new-project` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -190,13 +190,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-executor
+### fvgsd-executor
 
 **역할:** 원자적 커밋, 이탈 처리, 체크포인트 프로토콜로 GSD 계획을 실행합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-execute-phase`, `/vgsd-quick` |
+| **생성 주체** | `/fvgsd-execute-phase`, `/fvgsd-quick` |
 | **병렬성** | 복수 (웨이브 내 병렬, 웨이브 간 순차적) |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -213,13 +213,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-plan-checker
+### fvgsd-plan-checker
 
 **역할:** 실행 전에 계획이 단계 목표를 달성할 수 있는지 검증합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-plan-phase` (검증 루프, 최대 3회 반복) |
+| **생성 주체** | `/fvgsd-plan-phase` (검증 루프, 최대 3회 반복) |
 | **병렬성** | 단일 인스턴스 (반복적) |
 | **도구** | Read, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -238,13 +238,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-integration-checker
+### fvgsd-integration-checker
 
 **역할:** 단계 간 통합 및 엔드투엔드 흐름을 검증합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-audit-milestone` |
+| **생성 주체** | `/fvgsd-audit-milestone` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -253,13 +253,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-ui-checker
+### fvgsd-ui-checker
 
 **역할:** 품질 차원에 대해 UI-SPEC.md 디자인 계약서를 검증합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-ui-phase` (검증 루프, 최대 2회 반복) |
+| **생성 주체** | `/fvgsd-ui-phase` (검증 루프, 최대 2회 반복) |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Bash, Glob, Grep |
 | **모델 (balanced)** | Sonnet |
@@ -268,13 +268,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-verifier
+### fvgsd-verifier
 
 **역할:** 목표 역방향 분석을 통해 단계 목표 달성 여부를 검증합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-execute-phase` (모든 executor 완료 후) |
+| **생성 주체** | `/fvgsd-execute-phase` (모든 executor 완료 후) |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -284,17 +284,17 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 **핵심 동작.**
 - 작업 완료 여부가 아닌 단계 목표에 대해 코드베이스를 확인합니다
 - 구체적인 증거를 포함한 PASS/FAIL 결과를 제공합니다
-- `/vgsd-verify-work`가 처리할 문제를 기록합니다
+- `/fvgsd-verify-work`가 처리할 문제를 기록합니다
 
 ---
 
-### gsd-nyquist-auditor
+### fvgsd-nyquist-auditor
 
 **역할:** 테스트를 생성하여 Nyquist 검증 누락을 채웁니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-validate-phase` |
+| **생성 주체** | `/fvgsd-validate-phase` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -307,13 +307,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-ui-auditor
+### fvgsd-ui-auditor
 
 **역할:** 구현된 프론트엔드 코드에 대한 사후 6기둥 시각적 감사를 수행합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-ui-review` |
+| **생성 주체** | `/fvgsd-ui-review` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read, Write, Bash, Grep, Glob |
 | **모델 (balanced)** | Sonnet |
@@ -330,13 +330,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-codebase-mapper
+### fvgsd-codebase-mapper
 
 **역할:** 코드베이스를 탐색하고 구조화된 분석 문서를 작성합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-map-codebase` |
+| **생성 주체** | `/fvgsd-map-codebase` |
 | **병렬성** | 4개 인스턴스 (tech, architecture, quality, concerns) |
 | **도구** | Read, Bash, Grep, Glob, Write |
 | **모델 (balanced)** | Haiku |
@@ -350,13 +350,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-debugger
+### fvgsd-debugger
 
 **역할:** 영구 상태를 활용한 과학적 방법으로 버그를 조사합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-debug`, `/vgsd-verify-work` (실패 시) |
+| **생성 주체** | `/fvgsd-debug`, `/fvgsd-verify-work` (실패 시) |
 | **병렬성** | 단일 인스턴스 (대화형) |
 | **도구** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **모델 (balanced)** | Sonnet |
@@ -375,13 +375,13 @@ GSD는 멀티 에이전트 아키텍처를 사용합니다. 가벼운 오케스�
 
 ---
 
-### gsd-user-profiler
+### fvgsd-user-profiler
 
 **역할:** 8가지 행동 차원에 걸쳐 세션 메시지를 분석하여 점수화된 개발자 프로필을 생성합니다.
 
 | 속성 | 값 |
 |----------|-------|
-| **생성 주체** | `/vgsd-profile-user` |
+| **생성 주체** | `/fvgsd-profile-user` |
 | **병렬성** | 단일 인스턴스 |
 | **도구** | Read |
 | **모델 (balanced)** | Sonnet |

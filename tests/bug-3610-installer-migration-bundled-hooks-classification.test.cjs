@@ -1,7 +1,7 @@
 /**
- * Regression test for #3610: fresh `npx get-shit-done-cc@latest --codex`
+ * Regression test for #3610: fresh `npx fvgsd@latest --codex`
  * hard-aborts when the target ~/.codex/hooks/ contains the bundled GSD
- * hook files (`gsd-check-update-worker.js`, `gsd-prompt-guard.js`, …)
+ * hook files (`fvgsd/check-update-worker.js`, `fvgsd/prompt-guard.js`, …)
  * left over from a previous version. The installer-migration report
  * classifies them as "GSD-looking file is not proven manifest-managed
  * and needs explicit user choice" and `assertInstallerMigrationsUnblocked`
@@ -21,7 +21,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -47,7 +47,7 @@ function writeFile(root, relPath, content) {
 
 function writeManifest(root, files) {
   fs.writeFileSync(
-    path.join(root, 'gsd-file-manifest.json'),
+    path.join(root, 'fvgsd-file-manifest.json'),
     JSON.stringify(
       {
         version: '1.41.2',
@@ -66,24 +66,24 @@ function writeManifest(root, files) {
 // abort. Each is a real `hooks/gsd-*` file shipped under hooks/ in the npm
 // package (verified by `ls hooks/`).
 const BUNDLED_HOOK_RELPATHS = [
-  'hooks/gsd-check-update-worker.js',
-  'hooks/gsd-check-update.js',
-  'hooks/gsd-context-monitor.js',
-  'hooks/gsd-phase-boundary.sh',
-  'hooks/gsd-prompt-guard.js',
-  'hooks/gsd-read-guard.js',
-  'hooks/gsd-read-injection-scanner.js',
-  'hooks/gsd-session-state.sh',
-  'hooks/gsd-statusline.js',
-  'hooks/gsd-update-banner.js',
-  'hooks/gsd-validate-commit.sh',
-  'hooks/gsd-workflow-guard.js',
+  'hooks/fvgsd/check-update-worker.js',
+  'hooks/fvgsd/check-update.js',
+  'hooks/fvgsd/context-monitor.js',
+  'hooks/fvgsd/phase-boundary.sh',
+  'hooks/fvgsd/prompt-guard.js',
+  'hooks/fvgsd/read-guard.js',
+  'hooks/fvgsd/read-injection-scanner.js',
+  'hooks/fvgsd/session-state.sh',
+  'hooks/fvgsd/statusline.js',
+  'hooks/fvgsd/update-banner.js',
+  'hooks/fvgsd/validate-commit.sh',
+  'hooks/fvgsd/workflow-guard.js',
 ];
 
 describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () => {
   test('classifies hooks/gsd-*.js as bundled-gsd-hook → remove', () => {
     const result = classifyPromptUserAction({
-      relPath: 'hooks/gsd-prompt-guard.js',
+      relPath: 'hooks/fvgsd/prompt-guard.js',
     });
     assert.ok(result, 'classifier returned null for a bundled GSD hook (.js)');
     assert.strictEqual(result.category, 'bundled-gsd-hook');
@@ -96,7 +96,7 @@ describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () 
 
   test('classifies hooks/gsd-*.sh as bundled-gsd-hook → remove', () => {
     const result = classifyPromptUserAction({
-      relPath: 'hooks/gsd-validate-commit.sh',
+      relPath: 'hooks/fvgsd/validate-commit.sh',
     });
     assert.ok(result);
     assert.strictEqual(result.category, 'bundled-gsd-hook');
@@ -117,8 +117,8 @@ describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () 
     );
   });
 
-  test('does NOT classify deeper paths under hooks/gsd-* (e.g. hooks/lib/) as bundled-gsd-hook', () => {
-    // The bundled GSD distribution has hooks/lib/ (helper modules). Those
+  test('does NOT classify deeper paths under hooks/gsd-* (e.g. hooks/fvgsd/lib/) as bundled-gsd-hook', () => {
+    // The bundled GSD distribution has hooks/fvgsd/lib/ (helper modules). Those
     // are managed differently — verify the classifier limits itself to
     // top-level hooks/gsd-<name>.<ext> files, not nested directories.
     const result = classifyPromptUserAction({
@@ -132,7 +132,7 @@ describe('bug #3610: fresh upgrade with leftover bundled hooks does not throw', 
   let configDir;
 
   beforeEach(() => {
-    configDir = createTempDir('gsd-3610-');
+    configDir = createTempDir('fvgsd-3610-');
   });
 
   afterEach(() => {
@@ -140,7 +140,7 @@ describe('bug #3610: fresh upgrade with leftover bundled hooks does not throw', 
   });
 
   test('end-to-end: 12 leftover bundled hooks + empty manifest → resolver clears all blockers', () => {
-    // Recreate the reporter's environment: 12 bundled `gsd-*` hook files
+    // Recreate the reporter's environment: 12 bundled `fvgsd-*` hook files
     // present at target, but the manifest has not yet seeded their baseline
     // entries (first-time-baseline scan).
     for (const rel of BUNDLED_HOOK_RELPATHS) {

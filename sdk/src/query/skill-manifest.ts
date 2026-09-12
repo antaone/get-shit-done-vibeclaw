@@ -49,7 +49,7 @@ export interface SkillManifestJson {
 }
 
 /**
- * Scan canonical skill roots and build manifest JSON (same shape as gsd-tools.cjs).
+ * Scan canonical skill roots and build manifest JSON (same shape as fvgsd-tools.cjs).
  */
 export function buildSkillManifest(cwd: string, skillsDir: string | null = null): SkillManifestJson {
   const canonicalRoots = skillsDir
@@ -180,7 +180,7 @@ export function buildSkillManifest(cwd: string, skillsDir: string | null = null)
     return rootCmp !== 0 ? rootCmp : a.name.localeCompare(b.name);
   });
 
-  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('gsd-'));
+  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('fvgsd-'));
 
   return {
     skills,
@@ -197,7 +197,7 @@ export function buildSkillManifest(cwd: string, skillsDir: string | null = null)
 }
 
 /**
- * `skill-manifest` — same flags as gsd-tools: `--skills-dir`, `--write`.
+ * `skill-manifest` — same flags as fvgsd-tools: `--skills-dir`, `--write`.
  */
 export const skillManifest: QueryHandler = async (args, projectDir) => {
   const skillsDirIdx = args.indexOf('--skills-dir');

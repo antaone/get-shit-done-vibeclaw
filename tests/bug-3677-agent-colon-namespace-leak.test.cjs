@@ -34,7 +34,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -117,39 +117,39 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
     const inputBody = [
       '# Agent prose',
       '',
-      'Run `/vgsd:execute-phase 1 --tdd` to execute the phase.',
-      'Then `/vgsd:verify-work 1` to verify.',
-      'Reference unchanged: `gsd-sdk query commit` (this is a CLI binary, not a slash command).',
+      'Run `/fvgsd:execute-phase 1 --tdd` to execute the phase.',
+      'Then `/fvgsd:verify-work 1` to verify.',
+      'Reference unchanged: `fvgsd-sdk query commit` (this is a CLI binary, not a slash command).',
     ].join('\n');
-    // Only known commands from commands/gsd/*.md should be rewritten; gsd-sdk
+    // Only known commands from commands/gsd/*.md should be rewritten; fvgsd-sdk
     // (a binary) must stay untouched.
     const cmdNames = ['execute-phase', 'verify-work', 'plan-phase'];
 
     test('C1: claude — rewrites both colon refs to hyphen', () => {
       const out = normalizeAgentBodyForRuntime(inputBody, 'claude', cmdNames);
-      assert.ok(out.includes('/vgsd-execute-phase'), 'execute-phase must be rewritten to hyphen form');
-      assert.ok(out.includes('/vgsd-verify-work'), 'verify-work must be rewritten to hyphen form');
-      assert.ok(!out.includes('/vgsd:execute-phase'), 'colon form for execute-phase must be gone');
-      assert.ok(!out.includes('/vgsd:verify-work'), 'colon form for verify-work must be gone');
-      assert.ok(out.includes('gsd-sdk query commit'), 'gsd-sdk (CLI binary) must not be touched');
+      assert.ok(out.includes('/fvgsd-execute-phase'), 'execute-phase must be rewritten to hyphen form');
+      assert.ok(out.includes('/fvgsd-verify-work'), 'verify-work must be rewritten to hyphen form');
+      assert.ok(!out.includes('/fvgsd:execute-phase'), 'colon form for execute-phase must be gone');
+      assert.ok(!out.includes('/fvgsd:verify-work'), 'colon form for verify-work must be gone');
+      assert.ok(out.includes('fvgsd-sdk query commit'), 'fvgsd-sdk (CLI binary) must not be touched');
     });
 
     test('C2: qwen — same transform applies', () => {
       const out = normalizeAgentBodyForRuntime(inputBody, 'qwen', cmdNames);
-      assert.ok(out.includes('/vgsd-execute-phase'));
-      assert.ok(!out.includes('/vgsd:execute-phase'));
+      assert.ok(out.includes('/fvgsd-execute-phase'));
+      assert.ok(!out.includes('/fvgsd:execute-phase'));
     });
 
     test('C3: hermes — same transform applies', () => {
       const out = normalizeAgentBodyForRuntime(inputBody, 'hermes', cmdNames);
-      assert.ok(out.includes('/vgsd-execute-phase'));
-      assert.ok(!out.includes('/vgsd:execute-phase'));
+      assert.ok(out.includes('/fvgsd-execute-phase'));
+      assert.ok(!out.includes('/fvgsd:execute-phase'));
     });
 
     test('C4: gemini — colon refs preserved (intentional namespace)', () => {
       const out = normalizeAgentBodyForRuntime(inputBody, 'gemini', cmdNames);
-      assert.ok(out.includes('/vgsd:execute-phase'), 'Gemini intentionally uses colon namespace; do not rewrite');
-      assert.ok(!out.includes('/vgsd-execute-phase'), 'Gemini agents must NOT have hyphen form');
+      assert.ok(out.includes('/fvgsd:execute-phase'), 'Gemini intentionally uses colon namespace; do not rewrite');
+      assert.ok(!out.includes('/fvgsd-execute-phase'), 'Gemini agents must NOT have hyphen form');
     });
 
     test('C5: self-converting runtime (copilot) — body returned unchanged at this layer', () => {
@@ -163,12 +163,12 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
   describe('D — sanity check: the underlying transform actually works against real cmd names', () => {
     test('D1: transformContentToHyphen rewrites /gsd:<cmd> to /gsd-<cmd> for known cmds only', () => {
       const out = transformContentToHyphen(
-        'A /vgsd:execute-phase B /gsd:unknown-cmd C /gsd-sdk D',
+        'A /fvgsd:execute-phase B /gsd:unknown-cmd C /fvgsd-sdk D',
         ['execute-phase'],
       );
-      assert.ok(out.includes('/vgsd-execute-phase'), 'known cmd rewritten');
+      assert.ok(out.includes('/fvgsd-execute-phase'), 'known cmd rewritten');
       assert.ok(out.includes('/gsd:unknown-cmd'), 'unknown cmd preserved (longest-first matcher only rewrites registered names)');
-      assert.ok(out.includes('/gsd-sdk'), 'gsd-sdk (binary, not slash command) preserved');
+      assert.ok(out.includes('/fvgsd-sdk'), 'fvgsd-sdk (binary, not slash command) preserved');
     });
   });
 
@@ -177,7 +177,7 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
   //
   // #3681 proposed the same allow-list fix independently and was closed by its
   // author in favor of this PR. Its test file contributed two coverage angles
-  // worth keeping: real-source efficacy against every `agents/vgsd-*.md` (the
+  // worth keeping: real-source efficacy against every `agents/fvgsd-*.md` (the
   // shape of bug that pure-function tests miss) and idempotence-via-fixpoint
   // (guards against double-rewrite on reinstall). Credit: johnzilla.
   // ---------------------------------------------------------------------------
@@ -199,11 +199,11 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
       assert.ok(cmdNames.includes('plan-phase'));
     });
 
-    test('E1: every agents/vgsd-*.md transforms clean — no roster colon refs survive', () => {
+    test('E1: every agents/fvgsd-*.md transforms clean — no roster colon refs survive', () => {
       const agentsDir = path.join(REPO_ROOT, 'agents');
       const offenders = [];
       for (const f of fs.readdirSync(agentsDir)) {
-        if (!f.startsWith('gsd-') || !f.endsWith('.md')) continue;
+        if (!f.startsWith('fvgsd-') || !f.endsWith('.md')) continue;
         const src = fs.readFileSync(path.join(agentsDir, f), 'utf-8');
         const out = transformContentToHyphen(src, cmdNames);
         if (roster().test(out)) offenders.push(f);
@@ -216,7 +216,7 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
     });
 
     test('E2: idempotent — transform of already-hyphenated input is a no-op', () => {
-      const input = 'use /vgsd-plan-phase next, then /vgsd-execute-phase';
+      const input = 'use /fvgsd-plan-phase next, then /fvgsd-execute-phase';
       assert.strictEqual(
         transformContentToHyphen(input, cmdNames),
         input,
@@ -233,10 +233,10 @@ describe('bug #3677 — agent body colon-namespace leak (Claude / Qwen / Hermes)
 
     test('E4: rewrites bare `gsd:<cmd>` shorthand (no leading slash)', () => {
       const out = transformContentToHyphen(
-        'Spawned by the vgsd:execute-phase orchestrator.',
+        'Spawned by the fvgsd:execute-phase orchestrator.',
         cmdNames,
       );
-      assert.strictEqual(out, 'Spawned by the vgsd-execute-phase orchestrator.');
+      assert.strictEqual(out, 'Spawned by the fvgsd-execute-phase orchestrator.');
     });
   });
 });

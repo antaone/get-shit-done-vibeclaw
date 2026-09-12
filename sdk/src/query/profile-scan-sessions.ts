@@ -1,6 +1,6 @@
 /**
  * Session scan — parity with `get-shit-done/bin/lib/profile-pipeline.cjs` `cmdScanSessions`.
- * Used by `scanSessions` query handler so SDK JSON matches `gsd-tools.cjs scan-sessions --json`.
+ * Used by `scanSessions` query handler so SDK JSON matches `fvgsd-tools.cjs scan-sessions --json`.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';

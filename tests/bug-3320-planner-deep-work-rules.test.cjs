@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const PLANNER_AGENT = path.join(ROOT, 'agents', 'gsd-planner.md');
+const PLANNER_AGENT = path.join(ROOT, 'agents', 'fvgsd-planner.md');
 const PLAN_PHASE_WORKFLOW = path.join(ROOT, 'get-shit-done', 'workflows', 'plan-phase.md');
 
 function read(relativePath) {
@@ -31,12 +31,12 @@ describe('bug #3320 planner action contract', () => {
     assert.match(
       planner,
       /NEVER place fenced code blocks \(```\) inside `<action>`/,
-      'gsd-planner.md must explicitly forbid fenced implementation code in <action>'
+      'fvgsd-planner.md must explicitly forbid fenced implementation code in <action>'
     );
     assert.match(
       planner,
       /Code excerpts belong in `<read_first>` source files or referenced context/,
-      'gsd-planner.md must route code excerpts to context/read-first material'
+      'fvgsd-planner.md must route code excerpts to context/read-first material'
     );
   });
 

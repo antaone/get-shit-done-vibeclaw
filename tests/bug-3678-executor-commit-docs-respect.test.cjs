@@ -5,16 +5,16 @@
 // `source-text-is-the-product` exception covers.
 //
 // The remaining assertions (B1, B2, B3) are behavioral — they invoke
-// `gsd-tools commit` against a temp project and assert on its structured
+// `fvgsd-tools commit` against a temp project and assert on its structured
 // JSON return envelope plus the git index state. No raw-text matching on
 // rendered output.
 
 /**
- * Regression for #3678 — gsd-executor force-commits .planning/ files when
+ * Regression for #3678 — fvgsd-executor force-commits .planning/ files when
  * commit_docs is false.
  *
- * Root cause: the executor agent prompt (agents/gsd-executor.md) tells the
- * agent to call `gsd-sdk query commit "docs(...)" --files .planning/...`
+ * Root cause: the executor agent prompt (agents/fvgsd-executor.md) tells the
+ * agent to call `fvgsd-sdk query commit "docs(...)" --files .planning/...`
  * in the per-plan final_commit block, but the prompt says nothing about
  * what to do when the SDK returns `{committed: false, skipped: true,
  * reason: 'skipped_commit_docs_false'}`. With no explicit instruction, the
@@ -47,7 +47,7 @@ const { createTempGitProject, cleanup, runGsdTools } = require('./helpers.cjs');
 // `.git/` directory before running tests.
 const REPO_ROOT = path.resolve(__dirname, '..');
 
-const EXECUTOR_AGENT = path.join(REPO_ROOT, 'agents', 'gsd-executor.md');
+const EXECUTOR_AGENT = path.join(REPO_ROOT, 'agents', 'fvgsd-executor.md');
 
 // Frozen reason enum mirrors the SDK source — keep in sync with
 // `cmdCommit` in get-shit-done/bin/lib/commands.cjs.
@@ -74,8 +74,8 @@ describe('bug #3678 — executor must respect commit_docs:false', () => {
       const mentionsSkippedTrue = /skipped:\s*true/i.test(body);
       assert.ok(
         mentionsSkipReason || mentionsCommittedFalse || mentionsSkippedTrue,
-        'agents/gsd-executor.md must teach the agent how to recognize the '
-        + 'skipped envelope from `gsd-sdk query commit` (one of: '
+        'agents/fvgsd-executor.md must teach the agent how to recognize the '
+        + 'skipped envelope from `fvgsd-sdk query commit` (one of: '
         + `'${COMMIT_REASON.SKIPPED_COMMIT_DOCS_FALSE}', 'committed: false', `
         + "'skipped: true').",
       );
@@ -90,7 +90,7 @@ describe('bug #3678 — executor must respect commit_docs:false', () => {
       const forbidsFallbackText = /(do not|must not|never)\s+(fall back|fallback|use .*git add|run .*git commit|force[- ]?add)/i;
       assert.ok(
         forbidsFallbackText.test(body),
-        'agents/gsd-executor.md must contain an explicit "do not fall back to '
+        'agents/fvgsd-executor.md must contain an explicit "do not fall back to '
         + 'raw git" instruction tied to the commit_docs:false / skipped envelope. '
         + 'Without it, the agent improvises raw `git add` / `git add -f` to '
         + 'fulfill its "complete plan" goal.',
@@ -128,7 +128,7 @@ describe('bug #3678 — executor must respect commit_docs:false', () => {
         'commit "docs(test): noop" --files .planning/STATE.md',
         tmpDir,
       );
-      assert.ok(result.success, `gsd-tools commit should exit 0 even when skipped: ${result.error || ''}`);
+      assert.ok(result.success, `fvgsd-tools commit should exit 0 even when skipped: ${result.error || ''}`);
       const envelope = JSON.parse(result.output);
       assert.strictEqual(envelope.committed, false, 'committed must be false when commit_docs is false');
       assert.strictEqual(
@@ -182,7 +182,7 @@ describe('bug #3678 — executor must respect commit_docs:false', () => {
       .find(line => /Final metadata commit made/.test(line));
     assert.ok(
       checklistLine,
-      'agents/gsd-executor.md must contain a "Final metadata commit made" checklist line',
+      'agents/fvgsd-executor.md must contain a "Final metadata commit made" checklist line',
     );
     assert.ok(
       checklistLine.includes('Final metadata commit'),

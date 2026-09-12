@@ -8,21 +8,21 @@
  * Bug #3751: resolveAgentsDir() misses repo-local .claude/agents on --local installs.
  *
  * `resolveAgentsDir()` in sdk/src/query/helpers.ts checks only:
- *   1. GSD_AGENTS_DIR (explicit override)
+ *   1. FVGSD_AGENTS_DIR (explicit override)
  *   2. <getRuntimeConfigDir(runtime)>/agents  (global, e.g. ~/.claude/agents)
  *
  * For Claude Code `--local` installs (agents land in ./.claude/agents), the
- * repo-local path is never probed when GSD_AGENTS_DIR is unset and the global
+ * repo-local path is never probed when FVGSD_AGENTS_DIR is unset and the global
  * directory is absent or empty.  Both init.ts:checkAgentsInstalled and
  * init-complex.ts:initNewProject call resolveAgentsDir() and inherit this gap.
  *
  * Fix contract:
  *   resolveAgentsDir(runtime, projectDir) must return <projectDir>/.claude/agents
- *   when GSD_AGENTS_DIR is unset AND the global runtime agents dir is absent/empty,
+ *   when FVGSD_AGENTS_DIR is unset AND the global runtime agents dir is absent/empty,
  *   AND a repo-local .claude/agents directory exists.
  *
  * Precedence (post-fix):
- *   GSD_AGENTS_DIR > global runtime dir (non-empty) > <projectDir>/.claude/agents
+ *   FVGSD_AGENTS_DIR > global runtime dir (non-empty) > <projectDir>/.claude/agents
  */
 
 const { test, describe, before, after, beforeEach, afterEach } = require('node:test');
@@ -94,20 +94,20 @@ describe('#3751: resolveAgentsDir() repo-local fallback — structural contracts
     );
   });
 
-  // ─── Contract 4: GSD_AGENTS_DIR still short-circuits both paths ─────────
-  test('resolveAgentsDir still checks GSD_AGENTS_DIR first', () => {
+  // ─── Contract 4: FVGSD_AGENTS_DIR still short-circuits both paths ─────────
+  test('resolveAgentsDir still checks FVGSD_AGENTS_DIR first', () => {
     const fnStart = helpersTs.indexOf('export function resolveAgentsDir');
     const fnEnd = helpersTs.indexOf('\nexport function', fnStart + 1);
     const fnBody = helpersTs.slice(fnStart, fnEnd === -1 ? undefined : fnEnd);
     assert.ok(
-      fnBody.includes('GSD_AGENTS_DIR'),
-      'resolveAgentsDir must still check GSD_AGENTS_DIR as the first override (#3751)',
+      fnBody.includes('FVGSD_AGENTS_DIR'),
+      'resolveAgentsDir must still check FVGSD_AGENTS_DIR as the first override (#3751)',
     );
-    const envIdx = fnBody.indexOf('GSD_AGENTS_DIR');
+    const envIdx = fnBody.indexOf('FVGSD_AGENTS_DIR');
     const globalIdx = fnBody.indexOf('getRuntimeConfigDir');
     assert.ok(
       envIdx < globalIdx,
-      'GSD_AGENTS_DIR check must appear before getRuntimeConfigDir in resolveAgentsDir (#3751)',
+      'FVGSD_AGENTS_DIR check must appear before getRuntimeConfigDir in resolveAgentsDir (#3751)',
     );
   });
 
@@ -144,23 +144,23 @@ describe('#3751: resolveAgentsDir() repo-local fallback — runtime behaviour', 
   let savedEnv;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3751-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3751-'));
     savedEnv = {
-      GSD_AGENTS_DIR: process.env.GSD_AGENTS_DIR,
+      FVGSD_AGENTS_DIR: process.env.FVGSD_AGENTS_DIR,
       CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
       HOME: process.env.HOME,
     };
     // Clear explicit overrides so we exercise the fallback path
-    delete process.env.GSD_AGENTS_DIR;
+    delete process.env.FVGSD_AGENTS_DIR;
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
     // Restore env
-    if (savedEnv.GSD_AGENTS_DIR !== undefined) {
-      process.env.GSD_AGENTS_DIR = savedEnv.GSD_AGENTS_DIR;
+    if (savedEnv.FVGSD_AGENTS_DIR !== undefined) {
+      process.env.FVGSD_AGENTS_DIR = savedEnv.FVGSD_AGENTS_DIR;
     } else {
-      delete process.env.GSD_AGENTS_DIR;
+      delete process.env.FVGSD_AGENTS_DIR;
     }
     if (savedEnv.CLAUDE_CONFIG_DIR !== undefined) {
       process.env.CLAUDE_CONFIG_DIR = savedEnv.CLAUDE_CONFIG_DIR;
@@ -175,7 +175,7 @@ describe('#3751: resolveAgentsDir() repo-local fallback — runtime behaviour', 
    * This test MUST FAIL before the fix because resolveAgentsDir() ignores
    * the repo-local path entirely.
    */
-  test('resolveAgentsDir returns repo-local .claude/agents when global dir is absent and GSD_AGENTS_DIR unset', () => {
+  test('resolveAgentsDir returns repo-local .claude/agents when global dir is absent and FVGSD_AGENTS_DIR unset', () => {
     // Set up a fake global config dir that has no agents/
     const fakeGlobalConfig = path.join(tmpDir, 'fake-global-claude');
     fs.mkdirSync(fakeGlobalConfig, { recursive: true });
@@ -187,8 +187,8 @@ describe('#3751: resolveAgentsDir() repo-local fallback — runtime behaviour', 
     const repoLocalAgentsDir = path.join(repoRoot, '.claude', 'agents');
     fs.mkdirSync(repoLocalAgentsDir, { recursive: true });
     fs.writeFileSync(
-      path.join(repoLocalAgentsDir, 'gsd-project-researcher.md'),
-      '---\nname: gsd-project-researcher\ndescription: test\ntools: Read\n---\nAgent content.\n',
+      path.join(repoLocalAgentsDir, 'fvgsd-project-researcher.md'),
+      '---\nname: fvgsd-project-researcher\ndescription: test\ntools: Read\n---\nAgent content.\n',
     );
 
     // Dynamically require helpers so CLAUDE_CONFIG_DIR is picked up
@@ -196,14 +196,14 @@ describe('#3751: resolveAgentsDir() repo-local fallback — runtime behaviour', 
     const helpersPath = path.resolve(__dirname, '../sdk/src/query/helpers.ts');
     // We test via the compiled CJS path if available, otherwise skip runtime test
     // and rely on structural contracts above.
-    // Since sdk/dist is not pre-built in CI, we use the gsd-tools integration path.
+    // Since sdk/dist is not pre-built in CI, we use the fvgsd-tools integration path.
     const { runGsdTools } = require('./helpers.cjs');
 
     const result = runGsdTools(
       ['query', 'init.new-project', '--raw'],
       repoRoot,
       {
-        GSD_AGENTS_DIR: '',         // explicitly empty — must not win over repo-local
+        FVGSD_AGENTS_DIR: '',         // explicitly empty — must not win over repo-local
         CLAUDE_CONFIG_DIR: fakeGlobalConfig,
       },
     );
@@ -227,7 +227,7 @@ describe('#3751: resolveAgentsDir() repo-local fallback — runtime behaviour', 
   });
 
   /**
-   * Counter-test: no .claude/agents anywhere + no GSD_AGENTS_DIR → returns global path,
+   * Counter-test: no .claude/agents anywhere + no FVGSD_AGENTS_DIR → returns global path,
    * does not throw.
    */
   test('resolveAgentsDir returns the global path (does not throw) when both local and global are absent', () => {

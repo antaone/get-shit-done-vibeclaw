@@ -32,13 +32,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ## Agent Details
 
-### gsd-project-researcher
+### fvgsd-project-researcher
 
 **Role:** Researches domain ecosystem before roadmap creation.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-new-project`, `/vgsd-new-milestone` |
+| **Spawned by** | `/fvgsd-new-project`, `/fvgsd-new-milestone` |
 | **Parallelism** | 4 instances (stack, features, architecture, pitfalls) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -51,13 +51,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-phase-researcher
+### fvgsd-phase-researcher
 
 **Role:** Researches how to implement a specific phase before planning.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-plan-phase` |
+| **Spawned by** | `/fvgsd-plan-phase` |
 | **Parallelism** | 4 instances (same focus areas as project researcher) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -70,13 +70,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-ui-researcher
+### fvgsd-ui-researcher
 
 **Role:** Produces UI design contracts for frontend phases.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ui-phase` |
+| **Spawned by** | `/fvgsd-ui-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -91,7 +91,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-assumptions-analyzer
+### fvgsd-assumptions-analyzer
 
 **Role:** Deeply analyzes codebase for a phase and returns structured assumptions with evidence, confidence levels, and consequences if wrong.
 
@@ -114,7 +114,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-advisor-researcher
+### fvgsd-advisor-researcher
 
 **Role:** Researches a single gray area decision during discuss-phase advisor mode and returns a structured comparison table.
 
@@ -136,13 +136,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-research-synthesizer
+### fvgsd-research-synthesizer
 
 **Role:** Combines outputs from parallel researchers into a unified summary.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-new-project` (after 4 researchers complete) |
+| **Spawned by** | `/fvgsd-new-project` (after 4 researchers complete) |
 | **Parallelism** | Single instance (sequential after researchers) |
 | **Tools** | Read, Write, Bash |
 | **Model (balanced)** | Sonnet |
@@ -151,13 +151,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-planner
+### fvgsd-planner
 
 **Role:** Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-plan-phase`, `/vgsd-quick` |
+| **Spawned by** | `/fvgsd-plan-phase`, `/fvgsd-quick` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **Model (balanced)** | Opus |
@@ -174,13 +174,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-roadmapper
+### fvgsd-roadmapper
 
 **Role:** Creates project roadmaps with phase breakdown and requirement mapping.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-new-project` |
+| **Spawned by** | `/fvgsd-new-project` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -195,13 +195,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-executor
+### fvgsd-executor
 
 **Role:** Executes GSD plans with atomic commits, deviation handling, and checkpoint protocols.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-execute-phase`, `/vgsd-quick` |
+| **Spawned by** | `/fvgsd-execute-phase`, `/fvgsd-quick` |
 | **Parallelism** | Multiple (parallel within waves, sequential across waves) |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -218,13 +218,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-plan-checker
+### fvgsd-plan-checker
 
 **Role:** Verifies plans will achieve phase goals before execution.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-plan-phase` (verification loop, max 3 iterations) |
+| **Spawned by** | `/fvgsd-plan-phase` (verification loop, max 3 iterations) |
 | **Parallelism** | Single instance (iterative) |
 | **Tools** | Read, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -243,13 +243,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-integration-checker
+### fvgsd-integration-checker
 
 **Role:** Verifies cross-phase integration and end-to-end flows.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-audit-milestone` |
+| **Spawned by** | `/fvgsd-audit-milestone` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -258,13 +258,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-ui-checker
+### fvgsd-ui-checker
 
 **Role:** Validates UI-SPEC.md design contracts against quality dimensions.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ui-phase` (validation loop, max 2 iterations) |
+| **Spawned by** | `/fvgsd-ui-phase` (validation loop, max 2 iterations) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -273,13 +273,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-verifier
+### fvgsd-verifier
 
 **Role:** Verifies phase goal achievement through goal-backward analysis.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-execute-phase` (after all executors complete) |
+| **Spawned by** | `/fvgsd-execute-phase` (after all executors complete) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -289,19 +289,19 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 **Key behaviors:**
 - Checks codebase against phase goals, not just task completion
 - PASS/FAIL with specific evidence
-- Logs issues for `/vgsd-verify-work` to address
+- Logs issues for `/fvgsd-verify-work` to address
 - Milestone scope filtering: gaps addressed in later phases are marked as "deferred", not reported as failures (v1.32)
 - **Test quality audit** (v1.32): verifies that tests prove what they claim by checking for disabled/skipped tests on requirements, circular test patterns (system generating its own expected values), assertion strength (existence vs. value vs. behavioral), and expected value provenance. Blockers from test quality audit override an otherwise passing verification
 
 ---
 
-### gsd-nyquist-auditor
+### fvgsd-nyquist-auditor
 
 **Role:** Fills Nyquist validation gaps by generating tests.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-validate-phase` |
+| **Spawned by** | `/fvgsd-validate-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -314,13 +314,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-ui-auditor
+### fvgsd-ui-auditor
 
 **Role:** Retroactive 6-pillar visual audit of implemented frontend code.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ui-review` |
+| **Spawned by** | `/fvgsd-ui-review` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -337,13 +337,13 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ---
 
-### gsd-codebase-mapper
+### fvgsd-codebase-mapper
 
 **Role:** Explores codebase and writes structured analysis documents.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-map-codebase`, post-execute drift gate in `/vgsd-execute-phase` |
+| **Spawned by** | `/fvgsd-map-codebase`, post-execute drift gate in `/fvgsd-execute-phase` |
 | **Parallelism** | 4 instances (tech, architecture, quality, concerns) |
 | **Tools** | Read, Bash, Grep, Glob, Write |
 | **Model (balanced)** | Haiku |
@@ -365,13 +365,13 @@ runs its default whole-repo scan.
 
 ---
 
-### gsd-debugger
+### fvgsd-debugger
 
 **Role:** Investigates bugs using scientific method with persistent state.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-debug`, `/vgsd-verify-work` (for failures) |
+| **Spawned by** | `/fvgsd-debug`, `/fvgsd-verify-work` (for failures) |
 | **Parallelism** | Single instance (interactive) |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **Model (balanced)** | Sonnet |
@@ -390,13 +390,13 @@ runs its default whole-repo scan.
 
 ---
 
-### gsd-user-profiler
+### fvgsd-user-profiler
 
 **Role:** Analyzes session messages across 8 behavioral dimensions to produce a scored developer profile.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-profile-user` |
+| **Spawned by** | `/fvgsd-profile-user` |
 | **Parallelism** | Single instance |
 | **Tools** | Read |
 | **Model (balanced)** | Sonnet |
@@ -413,13 +413,13 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ---
 
-### gsd-doc-writer
+### fvgsd-doc-writer
 
 **Role:** Writes and updates project documentation. Spawned with a doc_assignment block specifying doc type, mode, and project context.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-docs-update` |
+| **Spawned by** | `/fvgsd-docs-update` |
 | **Parallelism** | Multiple instances (one per doc type) |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -430,18 +430,18 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 - Supports modes: create, update, supplement, fix
 - Handles doc types: readme, architecture, getting_started, development, testing, api, configuration, deployment, contributing, custom
 - Monorepo-aware: can generate per-package READMEs
-- Fix mode accepts failure objects from gsd-doc-verifier for targeted corrections
+- Fix mode accepts failure objects from fvgsd-doc-verifier for targeted corrections
 - Writes directly to disk — does not return content to orchestrator
 
 ---
 
-### gsd-doc-verifier
+### fvgsd-doc-verifier
 
 **Role:** Verifies factual claims in generated documentation against the live codebase.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-docs-update` (after doc-writer completes) |
+| **Spawned by** | `/fvgsd-docs-update` (after doc-writer completes) |
 | **Parallelism** | Multiple instances (one per doc file) |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -456,13 +456,13 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ---
 
-### gsd-security-auditor
+### fvgsd-security-auditor
 
 **Role:** Verifies threat mitigations from PLAN.md threat model exist in implemented code.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-secure-phase` |
+| **Spawned by** | `/fvgsd-secure-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Edit, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
@@ -480,15 +480,15 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ## Advanced and Specialized Agents
 
-Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty workflows (`/vgsd-ai-integration-phase`, `/vgsd-eval-review`, `/vgsd-code-review`, `/vgsd-code-review --fix`, `/vgsd-debug`, `/vgsd-map-codebase --query`, `/vgsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
+Twelve additional agents ship under `agents/fvgsd-*.md` and are used by specialty workflows (`/fvgsd-ai-integration-phase`, `/fvgsd-eval-review`, `/fvgsd-code-review`, `/fvgsd-code-review --fix`, `/fvgsd-debug`, `/fvgsd-map-codebase --query`, `/fvgsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
 
-### gsd-pattern-mapper
+### fvgsd-pattern-mapper
 
 **Role:** Read-only codebase analysis that maps files-to-be-created or modified to their closest existing analogs, producing `PATTERNS.md` for the planner to consume.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-plan-phase` (between research and planning) |
+| **Spawned by** | `/fvgsd-plan-phase` (between research and planning) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Bash, Glob, Grep, Write |
 | **Model (balanced)** | Sonnet |
@@ -502,13 +502,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-debug-session-manager
+### fvgsd-debug-session-manager
 
-**Role:** Runs the full `/vgsd-debug` checkpoint-and-continuation loop in an isolated context so the orchestrator's main context stays lean; spawns `gsd-debugger` agents, dispatches specialist skills, and handles user checkpoints via AskUserQuestion.
+**Role:** Runs the full `/fvgsd-debug` checkpoint-and-continuation loop in an isolated context so the orchestrator's main context stays lean; spawns `fvgsd-debugger` agents, dispatches specialist skills, and handles user checkpoints via AskUserQuestion.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-debug` |
+| **Spawned by** | `/fvgsd-debug` |
 | **Parallelism** | Single instance (interactive, stateful) |
 | **Tools** | Read, Write, Bash, Grep, Glob, Task, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -522,13 +522,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-code-reviewer
+### fvgsd-code-reviewer
 
 **Role:** Reviews source files for bugs, security vulnerabilities, and code-quality problems; produces a structured `REVIEW.md` with severity-classified findings.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-code-review` |
+| **Spawned by** | `/fvgsd-code-review` |
 | **Parallelism** | Typically single instance per review scope |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -542,13 +542,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-code-fixer
+### fvgsd-code-fixer
 
 **Role:** Applies fixes to findings from `REVIEW.md` with intelligent (non-blind) patching and atomic per-fix commits; produces `REVIEW-FIX.md`.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-code-review --fix` |
+| **Spawned by** | `/fvgsd-code-review --fix` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Edit, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -562,13 +562,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-ai-researcher
+### fvgsd-ai-researcher
 
 **Role:** Researches a chosen AI/LLM framework's official documentation and distills it into implementation-ready guidance — framework quick reference, patterns, and pitfalls — for the Section 3–4b body of `AI-SPEC.md`.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ai-integration-phase` |
+| **Spawned by** | `/fvgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (sequential with domain-researcher / eval-planner) |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebFetch, WebSearch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -581,13 +581,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-domain-researcher
+### fvgsd-domain-researcher
 
 **Role:** Surfaces the business-domain and real-world evaluation context for an AI system — expert rubric ingredients, failure modes, regulatory context — before the eval-planner turns it into measurable rubrics. Writes Section 1b of `AI-SPEC.md`.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ai-integration-phase` |
+| **Spawned by** | `/fvgsd-ai-integration-phase` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **Model (balanced)** | Sonnet |
@@ -600,13 +600,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-eval-planner
+### fvgsd-eval-planner
 
 **Role:** Designs the structured evaluation strategy for an AI phase — failure modes, eval dimensions with rubrics, tooling, reference dataset, guardrails, production monitoring. Writes Sections 5–7 of `AI-SPEC.md`.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ai-integration-phase` |
+| **Spawned by** | `/fvgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (sequential after domain-researcher) |
 | **Tools** | Read, Write, Bash, Grep, Glob, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -621,13 +621,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-eval-auditor
+### fvgsd-eval-auditor
 
 **Role:** Retroactive audit of an implemented AI phase's evaluation coverage against its planned `AI-SPEC.md` eval strategy. Scores each eval dimension `COVERED` / `PARTIAL` / `MISSING` and produces `EVAL-REVIEW.md`.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-eval-review` |
+| **Spawned by** | `/fvgsd-eval-review` |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet |
@@ -642,13 +642,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-framework-selector
+### fvgsd-framework-selector
 
 **Role:** Interactive decision-matrix agent that runs a ≤6-question interview, scores candidate AI/LLM frameworks, and returns a ranked recommendation with rationale.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ai-integration-phase` |
+| **Spawned by** | `/fvgsd-ai-integration-phase` |
 | **Parallelism** | Single instance (interactive) |
 | **Tools** | Read, Bash, Grep, Glob, WebSearch, AskUserQuestion |
 | **Model (balanced)** | Sonnet |
@@ -663,32 +663,32 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-intel-updater
+### fvgsd-intel-updater
 
 **Role:** Reads project source and writes structured intel (JSON + Markdown) into `.planning/intel/`, building a queryable codebase knowledge base that other agents use instead of performing expensive fresh exploration.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-map-codebase --query` (refresh / update flows) |
+| **Spawned by** | `/fvgsd-map-codebase --query` (refresh / update flows) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Bash, Glob, Grep |
 | **Model (balanced)** | Sonnet |
 | **Color** | Cyan |
-| **Produces** | `.planning/intel/*.json` (and companion Markdown) consumed by `gsd-sdk query intel` |
+| **Produces** | `.planning/intel/*.json` (and companion Markdown) consumed by `fvgsd-sdk query intel` |
 
 **Key behaviors:**
 - Writes current state only — no temporal language, every claim references an actual file path
-- Uses Glob / Read / Grep for cross-platform correctness; Bash is reserved for `gsd-sdk query intel` CLI calls
+- Uses Glob / Read / Grep for cross-platform correctness; Bash is reserved for `fvgsd-sdk query intel` CLI calls
 
 ---
 
-### gsd-doc-classifier
+### fvgsd-doc-classifier
 
-**Role:** Classifies a single planning document as ADR, PRD, SPEC, DOC, or UNKNOWN. Extracts title, scope summary, and cross-references. Writes a JSON classification file used by `gsd-doc-synthesizer` to build a consolidated context.
+**Role:** Classifies a single planning document as ADR, PRD, SPEC, DOC, or UNKNOWN. Extracts title, scope summary, and cross-references. Writes a JSON classification file used by `fvgsd-doc-synthesizer` to build a consolidated context.
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ingest-docs` (parallel fan-out over the doc corpus) |
+| **Spawned by** | `/fvgsd-ingest-docs` (parallel fan-out over the doc corpus) |
 | **Parallelism** | One instance per input document |
 | **Tools** | Read, Write, Grep, Glob |
 | **Model (balanced)** | Haiku |
@@ -701,13 +701,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 ---
 
-### gsd-doc-synthesizer
+### fvgsd-doc-synthesizer
 
 **Role:** Synthesizes classified planning docs into a single consolidated context. Applies precedence rules, detects cross-reference cycles, enforces LOCKED-vs-LOCKED hard-blocks, and writes `INGEST-CONFLICTS.md` with three buckets (auto-resolved, competing-variants, unresolved-blockers).
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | `/vgsd-ingest-docs` (after classifier fan-in) |
+| **Spawned by** | `/fvgsd-ingest-docs` (after classifier fan-in) |
 | **Parallelism** | Single instance |
 | **Tools** | Read, Write, Grep, Glob, Bash |
 | **Model (balanced)** | Sonnet |
@@ -716,13 +716,13 @@ Twelve additional agents ship under `agents/vgsd-*.md` and are used by specialty
 
 **Key behaviors:**
 - Hard-blocks on LOCKED-vs-LOCKED ADR contradictions instead of silently picking a winner
-- Follows the `references/doc-conflict-engine.md` contract so `/vgsd-import` and `/vgsd-ingest-docs` produce consistent conflict reports
+- Follows the `references/doc-conflict-engine.md` contract so `/fvgsd-import` and `/fvgsd-ingest-docs` produce consistent conflict reports
 
 ---
 
 ## Agent Tool Permissions Summary
 
-> **Scope:** this table covers the 21 primary agents only. The 12 advanced/specialized agents listed above carry their own tool surfaces in their `agents/vgsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
+> **Scope:** this table covers the 21 primary agents only. The 12 advanced/specialized agents listed above carry their own tool surfaces in their `agents/fvgsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
 
 | Agent | Read | Write | Edit | Bash | Grep | Glob | WebSearch | WebFetch | MCP |
 |-------|------|-------|------|------|------|------|-----------|----------|-----|

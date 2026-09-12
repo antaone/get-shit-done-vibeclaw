@@ -27,7 +27,7 @@ These roots are used for managed runtime installs and inventory reporting.
 
 ### Deprecated Import-Only Root
 
-- `~/.claude/get-shit-done/skills/`
+- `~/.claude/fvgsd/skills/`
 
 This root is kept for legacy migration only. Inventory code may report it, but new installs should not write here.
 
@@ -44,7 +44,7 @@ This is not a skills root. Discovery code only checks whether it exists so inven
 - Use the directory name when `name` is missing.
 - Extract trigger hints from body lines that match `TRIGGER when: ...`.
 - Treat `gsd-*` directories as installed framework skills.
-- Treat `~/.claude/get-shit-done/skills/` entries as deprecated/import-only.
+- Treat `~/.claude/fvgsd/skills/` entries as deprecated/import-only.
 - Treat `~/.claude/commands/gsd/` as legacy command installation metadata, not skills.
 
 ## Scanner Behavior

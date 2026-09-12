@@ -139,7 +139,7 @@ describe('Submodule worktree-isolation gate intersects planned paths (#2772)', (
   let repo;
 
   beforeEach(() => {
-    repo = createTempGitProject('gsd-test-2772-');
+    repo = createTempGitProject('fvgsd-test-2772-');
   });
 
   afterEach(() => {
@@ -496,7 +496,7 @@ describe('quick.md executor pre-commit submodule guard (#2772)', () => {
   ].join('\n');
 
   test('guard ABORTs when a staged path falls inside a submodule', () => {
-    const repo = createTempGitProject('gsd-test-2772-quick-abort-');
+    const repo = createTempGitProject('fvgsd-test-2772-quick-abort-');
     try {
       // Create a file inside the submodule path and stage it.
       fs.mkdirSync(path.join(repo, 'vendor', 'foo'), { recursive: true });
@@ -524,7 +524,7 @@ describe('quick.md executor pre-commit submodule guard (#2772)', () => {
   });
 
   test('guard passes when no staged path falls inside a submodule', () => {
-    const repo = createTempGitProject('gsd-test-2772-quick-pass-');
+    const repo = createTempGitProject('fvgsd-test-2772-quick-pass-');
     try {
       fs.mkdirSync(path.join(repo, 'src'), { recursive: true });
       fs.writeFileSync(path.join(repo, 'src', 'index.ts'), 'export {};\n');
@@ -542,7 +542,7 @@ describe('quick.md executor pre-commit submodule guard (#2772)', () => {
   });
 
   test('guard normalizes leading "./" on staged paths and still ABORTs', () => {
-    const repo = createTempGitProject('gsd-test-2772-quick-norm-');
+    const repo = createTempGitProject('fvgsd-test-2772-quick-norm-');
     try {
       fs.mkdirSync(path.join(repo, 'vendor', 'foo'), { recursive: true });
       fs.writeFileSync(path.join(repo, 'vendor', 'foo', 'bar.ts'), 'export {};\n');

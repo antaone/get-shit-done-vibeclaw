@@ -1,8 +1,8 @@
 # sync-skills — Cross-Runtime GSD Skill Sync
 
-**Command:** `/vgsd-sync-skills`
+**Command:** `/fvgsd-sync-skills`
 
-Sync managed `gsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `vgsd-update` on one runtime.
+Sync managed `gsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `fvgsd-update` on one runtime.
 
 ---
 
@@ -60,7 +60,7 @@ Use `install.js --skills-root` to resolve paths — this reuses the single autho
 ```bash
 INSTALL_JS="$(dirname "$0")/../get-shit-done/bin/install.js"
 # If running from a global install, resolve relative to the GSD package
-INSTALL_JS_GLOBAL="$HOME/.claude/get-shit-done/bin/install.js"
+INSTALL_JS_GLOBAL="$HOME/.claude/fvgsd/bin/install.js"
 [[ ! -f "$INSTALL_JS" ]] && INSTALL_JS="$INSTALL_JS_GLOBAL"
 
 SRC_SKILLS_ROOT=$(node "$INSTALL_JS" --skills-root "$FROM_RUNTIME")
@@ -74,7 +74,7 @@ done
 ```
 error: source skills root not found: <path>
        Is GSD installed globally for the '<runtime>' runtime?
-       Run: node ~/.claude/get-shit-done/bin/install.js --global --<runtime>
+       Run: node ~/.claude/fvgsd/bin/install.js --global --<runtime>
 ```
 Then exit.
 
@@ -113,14 +113,14 @@ sync source: <runtime> (<src_skills_root>)
 sync targets: <dest1>, <dest2>
 
 == <dest1> (<dest1_skills_root>) ==
-CREATE: vgsd-help
-UPDATE: vgsd-update
+CREATE: fvgsd-help
+UPDATE: fvgsd-update
 REMOVE: gsd-old-command
-SKIP:   vgsd-plan-phase (up to date)
+SKIP:   fvgsd-plan-phase (up to date)
 (N changes)
 
 == <dest2> (<dest2_skills_root>) ==
-CREATE: vgsd-help
+CREATE: fvgsd-help
 (N changes)
 
 dry-run only. use --apply to execute.    ← omit this line if --apply
@@ -170,7 +170,7 @@ Sync complete: <N> skills synced to <M> runtime(s).
 
 1. **Only `gsd-*` directories** are created, updated, or removed. Any directory not starting with `gsd-` in a destination root is untouched.
 2. **Dry-run is the default.** `--apply` must be passed explicitly to write anything.
-3. **Source root must exist.** Never create the source root; it must have been created by a prior `vgsd-update` or installer run.
+3. **Source root must exist.** Never create the source root; it must have been created by a prior `fvgsd-update` or installer run.
 4. **No cross-runtime content transformation.** Sync copies files verbatim. It does not apply runtime-specific content transformations (those happen at install time). If a runtime requires transformed content (e.g. Augment's format differs), the developer should run the installer for that runtime instead of using sync.
 
 ---

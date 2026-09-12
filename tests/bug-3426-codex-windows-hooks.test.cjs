@@ -13,7 +13,7 @@
  * execution environment (see install.js comment at buildHookCommand).  The
  * command string written to hooks.json was:
  *
- *   "C:/Program Files/nodejs/node.exe" "C:/path/.codex/hooks/gsd-check-update.js"
+ *   "C:/Program Files/nodejs/node.exe" "C:/path/.codex/hooks/fvgsd/check-update.js"
  *
  * When Codex's hook runner passes this to its subprocess spawner, the quoted
  * path resolves through Git Bash (MSYS), which then tries to POSIX-exec
@@ -24,7 +24,7 @@
  * uses as its hook-dispatch shell.
  *
  * Fix: on Windows, write a .cmd shim (using the same buildWindowsShimTriple
- * IR pattern as gsd-sdk.cmd) and put the .cmd path as the hooks.json command.
+ * IR pattern as fvgsd-sdk.cmd) and put the .cmd path as the hooks.json command.
  * cmd.exe executes .cmd files natively via CreateProcess — no POSIX exec layer,
  * no MSYS shebang walk.
  *
@@ -37,7 +37,7 @@
  * runners.  Local test exercises the generator IR shape only.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -84,7 +84,7 @@ describe('#3426 — export surface: buildCodexHookWindowsShimIR must be exported
 // ─── Step 2: Typed IR shape for Windows Codex hook shim ──────────────────────
 
 describe('#3426 — buildCodexHookWindowsShimIR: typed IR (not rendered text)', () => {
-  const FAKE_SCRIPT = 'C:/Users/me/.codex/hooks/gsd-check-update.js';
+  const FAKE_SCRIPT = 'C:/Users/me/.codex/hooks/fvgsd/check-update.js';
   const FAKE_RUNNER = '"C:/Program Files/nodejs/node.exe"';
 
   test('returns typed IR with invocation, cmdPath, and render factory', () => {
@@ -102,7 +102,7 @@ describe('#3426 — buildCodexHookWindowsShimIR: typed IR (not rendered text)', 
     const ir = buildCodexHookWindowsShimIR(FAKE_SCRIPT, FAKE_RUNNER);
     // invocation.target is the JS file being wrapped — same IR contract as buildWindowsShimTriple
     assert.ok(
-      ir.invocation.target.includes('gsd-check-update.js'),
+      ir.invocation.target.includes('fvgsd/check-update.js'),
       `invocation.target must reference the hook script, got: ${ir.invocation.target}`,
     );
   });
@@ -157,7 +157,7 @@ describe('#3426 — buildCodexHookWindowsShimIR: typed IR (not rendered text)', 
 // text-matching tests would miss (silent EOL/quoting/passthrough regressions).
 
 describe('#3426 — buildCodexHookWindowsShimIR: typed IR eol / quoting / passthroughArgs', () => {
-  const FAKE_SCRIPT = 'C:/Users/me/.codex/hooks/gsd-check-update.js';
+  const FAKE_SCRIPT = 'C:/Users/me/.codex/hooks/fvgsd/check-update.js';
   const FAKE_RUNNER = '"C:/Program Files/nodejs/node.exe"';
 
   test('eol.cmd is CRLF (\\r\\n) — canonical for cmd.exe .cmd files', () => {
@@ -203,14 +203,14 @@ describe('#3426 counter-test: darwin/linux Codex paths use node-runner command (
     const runner = resolveNodeRunner() || '"/usr/local/bin/node"';
     const cmd = projectManagedHookCommand({
       absoluteRunner: runner,
-      scriptPath: '/Users/me/.codex/hooks/gsd-check-update.js',
+      scriptPath: '/Users/me/.codex/hooks/fvgsd/check-update.js',
       runtime: 'codex',
       platform: 'darwin',
     });
     assert.ok(typeof cmd === 'string', 'must return a string on darwin');
     assert.ok(!cmd.endsWith('.cmd'), 'darwin command must NOT reference a .cmd shim');
     assert.ok(
-      cmd.includes('gsd-check-update.js'),
+      cmd.includes('fvgsd/check-update.js'),
       `darwin command must reference the .js hook directly, got: ${cmd}`,
     );
   });
@@ -219,14 +219,14 @@ describe('#3426 counter-test: darwin/linux Codex paths use node-runner command (
     const runner = resolveNodeRunner() || '"/usr/local/bin/node"';
     const cmd = projectManagedHookCommand({
       absoluteRunner: runner,
-      scriptPath: '/home/me/.codex/hooks/gsd-check-update.js',
+      scriptPath: '/home/me/.codex/hooks/fvgsd/check-update.js',
       runtime: 'codex',
       platform: 'linux',
     });
     assert.ok(typeof cmd === 'string', 'must return a string on linux');
     assert.ok(!cmd.endsWith('.cmd'), 'linux command must NOT reference a .cmd shim');
     assert.ok(
-      cmd.includes('gsd-check-update.js'),
+      cmd.includes('fvgsd/check-update.js'),
       `linux command must reference the .js hook directly, got: ${cmd}`,
     );
   });
@@ -238,11 +238,11 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-3426-');
+    tmpDir = createTempDir('fvgsd-3426-');
     fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
     // Stub the hook file that must exist for the hook to be registered
     fs.writeFileSync(
-      path.join(tmpDir, 'hooks', 'gsd-check-update.js'),
+      path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
       '#!/usr/bin/env node\nconsole.log("ok");\n',
     );
   });
@@ -269,8 +269,8 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
 
     assert.ok(commands.length > 0, 'must have at least one SessionStart hook command');
 
-    const cmd = commands.find((c) => c.includes('gsd-check-update'));
-    assert.ok(cmd, 'must have a gsd-check-update hook command');
+    const cmd = commands.find((c) => c.includes('fvgsd/check-update'));
+    assert.ok(cmd, 'must have a fvgsd/check-update hook command');
 
     // KEY ASSERTION: on win32, the command must reference a .cmd file — not bash
     assert.ok(
@@ -291,7 +291,7 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
       platform: 'win32',
     });
 
-    const cmdShimPath = path.join(tmpDir, 'hooks', 'gsd-check-update.cmd');
+    const cmdShimPath = path.join(tmpDir, 'hooks', 'fvgsd/check-update.cmd');
     assert.ok(
       fs.existsSync(cmdShimPath),
       `win32: .cmd shim must be written at ${cmdShimPath}`,
@@ -316,8 +316,8 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
     );
     const commands = readSessionStartCommands(hooksJson);
 
-    const cmd = commands.find((c) => c.includes('gsd-check-update'));
-    assert.ok(cmd, 'must have a gsd-check-update hook command on darwin');
+    const cmd = commands.find((c) => c.includes('fvgsd/check-update'));
+    assert.ok(cmd, 'must have a fvgsd/check-update hook command on darwin');
 
     // Counter-test: darwin must NOT use a .cmd shim
     assert.ok(
@@ -325,12 +325,12 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
       `darwin hook command must NOT reference a .cmd shim, got: ${cmd}`,
     );
     assert.ok(
-      cmd.includes('gsd-check-update.js'),
+      cmd.includes('fvgsd/check-update.js'),
       `darwin hook command must reference the .js file directly, got: ${cmd}`,
     );
 
     // .cmd shim must NOT be written on darwin
-    const cmdShimPath = path.join(tmpDir, 'hooks', 'gsd-check-update.cmd');
+    const cmdShimPath = path.join(tmpDir, 'hooks', 'fvgsd/check-update.cmd');
     assert.ok(
       !fs.existsSync(cmdShimPath),
       'darwin must NOT write a .cmd shim',
@@ -350,18 +350,18 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
     );
     const commands = readSessionStartCommands(hooksJson);
 
-    const cmd = commands.find((c) => c.includes('gsd-check-update'));
-    assert.ok(cmd, 'linux must have a gsd-check-update hook command');
+    const cmd = commands.find((c) => c.includes('fvgsd/check-update'));
+    assert.ok(cmd, 'linux must have a fvgsd/check-update hook command');
     assert.ok(!cmd.endsWith('.cmd'), 'linux must NOT use a .cmd shim');
 
-    const cmdShimPath = path.join(tmpDir, 'hooks', 'gsd-check-update.cmd');
+    const cmdShimPath = path.join(tmpDir, 'hooks', 'fvgsd/check-update.cmd');
     assert.ok(!fs.existsSync(cmdShimPath), 'linux must NOT write a .cmd shim');
   });
 });
 
 // ─── Step 5: Uninstall cleanup — .cmd shim removed from disk ─────────────────
 
-describe('#3426 uninstall: gsd-check-update.cmd is removed from hooks dir on uninstall', () => {
+describe('#3426 uninstall: fvgsd/check-update.cmd is removed from hooks dir on uninstall', () => {
   let tmpDir;
 
   function withCodexHome(dir, fn) {
@@ -375,16 +375,16 @@ describe('#3426 uninstall: gsd-check-update.cmd is removed from hooks dir on uni
   }
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-3426-uninstall-');
+    tmpDir = createTempDir('fvgsd-3426-uninstall-');
     fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
     // Write the .js hook (required by install) and a pre-existing .cmd shim
     fs.writeFileSync(
-      path.join(tmpDir, 'hooks', 'gsd-check-update.js'),
+      path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
       '#!/usr/bin/env node\nconsole.log("ok");\n',
     );
     fs.writeFileSync(
-      path.join(tmpDir, 'hooks', 'gsd-check-update.cmd'),
-      '@ECHO OFF\r\n@SETLOCAL\r\n@"C:/node.exe" "C:/path/gsd-check-update.js" %*\r\n',
+      path.join(tmpDir, 'hooks', 'fvgsd/check-update.cmd'),
+      '@ECHO OFF\r\n@SETLOCAL\r\n@"C:/node.exe" "C:/path/fvgsd/check-update.js" %*\r\n',
     );
   });
 
@@ -392,15 +392,15 @@ describe('#3426 uninstall: gsd-check-update.cmd is removed from hooks dir on uni
     cleanup(tmpDir);
   });
 
-  test('uninstall removes gsd-check-update.cmd from hooks directory', () => {
-    const cmdShimPath = path.join(tmpDir, 'hooks', 'gsd-check-update.cmd');
+  test('uninstall removes fvgsd/check-update.cmd from hooks directory', () => {
+    const cmdShimPath = path.join(tmpDir, 'hooks', 'fvgsd/check-update.cmd');
     assert.ok(fs.existsSync(cmdShimPath), 'pre-condition: .cmd shim exists before uninstall');
 
     withCodexHome(tmpDir, () => uninstall(true, 'codex'));
 
     assert.ok(
       !fs.existsSync(cmdShimPath),
-      `gsd-check-update.cmd must be removed from disk on uninstall — orphaned .cmd shim would cause stale hook references. Path: ${cmdShimPath}`,
+      `fvgsd/check-update.cmd must be removed from disk on uninstall — orphaned .cmd shim would cause stale hook references. Path: ${cmdShimPath}`,
     );
   });
 });
@@ -411,10 +411,10 @@ describe('#3426 upgrade: reinstall on win32 migrates existing "node script.js" t
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-3426-upgrade-');
+    tmpDir = createTempDir('fvgsd-3426-upgrade-');
     fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
     fs.writeFileSync(
-      path.join(tmpDir, 'hooks', 'gsd-check-update.js'),
+      path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
       '#!/usr/bin/env node\nconsole.log("ok");\n',
     );
   });
@@ -424,7 +424,7 @@ describe('#3426 upgrade: reinstall on win32 migrates existing "node script.js" t
   });
 
   test('replaces old "node.exe script.js" command with .cmd shim on win32 reinstall', () => {
-    const managedHookPath = path.join(tmpDir, 'hooks', 'gsd-check-update.js').replace(/\\/g, '/');
+    const managedHookPath = path.join(tmpDir, 'hooks', 'fvgsd/check-update.js').replace(/\\/g, '/');
     // Pre-existing stale hooks.json with node-runner command (v1.42.3 shape)
     const staleLegacyCommand = `"C:/Program Files/nodejs/node.exe" "${managedHookPath}"`;
     fs.writeFileSync(
@@ -443,9 +443,9 @@ describe('#3426 upgrade: reinstall on win32 migrates existing "node script.js" t
     const hooksJson = JSON.parse(fs.readFileSync(path.join(tmpDir, 'hooks.json'), 'utf8'));
     const commands = readSessionStartCommands(hooksJson);
 
-    const gsdCmds = commands.filter((c) => c.includes('gsd-check-update'));
+    const gsdCmds = commands.filter((c) => c.includes('fvgsd/check-update'));
     // Exactly one managed hook after migration — no duplicates
-    assert.equal(gsdCmds.length, 1, `must have exactly 1 gsd-check-update command after migration, got: ${JSON.stringify(gsdCmds)}`);
+    assert.equal(gsdCmds.length, 1, `must have exactly 1 fvgsd/check-update command after migration, got: ${JSON.stringify(gsdCmds)}`);
 
     // Must be the .cmd shim
     assert.ok(

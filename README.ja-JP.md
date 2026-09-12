@@ -8,8 +8,8 @@
 
 **コンテキストロット（Claudeがコンテキストウィンドウを消費するにつれ品質が劣化する現象）を解決します。**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
+[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
+[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -20,7 +20,7 @@
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 **Mac、Windows、Linuxで動作します。**
@@ -80,11 +80,11 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 完全なリストは [v1.39.0 リリースノート](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0) を参照してください。
 
 - **`--minimal` インストールプロファイル** — エイリアス `--core-only`。メインループの6スキル（`new-project`、`discuss-phase`、`plan-phase`、`execute-phase`、`help`、`update`）のみをインストールし、`gsd-*` サブエージェントはゼロ。コールドスタート時のシステムプロンプトのオーバーヘッドを ~12kトークンから ~700トークンへ削減（≥94%減）。32K〜128Kコンテキストのローカル LLM やトークン課金 API に有効。
-- **`/vgsd-phase --edit`** — `ROADMAP.md` 上の既存フェーズの任意フィールドをその場で編集（番号や位置は変更されない）。`--force` で確認 diff をスキップ、`depends_on` の参照を検証し、書き込み時に `STATE.md` も更新。
+- **`/fvgsd-phase --edit`** — `ROADMAP.md` 上の既存フェーズの任意フィールドをその場で編集（番号や位置は変更されない）。`--force` で確認 diff をスキップ、`depends_on` の参照を検証し、書き込み時に `STATE.md` も更新。
 - **マージ後ビルド & テストゲート** — `execute-phase` のステップ 5.6 が `workflow.build_command` の設定を自動検出し、無ければ Xcode（`.xcodeproj`）、Makefile、Justfile、Cargo、Go、Python、npm の順にフォールバック。Xcode/iOS プロジェクトでは `xcodebuild build` と `xcodebuild test` を自動実行。並列・直列両モードで動作。
 - **ランタイム別レビューモデル選択** — `review.models.<cli>` で各外部レビュー CLI（codex、gemini など）が使うモデルをプランナー/実行プロファイルとは独立に指定可能。
-- **ワークストリーム設定の継承** — `GSD_WORKSTREAM` が設定されている場合、ルートの `.planning/config.json` を先に読み込み、ワークストリーム設定をディープマージ（衝突時はワークストリーム側が優先）。ワークストリーム設定で明示的に `null` を指定するとルート値を上書き可能。
-- **手動カナリアリリースワークフロー** — `.github/workflows/canary.yml` が `workflow_dispatch` 経由で `dev` ブランチから `{base}-canary.{N}` ビルドを `@canary` dist-tag に手動公開（`get-shit-done-cc` と `@gsd-build/sdk`）。
+- **ワークストリーム設定の継承** — `FVGSD_WORKSTREAM` が設定されている場合、ルートの `.planning/config.json` を先に読み込み、ワークストリーム設定をディープマージ（衝突時はワークストリーム側が優先）。ワークストリーム設定で明示的に `null` を指定するとルート値を上書き可能。
+- **手動カナリアリリースワークフロー** — `.github/workflows/canary.yml` が `workflow_dispatch` 経由で `dev` ブランチから `{base}-canary.{N}` ビルドを `@canary` dist-tag に手動公開（`fvgsd` と `@fvgsd/sdk`）。
 - **スキルの統合：86 → 59** — 4つの新しいグループ化スキル（`capture`、`phase`、`config`、`workspace`）が31のマイクロスキルを吸収。既存の親スキル6つはラップアップやサブ操作をフラグ化：`update --sync/--reapply`、`sketch --wrap-up`、`spike --wrap-up`、`map-codebase --fast/--query`、`code-review --fix`、`progress --do/--next`。機能の欠損なし。
 
 ---
@@ -92,7 +92,7 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 ## はじめに
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 インストーラーが以下の選択を求めます：
@@ -100,10 +100,10 @@ npx get-shit-done-cc@latest
 2. **インストール先** — グローバル（全プロジェクト）またはローカル（現在のプロジェクトのみ）
 
 確認方法：
-- Claude Code / Copilot / Antigravity: `/vgsd-help`
-- Gemini: `/vgsd:help`
-- OpenCode / Kilo / Augment / Trae: `/vgsd-help`
-- Codex: `$vgsd-help`
+- Claude Code / Copilot / Antigravity: `/fvgsd-help`
+- Gemini: `/fvgsd:help`
+- OpenCode / Kilo / Augment / Trae: `/fvgsd-help`
+- Codex: `$fvgsd-help`
 - Cline: GSDは`.clinerules`経由でインストール — `.clinerules`の存在を確認
 
 > [!NOTE]
@@ -117,7 +117,7 @@ npx get-shit-done-cc@latest
 GSDは急速に進化しています。定期的にアップデートしてください：
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 <details>
@@ -125,49 +125,49 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # ~/.claude/ にインストール
-npx get-shit-done-cc --claude --local    # ./.claude/ にインストール
+npx fvgsd --claude --global   # ~/.claude/ にインストール
+npx fvgsd --claude --local    # ./.claude/ にインストール
 
 # OpenCode
-npx get-shit-done-cc --opencode --global # ~/.config/opencode/ にインストール
+npx fvgsd --opencode --global # ~/.config/opencode/ にインストール
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # ~/.gemini/ にインストール
+npx fvgsd --gemini --global   # ~/.gemini/ にインストール
 
 # Kilo
-npx get-shit-done-cc --kilo --global     # ~/.config/kilo/ にインストール
-npx get-shit-done-cc --kilo --local      # ./.kilo/ にインストール
+npx fvgsd --kilo --global     # ~/.config/kilo/ にインストール
+npx fvgsd --kilo --local      # ./.kilo/ にインストール
 
 # Codex
-npx get-shit-done-cc --codex --global    # ~/.codex/ にインストール
-npx get-shit-done-cc --codex --local     # ./.codex/ にインストール
+npx fvgsd --codex --global    # ~/.codex/ にインストール
+npx fvgsd --codex --local     # ./.codex/ にインストール
 
 # Copilot
-npx get-shit-done-cc --copilot --global  # ~/.github/ にインストール
-npx get-shit-done-cc --copilot --local   # ./.github/ にインストール
+npx fvgsd --copilot --global  # ~/.github/ にインストール
+npx fvgsd --copilot --local   # ./.github/ にインストール
 
 # Cursor CLI
-npx get-shit-done-cc --cursor --global      # ~/.cursor/ にインストール
-npx get-shit-done-cc --cursor --local       # ./.cursor/ にインストール
+npx fvgsd --cursor --global      # ~/.cursor/ にインストール
+npx fvgsd --cursor --local       # ./.cursor/ にインストール
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global # ~/.gemini/antigravity/ にインストール
-npx get-shit-done-cc --antigravity --local  # ./.agent/ にインストール
+npx fvgsd --antigravity --global # ~/.gemini/antigravity/ にインストール
+npx fvgsd --antigravity --local  # ./.agent/ にインストール
 
 # Augment
-npx get-shit-done-cc --augment --global     # ~/.augment/ にインストール
-npx get-shit-done-cc --augment --local      # ./.augment/ にインストール
+npx fvgsd --augment --global     # ~/.augment/ にインストール
+npx fvgsd --augment --local      # ./.augment/ にインストール
 
 # Trae
-npx get-shit-done-cc --trae --global        # ~/.trae/ にインストール
-npx get-shit-done-cc --trae --local         # ./.trae/ にインストール
+npx fvgsd --trae --global        # ~/.trae/ にインストール
+npx fvgsd --trae --local         # ./.trae/ にインストール
 
 # Cline
-npx get-shit-done-cc --cline --global       # ~/.cline/ にインストール
-npx get-shit-done-cc --cline --local        # ./.clinerules にインストール
+npx fvgsd --cline --global       # ~/.cline/ にインストール
+npx fvgsd --cline --local        # ./.clinerules にインストール
 
 # 全ランタイム
-npx get-shit-done-cc --all --global      # すべてのディレクトリにインストール
+npx fvgsd --all --global      # すべてのディレクトリにインストール
 ```
 
 `--global`（`-g`）または `--local`（`-l`）でインストール先の質問をスキップできます。
@@ -238,12 +238,12 @@ claude --dangerously-skip-permissions
 
 ## 仕組み
 
-> **既存のコードがある場合は？** まず `/vgsd-map-codebase` を実行してください。並列エージェントが起動し、スタック、アーキテクチャ、規約、懸念点を分析します。その後 `/vgsd-new-project` がコードベースを把握した状態で動作し、質問は追加する内容に焦点を当て、計画時にはパターンが自動的に読み込まれます。
+> **既存のコードがある場合は？** まず `/fvgsd-map-codebase` を実行してください。並列エージェントが起動し、スタック、アーキテクチャ、規約、懸念点を分析します。その後 `/fvgsd-new-project` がコードベースを把握した状態で動作し、質問は追加する内容に焦点を当て、計画時にはパターンが自動的に読み込まれます。
 
 ### 1. プロジェクトの初期化
 
 ```
-/vgsd-new-project
+/fvgsd-new-project
 ```
 
 1つのコマンド、1つのフロー。システムが以下を行います：
@@ -262,7 +262,7 @@ claude --dangerously-skip-permissions
 ### 2. フェーズの議論
 
 ```
-/vgsd-discuss-phase 1
+/fvgsd-discuss-phase 1
 ```
 
 **ここで実装の方向性を決めます。**
@@ -285,14 +285,14 @@ claude --dangerously-skip-permissions
 
 **作成されるファイル：** `{phase_num}-CONTEXT.md`
 
-> **前提モード：** 質問よりもコードベース分析を優先したい場合は、`/vgsd-settings` で `workflow.discuss_mode` を `assumptions` に設定してください。システムがコードを読み、何をなぜそうするかを提示し、間違っている部分だけ修正を求めます。詳しくは[ディスカスモード](docs/ja-JP/workflow-discuss-mode.md)をご覧ください。
+> **前提モード：** 質問よりもコードベース分析を優先したい場合は、`/fvgsd-settings` で `workflow.discuss_mode` を `assumptions` に設定してください。システムがコードを読み、何をなぜそうするかを提示し、間違っている部分だけ修正を求めます。詳しくは[ディスカスモード](docs/ja-JP/workflow-discuss-mode.md)をご覧ください。
 
 ---
 
 ### 3. フェーズの計画
 
 ```
-/vgsd-plan-phase 1
+/fvgsd-plan-phase 1
 ```
 
 システムが以下を行います：
@@ -310,7 +310,7 @@ claude --dangerously-skip-permissions
 ### 4. フェーズの実行
 
 ```
-/vgsd-execute-phase 1
+/fvgsd-execute-phase 1
 ```
 
 システムが以下を行います：
@@ -361,7 +361,7 @@ claude --dangerously-skip-permissions
 ### 5. 作業の検証
 
 ```
-/vgsd-verify-work 1
+/fvgsd-verify-work 1
 ```
 
 **ここで実際に動作するか確認します。**
@@ -375,7 +375,7 @@ claude --dangerously-skip-permissions
 3. **障害を自動診断** — デバッグエージェントが起動し根本原因を特定
 4. **検証済みの修正プランを作成** — 即座に再実行可能
 
-すべてパスすれば次に進みます。何か壊れていれば、手動でデバッグする必要はありません — 作成された修正プランで `/vgsd-execute-phase` を再度実行するだけです。
+すべてパスすれば次に進みます。何か壊れていれば、手動でデバッグする必要はありません — 作成された修正プランで `/fvgsd-execute-phase` を再度実行するだけです。
 
 **作成されるファイル：** `{phase_num}-UAT.md`、問題が見つかった場合は修正プラン
 
@@ -384,38 +384,38 @@ claude --dangerously-skip-permissions
 ### 6. 繰り返し → シップ → 完了 → 次のマイルストーン
 
 ```
-/vgsd-discuss-phase 2
-/vgsd-plan-phase 2
-/vgsd-execute-phase 2
-/vgsd-verify-work 2
-/vgsd-ship 2                  # 検証済みの作業からPRを作成
+/fvgsd-discuss-phase 2
+/fvgsd-plan-phase 2
+/fvgsd-execute-phase 2
+/fvgsd-verify-work 2
+/fvgsd-ship 2                  # 検証済みの作業からPRを作成
 ...
-/vgsd-complete-milestone
-/vgsd-new-milestone
+/fvgsd-complete-milestone
+/fvgsd-new-milestone
 ```
 
 またはGSDに次のステップを自動判定させます：
 
 ```
-/vgsd-progress --next                    # 次のステップを自動検出して実行
+/fvgsd-progress --next                    # 次のステップを自動検出して実行
 ```
 
 **discuss → plan → execute → verify → ship** のループをマイルストーン完了まで繰り返します。
 
-ディスカッション中のインプットを速くしたい場合は、`/vgsd-discuss-phase <n> --batch` で1つずつではなく小さなグループにまとめた質問に一括で回答できます。`--chain` を使うと、ディスカッションからプラン+実行まで途中で止まらずに自動チェインできます。
+ディスカッション中のインプットを速くしたい場合は、`/fvgsd-discuss-phase <n> --batch` で1つずつではなく小さなグループにまとめた質問に一括で回答できます。`--chain` を使うと、ディスカッションからプラン+実行まで途中で止まらずに自動チェインできます。
 
 各フェーズであなたのインプット（discuss）、適切なリサーチ（plan）、クリーンな実行（execute）、人間による検証（verify）が行われます。コンテキストは常にフレッシュ。品質は常に高い。
 
-すべてのフェーズが完了したら、`/vgsd-complete-milestone` でマイルストーンをアーカイブしリリースをタグ付けします。
+すべてのフェーズが完了したら、`/fvgsd-complete-milestone` でマイルストーンをアーカイブしリリースをタグ付けします。
 
-次に `/vgsd-new-milestone` で次のバージョンを開始します — `new-project` と同じフローですが既存のコードベース向けです。次に構築したいものを説明し、システムがドメインを調査し、要件をスコーピングし、新しいロードマップを作成します。各マイルストーンはクリーンなサイクルです：定義 → 構築 → シップ。
+次に `/fvgsd-new-milestone` で次のバージョンを開始します — `new-project` と同じフローですが既存のコードベース向けです。次に構築したいものを説明し、システムがドメインを調査し、要件をスコーピングし、新しいロードマップを作成します。各マイルストーンはクリーンなサイクルです：定義 → 構築 → シップ。
 
 ---
 
 ### クイックモード
 
 ```
-/vgsd-quick
+/fvgsd-quick
 ```
 
 **フル計画が不要なアドホックタスク向け。**
@@ -437,7 +437,7 @@ claude --dangerously-skip-permissions
 フラグは組み合わせ可能：`--discuss --research --validate` でディスカッション + リサーチ + プランチェック + 検証が行われます。
 
 ```
-/vgsd-quick
+/fvgsd-quick
 > What do you want to do? "Add dark mode toggle to settings"
 ```
 
@@ -539,117 +539,117 @@ lmn012o feat(08-02): create registration endpoint
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-new-project [--auto]` | フル初期化：質問 → リサーチ → 要件定義 → ロードマップ |
-| `/vgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | 計画前に実装の決定事項をキャプチャ（`--analyze` でトレードオフ分析を追加、`--chain` でプラン+実行へ自動チェイン） |
-| `/vgsd-plan-phase [N] [--auto] [--reviews]` | フェーズのリサーチ + プラン + 検証（`--reviews` でコードベースレビューの発見事項を読み込み） |
-| `/vgsd-execute-phase <N>` | 全プランを並列ウェーブで実行し、完了時に検証 |
-| `/vgsd-verify-work [N]` | 手動ユーザー受入テスト ¹ |
-| `/vgsd-ship [N] [--draft]` | 検証済みのフェーズ作業から自動生成された本文付きのPRを作成 |
-| `/vgsd-progress --next` | 次の論理的なワークフローステップに自動的に進む |
-| `/vgsd-fast <text>` | インラインの軽微タスク — 計画を完全にスキップし即座に実行 |
-| `/vgsd-audit-milestone` | マイルストーンが完了の定義を達成したか検証 |
-| `/vgsd-complete-milestone` | マイルストーンをアーカイブし、リリースをタグ付け |
-| `/vgsd-new-milestone [name]` | 次のバージョンを開始：質問 → リサーチ → 要件定義 → ロードマップ |
-| `/vgsd-forensics [desc]` | 失敗したワークフロー実行の事後分析（停止ループ、欠落成果物、git異常の診断） |
-| `/vgsd-milestone-summary [version]` | チームオンボーディングとレビュー向けの包括的なプロジェクトサマリーを生成 |
+| `/fvgsd-new-project [--auto]` | フル初期化：質問 → リサーチ → 要件定義 → ロードマップ |
+| `/fvgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | 計画前に実装の決定事項をキャプチャ（`--analyze` でトレードオフ分析を追加、`--chain` でプラン+実行へ自動チェイン） |
+| `/fvgsd-plan-phase [N] [--auto] [--reviews]` | フェーズのリサーチ + プラン + 検証（`--reviews` でコードベースレビューの発見事項を読み込み） |
+| `/fvgsd-execute-phase <N>` | 全プランを並列ウェーブで実行し、完了時に検証 |
+| `/fvgsd-verify-work [N]` | 手動ユーザー受入テスト ¹ |
+| `/fvgsd-ship [N] [--draft]` | 検証済みのフェーズ作業から自動生成された本文付きのPRを作成 |
+| `/fvgsd-progress --next` | 次の論理的なワークフローステップに自動的に進む |
+| `/fvgsd-fast <text>` | インラインの軽微タスク — 計画を完全にスキップし即座に実行 |
+| `/fvgsd-audit-milestone` | マイルストーンが完了の定義を達成したか検証 |
+| `/fvgsd-complete-milestone` | マイルストーンをアーカイブし、リリースをタグ付け |
+| `/fvgsd-new-milestone [name]` | 次のバージョンを開始：質問 → リサーチ → 要件定義 → ロードマップ |
+| `/fvgsd-forensics [desc]` | 失敗したワークフロー実行の事後分析（停止ループ、欠落成果物、git異常の診断） |
+| `/fvgsd-milestone-summary [version]` | チームオンボーディングとレビュー向けの包括的なプロジェクトサマリーを生成 |
 
 ### ワークストリーム
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-workstreams list` | 全ワークストリームとそのステータスを表示 |
-| `/vgsd-workstreams create <name>` | 並列マイルストーン作業用の名前空間付きワークストリームを作成 |
-| `/vgsd-workstreams switch <name>` | アクティブなワークストリームを切り替え |
-| `/vgsd-workstreams complete <name>` | ワークストリームを完了しマージ |
+| `/fvgsd-workstreams list` | 全ワークストリームとそのステータスを表示 |
+| `/fvgsd-workstreams create <name>` | 並列マイルストーン作業用の名前空間付きワークストリームを作成 |
+| `/fvgsd-workstreams switch <name>` | アクティブなワークストリームを切り替え |
+| `/fvgsd-workstreams complete <name>` | ワークストリームを完了しマージ |
 
 ### マルチプロジェクトワークスペース
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-workspace --new` | リポジトリのコピー（worktreeまたはクローン）で隔離されたワークスペースを作成 |
-| `/vgsd-workspace --list` | すべてのGSDワークスペースとそのステータスを表示 |
-| `/vgsd-workspace --remove` | ワークスペースを削除しworktreeをクリーンアップ |
+| `/fvgsd-workspace --new` | リポジトリのコピー（worktreeまたはクローン）で隔離されたワークスペースを作成 |
+| `/fvgsd-workspace --list` | すべてのGSDワークスペースとそのステータスを表示 |
+| `/fvgsd-workspace --remove` | ワークスペースを削除しworktreeをクリーンアップ |
 
 ### UIデザイン
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-ui-phase [N]` | フロントエンドフェーズ用のUIデザイン契約（UI-SPEC.md）を生成 |
-| `/vgsd-ui-review [N]` | 実装済みフロントエンドコードの6つの柱によるビジュアル監査（遡及的） |
+| `/fvgsd-ui-phase [N]` | フロントエンドフェーズ用のUIデザイン契約（UI-SPEC.md）を生成 |
+| `/fvgsd-ui-review [N]` | 実装済みフロントエンドコードの6つの柱によるビジュアル監査（遡及的） |
 
 ### ナビゲーション
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-progress` | 今どこにいる？次は何？ |
-| `/vgsd-progress --next` | 状態を自動検出し次のステップを実行 |
-| `/vgsd-help` | 全コマンドと使い方ガイドを表示 |
-| `/vgsd-update` | チェンジログプレビュー付きでGSDをアップデート |
-| `/vgsd-manager` | 複数フェーズ管理用のインタラクティブコマンドセンター |
+| `/fvgsd-progress` | 今どこにいる？次は何？ |
+| `/fvgsd-progress --next` | 状態を自動検出し次のステップを実行 |
+| `/fvgsd-help` | 全コマンドと使い方ガイドを表示 |
+| `/fvgsd-update` | チェンジログプレビュー付きでGSDをアップデート |
+| `/fvgsd-manager` | 複数フェーズ管理用のインタラクティブコマンドセンター |
 
 ### ブラウンフィールド
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-map-codebase [area]` | new-project前に既存のコードベースを分析 |
+| `/fvgsd-map-codebase [area]` | new-project前に既存のコードベースを分析 |
 
 ### フェーズ管理
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-phase` | ロードマップにフェーズを追加 |
-| `/vgsd-phase --insert [N]` | フェーズ間に緊急作業を挿入 |
-| `/vgsd-phase --edit [N] [--force]` | 既存フェーズの任意フィールドをその場で編集 — 番号と位置は変更されない |
-| `/vgsd-phase --remove [N]` | 将来のフェーズを削除し番号を振り直し |
-| `/vgsd-discuss-phase --assumptions [N]` | 計画前にClaudeの意図するアプローチを確認 |
-| `/vgsd-audit-milestone --fix` | 監査で見つかったギャップを埋めるフェーズを作成 |
+| `/fvgsd-phase` | ロードマップにフェーズを追加 |
+| `/fvgsd-phase --insert [N]` | フェーズ間に緊急作業を挿入 |
+| `/fvgsd-phase --edit [N] [--force]` | 既存フェーズの任意フィールドをその場で編集 — 番号と位置は変更されない |
+| `/fvgsd-phase --remove [N]` | 将来のフェーズを削除し番号を振り直し |
+| `/fvgsd-discuss-phase --assumptions [N]` | 計画前にClaudeの意図するアプローチを確認 |
+| `/fvgsd-audit-milestone --fix` | 監査で見つかったギャップを埋めるフェーズを作成 |
 
 ### セッション
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-pause-work` | フェーズ途中で停止する際の引き継ぎを作成（HANDOFF.jsonを書き込み） |
-| `/vgsd-resume-work` | 前回のセッションから復元 |
-| `/vgsd-pause-work --report` | 実行した作業と結果のセッションサマリーを生成 |
+| `/fvgsd-pause-work` | フェーズ途中で停止する際の引き継ぎを作成（HANDOFF.jsonを書き込み） |
+| `/fvgsd-resume-work` | 前回のセッションから復元 |
+| `/fvgsd-pause-work --report` | 実行した作業と結果のセッションサマリーを生成 |
 
 ### ワークストリーム
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-workstreams` | 並列ワークストリームを管理（list、create、switch、status、progress、complete） |
+| `/fvgsd-workstreams` | 並列ワークストリームを管理（list、create、switch、status、progress、complete） |
 
 ### コード品質
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-review` | 現在のフェーズまたはブランチのクロスAIピアレビュー |
-| `/vgsd-pr-branch` | `.planning/` コミットをフィルタリングしたクリーンなPRブランチを作成 |
-| `/vgsd-audit-uat` | 検証負債を監査 — UATが未実施のフェーズを検出 |
+| `/fvgsd-review` | 現在のフェーズまたはブランチのクロスAIピアレビュー |
+| `/fvgsd-pr-branch` | `.planning/` コミットをフィルタリングしたクリーンなPRブランチを作成 |
+| `/fvgsd-audit-uat` | 検証負債を監査 — UATが未実施のフェーズを検出 |
 
 ### バックログ & スレッド
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-capture --seed <idea>` | トリガー条件付きの将来志向のアイデアをキャプチャ — 適切なマイルストーンで浮上 |
-| `/vgsd-capture --backlog <desc>` | バックログのパーキングロットにアイデアを追加（999.xナンバリング、アクティブシーケンス外） |
-| `/vgsd-review-backlog` | バックログ項目をレビューし、アクティブマイルストーンに昇格またはstaleエントリを削除 |
-| `/vgsd-thread [name]` | 永続コンテキストスレッド — 複数セッションにまたがる作業用の軽量クロスセッション知識 |
+| `/fvgsd-capture --seed <idea>` | トリガー条件付きの将来志向のアイデアをキャプチャ — 適切なマイルストーンで浮上 |
+| `/fvgsd-capture --backlog <desc>` | バックログのパーキングロットにアイデアを追加（999.xナンバリング、アクティブシーケンス外） |
+| `/fvgsd-review-backlog` | バックログ項目をレビューし、アクティブマイルストーンに昇格またはstaleエントリを削除 |
+| `/fvgsd-thread [name]` | 永続コンテキストスレッド — 複数セッションにまたがる作業用の軽量クロスセッション知識 |
 
 ### ユーティリティ
 
 | コマンド | 説明 |
 |---------|--------------|
-| `/vgsd-settings` | モデルプロファイルとワークフローエージェントを設定 |
-| `/vgsd-config --profile <profile>` | モデルプロファイルを切り替え（quality/balanced/budget/inherit） |
-| `/vgsd-capture [desc]` | 後で取り組むアイデアをキャプチャ |
-| `/vgsd-capture --list` | 保留中のtodoを一覧表示 |
-| `/vgsd-debug [desc]` | 永続状態を持つ体系的デバッグ |
+| `/fvgsd-settings` | モデルプロファイルとワークフローエージェントを設定 |
+| `/fvgsd-config --profile <profile>` | モデルプロファイルを切り替え（quality/balanced/budget/inherit） |
+| `/fvgsd-capture [desc]` | 後で取り組むアイデアをキャプチャ |
+| `/fvgsd-capture --list` | 保留中のtodoを一覧表示 |
+| `/fvgsd-debug [desc]` | 永続状態を持つ体系的デバッグ |
 | `/gsd-do <text>` | フリーフォームテキストを適切なGSDコマンドに自動ルーティング |
 | `/gsd-note <text>` | ゼロフリクションのアイデアキャプチャ — ノートの追加、一覧、todoへの昇格 |
-| `/vgsd-quick [--full] [--discuss] [--research]` | GSDの保証付きでアドホックタスクを実行（`--full` で全フェーズを有効化、`--discuss` で事前にコンテキストを収集、`--research` で計画前にアプローチを調査） |
-| `/vgsd-health [--repair]` | `.planning/` ディレクトリの整合性を検証、`--repair` で自動修復 |
-| `/vgsd-stats` | プロジェクト統計を表示 — フェーズ、プラン、要件、gitメトリクス |
-| `/vgsd-profile-user [--questionnaire] [--refresh]` | セッション分析から開発者行動プロファイルを生成し、パーソナライズされた応答を提供 |
+| `/fvgsd-quick [--full] [--discuss] [--research]` | GSDの保証付きでアドホックタスクを実行（`--full` で全フェーズを有効化、`--discuss` で事前にコンテキストを収集、`--research` で計画前にアプローチを調査） |
+| `/fvgsd-health [--repair]` | `.planning/` ディレクトリの整合性を検証、`--repair` で自動修復 |
+| `/fvgsd-stats` | プロジェクト統計を表示 — フェーズ、プラン、要件、gitメトリクス |
+| `/fvgsd-profile-user [--questionnaire] [--refresh]` | セッション分析から開発者行動プロファイルを生成し、パーソナライズされた応答を提供 |
 
 <sup>¹ Redditユーザー OracleGreyBeard による貢献</sup>
 
@@ -657,7 +657,7 @@ lmn012o feat(08-02): create registration endpoint
 
 ## 設定
 
-GSDはプロジェクト設定を `.planning/config.json` に保存します。`/vgsd-new-project` 実行時に設定するか、後から `/vgsd-settings` で更新できます。完全な設定スキーマ、ワークフロートグル、gitブランチオプション、エージェントごとのモデル内訳については、[ユーザーガイド](docs/ja-JP/USER-GUIDE.md#configuration-reference)をご覧ください。
+GSDはプロジェクト設定を `.planning/config.json` に保存します。`/fvgsd-new-project` 実行時に設定するか、後から `/fvgsd-settings` で更新できます。完全な設定スキーマ、ワークフロートグル、gitブランチオプション、エージェントごとのモデル内訳については、[ユーザーガイド](docs/ja-JP/USER-GUIDE.md#configuration-reference)をご覧ください。
 
 ### コア設定
 
@@ -679,12 +679,12 @@ GSDはプロジェクト設定を `.planning/config.json` に保存します。`
 
 プロファイルの切り替え：
 ```
-/vgsd-config --profile budget
+/fvgsd-config --profile budget
 ```
 
 非Anthropicプロバイダー（OpenRouter、ローカルモデル）を使用する場合や、現在のランタイムのモデル選択に従う場合（例：OpenCode `/model`）は `inherit` を使用してください。
 
-または `/vgsd-settings` で設定できます。
+または `/fvgsd-settings` で設定できます。
 
 ### ワークフローエージェント
 
@@ -701,9 +701,9 @@ GSDはプロジェクト設定を `.planning/config.json` に保存します。`
 | `workflow.skip_discuss` | `false` | 自律モードでdiscuss-phaseをスキップ |
 | `workflow.text_mode` | `false` | リモートセッション用のテキスト専用モード（TUIメニューなし） |
 
-これらのトグルには `/vgsd-settings` を使用するか、呼び出し時にオーバーライドできます：
-- `/vgsd-plan-phase --skip-research`
-- `/vgsd-plan-phase --skip-verify`
+これらのトグルには `/fvgsd-settings` を使用するか、呼び出し時にオーバーライドできます：
+- `/fvgsd-plan-phase --skip-research`
+- `/fvgsd-plan-phase --skip-verify`
 
 ### 実行
 
@@ -740,7 +740,7 @@ GSDはv1.27以降、多層防御セキュリティを備えています：
 
 - **パストラバーサル防止** — ユーザー提供のすべてのファイルパス（`--text-file`、`--prd`）がプロジェクトディレクトリ内に解決されるか検証
 - **プロンプトインジェクション検出** — 集中型 `security.cjs` モジュールが計画成果物に入る前にユーザー提供テキストのインジェクションパターンをスキャン
-- **PreToolUseプロンプトガードフック** — `gsd-prompt-guard` が `.planning/` への書き込みに埋め込まれたインジェクションベクトルをスキャン（アドバイザリー、ブロッキングではない）
+- **PreToolUseプロンプトガードフック** — `fvgsd/prompt-guard` が `.planning/` への書き込みに埋め込まれたインジェクションベクトルをスキャン（アドバイザリー、ブロッキングではない）
 - **安全なJSON解析** — 不正な `--fields` 引数が状態を破損する前にキャッチ
 - **シェル引数バリデーション** — シェル補間前にユーザーテキストをサニタイズ
 - **CI対応インジェクションスキャナー** — `prompt-injection-scan.test.cjs` が全エージェント/ワークフロー/コマンドファイルの埋め込みインジェクションベクトルをスキャン
@@ -785,19 +785,19 @@ GSDのコードベースマッピングおよび分析コマンドは、プロ�
 - Codexの場合、`~/.codex/skills/gsd-*/SKILL.md`（グローバル）または `./.codex/skills/gsd-*/SKILL.md`（ローカル）にスキルが存在するか確認してください
 
 **コマンドが期待通りに動作しない？**
-- `/vgsd-help` を実行してインストールを確認してください
-- `npx get-shit-done-cc` を再実行して再インストールしてください
+- `/fvgsd-help` を実行してインストールを確認してください
+- `npx fvgsd` を再実行して再インストールしてください
 
 **最新バージョンへのアップデート？**
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 **Dockerまたはコンテナ化環境を使用している？**
 
 チルダパス（`~/.claude/...`）でファイル読み取りが失敗する場合、インストール前に `CLAUDE_CONFIG_DIR` を設定してください：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
 ```
 これにより、コンテナ内で正しく展開されない可能性がある `~` の代わりに絶対パスが使用されます。
 
@@ -807,26 +807,26 @@ GSDを完全に削除するには：
 
 ```bash
 # グローバルインストール
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
+npx fvgsd --claude --global --uninstall
+npx fvgsd --opencode --global --uninstall
+npx fvgsd --gemini --global --uninstall
+npx fvgsd --kilo --global --uninstall
+npx fvgsd --codex --global --uninstall
+npx fvgsd --copilot --global --uninstall
+npx fvgsd --cursor --global --uninstall
+npx fvgsd --antigravity --global --uninstall
+npx fvgsd --trae --global --uninstall
 
 # ローカルインストール（現在のプロジェクト）
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
+npx fvgsd --claude --local --uninstall
+npx fvgsd --opencode --local --uninstall
+npx fvgsd --gemini --local --uninstall
+npx fvgsd --kilo --local --uninstall
+npx fvgsd --codex --local --uninstall
+npx fvgsd --copilot --local --uninstall
+npx fvgsd --cursor --local --uninstall
+npx fvgsd --antigravity --local --uninstall
+npx fvgsd --trae --local --uninstall
 ```
 
 これにより、他の設定を保持しながら、すべてのGSDコマンド、エージェント、フック、設定が削除されます。
@@ -835,7 +835,7 @@ npx get-shit-done-cc --trae --local --uninstall
 
 ## コミュニティポート
 
-OpenCode、Gemini CLI、Kilo、Codexは `npx get-shit-done-cc` でネイティブサポートされています。
+OpenCode、Gemini CLI、Kilo、Codexは `npx fvgsd` でネイティブサポートされています。
 
 以下のコミュニティポートがマルチランタイムサポートの先駆けとなりました：
 

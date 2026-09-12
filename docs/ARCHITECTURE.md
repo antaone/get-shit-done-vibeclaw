@@ -31,7 +31,7 @@ GSD is a **meta-prompting framework** that sits between the user and AI coding a
 ```
 ┌──────────────────────────────────────────────────────┐
 │                      USER                            │
-│            /vgsd-command [args]                        │
+│            /fvgsd-command [args]                        │
 └─────────────────────┬────────────────────────────────┘
                       │
 ┌─────────────────────▼────────────────────────────────┐
@@ -54,7 +54,7 @@ GSD is a **meta-prompting framework** that sits between the user and AI coding a
        │              │                 │
 ┌──────▼──────────────▼─────────────────▼──────────────┐
 │              CLI TOOLS LAYER                          │
-│   gsd-sdk query (sdk/src/query) + gsd-tools.cjs       │
+│   fvgsd-sdk query (sdk/src/query) + fvgsd-tools.cjs       │
 │   Programmatic SDK bridge: GSDTools/query-runtime-bridge.ts │
 └──────────────────────┬───────────────────────────────┘
                        │
@@ -77,7 +77,7 @@ Every agent spawned by an orchestrator gets a clean context window (up to 200K t
 
 Workflow files (`get-shit-done/workflows/*.md`) never do heavy lifting. They:
 
-- Load context via `gsd-sdk query init.<workflow>` (or legacy `gsd-tools.cjs init <workflow>`)
+- Load context via `fvgsd-sdk query init.<workflow>` (or legacy `fvgsd-tools.cjs init <workflow>`)
 - Spawn specialized agents with focused prompts
 - Collect results and route to the next step
 - Update state between steps
@@ -111,18 +111,18 @@ Multiple layers prevent common failure modes:
 
 User-facing entry points. Each file contains YAML frontmatter (name, description, allowed-tools) and a prompt body that bootstraps the workflow. Commands are installed as:
 
-- **Claude Code:** Custom slash commands (hyphen form, `/vgsd-command-name`)
-- **OpenCode / Kilo:** Slash commands (hyphen form, `/vgsd-command-name`)
-- **Codex:** Skills (`$vgsd-command-name`)
-- **Copilot:** Slash commands (hyphen form, `/vgsd-command-name`)
-- **Gemini CLI:** Slash commands under the `gsd:` namespace (colon form, `/vgsd:command-name`) — Gemini namespaces all custom commands under their plugin id, so the install path rewrites every body-text reference to colon form
+- **Claude Code:** Custom slash commands (hyphen form, `/fvgsd-command-name`)
+- **OpenCode / Kilo:** Slash commands (hyphen form, `/fvgsd-command-name`)
+- **Codex:** Skills (`$fvgsd-command-name`)
+- **Copilot:** Slash commands (hyphen form, `/fvgsd-command-name`)
+- **Gemini CLI:** Slash commands under the `gsd:` namespace (colon form, `/fvgsd:command-name`) — Gemini namespaces all custom commands under their plugin id, so the install path rewrites every body-text reference to colon form
 - **Antigravity:** Skills
 
 **Total commands:** see [`docs/INVENTORY.md`](INVENTORY.md#commands) for the authoritative count and full roster.
 
 #### Two-stage hierarchical routing (v1.40, [#2792](https://github.com/gsd-build/get-shit-done/issues/2792))
 
-To keep the eager skill-listing token cost low, v1.40 introduces six namespace **meta-skills** (`vgsd-workflow`, `vgsd-project`, `vgsd-quality`, `vgsd-context`, `vgsd-manage`, `vgsd-ideate` — sourced from `commands/gsd/ns-*.md`, but the invocable `name:` is the bare form shown here) layered above the concrete sub-skills. The model sees 6 namespace routers (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens), selects a namespace, then routes to the concrete sub-skill via a routing table embedded in the namespace router's body. Namespace skills are **additive** — every concrete command is still directly invocable.
+To keep the eager skill-listing token cost low, v1.40 introduces six namespace **meta-skills** (`fvgsd-workflow`, `fvgsd-project`, `fvgsd-quality`, `fvgsd-context`, `fvgsd-manage`, `fvgsd-ideate` — sourced from `commands/gsd/ns-*.md`, but the invocable `name:` is the bare form shown here) layered above the concrete sub-skills. The model sees 6 namespace routers (~120 tokens) instead of a flat 86-skill listing (~2,150 tokens), selects a namespace, then routes to the concrete sub-skill via a routing table embedded in the namespace router's body. Namespace skills are **additive** — every concrete command is still directly invocable.
 
 The router descriptions use pipe-separated keyword tags (≤ 60 chars) per the Tool Attention research showing keyword-dense tags outperform prose for routing at ~40 % the token cost.
 
@@ -134,7 +134,7 @@ The eager skill listing is one of two recurring per-turn token costs. The other 
 
 Orchestration logic that commands reference. Contains the step-by-step process including:
 
-- Context loading via `gsd-sdk query` init handlers (or legacy `gsd-tools.cjs init`)
+- Context loading via `fvgsd-sdk query` init handlers (or legacy `fvgsd-tools.cjs init`)
 - Agent spawn instructions with model resolution
 - Gate/checkpoint definitions
 - State update patterns
@@ -145,7 +145,7 @@ Orchestration logic that commands reference. Contains the step-by-step process i
 #### Progressive disclosure for workflows
 
 Workflow files are loaded verbatim into Claude's context every time the
-corresponding `/vgsd-*` command is invoked. To keep that cost bounded, the
+corresponding `/fvgsd-*` command is invoked. To keep that cost bounded, the
 workflow size budget enforced by `tests/workflow-size-budget.test.cjs`
 mirrors the agent budget from #2361:
 
@@ -228,15 +228,15 @@ References for integrating thinking-class models (o3, o4-mini, Gemini 2.5 Pro) i
 
 **Modular planner decomposition:**
 
-The planner agent (`agents/gsd-planner.md`) was decomposed from a single monolithic file into a core agent plus reference modules to stay under the 50K character limit imposed by some runtimes:
+The planner agent (`agents/fvgsd-planner.md`) was decomposed from a single monolithic file into a core agent plus reference modules to stay under the 50K character limit imposed by some runtimes:
 
 - `planner-gap-closure.md` — Gap closure mode behavior (reads VERIFICATION.md, targeted replanning)
-- `planner-reviews.md` — Cross-AI review integration (reads REVIEWS.md from `/vgsd-review`)
+- `planner-reviews.md` — Cross-AI review integration (reads REVIEWS.md from `/fvgsd-review`)
 - `planner-revision.md` — Plan revision patterns for iterative refinement
 
 ### Templates (`get-shit-done/templates/`)
 
-Markdown templates for all planning artifacts. Used by `gsd-sdk query template.fill` / `phase.scaffold` (and legacy `gsd-tools.cjs template fill` / top-level `scaffold`) to create pre-structured files:
+Markdown templates for all planning artifacts. Used by `fvgsd-sdk query template.fill` / `phase.scaffold` (and legacy `fvgsd-tools.cjs template fill` / top-level `scaffold`) to create pre-structured files:
 - `project.md`, `requirements.md`, `roadmap.md`, `state.md` — Core project files
 - `phase-prompt.md` — Phase execution prompt template
 - `summary.md` (+ `summary-minimal.md`, `summary-standard.md`, `summary-complex.md`) — Granularity-aware summary templates
@@ -252,17 +252,17 @@ Runtime hooks that integrate with the host AI agent:
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| `gsd-statusline.js` | `statusLine` | Displays model, task, directory, and context usage bar |
-| `gsd-context-monitor.js` | `PostToolUse` / `AfterTool` | Injects agent-facing context warnings at 35%/25% remaining |
-| `gsd-check-update.js` | `SessionStart` | Foreground trigger for the background update check |
-| `gsd-check-update-worker.js` | (helper) | Background worker spawned by `gsd-check-update.js`; no direct event registration |
-| `gsd-prompt-guard.js` | `PreToolUse` | Scans `.planning/` writes for prompt injection patterns (advisory) |
-| `gsd-read-injection-scanner.js` | `PostToolUse` | Scans Read tool output for injected instructions in untrusted content |
-| `gsd-workflow-guard.js` | `PreToolUse` | Detects file edits outside GSD workflow context (advisory, opt-in via `hooks.workflow_guard`) |
-| `gsd-read-guard.js` | `PreToolUse` | Advisory guard preventing Edit/Write on files not yet read in the session |
-| `gsd-session-state.sh` | `PostToolUse` | Session state tracking for shell-based runtimes |
-| `gsd-validate-commit.sh` | `PostToolUse` | Commit validation for conventional commit enforcement |
-| `gsd-phase-boundary.sh` | `PostToolUse` | Phase boundary detection for workflow transitions |
+| `fvgsd/statusline.js` | `statusLine` | Displays model, task, directory, and context usage bar |
+| `fvgsd/context-monitor.js` | `PostToolUse` / `AfterTool` | Injects agent-facing context warnings at 35%/25% remaining |
+| `fvgsd/check-update.js` | `SessionStart` | Foreground trigger for the background update check |
+| `fvgsd/check-update-worker.js` | (helper) | Background worker spawned by `fvgsd/check-update.js`; no direct event registration |
+| `fvgsd/prompt-guard.js` | `PreToolUse` | Scans `.planning/` writes for prompt injection patterns (advisory) |
+| `fvgsd/read-injection-scanner.js` | `PostToolUse` | Scans Read tool output for injected instructions in untrusted content |
+| `fvgsd/workflow-guard.js` | `PreToolUse` | Detects file edits outside GSD workflow context (advisory, opt-in via `hooks.workflow_guard`) |
+| `fvgsd/read-guard.js` | `PreToolUse` | Advisory guard preventing Edit/Write on files not yet read in the session |
+| `fvgsd/session-state.sh` | `PostToolUse` | Session state tracking for shell-based runtimes |
+| `fvgsd/validate-commit.sh` | `PostToolUse` | Commit validation for conventional commit enforcement |
+| `fvgsd/phase-boundary.sh` | `PostToolUse` | Phase boundary detection for workflow transitions |
 
 See [`docs/INVENTORY.md`](INVENTORY.md#hooks-11-shipped) for the authoritative 11-hook roster.
 
@@ -279,11 +279,11 @@ This keeps callers thin adapters and centralizes transport decisions for SDK pub
 
 ### Command Routing Hub (`get-shit-done/bin/lib/command-routing-hub.cjs`)
 
-CJS command family routers migrate to dispatch through `CommandRoutingHub` incrementally. `phase-command-router.cjs` is the first migration (issue #3788); remaining routers (`phases-command-router.cjs`, `roadmap-command-router.cjs`, etc.) continue using `routeCjsCommandFamily` until migrated in follow-up issues. The hub owns three cross-cutting concerns that each router previously duplicated: (1) mode selection (`sdk` when `tryLoadSdk()` succeeds and no `GSD_WORKSTREAM` is active, `cjs` otherwise), set once at construction; (2) a no-throw pure-result contract (`hub.dispatch()` catches all exceptions and returns `{ ok: false, errorKind, message, details }` instead of propagating); and (3) a closed six-value `errorKind` enum exported as the frozen `ERROR_KINDS` object. Router adapters remain thin CLI translators — they build the hub, call `dispatch`, then map the Result to `output()`/`error()` calls. No transparent SDK→CJS fallback: an SDK-mode hub that encounters a load or dispatch failure returns `SdkLoadFailed` or `SdkDispatchFailed` without retrying via CJS. See `docs/adr/0012-command-routing-hub.md`.
+CJS command family routers migrate to dispatch through `CommandRoutingHub` incrementally. `phase-command-router.cjs` is the first migration (issue #3788); remaining routers (`phases-command-router.cjs`, `roadmap-command-router.cjs`, etc.) continue using `routeCjsCommandFamily` until migrated in follow-up issues. The hub owns three cross-cutting concerns that each router previously duplicated: (1) mode selection (`sdk` when `tryLoadSdk()` succeeds and no `FVGSD_WORKSTREAM` is active, `cjs` otherwise), set once at construction; (2) a no-throw pure-result contract (`hub.dispatch()` catches all exceptions and returns `{ ok: false, errorKind, message, details }` instead of propagating); and (3) a closed six-value `errorKind` enum exported as the frozen `ERROR_KINDS` object. Router adapters remain thin CLI translators — they build the hub, call `dispatch`, then map the Result to `output()`/`error()` calls. No transparent SDK→CJS fallback: an SDK-mode hub that encounters a load or dispatch failure returns `SdkLoadFailed` or `SdkDispatchFailed` without retrying via CJS. See `docs/adr/0012-command-routing-hub.md`.
 
 ### CLI Tools (`get-shit-done/bin/`)
 
-Node.js CLI utility (`gsd-tools.cjs`) with domain modules split across `get-shit-done/bin/lib/` (see [`docs/INVENTORY.md`](INVENTORY.md#cli-modules-33-shipped) for the authoritative roster):
+Node.js CLI utility (`fvgsd-tools.cjs`) with domain modules split across `get-shit-done/bin/lib/` (see [`docs/INVENTORY.md`](INVENTORY.md#cli-modules-33-shipped) for the authoritative roster):
 
 
 | Module                 | Responsibility                                                                                      |
@@ -319,10 +319,10 @@ Node.js CLI utility (`gsd-tools.cjs`) with domain modules split across `get-shit
 ```
 Orchestrator (workflow .md)
     │
-    ├── Load context: gsd-sdk query init.<workflow> <phase> (or legacy gsd-tools.cjs init)
+    ├── Load context: fvgsd-sdk query init.<workflow> <phase> (or legacy fvgsd-tools.cjs init)
     │   Returns JSON with: project info, config, state, phase details
     │
-    ├── Resolve model: gsd-sdk query resolve-model <agent-name>
+    ├── Resolve model: fvgsd-sdk query resolve-model <agent-name>
     │   Returns: opus | sonnet | haiku | inherit
     │
     ├── Spawn Agent (Task/SubAgent call)
@@ -333,28 +333,28 @@ Orchestrator (workflow .md)
     │
     ├── Collect result
     │
-    └── Update state: gsd-sdk query state.update / state.patch / state.advance-plan (or legacy gsd-tools.cjs)
+    └── Update state: fvgsd-sdk query state.update / state.patch / state.advance-plan (or legacy fvgsd-tools.cjs)
 ```
 
 ### Primary Agent Spawn Categories
 
-Conceptual spawn-pattern taxonomy for the 21 primary agents. For the authoritative 31-agent roster (including the 10 advanced/specialized agents such as `gsd-pattern-mapper`, `gsd-code-reviewer`, `gsd-code-fixer`, `gsd-ai-researcher`, `gsd-domain-researcher`, `gsd-eval-planner`, `gsd-eval-auditor`, `gsd-framework-selector`, `gsd-debug-session-manager`, `gsd-intel-updater`), see [`docs/INVENTORY.md`](INVENTORY.md#agents-31-shipped).
+Conceptual spawn-pattern taxonomy for the 21 primary agents. For the authoritative 31-agent roster (including the 10 advanced/specialized agents such as `fvgsd-pattern-mapper`, `fvgsd-code-reviewer`, `fvgsd-code-fixer`, `fvgsd-ai-researcher`, `fvgsd-domain-researcher`, `fvgsd-eval-planner`, `fvgsd-eval-auditor`, `fvgsd-framework-selector`, `fvgsd-debug-session-manager`, `fvgsd-intel-updater`), see [`docs/INVENTORY.md`](INVENTORY.md#agents-31-shipped).
 
 
 | Category         | Agents                                                                                  | Parallelism                                                                               |
 | ---------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Researchers**  | gsd-project-researcher, gsd-phase-researcher, gsd-ui-researcher, gsd-advisor-researcher | 4 parallel (stack, features, architecture, pitfalls); advisor spawns during discuss-phase |
-| **Synthesizers** | gsd-research-synthesizer                                                                | Sequential (after researchers complete)                                                   |
-| **Planners**     | gsd-planner, gsd-roadmapper                                                             | Sequential                                                                                |
-| **Checkers**     | gsd-plan-checker, gsd-integration-checker, gsd-ui-checker, gsd-nyquist-auditor          | Sequential (verification loop, max 3 iterations)                                          |
-| **Executors**    | gsd-executor                                                                            | Parallel within waves, sequential across waves                                            |
-| **Verifiers**    | gsd-verifier                                                                            | Sequential (after all executors complete)                                                 |
-| **Mappers**      | gsd-codebase-mapper                                                                     | 4 parallel (tech, arch, quality, concerns)                                                |
-| **Debuggers**    | gsd-debugger                                                                            | Sequential (interactive)                                                                  |
-| **Auditors**     | gsd-ui-auditor, gsd-security-auditor                                                    | Sequential                                                                                |
-| **Doc Writers**  | gsd-doc-writer, gsd-doc-verifier                                                        | Sequential (writer then verifier)                                                         |
-| **Profilers**    | gsd-user-profiler                                                                       | Sequential                                                                                |
-| **Analyzers**    | gsd-assumptions-analyzer                                                                | Sequential (during discuss-phase)                                                         |
+| **Researchers**  | fvgsd-project-researcher, fvgsd-phase-researcher, fvgsd-ui-researcher, fvgsd-advisor-researcher | 4 parallel (stack, features, architecture, pitfalls); advisor spawns during discuss-phase |
+| **Synthesizers** | fvgsd-research-synthesizer                                                                | Sequential (after researchers complete)                                                   |
+| **Planners**     | fvgsd-planner, fvgsd-roadmapper                                                             | Sequential                                                                                |
+| **Checkers**     | fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-ui-checker, fvgsd-nyquist-auditor          | Sequential (verification loop, max 3 iterations)                                          |
+| **Executors**    | fvgsd-executor                                                                            | Parallel within waves, sequential across waves                                            |
+| **Verifiers**    | fvgsd-verifier                                                                            | Sequential (after all executors complete)                                                 |
+| **Mappers**      | fvgsd-codebase-mapper                                                                     | 4 parallel (tech, arch, quality, concerns)                                                |
+| **Debuggers**    | fvgsd-debugger                                                                            | Sequential (interactive)                                                                  |
+| **Auditors**     | fvgsd-ui-auditor, fvgsd-security-auditor                                                    | Sequential                                                                                |
+| **Doc Writers**  | fvgsd-doc-writer, fvgsd-doc-verifier                                                        | Sequential (writer then verifier)                                                         |
+| **Profilers**    | fvgsd-user-profiler                                                                       | Sequential                                                                                |
+| **Analyzers**    | fvgsd-assumptions-analyzer                                                                | Sequential (during discuss-phase)                                                         |
 
 
 ### Wave Execution Model
@@ -384,7 +384,7 @@ When the context window is 500K+ tokens (1M-class models like Opus 4.6, Sonnet 4
 - **Executor agents** receive prior wave SUMMARY.md files and the phase CONTEXT.md/RESEARCH.md, enabling cross-plan awareness within a phase
 - **Verifier agents** receive all PLAN.md, SUMMARY.md, CONTEXT.md files plus REQUIREMENTS.md, enabling history-aware verification
 
-The orchestrator reads `context_window` from config (`gsd-sdk query config-get context_window`, or legacy `gsd-tools.cjs config-get`) and conditionally includes richer context when the value is >= 500,000. For standard 200K windows, prompts use truncated versions with cache-friendly ordering to maximize context efficiency.
+The orchestrator reads `context_window` from config (`fvgsd-sdk query config-get context_window`, or legacy `fvgsd-tools.cjs config-get`) and conditionally includes richer context when the value is >= 500,000. For standard 200K windows, prompts use truncated versions with cache-friendly ordering to maximize context efficiency.
 
 #### Parallel Commit Safety
 
@@ -488,10 +488,10 @@ UI-SPEC.md (per phase) ───────────────────
 
 ```
 ~/.claude/                          # Claude Code (global install)
-├── skills/vgsd-*/SKILL.md           # Global skills (authoritative roster: docs/INVENTORY.md)
+├── skills/fvgsd-*/SKILL.md           # Global skills (authoritative roster: docs/INVENTORY.md)
 ├── commands/gsd/*.md               # Local Claude installs use slash commands instead of global skills
 ├── get-shit-done/
-│   ├── bin/gsd-tools.cjs           # CLI utility
+│   ├── bin/fvgsd-tools.cjs           # CLI utility
 │   ├── bin/lib/*.cjs               # Domain modules (authoritative roster: docs/INVENTORY.md)
 │   ├── workflows/*.md              # Workflow definitions (authoritative roster: docs/INVENTORY.md)
 │   ├── references/*.md             # Shared reference docs (authoritative roster: docs/INVENTORY.md)
@@ -530,13 +530,13 @@ Equivalent paths for other runtimes:
 ├── STATE.md                # Living memory: position, decisions, blockers, metrics
 ├── config.json             # Workflow configuration
 ├── MILESTONES.md           # Completed milestone archive
-├── research/               # Domain research from /vgsd-new-project
+├── research/               # Domain research from /fvgsd-new-project
 │   ├── SUMMARY.md
 │   ├── STACK.md
 │   ├── FEATURES.md
 │   ├── ARCHITECTURE.md
 │   └── PITFALLS.md
-├── codebase/               # Brownfield mapping (from /vgsd-map-codebase)
+├── codebase/               # Brownfield mapping (from /fvgsd-map-codebase)
 │   ├── STACK.md            # YAML frontmatter carries `last_mapped_commit`
 │   ├── ARCHITECTURE.md     # for the post-execute drift gate (#2003)
 │   ├── CONVENTIONS.md
@@ -562,19 +562,19 @@ Equivalent paths for other runtimes:
 ├── todos/
 │   ├── pending/            # Captured ideas
 │   └── done/               # Completed todos
-├── threads/               # Persistent context threads (from /vgsd-thread)
-├── seeds/                 # Forward-looking ideas (from /vgsd-capture --seed)
+├── threads/               # Persistent context threads (from /fvgsd-thread)
+├── seeds/                 # Forward-looking ideas (from /fvgsd-capture --seed)
 ├── debug/                  # Active debug sessions
 │   ├── *.md                # Active sessions
 │   ├── resolved/           # Archived sessions
 │   └── knowledge-base.md   # Persistent debug learnings
-├── ui-reviews/             # Screenshots from /vgsd-ui-review (gitignored)
+├── ui-reviews/             # Screenshots from /fvgsd-ui-review (gitignored)
 └── continue-here.md        # Context handoff (from pause-work)
 ```
 
 ### Post-Execute Codebase Drift Gate (#2003)
 
-After the last wave of `/vgsd-execute-phase` commits, the workflow runs a
+After the last wave of `/fvgsd-execute-phase` commits, the workflow runs a
 non-blocking `codebase_drift_gate` step (between `schema_drift_gate` and
 `verify_phase_goal`). It compares the diff `last_mapped_commit..HEAD`
 against `.planning/codebase/STRUCTURE.md` and counts four kinds of
@@ -586,9 +586,9 @@ structural elements:
 4. New route modules under `routes/` or `api/`
 
 If the count meets `workflow.drift_threshold` (default 3), the gate either
-**warns** (default) with the suggested `/vgsd-map-codebase --paths …` command,
+**warns** (default) with the suggested `/fvgsd-map-codebase --paths …` command,
 or **auto-remaps** (`workflow.drift_action = auto-remap`) by spawning
-`gsd-codebase-mapper` scoped to the affected paths. Any error in detection
+`fvgsd-codebase-mapper` scoped to the affected paths. Any error in detection
 or remap is logged and the phase continues — drift detection cannot fail
 verification.
 
@@ -623,8 +623,8 @@ The installer (`bin/install.js`, ~10,700 lines) handles:
   - Augment Code: Skills-first with full skill conversion and config management
 5. **Path normalization** — Replaces `~/.claude/` paths with runtime-specific paths
 6. **Settings integration** — Registers hooks in runtime's `settings.json`
-7. **Patch backup** — Since v1.17, backs up locally modified files to `gsd-local-patches/` for `/vgsd-update --reapply`
-8. **Manifest tracking** — Writes `gsd-file-manifest.json` for clean uninstall
+7. **Patch backup** — Since v1.17, backs up locally modified files to `fvgsd-local-patches/` for `/fvgsd-update --reapply`
+8. **Manifest tracking** — Writes `fvgsd-file-manifest.json` for clean uninstall
 9. **Uninstall mode** — `--uninstall` removes all GSD files, hooks, and settings
 
 Install-time file moves, stale-artifact cleanup, config rewrites, and user-data
@@ -650,15 +650,15 @@ remove or rewrite anything.
 ```
 Runtime Engine (Claude Code / Gemini CLI)
     │
-    ├── statusLine event ──► gsd-statusline.js
+    ├── statusLine event ──► fvgsd/statusline.js
     │   Reads: stdin (session JSON)
     │   Writes: stdout (formatted status), /tmp/claude-ctx-{session}.json (bridge)
     │
-    ├── PostToolUse/AfterTool event ──► gsd-context-monitor.js
+    ├── PostToolUse/AfterTool event ──► fvgsd/context-monitor.js
     │   Reads: stdin (tool event JSON), /tmp/claude-ctx-{session}.json (bridge)
     │   Writes: stdout (hookSpecificOutput with additionalContext warning)
     │
-    └── SessionStart event ──► gsd-check-update.js
+    └── SessionStart event ──► fvgsd/check-update.js
         Reads: VERSION file
         Writes: ~/.claude/cache/gsd-update-check.json (spawns background process)
 ```
@@ -693,9 +693,9 @@ The researcher → planner → executor pipeline includes a supply-chain gate ag
 
 | Layer | Component | Action |
 |-------|-----------|--------|
-| Research | `gsd-phase-researcher` | Runs `slopcheck install <pkgs> --json`; writes `## Package Legitimacy Audit` table to RESEARCH.md; strips `[SLOP]` packages before RESEARCH.md is written |
-| Planning | `gsd-planner` | Reads Audit table; inserts `checkpoint:human-verify` before any `[ASSUMED]` or `[SUS]` install task; adds `T-{phase}-SC` STRIDE supply-chain row to `<threat_model>` |
-| Execution | `gsd-executor` | RULE 3 excludes package installation from auto-fix scope; failed installs surface as checkpoints, never silent substitutions |
+| Research | `fvgsd-phase-researcher` | Runs `slopcheck install <pkgs> --json`; writes `## Package Legitimacy Audit` table to RESEARCH.md; strips `[SLOP]` packages before RESEARCH.md is written |
+| Planning | `fvgsd-planner` | Reads Audit table; inserts `checkpoint:human-verify` before any `[ASSUMED]` or `[SUS]` install task; adds `T-{phase}-SC` STRIDE supply-chain row to `<threat_model>` |
+| Execution | `fvgsd-executor` | RULE 3 excludes package installation from auto-fix scope; failed installs surface as checkpoints, never silent substitutions |
 
 **Claim provenance integration:** Package names discovered via WebSearch are tagged `[ASSUMED]` (not `[VERIFIED]`) regardless of `npm view` result. This extends the existing `[ASSUMED]` / `[VERIFIED]` / `[CITED]` provenance system by enforcing the provenance tag as a hard gate at the install boundary — `[ASSUMED]` always generates a `checkpoint:human-verify` in PLAN.md.
 
@@ -709,18 +709,18 @@ The researcher → planner → executor pipeline includes a supply-chain gate ag
 
 ### Security Hooks (v1.27)
 
-**Prompt Guard** (`gsd-prompt-guard.js`):
+**Prompt Guard** (`fvgsd/prompt-guard.js`):
 
 - Triggers on Write/Edit to `.planning/` files
 - Scans content for prompt injection patterns (role override, instruction bypass, system tag injection)
 - Advisory-only — logs detection, does not block
 - Patterns are inlined (subset of `security.cjs`) for hook independence
 
-**Workflow Guard** (`gsd-workflow-guard.js`):
+**Workflow Guard** (`fvgsd/workflow-guard.js`):
 
 - Triggers on Write/Edit to non-`.planning/` files
-- Detects edits outside GSD workflow context (no active `/vgsd-` command or Task subagent)
-- Advises using `/vgsd-quick` or `/vgsd-fast` for state-tracked changes
+- Detects edits outside GSD workflow context (no active `/fvgsd-` command or Task subagent)
+- Advises using `/fvgsd-quick` or `/fvgsd-fast` for state-tracked changes
 - Opt-in via `hooks.workflow_guard: true` (default: false)
 
 ---
@@ -737,20 +737,20 @@ The migration-specific ownership and source snapshots live in
 
 | Runtime | Global root | Local root | Invocation surface | Agent surface | Config and hooks |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code | `~/.claude` | `./.claude` | Global `skills/vgsd-*/SKILL.md`; local `commands/gsd/*.md` | `agents/vgsd-*.md` | `settings.json` hook and statusLine entries |
-| OpenCode | `~/.config/opencode` | `./.opencode` | `command/vgsd-*.md` | `agents/vgsd-*.md` | `opencode.json` or `opencode.jsonc`; no GSD hooks |
-| Kilo | `~/.config/kilo` | `./.kilo` | `command/vgsd-*.md` | `agents/vgsd-*.md` | `kilo.json` or `kilo.jsonc`; no GSD hooks |
-| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/gsd/*.toml` | `agents/vgsd-*.md` | `settings.json` feature flag, hooks, and statusline |
-| Codex | `~/.codex` | `./.codex` | `skills/vgsd-*/SKILL.md` | `agents/` source markdown plus per-agent TOML | `config.toml` `[agents.gsd-*]`, `[features].hooks` (canonical; legacy alias `codex_hooks` is recognized and migrated forward on reinstall, #3566), and hook tables |
-| GitHub Copilot | `~/.copilot` | `./.github` | `skills/vgsd-*/SKILL.md` and `copilot-instructions.md` | `.agent.md` files | No GSD hooks or statusline |
-| Antigravity | `~/.gemini/antigravity` | `./.agent` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Gemini-style `settings.json` hook entries when installed by GSD |
-| Cursor | `~/.cursor` | `./.cursor` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Windsurf | `~/.codeium/windsurf` | `./.windsurf` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Augment Code | `~/.augment` | `./.augment` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | No GSD hooks or statusline |
-| Trae | `~/.trae` | `./.trae` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Rule references under `rules/`; no GSD hooks |
-| Qwen Code | `~/.qwen` | `./.qwen` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
-| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/gsd/DESCRIPTION.md` plus `skills/gsd/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
-| CodeBuddy | `~/.codebuddy` | `./.codebuddy` | `skills/vgsd-*/SKILL.md` | `agents/vgsd-*.md` | Common GSD settings and hook entries where supported |
+| Claude Code | `~/.claude` | `./.claude` | Global `skills/fvgsd-*/SKILL.md`; local `commands/gsd/*.md` | `agents/fvgsd-*.md` | `settings.json` hook and statusLine entries |
+| OpenCode | `~/.config/opencode` | `./.opencode` | `command/fvgsd-*.md` | `agents/fvgsd-*.md` | `opencode.json` or `opencode.jsonc`; no GSD hooks |
+| Kilo | `~/.config/kilo` | `./.kilo` | `command/fvgsd-*.md` | `agents/fvgsd-*.md` | `kilo.json` or `kilo.jsonc`; no GSD hooks |
+| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/gsd/*.toml` | `agents/fvgsd-*.md` | `settings.json` feature flag, hooks, and statusline |
+| Codex | `~/.codex` | `./.codex` | `skills/fvgsd-*/SKILL.md` | `agents/` source markdown plus per-agent TOML | `config.toml` `[agents.gsd-*]`, `[features].hooks` (canonical; legacy alias `codex_hooks` is recognized and migrated forward on reinstall, #3566), and hook tables |
+| GitHub Copilot | `~/.copilot` | `./.github` | `skills/fvgsd-*/SKILL.md` and `copilot-instructions.md` | `.agent.md` files | No GSD hooks or statusline |
+| Antigravity | `~/.gemini/antigravity` | `./.agent` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Gemini-style `settings.json` hook entries when installed by GSD |
+| Cursor | `~/.cursor` | `./.cursor` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Windsurf | `~/.codeium/windsurf` | `./.windsurf` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Augment Code | `~/.augment` | `./.augment` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | No GSD hooks or statusline |
+| Trae | `~/.trae` | `./.trae` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Rule references under `rules/`; no GSD hooks |
+| Qwen Code | `~/.qwen` | `./.qwen` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
+| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/gsd/DESCRIPTION.md` plus `skills/gsd/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
+| CodeBuddy | `~/.codebuddy` | `./.codebuddy` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
 | Cline | `~/.cline` | project root | `.clinerules` | Rules only | No GSD hooks or statusline |
 
 ### Upstream Contract Sources

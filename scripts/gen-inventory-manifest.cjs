@@ -23,14 +23,14 @@ const FAMILIES = [
   {
     name: 'agents',
     dir: path.join(ROOT, 'agents'),
-    filter: (f) => /^gsd-.*\.md$/.test(f),
+    filter: (f) => /^fvgsd-.*\.md$/.test(f),
     toName: (f) => f.replace(/\.md$/, ''),
   },
   {
     name: 'commands',
     dir: path.join(ROOT, 'commands', 'gsd'),
     filter: (f) => f.endsWith('.md'),
-    toName: (f) => '/vgsd-' + f.replace(/\.md$/, ''),
+    toName: (f) => '/fvgsd-' + f.replace(/\.md$/, ''),
   },
   {
     name: 'workflows',

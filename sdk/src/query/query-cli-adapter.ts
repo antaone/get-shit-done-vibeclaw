@@ -13,7 +13,7 @@ export interface QueryCliAdapterInput {
 
 
 function queryFallbackToCjsEnabled(): boolean {
-  const v = process.env.GSD_QUERY_FALLBACK?.toLowerCase();
+  const v = process.env.FVGSD_QUERY_FALLBACK?.toLowerCase();
   if (v === 'off' || v === 'never' || v === 'false' || v === '0') return false;
   return true;
 }

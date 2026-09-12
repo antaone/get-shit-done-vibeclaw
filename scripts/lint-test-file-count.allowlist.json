@@ -27,9 +27,9 @@
     "uat":                    { "current": 3,  "issue": "TBD" },
     "validate":               { "current": 3,  "issue": "TBD" },
     "workstream":             { "current": 3,  "issue": "TBD" },
-    "gsd-tools":              { "current": 3,  "issue": "TBD" },
+    "fvgsd-tools":              { "current": 3,  "issue": "TBD" },
     "runtime-artifact-layout":{ "current": 3,  "issue": "TBD" },
     "security":               { "current": 3,  "issue": "TBD" },
-    "gsd-sdk":                { "current": 3,  "issue": "TBD" }
+    "fvgsd-sdk":                { "current": 3,  "issue": "TBD" }
   }
 }

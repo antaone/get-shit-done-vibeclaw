@@ -1062,7 +1062,7 @@ describe('resolve-model command', () => {
   });
 
   test('known agent returns model and profile without unknown_agent', () => {
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-planner', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -1073,7 +1073,7 @@ describe('resolve-model command', () => {
 
   test('shipped-but-previously-missing agent resolves under quality profile (#3229)', () => {
     fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({ model_profile: 'quality' }));
-    const result = runGsdTools('resolve-model gsd-code-reviewer', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-code-reviewer', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
     const output = JSON.parse(result.output);
     assert.strictEqual(output.model, 'opus');
@@ -1109,7 +1109,7 @@ describe('resolve-model command', () => {
 
   test('default profile fallback when no config exists', () => {
     // tmpDir has no config.json, so defaults to balanced profile
-    const result = runGsdTools('resolve-model gsd-executor', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-executor', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -1123,7 +1123,7 @@ describe('resolve-model command', () => {
       runtime: 'codex',
       models: { planning: 'opus' },
     }));
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-planner', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -1143,7 +1143,7 @@ describe('resolve-model command', () => {
         },
       },
     }));
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-planner', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -1157,9 +1157,9 @@ describe('resolve-model command', () => {
       model_profile: 'balanced',
       runtime: 'codex',
       models: { planning: 'opus' },
-      model_overrides: { 'gsd-planner': 'gpt-5.5' },
+      model_overrides: { 'fvgsd-planner': 'gpt-5.5' },
     }));
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-planner', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);

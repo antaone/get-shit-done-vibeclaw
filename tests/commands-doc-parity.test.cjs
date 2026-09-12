@@ -2,12 +2,12 @@
 'use strict';
 
 /**
- * For every `commands/gsd/*.md`, assert its `/vgsd-<name>` slash command
- * appears either (a) as a `### /vgsd-...` heading in docs/COMMANDS.md or
+ * For every `commands/gsd/*.md`, assert its `/fvgsd-<name>` slash command
+ * appears either (a) as a `### /fvgsd-...` heading in docs/COMMANDS.md or
  * (b) as a row in docs/INVENTORY.md's Commands table. At least one of
  * these must be true so every shipped command is reachable from docs.
  *
- * The slug is derived from the `name:` frontmatter field (e.g. `vgsd-workflow`)
+ * The slug is derived from the `name:` frontmatter field (e.g. `fvgsd-workflow`)
  * rather than the filename (e.g. `ns-workflow.md`), so the test stays aligned
  * with the actual deployed command token even when the file has a legacy name.
  *
@@ -28,7 +28,7 @@ const commandFiles = fs.readdirSync(COMMANDS_DIR).filter((f) => f.endsWith('.md'
 
 /**
  * Extract the slug from the `name:` frontmatter field.
- * Accepts current `vgsd` and legacy upstream `gsd` forms.
+ * Accepts current `fvgsd` and legacy upstream `gsd` forms.
  * Returns the slug portion only (e.g. `workflow`, `plan-phase`).
  * Throws if frontmatter is missing or malformed.
  */
@@ -42,7 +42,7 @@ function parseSlugFromFrontmatter(content, filePath) {
     throw new Error('commands-doc-parity: unclosed YAML frontmatter in ' + filePath);
   }
   const frontmatter = content.slice(0, closingIdx);
-  const nameMatch = frontmatter.match(/^name:\s*"?(?:vgsd|gsd)[:-]([a-z0-9][a-z0-9-]*)"?\s*$/m);
+  const nameMatch = frontmatter.match(/^name:\s*"?(?:fvgsd|gsd)[:-]([a-z0-9][a-z0-9-]*)"?\s*$/m);
   if (!nameMatch) {
     throw new Error('commands-doc-parity: could not extract slug from name: field in ' + filePath);
   }
@@ -50,14 +50,14 @@ function parseSlugFromFrontmatter(content, filePath) {
 }
 
 function mentionedInCommandsDoc(slug) {
-  // Match a heading like: ### /vgsd-<slug>  or  ## /vgsd-<slug>
-  const headingRe = new RegExp(`^#{2,4}\\s+\\\`?/vgsd-${slug}\\\`?(?:[\\s(]|$)`, 'm');
+  // Match a heading like: ### /fvgsd-<slug>  or  ## /fvgsd-<slug>
+  const headingRe = new RegExp(`^#{2,4}\\s+\\\`?/fvgsd-${slug}\\\`?(?:[\\s(]|$)`, 'm');
   return headingRe.test(COMMANDS_MD);
 }
 
 function mentionedInInventory(slug) {
-  // Match a row like: | `/vgsd-<slug>` | ... |
-  const rowRe = new RegExp(`\\|\\s*\\\`/vgsd-${slug}\\\`\\s*\\|`, 'm');
+  // Match a row like: | `/fvgsd-<slug>` | ... |
+  const rowRe = new RegExp(`\\|\\s*\\\`/fvgsd-${slug}\\\`\\s*\\|`, 'm');
   return rowRe.test(INVENTORY_MD);
 }
 
@@ -66,12 +66,12 @@ describe('every shipped command is documented somewhere', () => {
     const filePath = path.join(COMMANDS_DIR, file);
     const content = fs.readFileSync(filePath, 'utf8');
     const slug = parseSlugFromFrontmatter(content, filePath);
-    test(`/vgsd-${slug}`, () => {
+    test(`/fvgsd-${slug}`, () => {
       const inCommandsDoc = mentionedInCommandsDoc(slug);
       const inInventory = mentionedInInventory(slug);
       assert.ok(
         inCommandsDoc || inInventory,
-        `commands/gsd/${file} (name: vgsd-${slug}) is not mentioned in docs/COMMANDS.md (as a heading) or docs/INVENTORY.md (as a Commands row) — add a one-line entry to at least one`,
+        `commands/gsd/${file} (name: fvgsd-${slug}) is not mentioned in docs/COMMANDS.md (as a heading) or docs/INVENTORY.md (as a Commands row) — add a one-line entry to at least one`,
       );
     });
   }

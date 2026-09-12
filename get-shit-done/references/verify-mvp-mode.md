@@ -1,6 +1,6 @@
 # Verify-Work — MVP Mode UAT Framing
 
-> Loaded by `verify-work` workflow and `gsd-verifier` agent only when the phase under verification has `mode: mvp` in ROADMAP.md. Reframes UAT generation from technical checks to user-flow walk-throughs.
+> Loaded by `verify-work` workflow and `fvgsd-verifier` agent only when the phase under verification has `mode: mvp` in ROADMAP.md. Reframes UAT generation from technical checks to user-flow walk-throughs.
 
 ## Core rule
 
@@ -14,7 +14,7 @@ The user-flow form mirrors what a real user does: open, fill, click, see. No HTT
 ## When this framing applies
 
 The framing fires when:
-- The phase under verification has `**Mode:** mvp` in ROADMAP.md (parsed via `gsd-sdk query roadmap.get-phase --pick mode`).
+- The phase under verification has `**Mode:** mvp` in ROADMAP.md (parsed via `fvgsd-sdk query roadmap.get-phase --pick mode`).
 - AND the phase has a user-story-formatted goal (set by `/gsd mvp-phase` per Phase 2): "As a [user role], I want to [capability], so that [outcome]."
 
 If the phase has `mode: mvp` but the goal is NOT in user-story format, the verifier surfaces this as a discrepancy and asks the user to run `/gsd mvp-phase` to reformat the goal — same pattern as the planner agent under MVP_MODE (per `references/planner-mvp-mode.md`).
@@ -53,7 +53,7 @@ Verify that the user-story `[outcome]` clause is observably true in the codebase
 - If the outcome is "I can access my dashboard", verify a dashboard route exists and renders for an authenticated user.
 - If the outcome is "I can bulk-import contacts", verify the import path produces persisted records.
 
-Coverage is a goal-backward check: "did this phase deliver what its user story promised?" — sourced from the existing `gsd-verifier` agent's goal-backward methodology, narrowed to the user story.
+Coverage is a goal-backward check: "did this phase deliver what its user story promised?" — sourced from the existing `fvgsd-verifier` agent's goal-backward methodology, narrowed to the user story.
 
 ## Anti-patterns to reject under MVP mode
 
@@ -67,7 +67,7 @@ The "show expected, ask if reality matches" model is preserved. The user still t
 
 ## Output: VERIFICATION.md changes under MVP mode
 
-The `gsd-verifier` agent produces `VERIFICATION.md`. Under MVP mode, the report adds a top-level "User Flow Coverage" section that maps each step of the user story to evidence in the codebase:
+The `fvgsd-verifier` agent produces `VERIFICATION.md`. Under MVP mode, the report adds a top-level "User Flow Coverage" section that maps each step of the user story to evidence in the codebase:
 
 ```markdown
 ## User Flow Coverage

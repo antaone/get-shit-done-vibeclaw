@@ -13,10 +13,10 @@
  * require AoT.
  */
 
-// GSD_TEST_MODE must be set before require('../bin/install.js') so the module
+// FVGSD_TEST_MODE must be set before require('../bin/install.js') so the module
 // skips the main CLI entry point and exports its internals.
-const previousGsdTestMode = process.env.GSD_TEST_MODE;
-process.env.GSD_TEST_MODE = '1';
+const previousGsdTestMode = process.env.FVGSD_TEST_MODE;
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
@@ -29,9 +29,9 @@ const { validateCodexConfigSchema, install } = require('../bin/install.js');
 const installModule = require('../bin/install.js');
 
 if (previousGsdTestMode === undefined) {
-  delete process.env.GSD_TEST_MODE;
+  delete process.env.FVGSD_TEST_MODE;
 } else {
-  process.env.GSD_TEST_MODE = previousGsdTestMode;
+  process.env.FVGSD_TEST_MODE = previousGsdTestMode;
 }
 
 // Ensure hooks/dist/ is populated — mirrors the pattern used by codex-config.test.cjs.
@@ -89,7 +89,7 @@ describe('#3285 — validateCodexConfigSchema: hooks.state is a regular table (n
       '',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "/usr/local/bin/gsd-check-update"',
+      'command = "/usr/local/bin/fvgsd/check-update"',
       '',
     ].join('\n');
     const result = validateCodexConfigSchema(content);
@@ -214,7 +214,7 @@ describe('#3285 — install succeeds when config.toml contains hooks.state entri
   }
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3285-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3285-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 

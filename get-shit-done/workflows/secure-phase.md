@@ -3,12 +3,12 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-security-auditor — Verifies threat mitigation coverage
+- fvgsd-security-auditor — Verifies threat mitigation coverage
 </available_agent_types>
 
 <process>
@@ -16,19 +16,19 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ## 0. Initialize
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_AUDITOR=$(gsd-sdk query agent-skills gsd-security-auditor)
+AGENT_SKILLS_AUDITOR=$(fvgsd-sdk query agent-skills fvgsd-security-auditor)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
-AUDITOR_MODEL=$(gsd-sdk query resolve-model gsd-security-auditor --raw)
-SECURITY_CFG=$(gsd-sdk query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+AUDITOR_MODEL=$(fvgsd-sdk query resolve-model fvgsd-security-auditor --raw)
+SECURITY_CFG=$(fvgsd-sdk query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
-If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /vgsd:settings."
+If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /fvgsd:settings."
 
 Display banner: `GSD > SECURE PHASE {N}: {name}`
 
@@ -42,7 +42,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`SECURITY_FILE` non-empty): Audit existing
 - **State B** (`SECURITY_FILE` empty, `PLAN_FILES` and `SUMMARY_FILES` non-empty): Run from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /vgsd:execute-phase {N} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /fvgsd:execute-phase {N} first."
 
 ## 2. Discovery
 
@@ -85,7 +85,7 @@ Call AskUserQuestion with threat table and options:
 2. "Accept all open — document in accepted risks log" → add to SECURITY.md accepted risks, set all CLOSED, Step 6
 3. "Cancel" → exit
 
-## 5. Spawn gsd-security-auditor
+## 5. Spawn fvgsd-security-auditor
 
 **Auditor constraint — varies by register origin:**
 
@@ -94,13 +94,13 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Agent(
-  prompt="Read ~/.claude/agents/gsd-security-auditor.md for instructions.\n\n" +
+  prompt="Read ~/.claude/agents/fvgsd-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
     "<constraints>Never modify implementation files. Verify mitigations exist — do not scan for new threats. Escalate implementation gaps.</constraints>" +
     "${AGENT_SKILLS_AUDITOR}",
-  subagent_type="gsd-security-auditor",
+  subagent_type="fvgsd-security-auditor",
   model="{AUDITOR_MODEL}",
   description="Verify threat mitigations for Phase {N}"
 )
@@ -116,7 +116,7 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `~/.claude/get-shit-done/templates/SECURITY.md`
+1. Read template from `~/.claude/fvgsd/templates/SECURITY.md`
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 
@@ -137,7 +137,7 @@ Handle return:
 ```
 GSD > PHASE {N} SECURITY BLOCKED
 {K} threats open — phase advancement blocked until threats_open: 0
-▶ Fix mitigations then re-run: /vgsd:secure-phase {N}
+▶ Fix mitigations then re-run: /fvgsd:secure-phase {N}
 ▶ Or document accepted risks in SECURITY.md and re-run.
 ```
 
@@ -146,7 +146,7 @@ Do NOT emit next-phase routing. Stop here.
 ## 7. Commit
 
 ```bash
-gsd-sdk query commit "docs(phase-${PHASE}): add/update security threat verification"
+fvgsd-sdk query commit "docs(phase-${PHASE}): add/update security threat verification"
 ```
 
 ## 8. Results + Routing
@@ -155,8 +155,8 @@ gsd-sdk query commit "docs(phase-${PHASE}): add/update security threat verificat
 ```
 GSD > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
-▶ /vgsd:validate-phase {N}    validate test coverage
-▶ /vgsd:verify-work {N}       run UAT
+▶ /fvgsd:validate-phase {N}    validate test coverage
+▶ /fvgsd:verify-work {N}       run UAT
 ```
 
 Display `/clear` reminder.

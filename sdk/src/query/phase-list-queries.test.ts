@@ -38,7 +38,7 @@ B
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-plans-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-plans-'));
   const phaseDir = join(tmpDir, '.planning', 'phases', '09-foundation');
   await mkdir(phaseDir, { recursive: true });
   await writeFile(join(phaseDir, '09-01-PLAN.md'), PLAN_A);

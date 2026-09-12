@@ -1,5 +1,5 @@
 /**
- * Contract test: every `gsd-sdk query agent-skills <slug>` invocation in
+ * Contract test: every `fvgsd-sdk query agent-skills <slug>` invocation in
  * `get-shit-done/workflows/**\/*.md` must reference a slug that exists as
  * `agents/<slug>.md` at the repository root.
  *
@@ -21,8 +21,8 @@ const workflowsDir = join(repoRoot, 'get-shit-done', 'workflows');
 const agentsDir = join(repoRoot, 'agents');
 
 /**
- * Matches a full `gsd-sdk query agent-skills <slug>` invocation and captures
- * the slug. Requires a token boundary before `gsd-sdk` and a word boundary
+ * Matches a full `fvgsd-sdk query agent-skills <slug>` invocation and captures
+ * the slug. Requires a token boundary before `fvgsd-sdk` and a word boundary
  * after the slug so that prose references (e.g. documentation mentioning the
  * string "agent-skills") do not produce false positives. The `\s+` between
  * tokens accepts newlines, so commands wrapped across lines still match.
@@ -59,7 +59,7 @@ function collectAgentSlugs(dir: string): Set<string> {
 }
 
 /**
- * Extracts every `gsd-sdk query agent-skills <slug>` usage from the given
+ * Extracts every `fvgsd-sdk query agent-skills <slug>` usage from the given
  * markdown files. Runs the regex over each file's full content (not line by
  * line) so wrapped commands still match, then resolves the 1-based line number
  * from the match index.

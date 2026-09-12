@@ -21,7 +21,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -215,7 +215,7 @@ describe('install/uninstall — hermes (nested skills/gsd/ layout)', () => {
   let previousCwd;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-hermes-install-');
+    tmpDir = createTempDir('fvgsd-hermes-install-');
     previousCwd = process.cwd();
     process.chdir(tmpDir);
   });
@@ -306,7 +306,7 @@ describe('install/uninstall — qwen (flat skills/gsd-* layout)', () => {
   let previousCwd;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-qwen-install-');
+    tmpDir = createTempDir('fvgsd-qwen-install-');
     previousCwd = process.cwd();
     process.chdir(tmpDir);
   });
@@ -323,7 +323,7 @@ describe('install/uninstall — qwen (flat skills/gsd-* layout)', () => {
     assert.strictEqual(result.runtime, 'qwen');
     assert.strictEqual(result.configDir, fs.realpathSync(targetDir));
 
-    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'gsd-help', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
@@ -331,7 +331,7 @@ describe('install/uninstall — qwen (flat skills/gsd-* layout)', () => {
     assert.ok(Object.keys(manifest.files).some(f => f.startsWith('skills/gsd-help/')));
 
     uninstall(false, 'qwen');
-    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'gsd-help')));
+    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help')));
     assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
   });
 });
@@ -341,7 +341,7 @@ describe('install/uninstall — trae (flat skills/gsd-* layout)', () => {
   let previousCwd;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-trae-install-');
+    tmpDir = createTempDir('fvgsd-trae-install-');
     previousCwd = process.cwd();
     process.chdir(tmpDir);
   });
@@ -364,7 +364,7 @@ describe('install/uninstall — trae (flat skills/gsd-* layout)', () => {
       configDir: fs.realpathSync(targetDir),
     });
 
-    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'gsd-help', 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
@@ -372,7 +372,7 @@ describe('install/uninstall — trae (flat skills/gsd-* layout)', () => {
     assert.ok(Object.keys(manifest.files).some(f => f.startsWith('skills/gsd-help/')));
 
     uninstall(false, 'trae');
-    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'gsd-help')));
+    assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help')));
     assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
   });
 });
@@ -384,7 +384,7 @@ describe('uninstall skills cleanup — hermes', () => {
   let previousCwd;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-hermes-uninstall-');
+    tmpDir = createTempDir('fvgsd-hermes-uninstall-');
     previousCwd = process.cwd();
     process.chdir(tmpDir);
   });
@@ -434,7 +434,7 @@ for (const runtime of ['hermes', 'qwen']) {
     let previousCwd;
 
     beforeEach(() => {
-      tmpDir = createTempDir(`gsd-${runtime}-refs-`);
+      tmpDir = createTempDir(`fvgsd-${runtime}-refs-`);
       previousCwd = process.cwd();
       process.chdir(tmpDir);
       install(false, runtime);
@@ -493,7 +493,7 @@ for (const runtime of ['hermes', 'qwen']) {
 
 describe('resolveKiloConfigPath', () => {
   let tmpDir;
-  beforeEach(() => { tmpDir = createTempProject('gsd-kilo-'); });
+  beforeEach(() => { tmpDir = createTempProject('fvgsd-kilo-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('prefers kilo.jsonc when present', () => {
@@ -516,7 +516,7 @@ describe('configureKiloPermissions', () => {
   let savedEnv;
 
   beforeEach(() => {
-    tmpDir = createTempProject('gsd-kilo-perms-');
+    tmpDir = createTempProject('fvgsd-kilo-perms-');
     configDir = path.join(tmpDir, '.config', 'kilo');
     savedEnv = {
       KILO_CONFIG_DIR: process.env.KILO_CONFIG_DIR,

@@ -18,7 +18,7 @@ VibeClaw repository state
       +-- Grok Build
 ```
 
-VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing `.planning/` projects and GSD workflow behavior continue to work normally; this fork exposes the commands under `vgsd` so it can coexist with upstream GSD. Orchestration is an optional layer enabled per project with `vibe init`.
+VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing `.planning/` projects and GSD workflow behavior continue to work normally; this fork exposes the commands under `fvgsd` so it can coexist with upstream GSD. Orchestration is an optional layer enabled per project with `vibe init`.
 
 ## Why VibeClaw
 
@@ -28,7 +28,7 @@ Most multi-agent systems depend on shared conversations or hidden runtime state.
 - named routes provide overridable tool defaults;
 - multiple tools can run the same stage from the same exact Git commit;
 - every candidate receives an isolated branch and worktree;
-- every `vgsd` command verifies its Git execution branch before doing work;
+- every `fvgsd` command verifies its Git execution branch before doing work;
 - completion and promotion are separate actions;
 - only the promoted candidate becomes input to the next stage;
 - manifests retain provenance, artifacts, timing, token usage, cost, notes, and ratings;
@@ -56,7 +56,7 @@ when `sdk/dist/cli.js` is missing. A separate `cd sdk && npm run build` step is
 not required. To troubleshoot or rebuild it explicitly, run
 `npm run build:sdk` from the repository root.
 
-`npm link` exposes the `vibe`, `get-shit-done-cc`, `gsd-tools`, and `gsd-sdk` commands locally. You can also run VibeClaw without linking:
+`npm link` exposes the `vibe`, `fvgsd`, `fvgsd-tools`, and `fvgsd-sdk` commands locally. You can also run VibeClaw without linking:
 
 ```bash
 node bin/vibe.js --help
@@ -71,7 +71,7 @@ VibeClaw does not replace this process. It adds routing, candidates, worktrees, 
 | Layer | Responsibility | State |
 | --- | --- | --- |
 | GSD | Discuss, research, specify, plan, execute, verify, and manage milestones | `.planning/` |
-| VibeClaw | Assign tools, isolate candidates, record provenance, and promote results | `.planning-vibe/` |
+| VibeClaw | Assign tools, isolate candidates, record provenance, and promote results | `.planning-fvgsd-vibe/` |
 
 ### Install GSD
 
@@ -79,19 +79,19 @@ After the local setup above, install GSD for the runtimes you use:
 
 ```bash
 # Interactive runtime and location selection
-get-shit-done-cc
+fvgsd
 
 # Examples
-get-shit-done-cc --codex --global
-get-shit-done-cc --claude --global
-get-shit-done-cc --gemini --global
-get-shit-done-cc --opencode --global
+fvgsd --codex --global
+fvgsd --claude --global
+fvgsd --gemini --global
+fvgsd --opencode --global
 
 # Install every supported runtime
-get-shit-done-cc --all --global
+fvgsd --all --global
 ```
 
-The published-package form is `npx get-shit-done-cc` with the same flags. Use `--local` instead of `--global` to install only into the current project. `--profile=core`, `--profile=standard`, and `--profile=full` control the installed skill surface; `full` is the default.
+The published-package form is `npx fvgsd` with the same flags. Use `--local` instead of `--global` to install only into the current project. `--profile=core`, `--profile=standard`, and `--profile=full` control the installed skill surface; `full` is the default.
 
 The installer supports Claude Code, OpenCode, Gemini CLI, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Hermes Agent, Cline, and CodeBuddy.
 
@@ -103,35 +103,35 @@ guesses which configuration tree it may change.
 
 ```bash
 # Remove one global runtime installation
-npx get-shit-done-cc@latest --codex --global --uninstall
-npx get-shit-done-cc@latest --claude --global --uninstall
+npx fvgsd@latest --codex --global --uninstall
+npx fvgsd@latest --claude --global --uninstall
 
 # Remove the current project's local runtime installation
-npx get-shit-done-cc@latest --codex --local --uninstall
+npx fvgsd@latest --codex --local --uninstall
 
 # Remove every supported runtime installation in the selected scope
-npx get-shit-done-cc@latest --all --global --uninstall
-npx get-shit-done-cc@latest --all --local --uninstall
+npx fvgsd@latest --all --global --uninstall
+npx fvgsd@latest --all --local --uninstall
 ```
 
 Replace `--codex` or `--claude` with the runtime originally installed. The
 uninstaller removes GSD/VibeClaw-managed commands, skills, agents, hooks, and
 manifests while preserving unrelated runtime configuration and repository
-files. It does not delete `.planning/`, `.planning-vibe/`, project source, or
+files. It does not delete `.planning/`, `.planning-fvgsd-vibe/`, project source, or
 Git history.
 
 If this checkout was exposed with `npm link`, remove the linked executables
 after uninstalling the runtime artifacts:
 
 ```bash
-npm unlink --global get-shit-done-cc
+npm unlink --global fvgsd
 ```
 
 Removing Vibe orchestration from a repository is a separate, destructive
 operation. First promote or otherwise preserve any candidate work you need,
 check `vibe status`, and clean each completed candidate with
 `vibe cleanup <candidate-id>`. Only then remove the committed
-`.planning-vibe/` directory and disposable `.vibe/` worktree directory. Keep
+`.planning-fvgsd-vibe/` directory and disposable `.fvgsd-vibe/` worktree directory. Keep
 `.planning/` if you want the brownfield GSD history to remain available.
 
 ### GSD command syntax
@@ -140,59 +140,59 @@ The installer writes the correct command form for each runtime:
 
 | Runtime | Example |
 | --- | --- |
-| Claude Code, OpenCode, Copilot, Kilo, Cursor, and similar runtimes | `/vgsd-plan-phase 1` |
-| Gemini CLI | `/vgsd:plan-phase 1` |
-| Codex | `$vgsd-plan-phase 1` |
+| Claude Code, OpenCode, Copilot, Kilo, Cursor, and similar runtimes | `/fvgsd-plan-phase 1` |
+| Gemini CLI | `/fvgsd:plan-phase 1` |
+| Codex | `$fvgsd-plan-phase 1` |
 
-VibeClaw intentionally owns the `vgsd` namespace so it can be installed beside
+VibeClaw intentionally owns the `fvgsd` namespace so it can be installed beside
 upstream GSD without ambiguous or duplicate commands. Gemini renders the same
 namespace with a colon because its command loader derives namespaces from
 directories; the workflow and persisted artifacts are otherwise identical.
 
 ### Which command comes first?
 
-For orchestrated work, run the installed `vgsd-vibe` gateway from the
+For orchestrated work, run the installed `fvgsd-vibe` gateway from the
 integration worktree first. It discovers the repository state, offers direct,
 single-candidate, or multi-candidate execution, and prepares the branches and
-local worktrees or remote handoffs. Run the printed target `vgsd` command only
+local worktrees or remote handoffs. Run the printed target `fvgsd` command only
 after entering its local candidate worktree or tracked worker branch.
 
 ```text
-vgsd-vibe for the target -> local worktree or Git handoff -> target vgsd command
+fvgsd-vibe for the target -> local worktree or Git handoff -> target fvgsd command
 ```
 
 Running the target command first is still valid when you intentionally want
 simple direct work. Before Vibe initialization it creates a protected
 standalone branch. After Vibe initialization, mutating target commands on the
-integration worktree stop and direct you back through `vgsd-vibe`.
+integration worktree stop and direct you back through `fvgsd-vibe`.
 
 ### Automatic execution branches
 
-Every installed `vgsd` command runs a Git preflight before it reads workflow
+Every installed `fvgsd` command runs a Git preflight before it reads workflow
 context or changes project state. The result depends on the current project:
 
 | Current context | Result |
 | --- | --- |
 | Valid Vibe candidate worktree | Reuse its `vibe/<run>/<stage>/<tool>-NNN` branch |
-| Vibe initialized, but not in a candidate | Stop the mutating command and route through the installed `vgsd-vibe` entry surface |
-| No Vibe setup | Create `vgsd/<runtime>/<command>/<execution-id>` |
-| Existing matching `vgsd/...` branch | Reuse it; a different command gets a new execution branch |
+| Vibe initialized, but not in a candidate | Stop the mutating command and route through the installed `fvgsd-vibe` entry surface |
+| No Vibe setup | Create `fvgsd/<runtime>/<command>/<execution-id>` |
+| Existing matching `fvgsd/...` branch | Reuse it; a different command gets a new execution branch |
 | Existing branch owned by another runtime | Stop instead of mixing tool results |
 
 Standalone branch creation preserves uncommitted files and stores provenance
 under Git's local common directory, not in the working tree. It records the
 runtime, command, execution identity, source branch, and base commit without
 storing the raw session ID. Run `vibe init` later and VibeClaw imports those
-records into `.planning-vibe/state/standalone-executions.json`.
+records into `.planning-fvgsd-vibe/state/standalone-executions.json`.
 
 This makes direct usage safe too. For example, Codex running
-`$vgsd-new-project` without Vibe creates a branch shaped like:
+`$fvgsd-new-project` without Vibe creates a branch shaped like:
 
 ```text
-vgsd/codex/new-project/20260819-123456-a1b2c3d4-e5f607
+fvgsd/codex/new-project/20260819-123456-a1b2c3d4-e5f607
 ```
 
-The read-only exceptions are `vgsd help` and `vgsd vibe`: they inspect branch
+The read-only exceptions are `fvgsd help` and `fvgsd vibe`: they inspect branch
 and orchestration state but never create a standalone execution branch.
 
 ### Core GSD workflow
@@ -212,15 +212,15 @@ discuss phase -> plan phase -> execute phase -> verify work
 Using the common hyphen-style command form:
 
 ```text
-/vgsd-new-project
-/vgsd-discuss-phase 1
-/vgsd-plan-phase 1
-/vgsd-execute-phase 1
-/vgsd-verify-work 1
-/vgsd-complete-milestone
+/fvgsd-new-project
+/fvgsd-discuss-phase 1
+/fvgsd-plan-phase 1
+/fvgsd-execute-phase 1
+/fvgsd-verify-work 1
+/fvgsd-complete-milestone
 ```
 
-For an existing codebase, run `/vgsd-map-codebase` before `/vgsd-new-project`. Use `/vgsd-progress` to inspect the current position and `/vgsd-resume-work` after a context reset or a new session.
+For an existing codebase, run `/fvgsd-map-codebase` before `/fvgsd-new-project`. Use `/fvgsd-progress` to inspect the current position and `/fvgsd-resume-work` after a context reset or a new session.
 
 ### What GSD provides
 
@@ -235,7 +235,7 @@ For an existing codebase, run `/vgsd-map-codebase` before `/vgsd-new-project`. U
 - configuration, model profiles, dynamic routing, hooks, and a TypeScript SDK.
 
 GSD can be used without orchestration. If you do not run `vibe init`, no
-`.planning-vibe/` store is created; `vgsd` still protects direct work with a
+`.planning-fvgsd-vibe/` store is created; `fvgsd` still protects direct work with a
 standalone smart branch as described above.
 
 For the full methodology, see the [GSD User Guide](docs/USER-GUIDE.md), [Command Reference](docs/COMMANDS.md), [Feature Reference](docs/FEATURES.md), and [Configuration Reference](docs/CONFIGURATION.md).
@@ -248,21 +248,21 @@ For the full Gemini + Codex + Claude Code flow—from a new project through late
 milestones and phase execution—follow the
 [Multi-Tool Project-to-Milestone Walkthrough](docs/MULTI-TOOL-WALKTHROUGH.md).
 
-The installed `vgsd-vibe` command is the AI-facing entry point. It can route
+The installed `fvgsd-vibe` command is the AI-facing entry point. It can route
 project creation, milestones, phase stages, `quick`, `fast`, `debug`, reviews,
-audits, and other public `vgsd` commands through one or more candidates:
+audits, and other public `fvgsd` commands through one or more candidates:
 
 ```text
-/vgsd-vibe quick --tool codex --tool claude
-/vgsd-vibe debug --tool codex
-/vgsd-vibe execute-phase --tool opencode --tool claude
+/fvgsd-vibe quick --tool codex --tool claude
+/fvgsd-vibe debug --tool codex
+/fvgsd-vibe execute-phase --tool opencode --tool claude
 ```
 
-Use `/vgsd:vibe ...` in Gemini CLI and `$vgsd-vibe ...` in Codex. The skill
-uses the Vibe CLI copied into the same runtime installation as `vgsd`, so it
+Use `/fvgsd:vibe ...` in Gemini CLI and `$fvgsd-vibe ...` in Codex. The skill
+uses the Vibe CLI copied into the same runtime installation as `fvgsd`, so it
 does not depend on a separate terminal `vibe` command being on `PATH`.
 
-For greenfield work, invoke `vgsd-vibe` in the new project directory. It can
+For greenfield work, invoke `fvgsd-vibe` in the new project directory. It can
 inspect the files, initialize Git, and ask for approval before creating the
 required baseline commit. For brownfield work, invoke it from the existing
 repository's integration branch. In either case, it can initialize Vibe and
@@ -271,7 +271,7 @@ terminal commands.
 
 When a brownfield `.planning/` tree still contains legacy `/gsd-*`, `/gsd:*`,
 or `$gsd-*` public command references, the gateway reports their exact locations
-and runtime-native `vgsd` replacements before candidate preparation. Migration
+and runtime-native `fvgsd` replacements before candidate preparation. Migration
 is explicit: review the proposed edits, apply them through the gateway, and
 commit the focused planning change so every candidate inherits the corrected
 namespace from its recorded base.
@@ -281,7 +281,7 @@ multi-machine mode publishes guarded Git handoffs so assigned tools can execute
 from independent clones:
 
 ```text
-/vgsd-vibe quick --multi-machine --remote origin --tool codex --tool claude
+/fvgsd-vibe quick --multi-machine --remote origin --tool codex --tool claude
 ```
 
 The coordinator atomically publishes candidate branches and identity tags.
@@ -368,7 +368,7 @@ VibeClaw includes two starting routes:
 | Verify | Codex | Codex |
 | Review | Claude | Claude |
 
-Routes are project-local YAML files under `.planning-vibe/routes/`. They are defaults, not restrictions; `--tool` always wins.
+Routes are project-local YAML files under `.planning-fvgsd-vibe/routes/`. They are defaults, not restrictions; `--tool` always wins.
 
 VibeClaw includes `project-bootstrap` for competing GSD project foundations,
 `milestone-bootstrap` for competing milestone definitions, and
@@ -387,7 +387,7 @@ VibeClaw keeps orchestration separate from GSD planning documents:
 ```text
 .planning/                 GSD plans, research, context, and verification
 
-.planning-vibe/
+.planning-fvgsd-vibe/
 ├── config.yaml            Project orchestration configuration
 ├── routes/                Named stage-to-tool defaults
 ├── workflows/             Runtime-neutral stage contracts
@@ -398,7 +398,7 @@ VibeClaw keeps orchestration separate from GSD planning documents:
 ├── locks/                 Recoverable orchestration locks
 └── state/                 Active-run pointer and imported standalone executions
 
-.vibe/worktrees/           Ignored candidate worktrees
+.fvgsd-vibe/worktrees/           Ignored candidate worktrees
 ```
 
 Another tool entering a candidate through the same coordinator checkout can

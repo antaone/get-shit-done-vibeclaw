@@ -8,7 +8,7 @@ Orchestrator coordinates, not executes. Each subagent loads the full execute-pla
 
 <runtime_compatibility>
 **Subagent spawning is runtime-specific:**
-- **Claude Code:** Uses `Agent(subagent_type="gsd-executor", ...)` — blocks until complete, returns result
+- **Claude Code:** Uses `Agent(subagent_type="fvgsd-executor", ...)` — blocks until complete, returns result
 - **Copilot:** Subagent spawning does not reliably return completion signals. **Default to
   sequential inline execution**: read and follow execute-plan.md directly for each plan
   instead of spawning parallel agents. Only attempt parallel spawning if the user
@@ -25,27 +25,27 @@ via filesystem and git state.
 
 <required_reading>
 Read STATE.md before any operation to load project context.
-@~/.claude/get-shit-done/references/agent-contracts.md
-@~/.claude/get-shit-done/references/context-budget.md
-@~/.claude/get-shit-done/references/gates.md
+@~/.claude/fvgsd/references/agent-contracts.md
+@~/.claude/fvgsd/references/context-budget.md
+@~/.claude/fvgsd/references/gates.md
 </required_reading>
 
 <available_agent_types>
 These are the valid GSD subagent types registered in .claude/agents/ (or equivalent for your runtime).
 Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
 
-- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
-- gsd-verifier — Verifies phase completion, checks quality gates
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-phase-researcher — Researches technical approaches for a phase
-- gsd-plan-checker — Reviews plan quality before execution
-- gsd-debugger — Diagnoses and fixes issues
-- gsd-codebase-mapper — Maps project structure and dependencies
-- gsd-integration-checker — Checks cross-phase integration
-- gsd-nyquist-auditor — Validates verification coverage
-- gsd-ui-researcher — Researches UI/UX approaches
-- gsd-ui-checker — Reviews UI implementation quality
-- gsd-ui-auditor — Audits UI against design requirements
+- fvgsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- fvgsd-verifier — Verifies phase completion, checks quality gates
+- fvgsd-planner — Creates detailed plans from phase scope
+- fvgsd-phase-researcher — Researches technical approaches for a phase
+- fvgsd-plan-checker — Reviews plan quality before execution
+- fvgsd-debugger — Diagnoses and fixes issues
+- fvgsd-codebase-mapper — Maps project structure and dependencies
+- fvgsd-integration-checker — Checks cross-phase integration
+- fvgsd-nyquist-auditor — Validates verification coverage
+- fvgsd-ui-researcher — Researches UI/UX approaches
+- fvgsd-ui-checker — Reviews UI implementation quality
+- fvgsd-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
 <process>
@@ -66,9 +66,9 @@ If `--wave` is absent, preserve the current behavior of executing all incomplete
 Load all context in one call:
 
 ```bash
-INIT=$(gsd-sdk query init.execute-phase "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.execute-phase "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-executor)
+AGENT_SKILLS=$(fvgsd-sdk query agent-skills fvgsd-executor)
 ```
 
 Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
@@ -77,15 +77,15 @@ Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelizat
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
-Resolve the active runtime and worktree behavior before any executor dispatch. Runtime identity belongs to the installed adapter, not to the project that created or promoted the phase. Managed Vibe launches may override the installed identity through `GSD_RUNTIME`; the project config is only a source-checkout fallback where the installer token has not been replaced.
+Resolve the active runtime and worktree behavior before any executor dispatch. Runtime identity belongs to the installed adapter, not to the project that created or promoted the phase. Managed Vibe launches may override the installed identity through `FVGSD_RUNTIME`; the project config is only a source-checkout fallback where the installer token has not been replaced.
 
 ```bash
-RUNTIME="${GSD_RUNTIME:-__VGSD_RUNTIME__}"
-if [ "$RUNTIME" = "__VGSD_RUNTIME__" ]; then
-  RUNTIME=$(gsd-sdk query config-get runtime --default claude 2>/dev/null || echo "claude")
+RUNTIME="${FVGSD_RUNTIME:-__FVGSD_RUNTIME__}"
+if [ "$RUNTIME" = "__FVGSD_RUNTIME__" ]; then
+  RUNTIME=$(fvgsd-sdk query config-get runtime --default claude 2>/dev/null || echo "claude")
 fi
 
-CONFIGURED_USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees --default "__unset__" 2>/dev/null || echo "__unset__")
+CONFIGURED_USE_WORKTREES=$(fvgsd-sdk query config-get workflow.use_worktrees --default "__unset__" 2>/dev/null || echo "__unset__")
 if [ "$CONFIGURED_USE_WORKTREES" = "__unset__" ]; then
   if [ "$RUNTIME" = "codex" ]; then
     USE_WORKTREES=false
@@ -96,15 +96,15 @@ else
   USE_WORKTREES="$CONFIGURED_USE_WORKTREES"
 fi
 
-EXECUTOR_STALL_INTERVAL_MINUTES=$(gsd-sdk query config-get executor.stall_detect_interval_minutes 2>/dev/null || echo "5")
-EXECUTOR_STALL_THRESHOLD_MINUTES=$(gsd-sdk query config-get executor.stall_threshold_minutes 2>/dev/null || echo "10")
+EXECUTOR_STALL_INTERVAL_MINUTES=$(fvgsd-sdk query config-get executor.stall_detect_interval_minutes 2>/dev/null || echo "5")
+EXECUTOR_STALL_THRESHOLD_MINUTES=$(fvgsd-sdk query config-get executor.stall_threshold_minutes 2>/dev/null || echo "10")
 
 if [ "$RUNTIME" = "codex" ] && [ "$USE_WORKTREES" != "false" ]; then
   echo "FATAL: Codex execute-phase worktree isolation is unsupported. workflow.use_worktrees must be false, or use a runtime with Agent isolation=\"worktree\" support." >&2
   exit 1
 fi
 # Sweep orphaned locked worktrees from prior crashed sessions before spawning executors (#3707).
-[ "$USE_WORKTREES" != "false" ] && gsd-sdk query worktree.reap-orphans 2>/dev/null || true
+[ "$USE_WORKTREES" != "false" ] && fvgsd-sdk query worktree.reap-orphans 2>/dev/null || true
 ```
 Codex maps subagents to `spawn_agent`, which has no direct Codex mapping for Claude Code's `isolation="worktree"` parameter. An unset `workflow.use_worktrees` therefore defaults to `false` for Codex and to `true` for runtimes with isolated executor worktrees. An explicit non-false Codex setting still fails closed, preventing main-checkout edits while the workflow believes agents are isolated.
 
@@ -127,7 +127,7 @@ When `USE_WORKTREES` (project-level) is `false`, all executor agents run without
 Read context window size for adaptive prompt enrichment:
 
 ```bash
-CONTEXT_WINDOW=$(gsd-sdk query config-get context_window 2>/dev/null || echo "200000")
+CONTEXT_WINDOW=$(fvgsd-sdk query config-get context_window 2>/dev/null || echo "200000")
 ```
 
 When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include richer context:
@@ -136,8 +136,8 @@ When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include rich
 - This enables cross-phase awareness and history-aware verification
 
 When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned to reduce static overhead:
-- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @~/.claude/get-shit-done/references/executor-examples.md
-- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @~/.claude/get-shit-done/references/planner-antipatterns.md
+- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @~/.claude/fvgsd/references/executor-examples.md
+- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @~/.claude/fvgsd/references/planner-antipatterns.md
 - Core rules and decision logic remain inline; only verbose examples and edge-case lists are extracted
 - This reduces executor static overhead by ~40% while preserving behavioral correctness
 
@@ -148,7 +148,7 @@ When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned t
 When `parallelization` is false, plans within a wave execute sequentially.
 
 **Runtime detection for Copilot:**
-Check if the current runtime is Copilot by testing for the `@gsd-executor` agent pattern
+Check if the current runtime is Copilot by testing for the `@fvgsd-executor` agent pattern
 or absence of the `Agent()` subagent API. If running under Copilot, force sequential inline
 execution regardless of the `parallelization` setting — Copilot's subagent completion
 signals are unreliable (see `<runtime_compatibility>`). Set `COPILOT_SEQUENTIAL=true`
@@ -159,7 +159,7 @@ inline path for each plan.
 ```bash
 # REQUIRED: prevents stale auto-chain from previous --auto runs
 if [[ ! "$ARGUMENTS" =~ --auto ]]; then
-  gsd-sdk query config-set workflow._auto_chain_active false || true
+  fvgsd-sdk query config-set workflow._auto_chain_active false || true
 fi
 ```
 
@@ -167,8 +167,8 @@ Resolve `MVP_MODE` once via the centralized `phase.mvp-mode` query verb (precede
 ```bash
 MVP_FLAG_ARG=""
 if [[ "$ARGUMENTS" =~ (^|[[:space:]])--mvp([[:space:]]|$) ]]; then MVP_FLAG_ARG="--cli-flag"; fi
-MVP_MODE=$(gsd-sdk query phase.mvp-mode "${PHASE_NUMBER}" $MVP_FLAG_ARG --pick active)
-TDD_MODE=$(gsd-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
+MVP_MODE=$(fvgsd-sdk query phase.mvp-mode "${PHASE_NUMBER}" $MVP_FLAG_ARG --pick active)
+TDD_MODE=$(fvgsd-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
 ```
 
 <step name="safe_resume_gate">
@@ -190,11 +190,11 @@ Offer these recovery options:
 **MVP+TDD gate.** Task-scoped enforcement runs inside plan execution (immediately before each implementation step), where `TASK_FILE`, `PLAN_ID`, and `TASK_ID` are defined. Keep the same predicate and RED-commit contract:
 ```bash
 if [ "$MVP_MODE" = "true" ] && [ "$TDD_MODE" = "true" ]; then
-  IS_BEHAVIOR_ADDING=$(gsd-sdk query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
+  IS_BEHAVIOR_ADDING=$(fvgsd-sdk query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
   if [ "$IS_BEHAVIOR_ADDING" = "true" ]; then
     RED_COMMIT=$(git log --oneline --grep="^test(${PHASE_NUMBER}-${PLAN_ID}):" -- "**/*.test.*" "**/*.spec.*" "tests/" | head -1)
     if [ -z "$RED_COMMIT" ]; then
-      gsd-sdk query state.update last_gate_trip "${PLAN_ID}/${TASK_ID}" || true
+      fvgsd-sdk query state.update last_gate_trip "${PLAN_ID}/${TASK_ID}" || true
       echo "MVP+TDD GATE TRIPPED: missing RED commit for ${PLAN_ID}/${TASK_ID}"
       exit 1
     fi
@@ -257,7 +257,7 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
 
    b. **If "Review first":** Read and display the full plan file. Ask again: Execute, Modify, Skip.
 
-   c. **If "Execute":** Read and follow `~/.claude/get-shit-done/workflows/execute-plan.md` **inline**
+   c. **If "Execute":** Read and follow `~/.claude/fvgsd/workflows/execute-plan.md` **inline**
       (do NOT spawn a subagent). Execute tasks one at a time.
 
    d. **After each task:** Pause briefly. If the user intervenes (types anything), stop and address
@@ -320,7 +320,7 @@ Report: "Found {plan_count} plans in {phase_dir} ({incomplete_count} incomplete)
 
 **Update STATE.md for phase start:**
 ```bash
-gsd-sdk query state.begin-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
+fvgsd-sdk query state.begin-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"
 ```
 This updates Status, Last Activity, Current focus, Current Position, and plan counts in STATE.md so frontmatter and body text reflect the active phase immediately.
 </step>
@@ -329,7 +329,7 @@ This updates Status, Last Activity, Current focus, Current Position, and plan co
 Load plan inventory with wave grouping in one call:
 
 ```bash
-PLAN_INDEX=$(gsd-sdk query phase-plan-index "${PHASE_NUMBER}")
+PLAN_INDEX=$(fvgsd-sdk query phase-plan-index "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `phase`, `plans[]` (each with `id`, `wave`, `autonomous`, `objective`, `files_modified`, `task_count`, `has_summary`), `waves` (map of wave number → plan IDs), `incomplete`, `has_checkpoints`.
@@ -371,15 +371,15 @@ executor skips them.
    `workflow.cross_ai_execution` is `true`. Plans matching both conditions are marked for cross-AI.
 
 ```bash
-CROSS_AI_ENABLED=$(gsd-sdk query config-get workflow.cross_ai_execution 2>/dev/null || echo "false")
-CROSS_AI_CMD=$(gsd-sdk query config-get workflow.cross_ai_command 2>/dev/null || echo "")
-CROSS_AI_TIMEOUT=$(gsd-sdk query config-get workflow.cross_ai_timeout 2>/dev/null || echo "300")
+CROSS_AI_ENABLED=$(fvgsd-sdk query config-get workflow.cross_ai_execution 2>/dev/null || echo "false")
+CROSS_AI_CMD=$(fvgsd-sdk query config-get workflow.cross_ai_command 2>/dev/null || echo "")
+CROSS_AI_TIMEOUT=$(fvgsd-sdk query config-get workflow.cross_ai_timeout 2>/dev/null || echo "300")
 ```
 
 **If no plans are marked for cross-AI:** Skip to execute_waves.
 
 **If plans are marked but `cross_ai_command` is empty:** Error — tell user to set
-`workflow.cross_ai_command` via `gsd-sdk query config-set workflow.cross_ai_command "<command>"`.
+`workflow.cross_ai_command` via `fvgsd-sdk query config-set workflow.cross_ai_command "<command>"`.
 
 **For each cross-AI plan (sequentially):**
 
@@ -437,7 +437,7 @@ between a large tool_result and the next assistant turn (seen on Claude Code
 + Opus 4.7 at ~200K+ cache_read). To keep the stream warm, emit short
 assistant-text heartbeats — **no tool call, just a literal line** — at every
 wave and plan boundary. Each heartbeat MUST start with `[checkpoint]` so
-tooling and `/vgsd:manager`'s background-completion handler can grep partial
+tooling and `/fvgsd:manager`'s background-completion handler can grep partial
 transcripts. `{P}/{Q}` is the phase-wide completed/total plans counter and
 increases monotonically across waves. `{status}` is `complete` (success),
 `failed` (executor error), or `checkpoint` (human-gate returned).
@@ -536,7 +536,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    DISPATCH_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
    EXPECTED_BRANCH=$(git rev-parse --abbrev-ref HEAD)
    if [ "${USE_WORKTREES_FOR_PLAN:-true}" != "false" ] && [ -z "${WAVE_WORKTREE_MANIFEST:-}" ]; then
-     WAVE_WORKTREE_MANIFEST=$(mktemp "${TMPDIR:-/tmp}/vgsd-worktree-wave-XXXXXX.json")
+     WAVE_WORKTREE_MANIFEST=$(mktemp "${TMPDIR:-/tmp}/fvgsd-worktree-wave-XXXXXX.json")
      printf '{"worktrees":[]}\n' > "$WAVE_WORKTREE_MANIFEST"
      export WAVE_WORKTREE_MANIFEST
    fi
@@ -554,7 +554,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    ```text
    Agent(
-     subagent_type="gsd-executor",
+     subagent_type="fvgsd-executor",
      description="Execute plan {plan_number} of phase {phase_number}",
      # Only include model= when executor_model is an explicit model name.
      # When executor_model is "inherit", omit this parameter entirely so
@@ -592,7 +592,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
          [ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && { echo "ERROR: could not correct worktree base"; exit 1; }
        fi
        ```
-       Per-commit HEAD/cwd-drift/path-guard: `agents/gsd-executor.md` steps 0/0a/0b + `references/worktree-path-safety.md` (in <execution_context>).
+       Per-commit HEAD/cwd-drift/path-guard: `agents/fvgsd-executor.md` steps 0/0a/0b + `references/worktree-path-safety.md` (in <execution_context>).
        </worktree_branch_check>
 
        <parallel_execution>
@@ -615,12 +615,12 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </parallel_execution>
 
        <execution_context>
-       @~/.claude/get-shit-done/workflows/execute-plan.md
-       @~/.claude/get-shit-done/templates/summary.md
-       @~/.claude/get-shit-done/references/checkpoints.md
-       @~/.claude/get-shit-done/references/tdd.md
-       @~/.claude/get-shit-done/references/worktree-path-safety.md
-       ${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
+       @~/.claude/fvgsd/workflows/execute-plan.md
+       @~/.claude/fvgsd/templates/summary.md
+       @~/.claude/fvgsd/references/checkpoints.md
+       @~/.claude/fvgsd/references/tdd.md
+       @~/.claude/fvgsd/references/worktree-path-safety.md
+       ${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/fvgsd/references/executor-examples.md'}
        </execution_context>
 
        <files_to_read>
@@ -731,9 +731,9 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
 5. **Post-wave hook validation (parallel mode only):** Hooks run on every executor commit by default (#2924); this post-wave run only fires when `workflow.worktree_skip_hooks=true` opted out of per-commit hooks:
    ```bash
-   SKIP_HOOKS=$(gsd-sdk query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
+   SKIP_HOOKS=$(fvgsd-sdk query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
    if [ "$SKIP_HOOKS" = "true" ]; then
-     # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). #3542: `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand (see `<destructive_git_prohibition>` in `agents/gsd-executor.md`).
+     # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). #3542: `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand (see `<destructive_git_prohibition>` in `agents/fvgsd-executor.md`).
      STASHED=false
      if (! git diff --quiet || ! git diff --cached --quiet) && git stash push -u -m "gsd-post-wave-hook-$$" >/dev/null 2>&1; then STASHED=true; fi
      git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed — review before continuing"
@@ -773,11 +773,11 @@ increases monotonically across waves. `{status}` is `complete` (success),
    ORCH_BRANCH=$(git rev-parse --abbrev-ref HEAD)
    [ -z "${EXPECTED_BRANCH:-}" ] || [ "$ORCH_BRANCH" = "$EXPECTED_BRANCH" ] || { echo "FATAL: orchestrator on '$ORCH_BRANCH' but expected '$EXPECTED_BRANCH' before worktree cleanup — refusing to merge (#3174-class drift)" >&2; exit 1; }
 
-   if command -v gsd-sdk >/dev/null 2>&1; then
-     gsd-sdk query worktree.cleanup-wave --manifest "$WAVE_WORKTREE_MANIFEST" || exit 1
+   if command -v fvgsd-sdk >/dev/null 2>&1; then
+     fvgsd-sdk query worktree.cleanup-wave --manifest "$WAVE_WORKTREE_MANIFEST" || exit 1
    else
-     echo "WARN: gsd-sdk unavailable; using manifest-scoped shell fallback (#3384)." >&2
-   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/vgsd-worktree-paths-XXXXXX")
+     echo "WARN: fvgsd-sdk unavailable; using manifest-scoped shell fallback (#3384)." >&2
+   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/fvgsd-worktree-paths-XXXXXX")
    node -e 'const fs=require("fs");const p=process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("WAVE_WORKTREE_MANIFEST is unset");if(!fs.existsSync(p))throw new Error("manifest does not exist");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest is empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read worktree manifest ${p||"(unset)"}: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read WAVE_WORKTREE_MANIFEST; refusing cleanup (#3384)." >&2; exit 1; }
    while IFS= read -r WT; do
      [ -z "$WT" ] && continue
@@ -829,7 +829,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
        done
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
-         COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+         COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
          if [ "$COMMIT_DOCS" != "false" ]; then
            git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
            git commit --amend --no-edit 2>/dev/null || true
@@ -883,7 +883,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    if [ -n "$PRIMARY_WT" ] && [ "$(pwd -P 2>/dev/null)" != "$(cd "$PRIMARY_WT" 2>/dev/null && pwd -P)" ]; then echo "⚠ Orchestrator CWD drifted to $(pwd) — pinning to $PRIMARY_WT before cleanup-tail (#3174)"; cd "$PRIMARY_WT" || { echo "FATAL: cannot cd to primary worktree $PRIMARY_WT" >&2; exit 1; }; fi
    # Cleanup-tail: remove residual agent worktrees after a cross-wave-dependency deviation.
    # Uses only the current wave manifest to avoid touching unrelated active agents (#3384).
-   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/vgsd-worktree-paths-XXXXXX")
+   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/fvgsd-worktree-paths-XXXXXX")
    node -e 'const fs=require("fs");const p=process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("WAVE_WORKTREE_MANIFEST is unset");if(!fs.existsSync(p))throw new Error("manifest does not exist");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest is empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read worktree manifest ${p||"(unset)"}: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read WAVE_WORKTREE_MANIFEST; refusing cleanup (#3384)." >&2; exit 1; }
    while IFS= read -r WT; do
      [ -z "$WT" ] && continue
@@ -943,12 +943,12 @@ increases monotonically across waves. `{status}` is `complete` (success),
    if [ "${TEST_EXIT}" -eq 0 ]; then
      # Update ROADMAP plan progress for each completed plan in this wave
      for plan_id in {completed_plan_ids}; do
-       gsd-sdk query roadmap.update-plan-progress "${PHASE_NUMBER}" "${plan_id}" "complete"
+       fvgsd-sdk query roadmap.update-plan-progress "${PHASE_NUMBER}" "${plan_id}" "complete"
      done
 
      # Only commit tracking files if they actually changed
      if ! git diff --quiet .planning/ROADMAP.md .planning/STATE.md 2>/dev/null; then
-       gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): update tracking after wave ${N}" --files .planning/ROADMAP.md .planning/STATE.md
+       fvgsd-sdk query commit "docs(phase-${PHASE_NUMBER}): update tracking after wave ${N}" --files .planning/ROADMAP.md .planning/STATE.md
      fi
    elif [ "${TEST_EXIT}" -eq 124 ]; then
      echo "⚠ Skipping tracking update — test suite timed out. Plans remain in-progress. Run tests manually to confirm."
@@ -1024,7 +1024,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 7. **Handle failures:**
    **Step 7.0 — classify before branching (#3095):**
    ```bash
-   CLASS_JSON=$(gsd-sdk query agent.classify-failure -- "$AGENT_RETURN_BODY")
+   CLASS_JSON=$(fvgsd-sdk query agent.classify-failure -- "$AGENT_RETURN_BODY")
    CLASS=$(echo "$CLASS_JSON" | jq -r '.class')
    SENTINEL=$(echo "$CLASS_JSON" | jq -r '.sentinel // empty')
    RETRY_AFTER=$(echo "$CLASS_JSON" | jq -r '.retryAfterSeconds // empty')
@@ -1043,14 +1043,14 @@ increases monotonically across waves. `{status}` is `complete` (success),
    2. Switch to a different runtime / model and resume
    3. Abort phase and report partial state
    ```
-   Re-run `/vgsd:execute-phase` after quota reset for Option 1.
+   Re-run `/fvgsd:execute-phase` after quota reset for Option 1.
    **Step 7.2 — `class == "classify-handoff-bug"`:**
    If error contains `classifyHandoffIfNeeded is not defined`, treat as Claude runtime bug. Run the same step-5 spot-checks; PASS => treat as success, FAIL => fall through.
    **Step 7.3 — `class == "unknown-failure"`:**
    Report failed plan and ask Continue/Stop; continuing may cascade into dependent plan failures.
 
 7b. **Pre-wave dependency check (waves 2+ only):**
-    Before wave N+1, run `gsd-sdk query verify.key-links {phase_dir}/{plan}-PLAN.md` for each upcoming plan.
+    Before wave N+1, run `fvgsd-sdk query verify.key-links {phase_dir}/{plan}-PLAN.md` for each upcoming plan.
     If any PRIOR-wave artifact link fails, present:
     - `## Cross-Plan Wiring Gap` with plan/link/from/pattern rows
     - Options: investigate+fix before continue, or continue with cascade risk
@@ -1063,7 +1063,7 @@ Plans with `autonomous: false` require user interaction.
 **Auto-mode checkpoint handling:**
 Read auto-advance config (chain flag OR user preference — same boolean as `check.auto-mode`):
 ```bash
-AUTO_MODE=$(gsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
+AUTO_MODE=$(fvgsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
 ```
 
 When executor returns a checkpoint AND `AUTO_MODE` is `true`:
@@ -1124,7 +1124,7 @@ After all waves:
 
 **Security gate check:**
 ```bash
-SECURITY_CFG=$(gsd-sdk query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_CFG=$(fvgsd-sdk query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
 ```
 
@@ -1134,13 +1134,13 @@ If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty (no SECURITY.md yet):
 Include in the next-steps routing output:
 ```
 ⚠ Security enforcement enabled — run before advancing:
-  /vgsd:secure-phase {PHASE} ${GSD_WS}
+  /fvgsd:secure-phase {PHASE} ${FVGSD_WS}
 ```
 
 If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_open`. If > 0:
 ```
 ⚠ Security gate: {threats_open} threats open
-  /vgsd:secure-phase {PHASE} — resolve before advancing
+  /fvgsd:secure-phase {PHASE} — resolve before advancing
 ```
 </step>
 
@@ -1148,7 +1148,7 @@ If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_o
 **Optional step — TDD collaborative review.**
 
 ```bash
-TDD_MODE=$(gsd-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
+TDD_MODE=$(fvgsd-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
 ```
 
 **Skip if `TDD_MODE` is `false`.**
@@ -1201,7 +1201,7 @@ The verifier agent (step `verify_phase_goal`) still checks TDD discipline in bot
 If `WAVE_FILTER` was used, re-run plan discovery after execution:
 
 ```bash
-POST_PLAN_INDEX=$(gsd-sdk query phase-plan-index "${PHASE_NUMBER}")
+POST_PLAN_INDEX=$(fvgsd-sdk query phase-plan-index "${PHASE_NUMBER}")
 ```
 
 Apply the same "incomplete" filtering rules as earlier:
@@ -1219,8 +1219,8 @@ Apply the same "incomplete" filtering rules as earlier:
 
 Selected wave finished successfully. This phase still has incomplete plans, so phase-level verification and completion were intentionally skipped.
 
-/vgsd:execute-phase {phase} ${GSD_WS}                # Continue remaining waves
-/vgsd:execute-phase {phase} --wave {next} ${GSD_WS}  # Run the next wave explicitly
+/fvgsd:execute-phase {phase} ${FVGSD_WS}                # Continue remaining waves
+/fvgsd:execute-phase {phase} --wave {next} ${FVGSD_WS}  # Run the next wave explicitly
 ```
 
 **If no incomplete plans remain after the selected wave finishes:**
@@ -1233,14 +1233,14 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(gsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(fvgsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
 If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to next step.
 
 **Invoke review:**
 ```
-Skill(skill="vgsd-code-review", args="${PHASE_NUMBER}")
+Skill(skill="fvgsd-code-review", args="${PHASE_NUMBER}")
 ```
 
 **Check results using deterministic path (not glob):**
@@ -1253,7 +1253,7 @@ REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | hea
 If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
 ```
 Code review found issues. Consider running:
-/vgsd:code-review ${PHASE_NUMBER} --fix
+/fvgsd:code-review ${PHASE_NUMBER} --fix
 ```
 
 **Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
@@ -1276,7 +1276,7 @@ fi
 
 **2. Find parent UAT file:**
 ```bash
-PARENT_INFO=$(gsd-sdk query find-phase "${PARENT_PHASE}" --raw)
+PARENT_INFO=$(fvgsd-sdk query find-phase "${PARENT_PHASE}" --raw)
 # Extract directory from PARENT_INFO JSON, then find UAT file in that directory
 ```
 
@@ -1307,7 +1307,7 @@ mv .planning/debug/{slug}.md .planning/debug/resolved/
 
 **6. Commit updated artifacts:**
 ```bash
-gsd-sdk query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
+fvgsd-sdk query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
 ```
 </step>
 
@@ -1335,7 +1335,7 @@ Collect all unique test file paths into `REGRESSION_FILES`.
 
 ```bash
 # Resolve test command: project config > Makefile > language sniff
-REG_TEST_CMD=$(gsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
+REG_TEST_CMD=$(fvgsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
 if [ -z "$REG_TEST_CMD" ]; then
   if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
     REG_TEST_CMD="make test"
@@ -1391,7 +1391,7 @@ build/types pass because TypeScript types come from config, not the live databas
 **Run after execution completes but BEFORE verification marks success.**
 
 ```bash
-SCHEMA_DRIFT=$(gsd-sdk query verify.schema-drift "${PHASE_NUMBER}" 2>/dev/null)
+SCHEMA_DRIFT=$(fvgsd-sdk query verify.schema-drift "${PHASE_NUMBER}" 2>/dev/null)
 ```
 
 Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `unpushed_orms`, `message`.
@@ -1402,14 +1402,14 @@ Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `un
 
 Check for override:
 ```bash
-SKIP_SCHEMA=$(echo "${GSD_SKIP_SCHEMA_CHECK:-false}")
+SKIP_SCHEMA=$(echo "${FVGSD_SKIP_SCHEMA_CHECK:-false}")
 ```
 
 **If `SKIP_SCHEMA` is `true`:**
 
 Display:
 ```
-⚠ Schema drift detected but GSD_SKIP_SCHEMA_CHECK=true — bypassing gate.
+⚠ Schema drift detected but FVGSD_SKIP_SCHEMA_CHECK=true — bypassing gate.
 
 Schema files changed: {schema_files}
 ORMs requiring push: {unpushed_orms}
@@ -1437,7 +1437,7 @@ Required push commands:
 
 Options:
 1. Run push command now (recommended) — execute the push, then re-verify
-2. Skip schema check (GSD_SKIP_SCHEMA_CHECK=true) — bypass this gate
+2. Skip schema check (FVGSD_SKIP_SCHEMA_CHECK=true) — bypass this gate
 3. Abort — stop execution and investigate
 ```
 
@@ -1465,7 +1465,7 @@ spawn template, and the two `workflow.drift_*` config keys.
 Verify phase achieved its GOAL, not just completed tasks.
 
 ```bash
-VERIFIER_SKILLS=$(gsd-sdk query agent-skills gsd-verifier)
+VERIFIER_SKILLS=$(fvgsd-sdk query agent-skills fvgsd-verifier)
 ```
 
 ```
@@ -1491,7 +1491,7 @@ ${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — ver
 </files_to_read>
 
 ${VERIFIER_SKILLS}",
-  subagent_type="gsd-verifier",
+  subagent_type="fvgsd-verifier",
   model="{verifier_model}"
 )
 ```
@@ -1507,7 +1507,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Persist and present human testing items; keep phase pending until verification reruns as `passed` |
-| `gaps_found` | Present gap summary, offer `/vgsd:plan-phase {phase} --gaps ${GSD_WS}` |
+| `gaps_found` | Present gap summary, offer `/fvgsd:plan-phase {phase} --gaps ${FVGSD_WS}` |
 
 **If human_needed:**
 
@@ -1550,7 +1550,7 @@ blocked: 0
 
 Commit the file:
 ```bash
-gsd-sdk query commit "test({phase_num}): persist human verification items as UAT" --files "{phase_dir}/{phase_num}-HUMAN-UAT.md"
+fvgsd-sdk query commit "test({phase_num}): persist human verification items as UAT" --files "{phase_dir}/{phase_num}-HUMAN-UAT.md"
 ```
 
 **Step B: Present to user:**
@@ -1562,12 +1562,12 @@ All automated checks passed. {N} items need human testing:
 
 {From VERIFICATION.md human_verification section}
 
-Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/vgsd:progress` and `/vgsd:audit-uat`.
+Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/fvgsd:progress` and `/fvgsd:audit-uat`.
 
 "approved" → continue | Report issues → gap closure
 ```
 
-**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/vgsd:verify-work` on it.
+**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/fvgsd:verify-work` on it.
 
 **If user reports issues:** Proceed to gap closure as currently implemented.
 
@@ -1586,20 +1586,20 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/vgsd:progres
 
 `/clear` then:
 
-`/vgsd:plan-phase {X} --gaps ${GSD_WS}`
+`/fvgsd:plan-phase {X} --gaps ${FVGSD_WS}`
 
 Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
-Also: `/vgsd:verify-work {X} ${GSD_WS}` — manual testing first
+Also: `/fvgsd:verify-work {X} ${FVGSD_WS}` — manual testing first
 ```
 
-Gap closure cycle: `/vgsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/vgsd:execute-phase {X} --gaps-only ${GSD_WS}` → verifier re-runs.
+Gap closure cycle: `/fvgsd:plan-phase {X} --gaps ${FVGSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/fvgsd:execute-phase {X} --gaps-only ${FVGSD_WS}` → verifier re-runs.
 </step>
 
 <step name="update_roadmap">
 **Mark phase complete and update all tracking files:**
 
 ```bash
-COMPLETION=$(gsd-sdk query phase.complete "${PHASE_NUMBER}")
+COMPLETION=$(fvgsd-sdk query phase.complete "${PHASE_NUMBER}")
 ```
 
 The CLI handles:
@@ -1618,11 +1618,11 @@ Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings
 
 {list each warning}
 
-These items are tracked and will appear in `/vgsd:progress` and `/vgsd:audit-uat`.
+These items are tracked and will appear in `/fvgsd:progress` and `/fvgsd:audit-uat`.
 ```
 
 ```bash
-gsd-sdk query commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
+fvgsd-sdk query commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
 ```
 </step>
 
@@ -1634,7 +1634,7 @@ entries from the completed phase to the global learnings store at `~/.gsd/knowle
 
 **Check config gate:**
 ```bash
-GL_ENABLED=$(gsd-sdk query config-get features.global_learnings --raw 2>/dev/null || echo "false")
+GL_ENABLED=$(fvgsd-sdk query config-get features.global_learnings --raw 2>/dev/null || echo "false")
 ```
 
 **If `GL_ENABLED` is not `true`:** Skip this step entirely (feature disabled by default).
@@ -1644,7 +1644,7 @@ GL_ENABLED=$(gsd-sdk query config-get features.global_learnings --raw 2>/dev/nul
 1. Check if LEARNINGS.md exists in the phase directory (use the `phase_dir` value from init context)
 2. If found, copy to global store:
 ```bash
-gsd-sdk query learnings.copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
+fvgsd-sdk query learnings.copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
 ```
 Copy failure must NOT block phase completion.
 </step>
@@ -1672,7 +1672,7 @@ for TODO_FILE in "$PENDING_DIR"/*.md; do
 done
 
 if [ ${#CLOSED[@]} -gt 0 ]; then
-  gsd-sdk query commit "docs(phase-${PHASE_NUMBER}): auto-close ${#CLOSED[@]} todo(s) resolved by this phase" --files .planning/todos/completed/ .planning/STATE.md|| true
+  fvgsd-sdk query commit "docs(phase-${PHASE_NUMBER}): auto-close ${#CLOSED[@]} todo(s) resolved by this phase" --files .planning/todos/completed/ .planning/STATE.md|| true
   echo "◆ Closed ${#CLOSED[@]} todo(s) resolved by Phase ${PHASE_NUMBER}:"
   for f in "${CLOSED[@]}"; do echo "  ✓ $f"; done
 fi
@@ -1697,7 +1697,7 @@ PROJECT.md falls behind silently over multiple phases.
 5. Commit the change:
 
 ```bash
-gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion" --files .planning/PROJECT.md
+fvgsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion" --files .planning/PROJECT.md
 ```
 
 **Skip this step if** `.planning/PROJECT.md` does not exist.
@@ -1705,7 +1705,7 @@ gsd-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completion"
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/vgsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/fvgsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance.
 
 **No-transition check (spawned by auto-advance chain):**
 
@@ -1735,7 +1735,7 @@ STOP. Do not proceed to auto-advance or transition.
 1. Parse `--auto` flag from $ARGUMENTS
 2. Read consolidated auto-mode (`active` = chain flag OR user preference; chain flag already synced in init step):
    ```bash
-   AUTO_MODE=$(gsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
+   AUTO_MODE=$(fvgsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
    ```
 
 **If `--auto` flag present OR `AUTO_MODE` is true (AND verification passed with no gaps):**
@@ -1749,13 +1749,13 @@ STOP. Do not proceed to auto-advance or transition.
 
 Execute the transition workflow inline (do NOT use Agent — orchestrator context is ~10-15%, transition needs phase completion data already in context):
 
-Read and follow `~/.claude/get-shit-done/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
+Read and follow `~/.claude/fvgsd/workflows/transition.md`, passing through the `--auto` flag so it propagates to the next phase invocation.
 
 **If neither `--auto` nor `AUTO_MODE` is true:**
 
 **STOP. Do not auto-advance. Do not execute transition. Do not plan next phase. Present options to the user and wait.**
 
-**IMPORTANT: There is NO `/vgsd-transition` command. Never suggest it. The transition workflow is internal only.**
+**IMPORTANT: There is NO `/fvgsd-transition` command. Never suggest it. The transition workflow is internal only.**
 
 Check whether CONTEXT.md already exists for the next phase:
 
@@ -1768,10 +1768,10 @@ If CONTEXT.md does **not** exist for the next phase, present:
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/vgsd:progress ${GSD_WS} — see updated roadmap
-/vgsd:discuss-phase {next} ${GSD_WS} — start here: discuss next phase before planning  ← recommended
-/vgsd:plan-phase {next} ${GSD_WS} — plan next phase (skip discuss)
-/vgsd:execute-phase {next} ${GSD_WS} — execute next phase (skip discuss and plan)
+/fvgsd:progress ${FVGSD_WS} — see updated roadmap
+/fvgsd:discuss-phase {next} ${FVGSD_WS} — start here: discuss next phase before planning  ← recommended
+/fvgsd:plan-phase {next} ${FVGSD_WS} — plan next phase (skip discuss)
+/fvgsd:execute-phase {next} ${FVGSD_WS} — execute next phase (skip discuss and plan)
 ```
 
 If CONTEXT.md **exists** for the next phase, present:
@@ -1779,10 +1779,10 @@ If CONTEXT.md **exists** for the next phase, present:
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/vgsd:progress ${GSD_WS} — see updated roadmap
-/vgsd:plan-phase {next} ${GSD_WS} — start here: plan next phase (CONTEXT.md already present)  ← recommended
-/vgsd:discuss-phase {next} ${GSD_WS} — re-discuss next phase
-/vgsd:execute-phase {next} ${GSD_WS} — execute next phase (skip planning)
+/fvgsd:progress ${FVGSD_WS} — see updated roadmap
+/fvgsd:plan-phase {next} ${FVGSD_WS} — start here: plan next phase (CONTEXT.md already present)  ← recommended
+/fvgsd:discuss-phase {next} ${FVGSD_WS} — re-discuss next phase
+/fvgsd:execute-phase {next} ${FVGSD_WS} — execute next phase (skip planning)
 ```
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.
@@ -1801,7 +1801,7 @@ For 1M+ context models, consider:
 </context_efficiency>
 
 <failure_handling>
-- **Quota / rate-limit (any runtime — #3095):** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `gsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
+- **Quota / rate-limit (any runtime — #3095):** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `fvgsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
 - **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not GSD. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → user chooses attempt or skip
@@ -1810,7 +1810,7 @@ For 1M+ context models, consider:
 </failure_handling>
 
 <resumption>
-Re-run `/vgsd:execute-phase {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
+Re-run `/fvgsd:execute-phase {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
 
 STATE.md tracks: last completed plan, current wave, pending checkpoints.
 </resumption>

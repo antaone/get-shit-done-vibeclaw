@@ -15,7 +15,7 @@ describe('verifyPlanStructure', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-verify-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-verify-'));
   });
 
   afterEach(async () => {
@@ -227,7 +227,7 @@ describe('verifyPhaseCompleteness', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-verify-phase-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-verify-phase-'));
     await mkdir(join(tmpDir, '.planning', 'phases', '09-foundation'), { recursive: true });
   });
 
@@ -290,7 +290,7 @@ describe('verifyArtifacts', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-verify-art-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-verify-art-'));
   });
 
   afterEach(async () => {

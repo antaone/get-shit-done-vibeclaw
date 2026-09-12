@@ -1,6 +1,6 @@
 # Planner — MVP Mode (Vertical Slice Strategy)
 
-> Loaded by `gsd-planner` only when `MVP_MODE=true`. Standard horizontal-layer planning rules continue to apply for all other phases.
+> Loaded by `fvgsd-planner` only when `MVP_MODE=true`. Standard horizontal-layer planning rules continue to apply for all other phases.
 
 ## Core Rule
 
@@ -38,7 +38,7 @@ When the orchestrator sets `WALKING_SKELETON=true` (Phase 1 of a new project und
   - One real DB read/write
   - One real UI interaction wired to the API
   - Deployment to a dev environment (or a documented local-run command that exercises the full stack)
-- The plan **must produce** `SKELETON.md` in the phase directory alongside `PLAN.md`. Use the template at `@~/.claude/get-shit-done/references/skeleton-template.md`. `SKELETON.md` records the architectural decisions that subsequent phases will build on (chosen framework, DB, deployment target, auth approach, directory layout).
+- The plan **must produce** `SKELETON.md` in the phase directory alongside `PLAN.md`. Use the template at `@~/.claude/fvgsd/references/skeleton-template.md`. `SKELETON.md` records the architectural decisions that subsequent phases will build on (chosen framework, DB, deployment target, auth approach, directory layout).
 
 `SKELETON.md` is the architectural backbone for every later vertical slice; treat it as a contract, not a scratchpad.
 

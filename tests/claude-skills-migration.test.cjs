@@ -5,13 +5,13 @@
 /**
  * GSD Tools Tests - Claude Skills Migration (#1504)
  *
- * Tests for migrating Claude Code from commands/gsd/ to skills/vgsd-xxx/SKILL.md
+ * Tests for migrating Claude Code from commands/gsd/ to skills/fvgsd-xxx/SKILL.md
  * format for compatibility with Claude Code 2.1.88+.
  *
  * Uses node:test and node:assert (NOT Jest).
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -40,7 +40,7 @@ const _manifest = loadSkillsManifest();
 const resolvedProfileFull = resolveProfile({ modes: [], manifest: _manifest });
 
 /**
- * Set up a configDir backed by a custom srcDir via .gsd-source marker.
+ * Set up a configDir backed by a custom srcDir via .fvgsd-source marker.
  * Returns { configDir, srcDir } both under tmpDir.
  */
 function setupConfigDir(tmpDir, commandFiles) {
@@ -51,8 +51,8 @@ function setupConfigDir(tmpDir, commandFiles) {
   }
   const configDir = path.join(tmpDir, 'config');
   fs.mkdirSync(configDir, { recursive: true });
-  // .gsd-source marker tells findInstallSourceRoot to use our custom srcDir
-  fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir + '\n');
+  // .fvgsd-source marker tells findInstallSourceRoot to use our custom srcDir
+  fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir + '\n');
   return { configDir, srcDir };
 }
 
@@ -62,7 +62,7 @@ describe('convertClaudeCommandToClaudeSkill', () => {
   test('preserves allowed-tools multiline YAML list', () => {
     const input = [
       '---',
-      'name: vgsd:next',
+      'name: fvgsd:next',
       'description: Advance to the next step',
       'allowed-tools:',
       '  - Read',
@@ -73,7 +73,7 @@ describe('convertClaudeCommandToClaudeSkill', () => {
       'Body content here.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-next');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-next');
     assert.ok(result.includes('allowed-tools:'), 'allowed-tools field is present');
     assert.ok(result.includes('Read'), 'Read tool preserved');
     assert.ok(result.includes('Bash'), 'Bash tool preserved');
@@ -83,7 +83,7 @@ describe('convertClaudeCommandToClaudeSkill', () => {
   test('preserves argument-hint', () => {
     const input = [
       '---',
-      'name: vgsd:debug',
+      'name: fvgsd:debug',
       'description: Debug issues',
       'argument-hint: "[issue description]"',
       'allowed-tools:',
@@ -94,7 +94,7 @@ describe('convertClaudeCommandToClaudeSkill', () => {
       'Debug body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-debug');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-debug');
     assert.ok(result.includes('argument-hint:'), 'argument-hint field is present');
     // The value should be preserved (possibly yaml-quoted)
     assert.ok(
@@ -103,51 +103,51 @@ describe('convertClaudeCommandToClaudeSkill', () => {
     );
   });
 
-  test('emits hyphen-form name (vgsd-<cmd>) from hyphen-form dir (#2808)', () => {
+  test('emits hyphen-form name (fvgsd-<cmd>) from hyphen-form dir (#2808)', () => {
     const input = [
       '---',
-      'name: vgsd:next',
+      'name: fvgsd:next',
       'description: Advance workflow',
       '---',
       '',
       'Body.',
     ].join('\n');
 
-    // Directory and frontmatter names both use the collision-free vgsd prefix.
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-next');
-    assert.ok(result.includes('name: vgsd-next'), 'frontmatter name uses vgsd hyphen form');
+    // Directory and frontmatter names both use the collision-free fvgsd prefix.
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-next');
+    assert.ok(result.includes('name: fvgsd-next'), 'frontmatter name uses fvgsd hyphen form');
   });
 
   test('preserves body content while normalizing gsd: command references (#3583)', () => {
     // The body transformer now rewrites gsd: references (colon → hyphen) but must
     // leave all other custom prose, tags, and structure intact.
-    const body = '\n<objective>\nSee /vgsd:plan-phase and vgsd:review for details.\n</objective>\n\n<process>\nStep 1.\nStep 2.\n</process>\n';
+    const body = '\n<objective>\nSee /fvgsd:plan-phase and fvgsd:review for details.\n</objective>\n\n<process>\nStep 1.\nStep 2.\n</process>\n';
     const input = [
       '---',
-      'name: vgsd:test',
+      'name: fvgsd:test',
       'description: Test command',
       '---',
       body,
     ].join('');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-test');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-test');
     // Custom structure preserved
     assert.ok(result.includes('<objective>'), 'objective tag preserved');
-    assert.ok(result.includes('See /vgsd-plan-phase'), 'rewritten command reference visible');
+    assert.ok(result.includes('See /fvgsd-plan-phase'), 'rewritten command reference visible');
     assert.ok(result.includes('<process>'), 'process tag preserved');
     assert.ok(result.includes('Step 1.'), 'step text preserved');
 
     // #3583: gsd: references in body are normalized to hyphen form
-    assert.ok(result.includes('/vgsd-plan-phase'), 'colon command ref rewritten to hyphen');
-    assert.ok(result.includes('vgsd-review'), 'bare colon ref rewritten to hyphen');
-    assert.ok(!result.includes('vgsd:plan-phase'), 'no colon form should survive in body');
-    assert.ok(!result.includes('vgsd:review'), 'no colon form should survive in body');
+    assert.ok(result.includes('/fvgsd-plan-phase'), 'colon command ref rewritten to hyphen');
+    assert.ok(result.includes('fvgsd-review'), 'bare colon ref rewritten to hyphen');
+    assert.ok(!result.includes('fvgsd:plan-phase'), 'no colon form should survive in body');
+    assert.ok(!result.includes('fvgsd:review'), 'no colon form should survive in body');
   });
 
   test('preserves agent field', () => {
     const input = [
       '---',
-      'name: vgsd:plan-phase',
+      'name: fvgsd:plan-phase',
       'description: Plan a phase',
       'agent: true',
       'allowed-tools:',
@@ -157,20 +157,20 @@ describe('convertClaudeCommandToClaudeSkill', () => {
       'Plan body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-plan-phase');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-plan-phase');
     assert.ok(result.includes('agent:'), 'agent field is present');
   });
 
   test('handles content with no frontmatter', () => {
     const input = 'Just some plain markdown content.';
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-plain');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-plain');
     assert.strictEqual(result, input, 'content returned unchanged');
   });
 
   test('preserves allowed-tools as multiline YAML list (not flattened)', () => {
     const input = [
       '---',
-      'name: vgsd:debug',
+      'name: fvgsd:debug',
       'description: Debug',
       'allowed-tools:',
       '  - Read',
@@ -182,7 +182,7 @@ describe('convertClaudeCommandToClaudeSkill', () => {
       'Body.',
     ].join('\n');
 
-    const result = convertClaudeCommandToClaudeSkill(input, 'vgsd-debug');
+    const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-debug');
     // Claude Code native format keeps YAML multiline list
     assert.ok(result.includes('  - Read'), 'Read in multiline list');
     assert.ok(result.includes('  - Bash'), 'Bash in multiline list');
@@ -197,40 +197,40 @@ describe('installRuntimeArtifacts (claude global) — skill layout', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-claude-skills-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-claude-skills-test-'));
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('creates correct directory structure skills/vgsd-xxx/SKILL.md', () => {
+  test('creates correct directory structure skills/fvgsd-xxx/SKILL.md', () => {
     const { configDir } = setupConfigDir(tmpDir, {
-      'next.md': '---\nname: vgsd:next\ndescription: Advance\nallowed-tools:\n  - Read\n---\n\nBody.',
-      'health.md': '---\nname: vgsd:health\ndescription: Check health\n---\n\nHealth body.',
+      'next.md': '---\nname: fvgsd:next\ndescription: Advance\nallowed-tools:\n  - Read\n---\n\nBody.',
+      'health.md': '---\nname: fvgsd:health\ndescription: Check health\n---\n\nHealth body.',
     });
 
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
 
     const skillsDir = path.join(configDir, 'skills');
     assert.ok(
-      fs.existsSync(path.join(skillsDir, 'vgsd-next', 'SKILL.md')),
-      'skills/vgsd-next/SKILL.md exists'
+      fs.existsSync(path.join(skillsDir, 'fvgsd-next', 'SKILL.md')),
+      'skills/fvgsd-next/SKILL.md exists'
     );
     assert.ok(
-      fs.existsSync(path.join(skillsDir, 'vgsd-health', 'SKILL.md')),
-      'skills/vgsd-health/SKILL.md exists'
+      fs.existsSync(path.join(skillsDir, 'fvgsd-health', 'SKILL.md')),
+      'skills/fvgsd-health/SKILL.md exists'
     );
   });
 
   test('cleans up old skills before installing new ones (uninstall+install cycle)', () => {
     const { configDir } = setupConfigDir(tmpDir, {
-      'next.md': '---\nname: vgsd:next\ndescription: Advance\n---\n\nBody.',
+      'next.md': '---\nname: fvgsd:next\ndescription: Advance\n---\n\nBody.',
     });
 
     const skillsDir = path.join(configDir, 'skills');
     // Create a stale skill that should be removed by the uninstall step
-    const staleDir = path.join(skillsDir, 'gsd-old-command');
+    const staleDir = path.join(skillsDir, 'fvgsd-old-command');
     fs.mkdirSync(staleDir, { recursive: true });
     fs.writeFileSync(path.join(staleDir, 'SKILL.md'), 'stale content');
 
@@ -245,14 +245,14 @@ describe('installRuntimeArtifacts (claude global) — skill layout', () => {
     );
     // New skill created by install
     assert.ok(
-      fs.existsSync(path.join(skillsDir, 'vgsd-next', 'SKILL.md')),
+      fs.existsSync(path.join(skillsDir, 'fvgsd-next', 'SKILL.md')),
       'new skill created'
     );
   });
 
   test('does not remove non-GSD skills', () => {
     const { configDir } = setupConfigDir(tmpDir, {
-      'next.md': '---\nname: vgsd:next\ndescription: Advance\n---\n\nBody.',
+      'next.md': '---\nname: fvgsd:next\ndescription: Advance\n---\n\nBody.',
     });
 
     const skillsDir = path.join(configDir, 'skills');
@@ -292,15 +292,15 @@ describe('installRuntimeArtifacts (claude global) — skill layout', () => {
 
     const configDir = path.join(tmpDir, 'config-empty');
     fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, '.gsd-source'), emptySrc + '\n');
+    fs.writeFileSync(path.join(configDir, '.fvgsd-source'), emptySrc + '\n');
 
     // Should not throw
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
     const skillsDir = path.join(configDir, 'skills');
-    // If skills dir was created it must contain no vgsd-* entries.
+    // If skills dir was created it must contain no fvgsd-* entries.
     if (fs.existsSync(skillsDir)) {
-      const gsdEntries = fs.readdirSync(skillsDir).filter(n => n.startsWith('vgsd-'));
-      assert.strictEqual(gsdEntries.length, 0, 'no vgsd-* skills created when src has no .md files');
+      const gsdEntries = fs.readdirSync(skillsDir).filter(n => n.startsWith('fvgsd-'));
+      assert.strictEqual(gsdEntries.length, 0, 'no fvgsd-* skills created when src has no .md files');
     }
   });
 });
@@ -311,7 +311,7 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-claude-path-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-claude-path-test-'));
   });
 
   afterEach(() => {
@@ -336,13 +336,13 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
     const { configDir } = setupConfigDir(tmpDir, {
       'manager.md': [
         '---',
-        'name: vgsd:manager',
+        'name: fvgsd:manager',
         'description: Manager command',
         '---',
         '',
         '<execution_context>',
-        '@~/.claude/get-shit-done/workflows/manager.md',
-        '@$HOME/.claude/get-shit-done/references/ui-brand.md',
+        '@~/.claude/fvgsd/workflows/manager.md',
+        '@$HOME/.claude/fvgsd/references/ui-brand.md',
         '</execution_context>',
       ].join('\n'),
     });
@@ -350,7 +350,7 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
 
     const content = fs.readFileSync(
-      path.join(configDir, 'skills', 'vgsd-manager', 'SKILL.md'), 'utf8'
+      path.join(configDir, 'skills', 'fvgsd-manager', 'SKILL.md'), 'utf8'
     );
     assert.ok(!content.includes('~/.claude/'), 'no hardcoded ~/.claude/ paths remain');
     assert.ok(!content.includes('$HOME/.claude/'), 'no $HOME/.claude/ paths remain');
@@ -368,13 +368,13 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
 
   test('replaces $HOME/.claude/ paths with absolute configDir prefix on global install', () => {
     const { configDir } = setupConfigDir(tmpDir, {
-      'debug.md': '---\nname: vgsd:debug\ndescription: Debug\n---\n\n@$HOME/.claude/get-shit-done/workflows/debug.md',
+      'debug.md': '---\nname: fvgsd:debug\ndescription: Debug\n---\n\n@$HOME/.claude/fvgsd/workflows/debug.md',
     });
 
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
 
     const content = fs.readFileSync(
-      path.join(configDir, 'skills', 'vgsd-debug', 'SKILL.md'), 'utf8'
+      path.join(configDir, 'skills', 'fvgsd-debug', 'SKILL.md'), 'utf8'
     );
     assert.ok(!content.includes('$HOME/.claude/'), 'no $HOME/.claude/ paths remain');
     const expectedPrefix = expectedGlobalPrefix(configDir);
@@ -387,13 +387,13 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
   test('global install rewrites ~/.claude/ paths to absolute configDir form', () => {
     // Both ~/.claude/ and $HOME/.claude/ normalize to the same global prefix.
     const { configDir } = setupConfigDir(tmpDir, {
-      'next.md': '---\nname: vgsd:next\ndescription: Next\n---\n\n@~/.claude/get-shit-done/workflows/next.md',
+      'next.md': '---\nname: fvgsd:next\ndescription: Next\n---\n\n@~/.claude/fvgsd/workflows/next.md',
     });
 
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
 
     const content = fs.readFileSync(
-      path.join(configDir, 'skills', 'vgsd-next', 'SKILL.md'), 'utf8'
+      path.join(configDir, 'skills', 'fvgsd-next', 'SKILL.md'), 'utf8'
     );
     const expectedPrefix = expectedGlobalPrefix(configDir);
     assert.ok(
@@ -410,7 +410,7 @@ describe('Legacy commands/gsd/ cleanup', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-legacy-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-legacy-test-'));
   });
 
   afterEach(() => {
@@ -419,7 +419,7 @@ describe('Legacy commands/gsd/ cleanup', () => {
 
   test('install removes legacy commands/gsd/ directory when present', () => {
     const { configDir } = setupConfigDir(tmpDir, {
-      'next.md': '---\nname: vgsd:next\ndescription: Advance\n---\n\nBody.',
+      'next.md': '---\nname: fvgsd:next\ndescription: Advance\n---\n\nBody.',
     });
 
     // Create a mock legacy commands/gsd/ directory inside configDir
@@ -433,7 +433,7 @@ describe('Legacy commands/gsd/ cleanup', () => {
 
     assert.ok(!fs.existsSync(legacyDir), 'legacy commands/gsd/ removed');
     assert.ok(
-      fs.existsSync(path.join(configDir, 'skills', 'vgsd-next', 'SKILL.md')),
+      fs.existsSync(path.join(configDir, 'skills', 'fvgsd-next', 'SKILL.md')),
       'new skill installed'
     );
   });
@@ -445,17 +445,17 @@ describe('writeManifest tracks skills/ for Claude', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-manifest-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-manifest-test-'));
   });
 
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('manifest includes skills/vgsd-xxx/SKILL.md entries for Claude runtime', () => {
+  test('manifest includes skills/fvgsd-xxx/SKILL.md entries for Claude runtime', () => {
     // Create skills directory structure (as install would)
     const skillsDir = path.join(tmpDir, 'skills');
-    const skillDir = path.join(skillsDir, 'vgsd-next');
+    const skillDir = path.join(skillsDir, 'fvgsd-next');
     fs.mkdirSync(skillDir, { recursive: true });
     fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'skill content');
 
@@ -467,7 +467,7 @@ describe('writeManifest tracks skills/ for Claude', () => {
     writeManifest(tmpDir, 'claude');
 
     const manifest = JSON.parse(
-      fs.readFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'utf8')
+      fs.readFileSync(path.join(tmpDir, 'fvgsd-file-manifest.json'), 'utf8')
     );
 
     // Should have skills/ entries
@@ -476,8 +476,8 @@ describe('writeManifest tracks skills/ for Claude', () => {
     );
     assert.ok(skillEntries.length > 0, 'manifest has skills/ entries');
     assert.ok(
-      skillEntries.some(k => k === 'skills/vgsd-next/SKILL.md'),
-      'manifest has skills/vgsd-next/SKILL.md'
+      skillEntries.some(k => k === 'skills/fvgsd-next/SKILL.md'),
+      'manifest has skills/fvgsd-next/SKILL.md'
     );
 
     // Should NOT have commands/gsd/ entries

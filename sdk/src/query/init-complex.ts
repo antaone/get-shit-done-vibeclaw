@@ -122,9 +122,9 @@ function detectNestedSubdir(base: string, info: { inside: boolean; worktreeRoot:
 
 
 const NEW_PROJECT_REQUIRED_AGENTS = [
-  'gsd-project-researcher',
-  'gsd-research-synthesizer',
-  'gsd-roadmapper',
+  'fvgsd-project-researcher',
+  'fvgsd-research-synthesizer',
+  'fvgsd-roadmapper',
 ];
 
 function hasAgentDefinition(agentsDir: string, agent: string): boolean {
@@ -298,9 +298,9 @@ export const initNewProject: QueryHandler = async (_args, projectDir, workstream
     pathExists(projectDir, 'project.clj');
 
   const [researcherModel, synthesizerModel, roadmapperModel] = await Promise.all([
-    getModelAlias('gsd-project-researcher', projectDir),
-    getModelAlias('gsd-research-synthesizer', projectDir),
-    getModelAlias('gsd-roadmapper', projectDir),
+    getModelAlias('fvgsd-project-researcher', projectDir),
+    getModelAlias('fvgsd-research-synthesizer', projectDir),
+    getModelAlias('fvgsd-roadmapper', projectDir),
   ]);
   const runtime = detectRuntime(config as { runtime?: unknown });
   const agentsDir = resolveAgentsDir(runtime, projectDir);
@@ -489,8 +489,8 @@ export const initProgress: QueryHandler = async (_args, projectDir, workstream) 
   } catch { /* intentionally empty */ }
 
   const result: Record<string, unknown> = {
-    executor_model: await getModelAlias('gsd-executor', projectDir),
-    planner_model: await getModelAlias('gsd-planner', projectDir),
+    executor_model: await getModelAlias('fvgsd-executor', projectDir),
+    planner_model: await getModelAlias('fvgsd-planner', projectDir),
 
     commit_docs: config.commit_docs,
 
@@ -538,7 +538,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
   try {
     rawContent = await readFile(paths.roadmap, 'utf-8');
   } catch {
-    return { data: { error: 'No ROADMAP.md found. Run /vgsd-new-milestone first.' } };
+    return { data: { error: 'No ROADMAP.md found. Run /fvgsd-new-milestone first.' } };
   }
 
   const content = await extractCurrentMilestone(rawContent, projectDir, workstream);
@@ -714,7 +714,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'execute',
         reason: `${phase.plan_count} plans ready, dependencies met`,
-        command: `/vgsd-execute-phase ${phase.number}`,
+        command: `/fvgsd-execute-phase ${phase.number}`,
       };
       const isAllowed = activeExecuting.length === 0 ||
         activeExecuting.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
@@ -725,7 +725,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'plan',
         reason: 'Context gathered, ready for planning',
-        command: `/vgsd-plan-phase ${phase.number}`,
+        command: `/fvgsd-plan-phase ${phase.number}`,
       };
       const isAllowed = activePlanning.length === 0 ||
         activePlanning.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
@@ -736,7 +736,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'discuss',
         reason: 'Unblocked, ready to gather context',
-        command: `/vgsd-discuss-phase ${phase.number}`,
+        command: `/fvgsd-discuss-phase ${phase.number}`,
       });
     }
   }
@@ -745,7 +745,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
 
   // ── Next-milestone surface (issue #2497) ───────────────────────────────
   // Populate queued_phases + metadata with the milestone immediately after
-  // the active one, so the /vgsd-manager dashboard can preview what's coming
+  // the active one, so the /fvgsd-manager dashboard can preview what's coming
   // next without mixing it into the active phases grid. Empty/null when the
   // active milestone is the last one in ROADMAP.
   let queuedPhases: Record<string, unknown>[] = [];

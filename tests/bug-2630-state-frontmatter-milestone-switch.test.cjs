@@ -112,7 +112,7 @@ describe('state milestone-switch (#2630)', () => {
       ['state', 'milestone-switch', '--name', 'Something'],
       tmpDir,
     );
-    // gsd-tools emits JSON with { error: ... } to stdout even on error paths.
+    // fvgsd-tools emits JSON with { error: ... } to stdout even on error paths.
     const combined = (result.output || '') + (result.error || '');
     assert.match(combined, /milestone required/i);
   });

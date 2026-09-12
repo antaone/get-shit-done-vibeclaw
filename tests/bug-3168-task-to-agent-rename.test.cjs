@@ -100,7 +100,7 @@ describe('#3168 — workflows: prose must use Agent( not Task( for dispatcher ca
 });
 
 describe('#3168 — agents: tools frontmatter must use Agent not Task', () => {
-  const agents = readMdFiles(AGENTS_DIR, 'gsd-');
+  const agents = readMdFiles(AGENTS_DIR, 'fvgsd-');
 
   for (const agent of agents) {
     test(`${agent.name}: tools must not list Task`, () => {

@@ -2,7 +2,7 @@
 Curate sketch design findings and package them into a persistent project skill for future
 UI implementation. Reads from `.planning/sketches/`, writes skill to `./.claude/skills/sketch-findings-[project]/`
 (project-local) and summary to `.planning/sketches/WRAP-UP-SUMMARY.md`.
-Companion to `/vgsd:sketch`.
+Companion to `/fvgsd:sketch`.
 </purpose>
 
 <required_reading>
@@ -31,13 +31,13 @@ Read all files referenced by the invoking prompt's execution_context before star
 If no unprocessed sketches exist:
 ```
 No unprocessed sketches found in `.planning/sketches/`.
-Run `/vgsd:sketch` first to create design explorations.
+Run `/fvgsd:sketch` first to create design explorations.
 ```
 Exit.
 
 Check `commit_docs` config:
 ```bash
-COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -232,7 +232,7 @@ If this routing line already exists (append mode), leave it as-is.
 Commit all artifacts (if `COMMIT_DOCS` is true):
 
 ```bash
-gsd-sdk query commit "docs(sketch-wrap-up): package [N] sketch findings into project skill" --files .planning/sketches/WRAP-UP-SUMMARY.md
+fvgsd-sdk query commit "docs(sketch-wrap-up): package [N] sketch findings into project skill" --files .planning/sketches/WRAP-UP-SUMMARY.md
 ```
 </step>
 
@@ -257,15 +257,15 @@ The sketch-findings skill will auto-load when building the UI.
 
 **Explore frontier sketches** — see what else is worth sketching based on what we've explored
 
-`/vgsd:sketch` (run with no argument — its frontier mode analyzes the sketch landscape and proposes consistency and frontier sketches)
+`/fvgsd:sketch` (run with no argument — its frontier mode analyzes the sketch landscape and proposes consistency and frontier sketches)
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd:plan-phase` — start building the real UI
-- `/vgsd:ui-phase` — generate a UI design contract for a frontend phase
-- `/vgsd:sketch [idea]` — sketch a specific new design area
-- `/vgsd:explore` — continue exploring
+- `/fvgsd:plan-phase` — start building the real UI
+- `/fvgsd:ui-phase` — generate a UI design contract for a frontend phase
+- `/fvgsd:sketch [idea]` — sketch a specific new design area
+- `/fvgsd:explore` — continue exploring
 
 ───────────────────────────────────────────────────────────────
 </step>
@@ -281,5 +281,5 @@ The sketch-findings skill will auto-load when building the UI.
 - [ ] `.planning/sketches/WRAP-UP-SUMMARY.md` written for project history
 - [ ] Project CLAUDE.md has auto-load routing line
 - [ ] Summary presented
-- [ ] Next-step options presented (including frontier sketch exploration via `/vgsd:sketch`)
+- [ ] Next-step options presented (including frontier sketch exploration via `/fvgsd:sketch`)
 </success_criteria>

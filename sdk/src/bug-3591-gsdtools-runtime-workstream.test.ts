@@ -47,7 +47,7 @@ describe('bug #3591: createGSDToolsRuntime forwards workstream to registry.dispa
     try {
       createGSDToolsRuntime({
         projectDir: '/tmp/3591-proj',
-        gsdToolsPath: '/tmp/gsd-tools.cjs',
+        gsdToolsPath: '/tmp/fvgsd-tools.cjs',
         timeoutMs: 1_000,
         workstream: 'frontend-ws',
         shouldUseNativeQuery: () => true,
@@ -102,7 +102,7 @@ describe('bug #3591: createGSDToolsRuntime forwards workstream to registry.dispa
     try {
       createGSDToolsRuntime({
         projectDir: '/tmp/3591-proj',
-        gsdToolsPath: '/tmp/gsd-tools.cjs',
+        gsdToolsPath: '/tmp/fvgsd-tools.cjs',
         timeoutMs: 1_000,
         // workstream intentionally omitted
         shouldUseNativeQuery: () => true,
@@ -152,7 +152,7 @@ describe('bug #3591: end-to-end — workstream-aware probe handler receives the 
     try {
       const runtime = createGSDToolsRuntime({
         projectDir: '/tmp/3591-proj',
-        gsdToolsPath: '/tmp/gsd-tools.cjs',
+        gsdToolsPath: '/tmp/fvgsd-tools.cjs',
         timeoutMs: 1_000,
         workstream: 'frontend-ws',
         shouldUseNativeQuery: () => true,

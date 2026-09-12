@@ -2,11 +2,11 @@
 
 > **エージェント型ワーカー向け:** 必須サブスキル: superpowers:subagent-driven-development（推奨）または superpowers:executing-plans を使用して、このプランをタスクごとに実装してください。各ステップはチェックボックス（`- [ ]`）構文で進捗を追跡します。
 
-**目標:** `/vgsd-new-project` が `.planning/config.json` を作成する際、ユーザーが選択した6つのキーだけでなく、すべての有効なデフォルト値を含むファイルを生成する。これにより、開発者はソースコードを読まなくてもすべての設定を確認できるようになる。
+**目標:** `/fvgsd-new-project` が `.planning/config.json` を作成する際、ユーザーが選択した6つのキーだけでなく、すべての有効なデフォルト値を含むファイルを生成する。これにより、開発者はソースコードを読まなくてもすべての設定を確認できるようになる。
 
 **アーキテクチャ:** `config.cjs` に単一の JS 関数 `buildNewProjectConfig(cwd, userChoices)` を追加し、新規プロジェクトの完全な設定の唯一の信頼できる情報源とする。これを CLI コマンド `config-new-project` として公開する。`new-project.md` ワークフローを更新し、部分的な JSON をインラインで書き込む代わりにこのコマンドを呼び出すようにする。
 
-**技術スタック:** Node.js/CommonJS、既存の gsd-tools CLI、テストには `node:test` を使用。
+**技術スタック:** Node.js/CommonJS、既存の fvgsd-tools CLI、テストには `node:test` を使用。
 
 ---
 
@@ -62,7 +62,7 @@
 | ファイル | 操作 | 目的 |
 |------|--------|---------|
 | `get-shit-done/bin/lib/config.cjs` | 変更 | `buildNewProjectConfig()` + `cmdConfigNewProject()` を追加 |
-| `get-shit-done/bin/gsd-tools.cjs` | 変更 | `config-new-project` の case を登録 + usage 文字列を更新 |
+| `get-shit-done/bin/fvgsd-tools.cjs` | 変更 | `config-new-project` の case を登録 + usage 文字列を更新 |
 | `get-shit-done/workflows/new-project.md` | 変更 | ステップ 2a + 5: インライン JSON 書き込みを CLI 呼び出しに置換 |
 | `tests/config.test.cjs` | 変更 | `config-new-project` テストスイートを追加 |
 
@@ -316,7 +316,7 @@ function buildNewProjectConfig(cwd, userChoices) {
 /**
  * コマンド: 新規プロジェクト用の完全展開された .planning/config.json を作成する。
  *
- * ユーザーが選択した設定を JSON 文字列として受け取る（/vgsd-new-project 時に
+ * ユーザーが選択した設定を JSON 文字列として受け取る（/fvgsd-new-project 時に
  * ユーザーが明示的に設定したキー）。残りのキーはハードコードされたデフォルトと
  * オプションの ~/.gsd/defaults.json から補完される。
  *
@@ -383,13 +383,13 @@ git commit -m "feat: add config-new-project command for full config materializat
 
 ---
 
-## タスク 2: gsd-tools.cjs に `config-new-project` を登録する
+## タスク 2: fvgsd-tools.cjs に `config-new-project` を登録する
 
 **ファイル:**
 
-- 変更: `get-shit-done/bin/gsd-tools.cjs`
+- 変更: `get-shit-done/bin/fvgsd-tools.cjs`
 
-- [ ] **ステップ 2.1: gsd-tools.cjs の switch 文に case を追加する**
+- [ ] **ステップ 2.1: fvgsd-tools.cjs の switch 文に case を追加する**
 
 `config-get` の case の後（401行目付近）に以下を追加する:
 
@@ -409,7 +409,7 @@ git commit -m "feat: add config-new-project command for full config materializat
 
 ```bash
 cd /Users/diego/Dev/get-shit-done
-node get-shit-done/bin/gsd-tools.cjs config-new-project '{"mode":"interactive","granularity":"standard"}' --cwd /tmp/gsd-smoke-$(date +%s)
+node get-shit-done/bin/fvgsd-tools.cjs config-new-project '{"mode":"interactive","granularity":"standard"}' --cwd /tmp/gsd-smoke-$(date +%s)
 ```
 
 期待結果: `{"created":true,"path":".planning/config.json"}` （または類似の出力）が表示される。
@@ -429,8 +429,8 @@ node --test tests/config.test.cjs 2>&1 | tail -10
 
 ```bash
 cd /Users/diego/Dev/get-shit-done
-git add get-shit-done/bin/gsd-tools.cjs
-git commit -m "feat: register config-new-project in gsd-tools CLI router"
+git add get-shit-done/bin/fvgsd-tools.cjs
+git commit -m "feat: register config-new-project in fvgsd-tools CLI router"
 ```
 
 ---
@@ -470,7 +470,7 @@ Create `.planning/config.json` using the CLI (fills in all defaults automaticall
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project "$(cat <<'CHOICES'
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" config-new-project "$(cat <<'CHOICES'
 {
   "mode": "yolo",
   "granularity": "[selected: coarse|standard|fine]",
@@ -516,7 +516,7 @@ Create `.planning/config.json` using the CLI (fills in all defaults automaticall
 
 ```bash
 mkdir -p .planning
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" config-new-project "$(cat <<'CHOICES'
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" config-new-project "$(cat <<'CHOICES'
 {
   "mode": "[selected: yolo|interactive]",
   "granularity": "[selected: coarse|standard|fine]",
@@ -578,10 +578,10 @@ TMP=$(mktemp -d)
 cd "$TMP"
 
 # ステップ 1 のシミュレーション: init new-project の実行結果
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs init new-project --cwd "$TMP"
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs init new-project --cwd "$TMP"
 
 # ステップ 5 のシミュレーション: 完全な設定を作成
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-new-project '{
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-new-project '{
   "mode": "interactive",
   "granularity": "standard",
   "parallelization": true,
@@ -611,11 +611,11 @@ rm -rf "$TMP"
 TMP=$(mktemp -d)
 CHOICES='{"mode":"yolo","granularity":"coarse"}'
 
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-new-project "$CHOICES" --cwd "$TMP"
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-new-project "$CHOICES" --cwd "$TMP"
 FIRST=$(cat "$TMP/.planning/config.json")
 
 # 2回目の呼び出しは何も変更しないはず
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-new-project "$CHOICES" --cwd "$TMP"
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-new-project "$CHOICES" --cwd "$TMP"
 SECOND=$(cat "$TMP/.planning/config.json")
 
 [ "$FIRST" = "$SECOND" ] && echo "IDEMPOTENT: OK" || echo "IDEMPOTENT: FAIL"
@@ -628,17 +628,17 @@ rm -rf "$TMP"
 
 ```bash
 TMP=$(mktemp -d)
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-new-project '{
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-new-project '{
   "mode":"yolo","granularity":"standard","parallelization":true,"commit_docs":true,
   "model_profile":"balanced",
   "workflow":{"research":true,"plan_check":false,"verifier":true,"nyquist_validation":true}
 }' --cwd "$TMP"
 
 # loadConfig が正しく plan_check（workflow.plan_check としてネスト）を読み取るか
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-get workflow.plan_check --cwd "$TMP"
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-get workflow.plan_check --cwd "$TMP"
 # 期待値: false
 
-node /Users/diego/Dev/get-shit-done/get-shit-done/bin/gsd-tools.cjs config-get git.branching_strategy --cwd "$TMP"
+node /Users/diego/Dev/get-shit-done/get-shit-done/bin/fvgsd-tools.cjs config-get git.branching_strategy --cwd "$TMP"
 # 期待値: "none"
 
 rm -rf "$TMP"
@@ -661,7 +661,7 @@ node --test tests/ 2>&1 | grep -E "pass|fail|error" | tail -5
 feat: materialize all config defaults at new-project initialization
 
 **問題:**
-`/vgsd-new-project` はオンボーディング時にユーザーが明示的に選択した6つのキーのみで
+`/fvgsd-new-project` はオンボーディング時にユーザーが明示的に選択した6つのキーのみで
 `.planning/config.json` を作成する。5つの追加キー
 （`search_gitignored`、`brave_search`、`git.branching_strategy`、
 `git.phase_branch_template`、`git.milestone_branch_template`）は実行時に
@@ -670,11 +670,11 @@ feat: materialize all config defaults at new-project initialization
 これにより2つの問題が生じる:
 1. **発見可能性**: ユーザーがソースコードを読まない限り `git.branching_strategy` を
    確認・理解できない — 設定ファイルに表示されない。
-2. **暗黙的な拡張**: `/vgsd-settings` や `config-set` が初めて設定に書き込む際にも、
+2. **暗黙的な拡張**: `/fvgsd-settings` や `config-set` が初めて設定に書き込む際にも、
    これらのキーは追加されない。設定ファイルは実効設定のごく一部しか反映しない。
 
 **解決策:**
-`gsd-tools.cjs` に `config-new-project` CLI コマンドを追加する。このコマンドは:
+`fvgsd-tools.cjs` に `config-new-project` CLI コマンドを追加する。このコマンドは:
 - ユーザーが選択した値を JSON として受け取る
 - すべてのランタイムデフォルト（環境検出される `brave_search` を含む）とマージする
 - 完全に展開された設定を一度に書き込む

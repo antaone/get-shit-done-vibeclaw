@@ -12,7 +12,7 @@ const { writeStateMd, readModifyWriteStateMd, stateExtractField, stateReplaceFie
 const { formatGsdSlash, resolveRuntime } = require('./runtime-slash.cjs');
 
 // #2893 — strict canonical filter: `{padded_phase}-{NN}-PLAN.md` or `PLAN.md`.
-// Documented in agents/gsd-planner.md (write_phase_prompt step). The wider
+// Documented in agents/fvgsd-planner.md (write_phase_prompt step). The wider
 // "looks like a plan but isn't canonical" probe below is used to surface a
 // loud warning instead of silently returning zero plans.
 const isCanonicalPlanFile = (f) => f.endsWith('-PLAN.md') || f === 'PLAN.md';
@@ -48,7 +48,7 @@ function describeNonCanonicalPlans(dirFiles, matchedFiles) {
     `naming convention "{padded_phase}-{NN}-PLAN.md" (or bare "PLAN.md") and were skipped: ` +
     offenders.map((f) => `"${f}"`).join(', ') +
     `. Rename to the canonical form (e.g. "01-01-PLAN.md") so the executor can detect them. ` +
-    `See agents/gsd-planner.md write_phase_prompt step for the full contract.`
+    `See agents/fvgsd-planner.md write_phase_prompt step for the full contract.`
   );
 }
 
@@ -1154,7 +1154,7 @@ function cmdPhaseComplete(cwd, phaseNum, raw) {
       // Update plan count in phase section.
       // Use direct .replace() rather than replaceInCurrentMilestone() so this
       // works when the current milestone section is itself inside a <details>
-      // block (the standard /vgsd:new-project layout). replaceInCurrentMilestone
+      // block (the standard /fvgsd:new-project layout). replaceInCurrentMilestone
       // scopes to content after the last </details>, which misses content inside
       // the current milestone's own <details> wrapper (#2005).
       // The phase-scoped heading pattern is specific enough to avoid matching

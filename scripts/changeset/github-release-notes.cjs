@@ -18,14 +18,14 @@ const FIXED_GROUPS = [
   },
   {
     title: 'Install & runtime conversion',
-    pattern: /\b(install|installer|runtime|windows|powershell|codex|gemini|antigravity|hook|hooks|gsd-sdk|sdk readiness|cjs|model-catalog|path|shim)\b/i,
+    pattern: /\b(install|installer|runtime|windows|powershell|codex|gemini|antigravity|hook|hooks|fvgsd-sdk|sdk readiness|cjs|model-catalog|path|shim)\b/i,
   },
 ];
 
 const REMOVED_GROUPS = [
   {
     title: 'Intel updater',
-    pattern: /\b(intel|gsd-intel-updater|layout detection)\b/i,
+    pattern: /\b(intel|fvgsd-intel-updater|layout detection)\b/i,
   },
 ];
 
@@ -146,7 +146,7 @@ function serializeGithubReleaseNotes({
   fromRef,
   toRef,
   repoSlug = 'gsd-build/get-shit-done',
-  installCommand = 'npx get-shit-done-cc@latest',
+  installCommand = 'npx fvgsd@latest',
 }) {
   if (installCommand.includes('`')) {
     throw new Error('installCommand cannot contain backtick characters');

@@ -10,7 +10,7 @@
  * GSD Tools Tests - Phase
  *
  * Consolidated from 20 → 4 test files (issue #3740). This file covers the
- * CJS phase CLI layer (phase.cjs + gsd-tools.cjs): add, remove, complete,
+ * CJS phase CLI layer (phase.cjs + fvgsd-tools.cjs): add, remove, complete,
  * list, insert, and all regression tests for bugs in that layer.
  */
 
@@ -22,7 +22,7 @@ const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 const { runGsdTools, createTempProject, createTempDir, cleanup } = require('./helpers.cjs');
 
-const GSD_TOOLS_BIN = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const FVGSD_TOOLS_BIN = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
 const SDK_CLI = path.join(__dirname, '..', 'sdk', 'dist', 'cli.js');
 
 describe('phases list command', () => {
@@ -747,7 +747,7 @@ Output: Chat component, API endpoints.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
+@~/.claude/fvgsd/workflows/execute-plan.md
 </execution_context>
 
 <context>
@@ -3032,7 +3032,7 @@ describe('bug #1998: phase complete updates overview checkbox', () => {
   let planningDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-1998-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-1998-'));
     planningDir = path.join(tmpDir, '.planning');
     fs.mkdirSync(planningDir, { recursive: true });
 
@@ -3083,7 +3083,7 @@ describe('bug #1998: phase complete updates overview checkbox', () => {
     ].join('\n'));
 
     try {
-      execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
+      execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
     } catch {
       // Command may exit non-zero if STATE.md update fails, but ROADMAP.md update happens first
     }
@@ -3132,7 +3132,7 @@ describe('bug #1998: phase complete updates overview checkbox', () => {
     ].join('\n'));
 
     try {
-      execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
+      execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
     } catch {
       // May exit non-zero
     }
@@ -3153,7 +3153,7 @@ describe('bug #2005: phase complete updates plan count when milestone is inside 
   let planningDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2005-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2005-'));
     planningDir = path.join(tmpDir, '.planning');
     fs.mkdirSync(planningDir, { recursive: true });
 
@@ -3223,7 +3223,7 @@ describe('bug #2005: phase complete updates plan count when milestone is inside 
     ].join('\n'));
 
     try {
-      execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
+      execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
     } catch {
       // May exit non-zero if STATE.md update fails, but ROADMAP.md update is the target
     }
@@ -3283,7 +3283,7 @@ describe('bug #2005: phase complete updates plan count when milestone is inside 
     ].join('\n'));
 
     try {
-      execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
+      execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], { cwd: tmpDir, timeout: 10000 });
     } catch {}
 
     const result = fs.readFileSync(roadmapPath, 'utf-8');
@@ -3306,7 +3306,7 @@ describe('bug #2526: phase complete warns about unregistered REQ-IDs', () => {
   let planningDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2526-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2526-'));
     planningDir = path.join(tmpDir, '.planning');
     fs.mkdirSync(planningDir, { recursive: true });
 
@@ -3375,7 +3375,7 @@ describe('bug #2526: phase complete warns about unregistered REQ-IDs', () => {
     let stdout = '';
     let stderr = '';
     try {
-      const result = execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], {
+      const result = execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], {
         cwd: tmpDir,
         timeout: 10000,
         encoding: 'utf-8',
@@ -3442,7 +3442,7 @@ describe('bug #2526: phase complete warns about unregistered REQ-IDs', () => {
     let stdout = '';
     let stderr = '';
     try {
-      const result = execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], {
+      const result = execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], {
         cwd: tmpDir,
         timeout: 10000,
         encoding: 'utf-8',
@@ -3511,7 +3511,7 @@ describe('bug #2526: phase complete warns about unregistered REQ-IDs', () => {
     let stdout = '';
     let stderr = '';
     try {
-      const result = execFileSync('node', [GSD_TOOLS_BIN, 'phase', 'complete', '1'], {
+      const result = execFileSync('node', [FVGSD_TOOLS_BIN, 'phase', 'complete', '1'], {
         cwd: tmpDir,
         timeout: 10000,
         encoding: 'utf-8',
@@ -3773,7 +3773,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
       const content = readWorkflow(IMPORT_WF);
       assert.ok(
         content.includes('init.phase-op') || content.includes('init phase-op'),
-        'import.md must call gsd-sdk query init.phase-op to get expected_phase_dir with project_code prefix',
+        'import.md must call fvgsd-sdk query init.phase-op to get expected_phase_dir with project_code prefix',
       );
     });
   });
@@ -3964,7 +3964,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
     let tmpDir;
 
     beforeEach(() => {
-      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3517-'));
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3517-'));
     });
 
     afterEach(() => {
@@ -4145,7 +4145,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
 // ─────────────────────────────────────────────────────────────────────────────
 
 {
-  process.env.GSD_TEST_MODE = '1';
+  process.env.FVGSD_TEST_MODE = '1';
 
   function writeRoadmapForRemove(tmpDir, body) {
     fs.writeFileSync(path.join(tmpDir, '.planning', 'ROADMAP.md'), body);

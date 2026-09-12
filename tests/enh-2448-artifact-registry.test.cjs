@@ -18,7 +18,7 @@ const { isCanonicalPlanningFile, CANONICAL_EXACT } = require('../get-shit-done/b
 const { cmdValidateHealth } = require('../get-shit-done/bin/lib/verify.cjs');
 
 function makeTempProject(files = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2448-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2448-'));
   fs.mkdirSync(path.join(dir, '.planning', 'phases'), { recursive: true });
   for (const [rel, content] of Object.entries(files)) {
     const abs = path.join(dir, rel);
@@ -63,7 +63,7 @@ describe('artifacts.cjs — isCanonicalPlanningFile', () => {
   });
 });
 
-describe('gsd-health W019 — unrecognized .planning/ root files', () => {
+describe('fvgsd-health W019 — unrecognized .planning/ root files', () => {
   test('W019 fires for a non-canonical .md file at .planning/ root', () => {
     const dir = makeTempProject({
       ...BASE_FILES,

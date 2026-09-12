@@ -5,7 +5,7 @@
 // "Prohibited: Raw Text Matching on Test Outputs". Per-file review may
 // reclassify some entries as source-text-is-the-product during migration.
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2954: keep `help.md` and the live `commands/gsd/*` slash surface
@@ -19,9 +19,9 @@ process.env.GSD_TEST_MODE = '1';
  *      the inverse: a command lands without docs, so users never discover it.)
  *
  * The shipped slash name is parsed from frontmatter `name:` (which can be
- * either `gsd:foo` or `gsd-foo` — Claude Code surfaces both as `/gsd-foo`),
+ * either `gsd:foo` or `fvgsd-foo` — Claude Code surfaces both as `/gsd-foo`),
  * NOT from the filename, because some files (e.g. `ns-context.md`) ship a
- * different slash name (`gsd-context`) than their filename suggests.
+ * different slash name (`fvgsd-context`) than their filename suggests.
  *
  * Also covers `do.md`, the dispatcher invoked at runtime by
  * `/gsd:progress --do`: any `/gsd[-:]<name>` token in its routing table must
@@ -69,7 +69,7 @@ function listShippedSlashBaseNames() {
     const fmName = fm.name;
     let base = null;
     if (fmName.startsWith('gsd:')) base = fmName.slice(4);
-    else if (fmName.startsWith('gsd-')) base = fmName.slice(4);
+    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(4);
     if (base && /^[a-z][a-z0-9-]*$/.test(base)) names.add(base);
   }
   return names;
@@ -100,7 +100,7 @@ function listShippedFlagsByCommand() {
     const fmName = fm.name;
     let base = null;
     if (fmName.startsWith('gsd:')) base = fmName.slice(4);
-    else if (fmName.startsWith('gsd-')) base = fmName.slice(4);
+    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(4);
     if (!base || !/^[a-z][a-z0-9-]*$/.test(base)) continue;
     const flags = new Set();
     for (const m of fm['argument-hint'].matchAll(/--([a-z][a-z0-9-]*)/g)) {

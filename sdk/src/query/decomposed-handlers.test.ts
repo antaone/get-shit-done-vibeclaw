@@ -29,7 +29,7 @@ import { websearch } from './websearch.js';
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-stubs-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-stubs-'));
   await mkdir(join(tmpDir, '.planning', 'phases', '09-foundation'), { recursive: true });
   await mkdir(join(tmpDir, '.planning', 'phases', '10-queries'), { recursive: true });
 
@@ -69,7 +69,7 @@ afterEach(async () => {
 
 describe('agentSkills', () => {
   it('returns empty string when agent_skills config is missing', async () => {
-    const result = await agentSkills(['gsd-executor'], tmpDir);
+    const result = await agentSkills(['fvgsd-executor'], tmpDir);
     expect(result.data).toBe('');
   });
 });
@@ -317,7 +317,7 @@ describe('workstream handlers', () => {
 // ─── init.ts ─────────────────────────────────────────────────────────────
 
 describe('docsInit', () => {
-  it('returns docs context matching gsd-tools docs-init', async () => {
+  it('returns docs context matching fvgsd-tools docs-init', async () => {
     const result = await docsInit([], tmpDir);
     const data = result.data as Record<string, unknown>;
     expect(typeof data.planning_exists).toBe('boolean');

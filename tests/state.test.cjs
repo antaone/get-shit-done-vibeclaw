@@ -157,7 +157,7 @@ describe('state-snapshot command', () => {
     let outsideDir;
 
     beforeEach(() => {
-      outsideDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-test-outside-'));
+      outsideDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fvgsd-test-outside-'));
     });
 
     afterEach(() => {

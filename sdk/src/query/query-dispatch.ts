@@ -108,7 +108,7 @@ export function validateQueryDispatchInput(queryArgv: string[]): DispatchInputVa
       return {
         queryArgs,
         error: dispatchFailure(validationError({
-          message: 'Error: "gsd-sdk query" requires a command',
+          message: 'Error: "fvgsd-sdk query" requires a command',
           details: { reason: 'missing_command' },
         })),
       };
@@ -120,7 +120,7 @@ export function validateQueryDispatchInput(queryArgv: string[]): DispatchInputVa
     return {
       queryArgs,
       error: dispatchFailure(validationError({
-        message: 'Error: "gsd-sdk query" requires a command',
+        message: 'Error: "fvgsd-sdk query" requires a command',
         details: { reason: 'missing_command' },
       })),
     };
@@ -177,7 +177,7 @@ export async function runQueryDispatch(deps: QueryDispatchDeps, queryArgv: strin
   const normArgs = plan.normalized.args;
 
   if (!normCmd || !String(normCmd).trim()) {
-    return fail(validationError({ message: 'Error: "gsd-sdk query" requires a command', details: { reason: 'empty_normalized_command' } }));
+    return fail(validationError({ message: 'Error: "fvgsd-sdk query" requires a command', details: { reason: 'empty_normalized_command' } }));
   }
 
   if (plan.mode === 'error') {
@@ -222,7 +222,7 @@ export async function runQueryDispatch(deps: QueryDispatchDeps, queryArgv: strin
   if (helpFlagPresent && matched.mutation) {
     return dispatchSuccess(
       formatSuccess(
-        { help: `Usage: gsd-sdk query ${matched.canonical} [args...]` },
+        { help: `Usage: fvgsd-sdk query ${matched.canonical} [args...]` },
         undefined,
       ),
     );

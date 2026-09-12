@@ -18,9 +18,9 @@ The examples use three tool IDs:
 
 | Tool | VibeClaw ID | Command shown inside its candidate context |
 | --- | --- | --- |
-| Gemini CLI | `gemini` | `/vgsd:...` |
-| Codex | `codex` | `$vgsd-...` |
-| Claude Code (CC) | `claude` | `/vgsd-...` |
+| Gemini CLI | `gemini` | `/fvgsd:...` |
+| Codex | `codex` | `$fvgsd-...` |
+| Claude Code (CC) | `claude` | `/fvgsd-...` |
 
 Claude Code Router is a separate adapter with the ID `claude-router` and executable `ccr`.
 
@@ -50,22 +50,22 @@ results, and push. Coordinator completion fetches the exact remote result and
 publishes a completion marker; promotion revalidates the handoff and pushes the
 integration branch. See [Multi-machine Git handoffs](VIBECLAW.md#execution-modes-local-worktrees-and-multi-machine-git-handoffs).
 
-## Recommended order: `vgsd-vibe` first
+## Recommended order: `fvgsd-vibe` first
 
 For normal interactive use, do not begin with the terminal sequence later in
 this guide. Begin on the integration worktree with the installed AI gateway:
 
 ```text
-/vgsd-vibe new-project --tool gemini --tool codex --tool claude
+/fvgsd-vibe new-project --tool gemini --tool codex --tool claude
 ```
 
 When the three tools will run in independent clones, make the mode explicit:
 
 ```text
-/vgsd-vibe new-project --multi-machine --remote origin --tool gemini --tool codex --tool claude
+/fvgsd-vibe new-project --multi-machine --remote origin --tool gemini --tool codex --tool claude
 ```
 
-Use `/vgsd:vibe ...` in Gemini CLI or `$vgsd-vibe ...` in Codex. The gateway
+Use `/fvgsd:vibe ...` in Gemini CLI or `$fvgsd-vibe ...` in Codex. The gateway
 inspects Git and planning state, initializes Git when needed, requests approval
 for a reviewed baseline commit, initializes Vibe, and prepares all requested
 candidates from the same commit.
@@ -76,9 +76,9 @@ multi-machine mode fetch and track each printed branch from its assigned worker.
 Run only the matching command:
 
 ```text
-Gemini candidate: /vgsd:new-project
-Codex candidate:  $vgsd-new-project
-Claude candidate: /vgsd-new-project
+Gemini candidate: /fvgsd:new-project
+Codex candidate:  $fvgsd-new-project
+Claude candidate: /fvgsd-new-project
 ```
 
 Return to the integration worktree to complete, compare, and promote. The
@@ -88,11 +88,11 @@ are the lower-level equivalent for operators and automation.
 The same order applies to brownfield workflows. Examples include:
 
 ```text
-/vgsd-vibe map-codebase --tool codex --tool claude
-/vgsd-vibe new-milestone --tool codex --tool claude
-/vgsd-vibe execute-phase --tool codex --tool opencode
-/vgsd-vibe quick --tool codex
-/vgsd-vibe debug --tool codex --tool claude
+/fvgsd-vibe map-codebase --tool codex --tool claude
+/fvgsd-vibe new-milestone --tool codex --tool claude
+/fvgsd-vibe execute-phase --tool codex --tool opencode
+/fvgsd-vibe quick --tool codex
+/fvgsd-vibe debug --tool codex --tool claude
 ```
 
 Finish and promote one run before starting a different workflow, or explicitly
@@ -104,31 +104,31 @@ for additional starting states.
 
 `vibe init` and GSD project initialization are different operations:
 
-- `vibe init` runs once. It creates `.planning-vibe/`, routes, workflows, and the orchestration state store.
+- `vibe init` runs once. It creates `.planning-fvgsd-vibe/`, routes, workflows, and the orchestration state store.
 - The `project-bootstrap` workflow runs GSD project initialization as competing Gemini, Codex, and Claude candidates. The winning candidate creates the promoted `.planning/` foundation.
 
-`vgsd-vibe new-project` coordinates both operations in the correct order. You
+`fvgsd-vibe new-project` coordinates both operations in the correct order. You
 only need to distinguish them when using the lower-level CLI manually.
 
 VibeClaw always promotes to the integration branch that was checked out when `vibe run start` ran. If the winner must land on `main`, start every run from a clean `main` branch.
 
 ## How branch preflight fits this walkthrough
 
-Every `vgsd` command checks its branch before starting:
+Every `fvgsd` command checks its branch before starting:
 
 - The three candidates in this guide already have Vibe-created branches and
   worktrees, so their commands verify the candidate manifest and continue. In
   multi-machine mode, the equivalent check uses the live remote handoff tag,
   tracked branch, assigned command/tool, base ancestry, and completion marker.
-- Running a mutating `vgsd` command directly on `main` after `vibe init` stops.
-  Return to `main`, invoke `vgsd-vibe` for that target, and then run the target
+- Running a mutating `fvgsd` command directly on `main` after `vibe init` stops.
+  Return to `main`, invoke `fvgsd-vibe` for that target, and then run the target
   inside the prepared candidate; this prevents accidental edits on the
   integration branch.
-- Running `vgsd` before any Vibe setup creates a standalone branch named
-  `vgsd/<runtime>/<command>/<execution-id>`.
+- Running `fvgsd` before any Vibe setup creates a standalone branch named
+  `fvgsd/<runtime>/<command>/<execution-id>`.
 - If you later run `vibe init` from that standalone branch, initialization
   imports its provenance into
-  `.planning-vibe/state/standalone-executions.json` and future invocations can
+  `.planning-fvgsd-vibe/state/standalone-executions.json` and future invocations can
   safely reuse it.
 
 Managed Vibe launches set the candidate ID, tool ID, and GSD runtime in the
@@ -139,8 +139,8 @@ when no launch environment is inherited.
 Standalone-first example:
 
 ```text
-Codex runs $vgsd-new-project
-  → vgsd/codex/new-project/<execution-id>
+Codex runs $fvgsd-new-project
+  → fvgsd/codex/new-project/<execution-id>
   → project work is committed
   → vibe init
   → standalone execution is imported for later orchestration
@@ -154,9 +154,9 @@ multi-machine mode, each worker only needs its assigned runtime installation;
 the coordinator needs VibeClaw and authenticated access to the shared remote.
 
 ```bash
-get-shit-done-cc --gemini --global
-get-shit-done-cc --codex --global
-get-shit-done-cc --claude --global
+fvgsd --gemini --global
+fvgsd --codex --global
+fvgsd --claude --global
 
 vibe tool list
 vibe tool detect
@@ -167,7 +167,7 @@ claude --version
 
 The lower-level terminal walkthrough below assumes that the repository already
 has a `main` branch and at least one commit. For a brand-new repository, the
-recommended `vgsd-vibe new-project` path can initialize Git and request approval
+recommended `fvgsd-vibe new-project` path can initialize Git and request approval
 for the baseline. If preparing it manually, add a committed `PROJECT-BRIEF.md`
 describing the product, users, constraints, and desired first release.
 
@@ -179,13 +179,13 @@ git commit -m "docs: add project brief"
 
 ## 1. Manual equivalent: initialize VibeClaw once
 
-Skip this section when `vgsd-vibe` already initialized the project. For the
+Skip this section when `fvgsd-vibe` already initialized the project. For the
 lower-level path, run this from the repository root:
 
 ```bash
 git switch main
 vibe init
-git add .planning-vibe
+git add .planning-fvgsd-vibe
 git commit -m "chore: initialize VibeClaw"
 ```
 
@@ -193,8 +193,8 @@ Initialization installs three bundled workflows:
 
 | Workflow | Purpose |
 | --- | --- |
-| `project-bootstrap` | Compete on `/vgsd-new-project` and promote one `.planning/` foundation |
-| `milestone-bootstrap` | Compete on `/vgsd-new-milestone` and promote one milestone definition |
+| `project-bootstrap` | Compete on `/fvgsd-new-project` and promote one `.planning/` foundation |
+| `milestone-bootstrap` | Compete on `/fvgsd-new-milestone` and promote one milestone definition |
 | `feature-development` | Research → optional discuss → plan → execute → verify → review |
 
 ## 2. Bootstrap a new project with Gemini, Codex, and Claude
@@ -236,9 +236,9 @@ vibe stage launch project-001-project-claude-003 --execute
 Each tool reads its generated `context.md`, works only in its assigned worktree, reads `PROJECT-BRIEF.md`, and receives its native GSD action:
 
 ```text
-Gemini:      /vgsd:new-project
-Codex:       $vgsd-new-project
-Claude Code: /vgsd-new-project
+Gemini:      /fvgsd:new-project
+Codex:       $fvgsd-new-project
+Claude Code: /fvgsd-new-project
 ```
 
 Before completion, each candidate should have committed its `.planning/` result and have a clean worktree. Complete all three from the operator terminal:
@@ -279,13 +279,13 @@ vibe promote project-001-project-claude-003 --replace
 After the choice is final, persist the updated orchestration history:
 
 ```bash
-git add .planning-vibe
+git add .planning-fvgsd-vibe
 git commit -m "chore: record project bootstrap run"
 ```
 
 ## 3. Start a later milestone the same way
 
-`/vgsd-new-project` already creates the initial milestone. Use `milestone-bootstrap` later, after the active milestone has been completed and you are ready to define the next one.
+`/fvgsd-new-project` already creates the initial milestone. Use `milestone-bootstrap` later, after the active milestone has been completed and you are ready to define the next one.
 
 Create and commit a `MILESTONE-BRIEF.md`, then start from clean `main`:
 
@@ -312,14 +312,14 @@ vibe stage complete milestone-002-milestone-codex-002 --summary "Codex milestone
 vibe stage complete milestone-002-milestone-claude-003 --summary "Claude milestone proposal"
 ```
 
-The candidate contexts use `/vgsd:new-milestone`, `$vgsd-new-milestone`, and `/vgsd-new-milestone` respectively. Compare `.planning/`, then promote one candidate:
+The candidate contexts use `/fvgsd:new-milestone`, `$fvgsd-new-milestone`, and `/fvgsd-new-milestone` respectively. Compare `.planning/`, then promote one candidate:
 
 ```bash
 vibe candidates milestone --run milestone-002
 git switch main
 vibe promote milestone-002-milestone-claude-003
 
-git add .planning-vibe
+git add .planning-fvgsd-vibe
 git commit -m "chore: record milestone bootstrap run"
 ```
 
@@ -404,11 +404,11 @@ vibe promote phase-01-execute-claude-003
 
 Run the same commands with stage `verify`, then stage `review`. Each stage automatically receives only the prior promoted candidate as input. Use `vibe next --run phase-01` and `vibe status --run phase-01` to confirm the expected next action.
 
-Do not commit `.planning-vibe/` between promotions in a multi-stage run. A run expects its integration branch to remain at the last promoted commit. Commit orchestration state after the final stage is promoted:
+Do not commit `.planning-fvgsd-vibe/` between promotions in a multi-stage run. A run expects its integration branch to remain at the last promoted commit. Commit orchestration state after the final stage is promoted:
 
 ```bash
 vibe status --run phase-01
-git add .planning-vibe
+git add .planning-fvgsd-vibe
 git commit -m "chore: record phase 1 orchestration"
 ```
 

@@ -194,8 +194,8 @@ describe('stateExtractField', () => {
 
 describe('planningPaths', () => {
   afterEach(() => {
-    delete process.env['GSD_WORKSTREAM'];
-    delete process.env['GSD_PROJECT'];
+    delete process.env['FVGSD_WORKSTREAM'];
+    delete process.env['FVGSD_PROJECT'];
   });
 
   it('returns all expected keys', () => {
@@ -215,14 +215,14 @@ describe('planningPaths', () => {
     expect(paths.config).toContain('.planning/config.json');
   });
 
-  it('uses GSD_PROJECT env when no explicit workstream is provided', () => {
-    process.env['GSD_PROJECT'] = 'proj-scope';
+  it('uses FVGSD_PROJECT env when no explicit workstream is provided', () => {
+    process.env['FVGSD_PROJECT'] = 'proj-scope';
     const paths = planningPaths('/proj');
     expect(paths.planning).toContain('/proj/.planning/proj-scope');
   });
 
-  it('explicit workstream overrides GSD_PROJECT env', () => {
-    process.env['GSD_PROJECT'] = 'proj-scope';
+  it('explicit workstream overrides FVGSD_PROJECT env', () => {
+    process.env['FVGSD_PROJECT'] = 'proj-scope';
     const paths = planningPaths('/proj', 'ws-a');
     expect(paths.planning).toContain('/proj/.planning/workstreams/ws-a');
     expect(paths.planning).not.toContain('proj-scope');
@@ -278,7 +278,7 @@ describe('resolvePathUnderProject', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-path-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-path-'));
     await writeFile(join(tmpDir, 'safe.md'), 'x', 'utf-8');
   });
 
@@ -299,7 +299,7 @@ describe('resolvePathUnderProject', () => {
 // ─── Runtime-aware agents dir resolution (#2402) ───────────────────────────
 
 const RUNTIME_ENV_VARS = [
-  'GSD_AGENTS_DIR', 'GSD_RUNTIME', 'CLAUDE_CONFIG_DIR', 'OPENCODE_CONFIG_DIR',
+  'FVGSD_AGENTS_DIR', 'FVGSD_RUNTIME', 'CLAUDE_CONFIG_DIR', 'OPENCODE_CONFIG_DIR',
   'OPENCODE_CONFIG', 'KILO_CONFIG_DIR', 'KILO_CONFIG', 'XDG_CONFIG_HOME',
   'GEMINI_CONFIG_DIR', 'CODEX_HOME', 'COPILOT_CONFIG_DIR', 'ANTIGRAVITY_CONFIG_DIR',
   'CURSOR_CONFIG_DIR', 'WINDSURF_CONFIG_DIR', 'AUGMENT_CONFIG_DIR', 'TRAE_CONFIG_DIR',
@@ -398,22 +398,22 @@ describe('detectRuntime', () => {
     expect(detectRuntime()).toBe('claude');
   });
 
-  it('uses GSD_RUNTIME when set to a known runtime', () => {
-    process.env.GSD_RUNTIME = 'codex';
+  it('uses FVGSD_RUNTIME when set to a known runtime', () => {
+    process.env.FVGSD_RUNTIME = 'codex';
     expect(detectRuntime()).toBe('codex');
   });
 
-  it('falls back to config.runtime when GSD_RUNTIME unset', () => {
+  it('falls back to config.runtime when FVGSD_RUNTIME unset', () => {
     expect(detectRuntime({ runtime: 'gemini' })).toBe('gemini');
   });
 
-  it('GSD_RUNTIME wins over config.runtime', () => {
-    process.env.GSD_RUNTIME = 'codex';
+  it('FVGSD_RUNTIME wins over config.runtime', () => {
+    process.env.FVGSD_RUNTIME = 'codex';
     expect(detectRuntime({ runtime: 'gemini' })).toBe('codex');
   });
 
-  it('unknown GSD_RUNTIME falls through to config then claude', () => {
-    process.env.GSD_RUNTIME = 'bogus';
+  it('unknown FVGSD_RUNTIME falls through to config then claude', () => {
+    process.env.FVGSD_RUNTIME = 'bogus';
     expect(detectRuntime({ runtime: 'gemini' })).toBe('gemini');
     expect(detectRuntime()).toBe('claude');
   });
@@ -439,8 +439,8 @@ describe('resolveAgentsDir (runtime-aware)', () => {
     expect(resolveAgentsDir()).toBe(join(homedir(), '.claude', 'agents'));
   });
 
-  it('GSD_AGENTS_DIR short-circuits regardless of runtime', () => {
-    process.env.GSD_AGENTS_DIR = '/explicit/agents';
+  it('FVGSD_AGENTS_DIR short-circuits regardless of runtime', () => {
+    process.env.FVGSD_AGENTS_DIR = '/explicit/agents';
     expect(resolveAgentsDir('codex')).toBe('/explicit/agents');
     expect(resolveAgentsDir('claude')).toBe('/explicit/agents');
   });
@@ -506,7 +506,7 @@ describe('findProjectRoot (multi-repo .planning resolution)', () => {
   let workspace: string;
 
   beforeEach(async () => {
-    workspace = await mkdtemp(join(tmpdir(), 'gsd-find-root-'));
+    workspace = await mkdtemp(join(tmpdir(), 'fvgsd-find-root-'));
   });
 
   afterEach(async () => {

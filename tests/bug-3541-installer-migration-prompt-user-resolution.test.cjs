@@ -1,7 +1,7 @@
 /**
  * Regression test for #3541: first-time-baseline installer migration
  * `prompt-user` actions threw hard with no resolution path, making
- * `/gsd-update` unrecoverable when leftover `gsd-*` files were classified
+ * `/gsd-update` unrecoverable when leftover `fvgsd-*` files were classified
  * as `stale-gsd-looking`.
  *
  * Fix shape (per triage brief):
@@ -19,7 +19,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -48,7 +48,7 @@ function writeFile(root, relPath, content) {
 
 function writeManifest(root, files) {
   fs.writeFileSync(
-    path.join(root, 'gsd-file-manifest.json'),
+    path.join(root, 'fvgsd-file-manifest.json'),
     JSON.stringify({
       version: '1.41.2',
       timestamp: '2026-05-10T00:00:00.000Z',
@@ -63,7 +63,7 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
   let configDir;
 
   beforeEach(() => {
-    configDir = createTempDir('gsd-3541-');
+    configDir = createTempDir('fvgsd-3541-');
   });
 
   afterEach(() => {
@@ -177,7 +177,7 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
     // surface — the message must point users at it.
     assert.match(
       message,
-      /GSD_INSTALLER_MIGRATION_RESOLVE/,
+      /FVGSD_INSTALLER_MIGRATION_RESOLVE/,
       'error message suggests the non-interactive resolution env var'
     );
 
@@ -224,12 +224,12 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
 
     const resolved = resolveInstallerMigrationPromptsForNonTty(result, {
       isTty: false,
-      env: { GSD_INSTALLER_MIGRATION_RESOLVE: 'keep' },
+      env: { FVGSD_INSTALLER_MIGRATION_RESOLVE: 'keep' },
     });
 
     assert.equal(resolved.resolutions.length, 1, 'env override resolves prompt-user action');
     assert.equal(resolved.resolutions[0].choice, 'keep');
-    assert.equal(resolved.resolutions[0].source, 'GSD_INSTALLER_MIGRATION_RESOLVE');
+    assert.equal(resolved.resolutions[0].source, 'FVGSD_INSTALLER_MIGRATION_RESOLVE');
     assert.equal(resolved.resolutions[0].category, 'operator-override');
     assert.equal((resolved.result.blocked || []).length, 0);
     assert.equal((resolved.result.plan.blocked || []).length, 0);

@@ -21,7 +21,7 @@ First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking p
 - Otherwise -> `claude`
 
 Use `PREFERRED_CONFIG_DIR` when available so custom `--config-dir` installs are checked before default locations.
-Use `PREFERRED_RUNTIME` as the first runtime checked so `/vgsd:update` targets the runtime that invoked it.
+Use `PREFERRED_RUNTIME` as the first runtime checked so `/fvgsd:update` targets the runtime that invoked it.
 
 Kilo config precedence must match the installer: `KILO_CONFIG_DIR` -> `dirname(KILO_CONFIG)` -> `XDG_CONFIG_HOME/kilo` -> `~/.config/kilo`.
 
@@ -117,9 +117,9 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
   echo "$INSTALL_SCOPE"
   echo "${PREFERRED_RUNTIME:-claude}"
   # 4-line output contract (#2993 CR): early-return path must also emit
-  # GSD_DIR or downstream check_latest_version misreads the install as
+  # FVGSD_DIR or downstream check_latest_version misreads the install as
   # UNKNOWN. PREFERRED_CONFIG_DIR is the resolved config dir we just
-  # validated above (line 95-96); it is the right GSD_DIR value for
+  # validated above (line 95-96); it is the right FVGSD_DIR value for
   # this fast path.
   echo "$PREFERRED_CONFIG_DIR"
   exit 0
@@ -268,7 +268,7 @@ Parse output:
 - Line 1 = installed version (`0.0.0` means unknown version)
 - Line 2 = install scope (`LOCAL`, `GLOBAL`, or `UNKNOWN`)
 - Line 3 = target runtime (`claude`, `opencode`, `gemini`, `kilo`, or `codex`)
-- Line 4 = resolved GSD config dir (e.g. `/Users/me/.claude`, `/Users/me/.gemini`); empty if scope is `UNKNOWN`. Capture this as `GSD_DIR` and pass it to subsequent steps so they don't have to re-derive the runtime path.
+- Line 4 = resolved GSD config dir (e.g. `/Users/me/.claude`, `/Users/me/.gemini`); empty if scope is `UNKNOWN`. Capture this as `FVGSD_DIR` and pass it to subsequent steps so they don't have to re-derive the runtime path.
 - If scope is `UNKNOWN`, proceed to install step using `--claude --global` fallback.
 
 If multiple runtime installs are detected and the invoking runtime cannot be determined from execution_context, ask the user which runtime to update before running install.
@@ -290,12 +290,12 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 <step name="check_latest_version">
 Check npm for latest version via the deterministic script. **Do NOT run `npm view` or `npm search` directly** — the package name must come from the script, not from a free choice at execution time. (#2992: LLM-driven prescriptions of npm package names produced wrong-package queries; moving the package name into a script constant closes that gap.)
 
-The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`~/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
+The `FVGSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`~/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `FVGSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
 
-`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, version: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
+`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, version: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `FVGSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
 
 ```bash
-if [ -z "$GSD_DIR" ]; then
+if [ -z "$FVGSD_DIR" ]; then
   # No install detected — fall through to install step; version-check is skipped.
   LATEST_RESULT=""
   LATEST_STATUS=0
@@ -303,7 +303,7 @@ if [ -z "$GSD_DIR" ]; then
   LATEST_VERSION=""
   LATEST_REASON="no_install_detected"
 else
-  LATEST_RESULT="$(node "$GSD_DIR/get-shit-done/bin/check-latest-version.cjs" --json 2>/dev/null)"
+  LATEST_RESULT="$(node "$FVGSD_DIR/get-shit-done/bin/check-latest-version.cjs" --json 2>/dev/null)"
   LATEST_STATUS=$?
   # #2993 CR: when node is missing or the script doesn't exist, LATEST_RESULT
   # is empty and piping it to `jq` produces a parse error on stderr while
@@ -326,7 +326,7 @@ fi
 ```text
 Couldn't check for updates (reason: {LATEST_REASON}, exit: {LATEST_STATUS}).
 
-To update manually: `npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --global`
+To update manually: `npx -y --package=fvgsd@latest -- fvgsd --global`
 ```
 
 Exit.
@@ -362,7 +362,7 @@ by re-running the local installer from your dev branch:
 
     node bin/install.js --global --claude
 
-Running /vgsd:update would install the npm release (A.B.C) and downgrade
+Running /fvgsd:update would install the npm release (A.B.C) and downgrade
 your dev version — do NOT use it to resolve this warning.
 ```
 
@@ -400,7 +400,7 @@ Exit.
 ⚠️  **Note:** The installer performs a clean install of GSD folders:
 - `commands/gsd/` will be wiped and replaced
 - `get-shit-done/` will be wiped and replaced
-- `agents/vgsd-*` files will be replaced
+- `agents/fvgsd-*` files will be replaced
 
 (Paths are relative to detected runtime install location:
 global: `~/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
@@ -412,7 +412,7 @@ Your custom files in other locations are preserved:
 - Custom hooks ✓
 - Your CLAUDE.md files ✓
 
-If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `/vgsd:update --reapply` after the update.
+If you've modified any GSD files directly, they'll be automatically backed up to `fvgsd-local-patches/` and can be reapplied with `/fvgsd:update --reapply` after the update.
 ```
 
 
@@ -429,14 +429,14 @@ Use AskUserQuestion:
 <step name="backup_custom_files">
 Before running the installer, detect and back up any user-added files inside
 GSD-managed directories. These are files that exist on disk but are NOT listed
-in `gsd-file-manifest.json` — i.e., files the user added themselves that the
+in `fvgsd-file-manifest.json` — i.e., files the user added themselves that the
 installer does not know about and will delete during the wipe.
 
 **Do not use bash path-stripping (`${filepath#$RUNTIME_DIR/}`) or `node -e require()`
 inline** — those patterns fail when `$RUNTIME_DIR` is unset and the stripped
 relative path may not match manifest key format, which causes CUSTOM_COUNT=0
-even when custom files exist (bug #1997). Use `gsd-sdk query detect-custom-files`
-when `gsd-sdk` is on `PATH`, or the bundled `gsd-tools.cjs detect-custom-files`
+even when custom files exist (bug #1997). Use `fvgsd-sdk query detect-custom-files`
+when `fvgsd-sdk` is on `PATH`, or the bundled `fvgsd-tools.cjs detect-custom-files`
 otherwise — both resolve paths reliably with Node.js `path.relative()`.
 
 First, resolve the config directory (`RUNTIME_DIR`) from the install scope
@@ -461,12 +461,12 @@ inspect).
 Otherwise run `detect-custom-files` (prefer SDK when available):
 
 ```bash
-GSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/gsd-tools.cjs"
+FVGSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/fvgsd-tools.cjs"
 CUSTOM_JSON=''
-if [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
-  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
-elif [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
-  CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+if [ -n "$RUNTIME_DIR" ] && command -v fvgsd-sdk >/dev/null 2>&1; then
+  CUSTOM_JSON=$(fvgsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+elif [ -f "$FVGSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
+  CUSTOM_JSON=$(node "$FVGSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
 fi
 if [ -z "$CUSTOM_JSON" ]; then
   CUSTOM_JSON='{"custom_files":[],"custom_count":0}'
@@ -527,17 +527,17 @@ RUNTIME_FLAG="--$TARGET_RUNTIME"
 
 **If LOCAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --local
+npx -y --package=fvgsd@latest -- fvgsd "$RUNTIME_FLAG" --local
 ```
 
 **If GLOBAL install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc "$RUNTIME_FLAG" --global
+npx -y --package=fvgsd@latest -- fvgsd "$RUNTIME_FLAG" --global
 ```
 
 **If UNKNOWN install:**
 ```bash
-npx -y --package=get-shit-done-cc@latest -- get-shit-done-cc --claude --global
+npx -y --package=fvgsd@latest -- fvgsd --claude --global
 ```
 
 Capture output. If install fails, show error and exit.
@@ -592,13 +592,13 @@ for dir in .claude .config/opencode .opencode .gemini/antigravity .gemini .confi
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
 
-# Clear the shared tool-agnostic cache written by gsd-check-update.js hook (#2784).
+# Clear the shared tool-agnostic cache written by fvgsd/check-update.js hook (#2784).
 # The hook uses ~/.cache/gsd/gsd-update-check.json regardless of runtime; clear it
-# so the statusline stops showing the stale "⬆ /vgsd:update" indicator after update.
+# so the statusline stops showing the stale "⬆ /fvgsd:update" indicator after update.
 rm -f "$HOME/.cache/gsd/gsd-update-check.json"
 ```
 
-The SessionStart hook (`gsd-check-update.js`) writes to the detected runtime's cache directory, so preferred/env-derived paths and default paths must all be cleared to prevent stale update indicators.
+The SessionStart hook (`fvgsd/check-update.js`) writes to the detected runtime's cache directory, so preferred/env-derived paths and default paths must all be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">
@@ -619,13 +619,13 @@ Format completion message (changelog was already shown in confirmation step):
 <step name="check_local_patches">
 After update completes, check if the installer detected and backed up any locally modified files:
 
-Check for gsd-local-patches/backup-meta.json in the config directory.
+Check for fvgsd-local-patches/backup-meta.json in the config directory.
 
 **If patches found:**
 
 ```
 Local patches were backed up before the update.
-Run `/vgsd:update --reapply` to merge your modifications into the new version.
+Run `/fvgsd:update --reapply` to merge your modifications into the new version.
 ```
 
 **If no patches:** Continue normally.

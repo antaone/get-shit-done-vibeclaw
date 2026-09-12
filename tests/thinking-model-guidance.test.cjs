@@ -49,32 +49,32 @@ const GAP_CLOSURE_CONTEXT = 'planning';
 // wiredInsideBlock is a string that should appear BEFORE the @-reference in the agent file,
 // confirming the reference is inside a specific step/section (not at top-of-agent)
 const AGENT_WIRING = {
-  'gsd-debugger': {
+  'fvgsd-debugger': {
     refFile: 'thinking-models-debug.md',
     wiredInsideBlock: 'step name="investigation_loop"',
     wiredInsideText: 'At investigation decision points, apply structured reasoning',
   },
-  'gsd-executor': {
+  'fvgsd-executor': {
     refFile: 'thinking-models-execution.md',
     wiredInsideBlock: 'step name="execute_tasks"',
     wiredInsideText: 'At execution decision points, apply structured reasoning',
   },
-  'gsd-planner': {
+  'fvgsd-planner': {
     refFile: 'thinking-models-planning.md',
     wiredInsideBlock: 'step name="break_into_tasks"',
     wiredInsideText: 'At decision points during plan creation, apply structured reasoning',
   },
-  'gsd-phase-researcher': {
+  'fvgsd-phase-researcher': {
     refFile: 'thinking-models-research.md',
     wiredInsideBlock: 'execution_flow',
     wiredInsideText: 'At research decision points, apply structured reasoning',
   },
-  'gsd-plan-checker': {
+  'fvgsd-plan-checker': {
     refFile: 'thinking-models-planning.md',
     wiredInsideBlock: 'verification_dimensions',
     wiredInsideText: 'At decision points during plan verification, apply structured reasoning',
   },
-  'gsd-verifier': {
+  'fvgsd-verifier': {
     refFile: 'thinking-models-verification.md',
     wiredInsideBlock: 'verification_process',
     wiredInsideText: 'At verification decision points, apply structured reasoning',

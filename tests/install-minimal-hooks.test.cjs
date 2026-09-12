@@ -21,7 +21,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach, before } = require('node:test');
 const assert = require('node:assert/strict');
@@ -126,7 +126,7 @@ describe('install-profiles: shouldInstallSkill', () => {
 
 describe('install-profiles: stageSkillsForMode', () => {
   function createFixtureSkillsDir() {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-fixture-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-stage-fixture-'));
     for (const name of ['plan-phase', 'execute-phase', 'autonomous', 'do', 'help',
       'new-project', 'phase', 'discuss-phase', 'update', 'progress', 'surface', 'vibe']) {
       fs.writeFileSync(path.join(tmp, `${name}.md`), `# ${name}\n`);
@@ -175,12 +175,12 @@ describe('install-profiles: stageSkillsForMode', () => {
   });
 
   test('minimal mode against non-existent source returns source path', () => {
-    const ghost = path.join(os.tmpdir(), 'gsd-stage-does-not-exist-' + Date.now());
+    const ghost = path.join(os.tmpdir(), 'fvgsd-stage-does-not-exist-' + Date.now());
     assert.strictEqual(stageSkillsForMode(ghost, 'minimal'), ghost);
   });
 
   test('minimal mode skips non-md files and subdirectories', () => {
-    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-mixed-'));
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-stage-mixed-'));
     let staged;
     try {
       fs.writeFileSync(path.join(src, 'plan-phase.md'), '# plan\n');
@@ -198,7 +198,7 @@ describe('install-profiles: stageSkillsForMode', () => {
 
 describe('install-profiles: cleanupStagedSkills', () => {
   test('removes staged dirs created during process', () => {
-    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-cleanup-'));
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-stage-cleanup-'));
     fs.writeFileSync(path.join(src, 'plan-phase.md'), '# plan\n');
     try {
       const a = stageSkillsForMode(src, 'minimal');
@@ -221,7 +221,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
 
   test('exit handler registers at most once across many calls', () => {
     cleanupStagedSkills();
-    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-exit-handler-'));
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-stage-exit-handler-'));
     fs.writeFileSync(path.join(src, 'plan-phase.md'), '# plan\n');
     try {
       const before = process.listenerCount('exit');
@@ -236,7 +236,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
 
   test('mid-copy failure removes partial staged dir and re-throws', () => {
     cleanupStagedSkills();
-    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-stage-fail-'));
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-stage-fail-'));
     fs.writeFileSync(path.join(src, 'plan-phase.md'), '# plan\n');
     fs.writeFileSync(path.join(src, 'execute-phase.md'), '# x\n');
     const realCopy = fs.copyFileSync;
@@ -244,7 +244,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
     let stagedDir = null;
     fs.mkdtempSync = (prefix, ...rest) => {
       const out = realMkdtemp(prefix, ...rest);
-      if (typeof prefix === 'string' && prefix.endsWith('gsd-minimal-skills-')) stagedDir = out;
+      if (typeof prefix === 'string' && prefix.endsWith('fvgsd-minimal-skills-')) stagedDir = out;
       return out;
     };
     let copyCount = 0;
@@ -353,7 +353,7 @@ describe('install: on-disk skill files match manifest for --minimal', () => {
           const agentsDir = path.join(configDir, 'agents');
           if (fs.existsSync(agentsDir)) {
             const gsdAgents = fs.readdirSync(agentsDir)
-              .filter(f => f.startsWith('gsd-') && f.endsWith('.md'));
+              .filter(f => f.startsWith('fvgsd-') && f.endsWith('.md'));
             assert.deepStrictEqual(gsdAgents, []);
           }
         } finally {
@@ -368,7 +368,7 @@ describe('install: on-disk skill files match manifest for --minimal', () => {
 
 describe('install: manifest records mode for both profiles', () => {
   function manifestModeAfterInstall(extraArgs) {
-    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-manifest-mode-'));
+    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-manifest-mode-'));
     try {
       spawnSync(
         process.execPath,
@@ -421,7 +421,7 @@ describe('install-minimal-backcompat: PROFILES.core matches MINIMAL_SKILL_ALLOWL
 
 describe('install-minimal-backcompat: --minimal and --profile=core produce same manifest', () => {
   function installAndGetManifest(extraArgs) {
-    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-backcompat-'));
+    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-backcompat-'));
     try {
       spawnSync(
         process.execPath,
@@ -434,7 +434,7 @@ describe('install-minimal-backcompat: --minimal and --profile=core produce same 
       const skillCount = new Set(
         Object.keys(m.files || {}).filter(k => k.startsWith('skills/')).map(k => k.split('/')[1]),
       ).size;
-      const markerPath = path.join(targetDir, '.gsd-profile');
+      const markerPath = path.join(targetDir, '.fvgsd-profile');
       const profileMarker = fs.existsSync(markerPath) ? fs.readFileSync(markerPath, 'utf8').trim() : null;
       return { mode: m.mode, skillCount, profileMarker };
     } finally {
@@ -448,47 +448,47 @@ describe('install-minimal-backcompat: --minimal and --profile=core produce same 
     assert.strictEqual(r.skillCount, 9);
   });
 
-  test('--minimal writes .gsd-profile marker "core"', () => {
+  test('--minimal writes .fvgsd-profile marker "core"', () => {
     const r = installAndGetManifest(['--minimal']);
     assert.strictEqual(r.profileMarker, 'core');
   });
 
-  test('default install writes .gsd-profile marker "full"', () => {
+  test('default install writes .fvgsd-profile marker "full"', () => {
     const r = installAndGetManifest([]);
     assert.strictEqual(r.profileMarker, 'full');
   });
 
-  test('--profile=core writes .gsd-profile marker "core"', () => {
+  test('--profile=core writes .fvgsd-profile marker "core"', () => {
     const r = installAndGetManifest(['--profile=core']);
     assert.strictEqual(r.profileMarker, 'core');
   });
 
-  test('--profile=standard writes .gsd-profile marker "standard"', () => {
+  test('--profile=standard writes .fvgsd-profile marker "standard"', () => {
     const r = installAndGetManifest(['--profile=standard']);
     assert.strictEqual(r.profileMarker, 'standard');
   });
 });
 
 describe('install: Codex full → minimal downgrade cleans stale agent state', () => {
-  test('--minimal removes stale .toml agents and strips [agents.gsd-*] from config.toml', () => {
-    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-downgrade-'));
+  test('--minimal removes stale .toml agents and strips [agents.fvgsd-*] from config.toml', () => {
+    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-downgrade-'));
     try {
       const agentsDir = path.join(targetDir, 'agents');
       fs.mkdirSync(agentsDir, { recursive: true });
-      fs.writeFileSync(path.join(agentsDir, 'gsd-executor.md'), 'stale\n');
-      fs.writeFileSync(path.join(agentsDir, 'gsd-planner.md'), 'stale\n');
-      fs.writeFileSync(path.join(agentsDir, 'gsd-executor.toml'), 'name = "gsd-executor"\n');
-      fs.writeFileSync(path.join(agentsDir, 'gsd-planner.toml'), 'name = "gsd-planner"\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-executor.md'), 'stale\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-planner.md'), 'stale\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-executor.toml'), 'name = "fvgsd-executor"\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-planner.toml'), 'name = "fvgsd-planner"\n');
       fs.writeFileSync(path.join(agentsDir, 'my-custom-agent.md'), 'user owns this\n');
       const codexConfig = [
         '# user-owned setting',
         'model = "gpt-5"',
         '',
         '# GSD Agent Configuration — managed by get-shit-done installer',
-        '[agents.gsd-executor]',
+        '[agents.fvgsd-executor]',
         'cmd = "stale"',
         '',
-        '[agents.gsd-planner]',
+        '[agents.fvgsd-planner]',
         'cmd = "stale"',
         '',
       ].join('\n');
@@ -502,23 +502,23 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
       assert.ok(result.stdout || result.stderr);
 
       const remaining = fs.existsSync(agentsDir) ? fs.readdirSync(agentsDir) : [];
-      assert.ok(!remaining.includes('gsd-executor.md'));
-      assert.ok(!remaining.includes('gsd-planner.md'));
-      assert.ok(!remaining.includes('gsd-executor.toml'));
-      assert.ok(!remaining.includes('gsd-planner.toml'));
+      assert.ok(!remaining.includes('fvgsd-executor.md'));
+      assert.ok(!remaining.includes('fvgsd-planner.md'));
+      assert.ok(!remaining.includes('fvgsd-executor.toml'));
+      assert.ok(!remaining.includes('fvgsd-planner.toml'));
       assert.ok(remaining.includes('my-custom-agent.md'));
 
       const configPath = path.join(targetDir, 'config.toml');
       if (fs.existsSync(configPath)) {
         const config = fs.readFileSync(configPath, 'utf8');
-        assert.ok(!config.includes('[agents.gsd-executor]'));
-        assert.ok(!config.includes('[agents.gsd-planner]'));
+        assert.ok(!config.includes('[agents.fvgsd-executor]'));
+        assert.ok(!config.includes('[agents.fvgsd-planner]'));
         assert.ok(config.includes('model = "gpt-5"'));
       }
       assert.ok(fs.existsSync(configPath));
 
       const installedVibe = path.join(targetDir, 'get-shit-done', 'bin', 'vibe.cjs');
-      assert.ok(fs.existsSync(installedVibe), 'installed vgsd surface should include its local Vibe CLI');
+      assert.ok(fs.existsSync(installedVibe), 'installed fvgsd surface should include its local Vibe CLI');
       const vibeHelp = spawnSync(process.execPath, [installedVibe, '--help'], { encoding: 'utf8' });
       assert.strictEqual(vibeHelp.status, 0, vibeHelp.stderr);
       assert.match(vibeHelp.stdout, /vibe entry inspect/);
@@ -530,12 +530,12 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
 
 describe('install: Claude full → minimal downgrade removes stale agents', () => {
   test('--minimal removes stale gsd-*.md agents but preserves user-owned agents', () => {
-    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-claude-downgrade-'));
+    const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-claude-downgrade-'));
     try {
       const agentsDir = path.join(targetDir, 'agents');
       fs.mkdirSync(agentsDir, { recursive: true });
-      fs.writeFileSync(path.join(agentsDir, 'gsd-executor.md'), 'stale\n');
-      fs.writeFileSync(path.join(agentsDir, 'gsd-planner.md'), 'stale\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-executor.md'), 'stale\n');
+      fs.writeFileSync(path.join(agentsDir, 'fvgsd-planner.md'), 'stale\n');
       fs.writeFileSync(path.join(agentsDir, 'my-custom-agent.md'), 'user owns this\n');
 
       spawnSync(
@@ -545,10 +545,10 @@ describe('install: Claude full → minimal downgrade removes stale agents', () =
       );
 
       const remaining = fs.existsSync(agentsDir) ? fs.readdirSync(agentsDir) : [];
-      assert.ok(!remaining.includes('gsd-executor.md'));
-      assert.ok(!remaining.includes('gsd-planner.md'));
+      assert.ok(!remaining.includes('fvgsd-executor.md'));
+      assert.ok(!remaining.includes('fvgsd-planner.md'));
       assert.ok(remaining.includes('my-custom-agent.md'));
-      assert.deepStrictEqual(remaining.filter(f => f.startsWith('gsd-')), []);
+      assert.deepStrictEqual(remaining.filter(f => f.startsWith('fvgsd-')), []);
     } finally {
       fs.rmSync(targetDir, { recursive: true, force: true });
     }
@@ -565,7 +565,7 @@ const isWindows = process.platform === 'win32';
 
 describe('#1755: .sh hooks are copied and executable after install', () => {
   let tmpDir;
-  beforeEach(() => { tmpDir = createTempDir('gsd-hook-copy-'); });
+  beforeEach(() => { tmpDir = createTempDir('fvgsd-hook-copy-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('all expected hooks are copied from hooks/dist/ to target', () => {
@@ -606,12 +606,12 @@ describe('install.js source correctness', () => {
     assert.ok(src.includes("if (entry.endsWith('.sh'))"));
   });
 
-  test('Codex hook uses correct filename gsd-check-update.js', () => {
+  test('Codex hook uses correct filename fvgsd/check-update.js', () => {
     assert.ok(!src.match(/['"]gsd-update-check\.js['"]/));
   });
 
   test('Codex hook path does not use get-shit-done/hooks/ subdirectory', () => {
-    assert.ok(!src.includes("'get-shit-done', 'hooks', 'gsd-check-update"));
+    assert.ok(!src.includes("'get-shit-done', 'hooks', 'fvgsd/check-update"));
   });
 
   test('cache invalidation uses ~/.cache/gsd/ path', () => {
@@ -622,23 +622,23 @@ describe('install.js source correctness', () => {
     assert.ok(src.includes("file.endsWith('.sh')"));
   });
 
-  test('gsd-workflow-guard.js is in uninstall hook list', () => {
+  test('fvgsd/workflow-guard.js is in uninstall hook list', () => {
     const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
     assert.ok(m, 'gsdHooks array must exist');
-    assert.ok(m[1].includes('gsd-workflow-guard.js'));
+    assert.ok(m[1].includes('fvgsd/workflow-guard.js'));
   });
 
-  test('phantom gsd-check-update.sh is not in uninstall hook list', () => {
+  test('phantom fvgsd/check-update.sh is not in uninstall hook list', () => {
     const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
     assert.ok(m);
-    assert.ok(!m[1].includes('gsd-check-update.sh'));
+    assert.ok(!m[1].includes('fvgsd/check-update.sh'));
   });
 
   test('isGsdHookCommand covers all GSD hook names', () => {
     const names = [
-      'gsd-check-update', 'gsd-statusline', 'gsd-session-state',
-      'gsd-context-monitor', 'gsd-phase-boundary', 'gsd-prompt-guard',
-      'gsd-read-guard', 'gsd-validate-commit', 'gsd-workflow-guard',
+      'fvgsd/check-update', 'fvgsd/statusline', 'fvgsd/session-state',
+      'fvgsd/context-monitor', 'fvgsd/phase-boundary', 'fvgsd/prompt-guard',
+      'fvgsd/read-guard', 'fvgsd/validate-commit', 'fvgsd/workflow-guard',
     ];
     for (const name of names) {
       assert.ok(src.includes(`'${name}'`) || src.includes(`"${name}"`));
@@ -659,7 +659,7 @@ describe('install.js source correctness', () => {
 describe('writeManifest includes .sh hooks', () => {
   let tmpDir;
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-manifest-');
+    tmpDir = createTempDir('fvgsd-manifest-');
     const hooksDir = path.join(tmpDir, 'hooks');
     simulateHookCopy(HOOKS_DIST, hooksDir);
   });
@@ -667,7 +667,7 @@ describe('writeManifest includes .sh hooks', () => {
 
   test('manifest contains .sh hook entries', () => {
     writeManifest(tmpDir, 'claude');
-    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'fvgsd-file-manifest.json'), 'utf8'));
     for (const sh of EXPECTED_SH_HOOKS) {
       assert.ok(manifest.files['hooks/' + sh], `manifest should contain hash for ${sh}`);
     }
@@ -675,7 +675,7 @@ describe('writeManifest includes .sh hooks', () => {
 
   test('manifest contains .js hook entries', () => {
     writeManifest(tmpDir, 'claude');
-    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(path.join(tmpDir, 'fvgsd-file-manifest.json'), 'utf8'));
     for (const js of EXPECTED_ALL_HOOKS.filter(h => h.endsWith('.js'))) {
       assert.ok(manifest.files['hooks/' + js], `manifest should contain hash for ${js}`);
     }
@@ -684,11 +684,11 @@ describe('writeManifest includes .sh hooks', () => {
 
 describe('uninstall settings cleanup preserves user hooks', () => {
   const isGsdHook = (cmd) =>
-    cmd && (cmd.includes('gsd-check-update') || cmd.includes('gsd-statusline') ||
-      cmd.includes('gsd-session-state') || cmd.includes('gsd-context-monitor') ||
-      cmd.includes('gsd-phase-boundary') || cmd.includes('gsd-prompt-guard') ||
-      cmd.includes('gsd-read-guard') || cmd.includes('gsd-validate-commit') ||
-      cmd.includes('gsd-workflow-guard'));
+    cmd && (cmd.includes('fvgsd/check-update') || cmd.includes('fvgsd/statusline') ||
+      cmd.includes('fvgsd/session-state') || cmd.includes('fvgsd/context-monitor') ||
+      cmd.includes('fvgsd/phase-boundary') || cmd.includes('fvgsd/prompt-guard') ||
+      cmd.includes('fvgsd/read-guard') || cmd.includes('fvgsd/validate-commit') ||
+      cmd.includes('fvgsd/workflow-guard'));
 
   function filterGsdHooks(entries) {
     return entries
@@ -704,7 +704,7 @@ describe('uninstall settings cleanup preserves user hooks', () => {
     const entries = [{
       matcher: 'Bash',
       hooks: [
-        { type: 'command', command: 'node /path/gsd-prompt-guard.js' },
+        { type: 'command', command: 'node /path/fvgsd/prompt-guard.js' },
         { type: 'command', command: 'bash /my/custom-lint.sh' },
       ],
     }];
@@ -717,8 +717,8 @@ describe('uninstall settings cleanup preserves user hooks', () => {
   test('entry with only GSD hooks is fully removed', () => {
     const entries = [{
       hooks: [
-        { type: 'command', command: 'node /path/gsd-check-update.js' },
-        { type: 'command', command: 'node /path/gsd-statusline.js' },
+        { type: 'command', command: 'node /path/fvgsd/check-update.js' },
+        { type: 'command', command: 'node /path/fvgsd/statusline.js' },
       ],
     }];
     assert.strictEqual(filterGsdHooks(entries).length, 0);
@@ -734,7 +734,7 @@ describe('uninstall settings cleanup preserves user hooks', () => {
   test('non-array hook entries are preserved (#1825)', () => {
     const entries = [
       { type: 'custom', command: 'echo hello' },
-      { matcher: 'Bash', hooks: [{ type: 'command', command: 'node /path/gsd-prompt-guard.js' }] },
+      { matcher: 'Bash', hooks: [{ type: 'command', command: 'node /path/fvgsd/prompt-guard.js' }] },
       { url: 'https://example.com/webhook' },
     ];
     const result = filterGsdHooks(JSON.parse(JSON.stringify(entries)));
@@ -745,11 +745,11 @@ describe('uninstall settings cleanup preserves user hooks', () => {
 
   test('all GSD hook names are recognised', () => {
     const cmds = [
-      'node /path/gsd-check-update.js', 'node /path/gsd-statusline.js',
-      'bash /path/gsd-session-state.sh', 'node /path/gsd-context-monitor.js',
-      'bash /path/gsd-phase-boundary.sh', 'node /path/gsd-prompt-guard.js',
-      'node /path/gsd-read-guard.js', 'bash /path/gsd-validate-commit.sh',
-      'node /path/gsd-workflow-guard.js',
+      'node /path/fvgsd/check-update.js', 'node /path/fvgsd/statusline.js',
+      'bash /path/fvgsd/session-state.sh', 'node /path/fvgsd/context-monitor.js',
+      'bash /path/fvgsd/phase-boundary.sh', 'node /path/fvgsd/prompt-guard.js',
+      'node /path/fvgsd/read-guard.js', 'bash /path/fvgsd/validate-commit.sh',
+      'node /path/fvgsd/workflow-guard.js',
     ];
     for (const cmd of cmds) {
       assert.ok(isGsdHook(cmd), `should recognise: ${cmd}`);
@@ -761,7 +761,7 @@ describe('Codex legacy gsd-update-check migration', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
 
   test('install.js strips legacy gsd-update-check hook blocks', () => {
-    assert.ok(src.includes('gsd-update-check') && src.includes('replace('));
+    assert.ok(src.includes('fvgsd-update-check') && src.includes('replace('));
   });
 
   test('migration regex removes LF legacy hook block', () => {
@@ -771,7 +771,7 @@ describe('Codex legacy gsd-update-check migration', () => {
     let content = legacyBlock.replace(
       /\n# GSD Hooks\n\[\[hooks\]\]\nevent = "SessionStart"\ncommand = "node [^\n]*gsd-update-check\.js"\n/g, '\n',
     );
-    assert.ok(!content.includes('gsd-update-check'));
+    assert.ok(!content.includes('fvgsd-update-check'));
     assert.ok(content.includes('[features]'));
   });
 
@@ -782,7 +782,7 @@ describe('Codex legacy gsd-update-check migration', () => {
     let content = legacyBlock.replace(
       /\r\n# GSD Hooks\r\n\[\[hooks\]\]\r\nevent = "SessionStart"\r\ncommand = "node [^\r\n]*gsd-update-check\.js"\r\n/g, '\r\n',
     );
-    assert.ok(!content.includes('gsd-update-check'));
+    assert.ok(!content.includes('fvgsd-update-check'));
     assert.ok(content.includes('[features]'));
   });
 });

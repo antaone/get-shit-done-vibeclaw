@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -47,9 +47,9 @@ afterEach(() => {
   while (projects.length > 0) cleanup(projects.pop());
 });
 
-describe('vgsd execution branch guard', () => {
+describe('fvgsd execution branch guard', () => {
   test('creates a runtime, command, and execution-aware standalone branch', () => {
-    const root = project('vgsd-branch-create-');
+    const root = project('fvgsd-branch-create-');
     fs.writeFileSync(path.join(root, 'uncommitted.txt'), 'preserved\n', 'utf8');
 
     const result = ensureExecutionBranch(deterministicOptions(root));
@@ -57,16 +57,16 @@ describe('vgsd execution branch guard', () => {
     assert.equal(result.allowed, true);
     assert.equal(result.action, 'created');
     assert.equal(result.mode, 'standalone-smart-branch');
-    assert.match(result.branch, /^vgsd\/codex\/new-project\/20260819-123456-[a-f0-9]{8}-a1b2c3$/);
+    assert.match(result.branch, /^fvgsd\/codex\/new-project\/20260819-123456-[a-f0-9]{8}-a1b2c3$/);
     assert.equal(git(root, 'branch', '--show-current'), result.branch);
     assert.equal(fs.readFileSync(path.join(root, 'uncommitted.txt'), 'utf8'), 'preserved\n');
     assert.equal(result.dirty_count, 1);
     assert.deepEqual(parseSmartBranch(result.branch), result.execution);
 
     const commonDir = path.resolve(root, git(root, 'rev-parse', '--git-common-dir'));
-    const metadataFiles = fs.readdirSync(path.join(commonDir, 'vgsd', 'executions'));
+    const metadataFiles = fs.readdirSync(path.join(commonDir, 'fvgsd', 'executions'));
     assert.equal(metadataFiles.length, 1);
-    const metadata = JSON.parse(fs.readFileSync(path.join(commonDir, 'vgsd', 'executions', metadataFiles[0]), 'utf8'));
+    const metadata = JSON.parse(fs.readFileSync(path.join(commonDir, 'fvgsd', 'executions', metadataFiles[0]), 'utf8'));
     assert.equal(metadata.branch, result.branch);
     assert.equal(metadata.runtime, 'codex');
     assert.equal(metadata.command, 'new-project');
@@ -75,7 +75,7 @@ describe('vgsd execution branch guard', () => {
   });
 
   test('reuses the same command branch, while a later command gets a new execution branch', () => {
-    const root = project('vgsd-branch-reuse-');
+    const root = project('fvgsd-branch-reuse-');
     const inspected = inspectExecutionBranch(deterministicOptions(root, { command: 'help' }));
     assert.equal(inspected.allowed, true);
     assert.equal(inspected.action, 'inspected');
@@ -93,12 +93,12 @@ describe('vgsd execution branch guard', () => {
     }));
     assert.equal(transitioned.allowed, true);
     assert.equal(transitioned.action, 'created');
-    assert.match(transitioned.branch, /^vgsd\/codex\/plan-phase\//);
+    assert.match(transitioned.branch, /^fvgsd\/codex\/plan-phase\//);
     assert.equal(transitioned.source_branch, created.branch);
   });
 
   test('blocks a different runtime from reusing another tool execution branch', () => {
-    const root = project('vgsd-branch-runtime-');
+    const root = project('fvgsd-branch-runtime-');
     const created = ensureExecutionBranch(deterministicOptions(root));
 
     const result = ensureExecutionBranch(deterministicOptions(root, {
@@ -113,7 +113,7 @@ describe('vgsd execution branch guard', () => {
   });
 
   test('accepts a matching active Vibe candidate without creating another branch', () => {
-    const root = project('vgsd-vibe-candidate-');
+    const root = project('fvgsd-vibe-candidate-');
     const vibe = new VibeOrchestrator({ projectRoot: root });
     vibe.initialize();
     const run = vibe.startRun('project-bootstrap', { id: 'guard-vibe' });
@@ -121,7 +121,7 @@ describe('vgsd execution branch guard', () => {
     const launch = vibe.launchCandidate(prepared.candidate.id);
     assert.equal(launch.command.env.VIBE_CANDIDATE_ID, prepared.candidate.id);
     assert.equal(launch.command.env.VIBE_TOOL, 'codex');
-    assert.equal(launch.command.env.GSD_RUNTIME, 'codex');
+    assert.equal(launch.command.env.FVGSD_RUNTIME, 'codex');
 
     const result = ensureExecutionBranch({
       cwd: prepared.candidate.git.worktree,
@@ -129,7 +129,7 @@ describe('vgsd execution branch guard', () => {
       env: {
         VIBE_CANDIDATE_ID: prepared.candidate.id,
         VIBE_TOOL: 'codex',
-        GSD_RUNTIME: 'codex',
+        FVGSD_RUNTIME: 'codex',
       },
     });
 
@@ -141,7 +141,7 @@ describe('vgsd execution branch guard', () => {
   });
 
   test('CLI verifies a project-bootstrap candidate before .planning exists', () => {
-    const root = project('vgsd-vibe-bootstrap-cli-');
+    const root = project('fvgsd-vibe-bootstrap-cli-');
     fs.rmSync(path.join(root, '.planning'), { recursive: true, force: true });
     fs.writeFileSync(path.join(root, 'PROJECT-BRIEF.md'), '# Brief\n', 'utf8');
     git(root, 'add', '-A');
@@ -159,7 +159,7 @@ describe('vgsd execution branch guard', () => {
       {
         VIBE_CANDIDATE_ID: prepared.candidate.id,
         VIBE_TOOL: 'gemini',
-        GSD_RUNTIME: 'gemini',
+        FVGSD_RUNTIME: 'gemini',
       },
     );
     assert.equal(result.success, true, result.error);
@@ -170,7 +170,7 @@ describe('vgsd execution branch guard', () => {
   });
 
   test('fails closed when Vibe is initialized but execution is not in a candidate', () => {
-    const root = project('vgsd-vibe-integration-');
+    const root = project('fvgsd-vibe-integration-');
     const vibe = new VibeOrchestrator({ projectRoot: root });
     vibe.initialize();
 
@@ -180,12 +180,12 @@ describe('vgsd execution branch guard', () => {
     assert.equal(result.action, 'blocked');
     assert.equal(result.mode, 'vibe-managed');
     assert.equal(result.reason, 'vibe_candidate_required');
-    assert.match(result.hint, /vgsd-vibe/);
-    assert.doesNotMatch(git(root, 'branch', '--show-current'), /^vgsd\//);
+    assert.match(result.hint, /fvgsd-vibe/);
+    assert.doesNotMatch(git(root, 'branch', '--show-current'), /^fvgsd\//);
   });
 
   test('future vibe init imports standalone branch provenance', () => {
-    const root = project('vgsd-vibe-import-');
+    const root = project('fvgsd-vibe-import-');
     const standalone = ensureExecutionBranch(deterministicOptions(root, { command: 'plan-phase' }));
     const vibe = new VibeOrchestrator({ projectRoot: root });
 
@@ -196,7 +196,7 @@ describe('vgsd execution branch guard', () => {
     assert.equal(initialized.standalone_executions[0].runtime, 'codex');
     assert.equal(initialized.standalone_executions[0].command, 'plan-phase');
     const state = JSON.parse(fs.readFileSync(
-      path.join(root, '.planning-vibe', 'state', 'standalone-executions.json'),
+      path.join(root, '.planning-fvgsd-vibe', 'state', 'standalone-executions.json'),
       'utf8',
     ));
     assert.equal(state.executions[0].branch, standalone.branch);
@@ -207,22 +207,22 @@ describe('vgsd execution branch guard', () => {
     assert.equal(reused.branch, standalone.branch);
   });
 
-  test('gsd-tools exposes the guard for installed workflow prompts', () => {
-    const root = project('vgsd-branch-cli-');
+  test('fvgsd-tools exposes the guard for installed workflow prompts', () => {
+    const root = project('fvgsd-branch-cli-');
     const result = runGsdTools(
       ['execution-branch', 'ensure', 'new-milestone', '--runtime', 'gemini'],
       root,
-      { GSD_RUNTIME: 'gemini' },
+      { FVGSD_RUNTIME: 'gemini' },
     );
     assert.equal(result.success, true, result.error);
     const parsed = JSON.parse(result.output);
     assert.equal(parsed.allowed, true);
     assert.equal(parsed.runtime, 'gemini');
-    assert.match(parsed.branch, /^vgsd\/gemini\/new-milestone\//);
+    assert.match(parsed.branch, /^fvgsd\/gemini\/new-milestone\//);
   });
 
   test('read-only inspection allows help outside a Git repository', () => {
-    const root = createTempDir('vgsd-help-no-git-');
+    const root = createTempDir('fvgsd-help-no-git-');
     projects.push(root);
     const result = runGsdTools(
       ['execution-branch', 'inspect', 'help', '--runtime', 'claude'],
@@ -242,7 +242,7 @@ describe('vgsd execution branch guard', () => {
   });
 });
 
-describe('public vgsd command guard coverage', () => {
+describe('public fvgsd command guard coverage', () => {
   test('every command checks branch safety before its workflow body', () => {
     const commandDir = path.join(__dirname, '..', 'commands', 'gsd');
     const files = fs.readdirSync(commandDir).filter((name) => name.endsWith('.md')).sort();
@@ -254,7 +254,7 @@ describe('public vgsd command guard coverage', () => {
       const expectedAction = command === 'help' || command === 'vibe' ? 'inspect' : 'ensure';
       assert.match(content, /<execution_branch_guard>/, `${name} is missing the guard`);
       assert.ok(
-        content.includes(`execution-branch ${expectedAction} "${command}" --runtime __VGSD_RUNTIME__`),
+        content.includes(`execution-branch ${expectedAction} "${command}" --runtime __FVGSD_RUNTIME__`),
         `${name} has the wrong guard command`,
       );
       assert.match(content, /^\s+- Bash\s*$/m, `${name} cannot run the guard`);
@@ -267,14 +267,14 @@ describe('public vgsd command guard coverage', () => {
 
   test('Claude, Gemini, Codex, and OpenCode installs receive runtime-correct guard paths', (t) => {
     const cases = [
-      ['claude', path.join('skills', 'vgsd-new-project', 'SKILL.md'), path.join('skills', 'vgsd-surface', 'SKILL.md')],
-      ['gemini', path.join('commands', 'vgsd', 'new-project.md'), path.join('commands', 'vgsd', 'surface.md')],
-      ['codex', path.join('skills', 'vgsd-new-project', 'SKILL.md'), path.join('skills', 'vgsd-surface', 'SKILL.md')],
-      ['opencode', path.join('command', 'vgsd-new-project.md'), path.join('command', 'vgsd-surface.md')],
+      ['claude', path.join('skills', 'fvgsd-new-project', 'SKILL.md'), path.join('skills', 'fvgsd-surface', 'SKILL.md')],
+      ['gemini', path.join('commands', 'fvgsd', 'new-project.md'), path.join('commands', 'fvgsd', 'surface.md')],
+      ['codex', path.join('skills', 'fvgsd-new-project', 'SKILL.md'), path.join('skills', 'fvgsd-surface', 'SKILL.md')],
+      ['opencode', path.join('command', 'fvgsd-new-project.md'), path.join('command', 'fvgsd-surface.md')],
     ];
 
     for (const [runtime, relativePath, surfaceRelativePath] of cases) {
-      const configDir = createTempDir(`vgsd-guard-${runtime}-`);
+      const configDir = createTempDir(`fvgsd-guard-${runtime}-`);
       t.after(() => cleanup(configDir));
       installRuntimeArtifacts(runtime, configDir, 'global', CORE_PROFILE);
       const installedPath = path.join(configDir, relativePath);
@@ -282,7 +282,7 @@ describe('public vgsd command guard coverage', () => {
       const content = fs.readFileSync(installedPath, 'utf8');
       assert.match(content, /execution-branch ensure "new-project"/);
       assert.ok(content.includes(`--runtime ${runtime}`), `${runtime} guard lost its runtime identity`);
-      assert.doesNotMatch(content, /__VGSD_RUNTIME__/);
+      assert.doesNotMatch(content, /__FVGSD_RUNTIME__/);
       assert.ok(
         content.includes(path.basename(configDir)),
         `${runtime} guard did not target its configured runtime directory`,
@@ -301,11 +301,11 @@ describe('public vgsd command guard coverage', () => {
       }
 
       const vibePath = runtime === 'gemini'
-        ? path.join(configDir, 'commands', 'vgsd', 'vibe.md')
+        ? path.join(configDir, 'commands', 'fvgsd', 'vibe.md')
         : runtime === 'opencode'
-          ? path.join(configDir, 'command', 'vgsd-vibe.md')
-          : path.join(configDir, 'skills', 'vgsd-vibe', 'SKILL.md');
-      assert.ok(fs.existsSync(vibePath), `${runtime} did not install its vgsd-vibe control surface`);
+          ? path.join(configDir, 'command', 'fvgsd-vibe.md')
+          : path.join(configDir, 'skills', 'fvgsd-vibe', 'SKILL.md');
+      assert.ok(fs.existsSync(vibePath), `${runtime} did not install its fvgsd-vibe control surface`);
       const vibeSkill = fs.readFileSync(vibePath, 'utf8');
       assert.match(vibeSkill, /entry prepare/);
       assert.ok(vibeSkill.includes(`--runtime ${runtime}`), `${runtime} Vibe guard lost its runtime identity`);

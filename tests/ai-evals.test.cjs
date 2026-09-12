@@ -290,11 +290,11 @@ describe('COMMAND: ai-integration-phase and eval-review frontmatter', () => {
 
 describe('AGENTS: new AI-evals agents exist', () => {
   const newAgents = [
-    'gsd-framework-selector',
-    'gsd-ai-researcher',
-    'gsd-domain-researcher',
-    'gsd-eval-planner',
-    'gsd-eval-auditor',
+    'fvgsd-framework-selector',
+    'fvgsd-ai-researcher',
+    'fvgsd-domain-researcher',
+    'fvgsd-eval-planner',
+    'fvgsd-eval-auditor',
   ];
 
   for (const agent of newAgents) {
@@ -385,14 +385,14 @@ describe('WORKFLOW: ai-integration-phase and eval-review workflow files', () => 
 
   test('ai-integration-phase.md orchestrates 4 agents', () => {
     const content = fs.readFileSync(path.join(WORKFLOWS_DIR, 'ai-integration-phase.md'), 'utf-8');
-    for (const agent of ['gsd-framework-selector', 'gsd-ai-researcher', 'gsd-domain-researcher', 'gsd-eval-planner']) {
+    for (const agent of ['fvgsd-framework-selector', 'fvgsd-ai-researcher', 'fvgsd-domain-researcher', 'fvgsd-eval-planner']) {
       assert.ok(content.includes(agent), `ai-integration-phase.md should reference ${agent}`);
     }
   });
 
-  test('eval-review.md references gsd-eval-auditor', () => {
+  test('eval-review.md references fvgsd-eval-auditor', () => {
     const content = fs.readFileSync(path.join(WORKFLOWS_DIR, 'eval-review.md'), 'utf-8');
-    assert.ok(content.includes('gsd-eval-auditor'), 'eval-review.md should reference gsd-eval-auditor');
+    assert.ok(content.includes('fvgsd-eval-auditor'), 'eval-review.md should reference fvgsd-eval-auditor');
   });
 
   test('select-framework.md does NOT exist (removed per design)', () => {

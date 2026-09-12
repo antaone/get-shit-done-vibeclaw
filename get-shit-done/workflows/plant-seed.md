@@ -1,6 +1,6 @@
 <purpose>
 Capture a forward-looking idea as a structured seed file with trigger conditions.
-Seeds auto-surface during /vgsd:new-milestone when trigger conditions match the
+Seeds auto-surface during /fvgsd:new-milestone when trigger conditions match the
 new milestone's scope.
 
 Seeds beat deferred items because they:
@@ -82,17 +82,17 @@ scope: unknown
 
 ## Why This Matters
 
-_To be filled in. Run `/vgsd:capture --seed --enrich SEED-{PADDED}` to add context._
+_To be filled in. Run `/fvgsd:capture --seed --enrich SEED-{PADDED}` to add context._
 
 ## When to Surface
 
 **Trigger:** when relevant
 
-This seed will surface during `/vgsd:new-milestone` when the milestone scope matches.
+This seed will surface during `/fvgsd:new-milestone` when the milestone scope matches.
 
 ## Scope Estimate
 
-**Unknown** — run `/vgsd:capture --seed --enrich SEED-{PADDED}` to estimate effort.
+**Unknown** — run `/fvgsd:capture --seed --enrich SEED-{PADDED}` to estimate effort.
 
 ## Breadcrumbs
 
@@ -135,7 +135,7 @@ Store relevant file paths as `$BREADCRUMBS`.
 
 <step name="commit-seed">
 ```bash
-gsd-sdk query commit "docs: plant seed — {$IDEA}" --files .planning/seeds/SEED-{PADDED}-{slug}.md
+fvgsd-sdk query commit "docs: plant seed — {$IDEA}" --files .planning/seeds/SEED-{PADDED}-{slug}.md
 ```
 </step>
 
@@ -146,10 +146,10 @@ gsd-sdk query commit "docs: plant seed — {$IDEA}" --files .planning/seeds/SEED
 "{$IDEA}"
 File: .planning/seeds/SEED-{PADDED}-{slug}.md
 
-Trigger and scope are set to defaults. Run `/vgsd:capture --seed --enrich SEED-{PADDED}`
+Trigger and scope are set to defaults. Run `/fvgsd:capture --seed --enrich SEED-{PADDED}`
 to add trigger conditions, rationale, and scope estimate at your convenience.
 
-This seed will surface automatically when you run /vgsd:new-milestone.
+This seed will surface automatically when you run /fvgsd:new-milestone.
 ```
 </step>
 
@@ -206,7 +206,7 @@ Update the seed file's frontmatter and sections with the gathered values:
 
 Commit the update:
 ```bash
-gsd-sdk query commit "docs: enrich seed ${SEED_ID} — trigger + why + scope" --files "$SEED_FILE"
+fvgsd-sdk query commit "docs: enrich seed ${SEED_ID} — trigger + why + scope" --files "$SEED_FILE"
 ```
 
 Confirm:

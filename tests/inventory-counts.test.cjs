@@ -26,7 +26,7 @@ const INVENTORY_MD = path.join(ROOT, 'docs', 'INVENTORY.md');
 const INVENTORY = fs.readFileSync(INVENTORY_MD, 'utf8');
 
 const FAMILIES = [
-  { label: 'Agents',      dir: 'agents',                      filter: (f) => /^gsd-.*\.md$/.test(f) },
+  { label: 'Agents',      dir: 'agents',                      filter: (f) => /^fvgsd-.*\.md$/.test(f) },
   { label: 'Commands',    dir: 'commands/gsd',                filter: (f) => f.endsWith('.md') },
   { label: 'Workflows',   dir: 'get-shit-done/workflows',     filter: (f) => f.endsWith('.md') },
   { label: 'References',  dir: 'get-shit-done/references',    filter: (f) => f.endsWith('.md') },

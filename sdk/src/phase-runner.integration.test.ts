@@ -1,5 +1,5 @@
 /**
- * Integration test — proves PhaseRunner state machine works against real gsd-tools.cjs.
+ * Integration test — proves PhaseRunner state machine works against real fvgsd-tools.cjs.
  *
  * Creates a temp `.planning/` directory structure, instantiates real GSDTools,
  * and exercises the state machine. Sessions will fail (no Claude CLI in CI) but
@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { GSDTools, resolveGsdToolsPath } from './fvgsd-tools.js';
 import { PhaseRunner } from './phase-runner.js';
 import type { PhaseRunnerDeps } from './phase-runner.js';
 import { ContextEngine } from './context-engine.js';
@@ -24,11 +24,11 @@ import { GSDEventType, PhaseStepType } from './types.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const GSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
-const gsdToolsAvailable = existsSync(GSD_TOOLS_PATH);
+const FVGSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
+const gsdToolsAvailable = existsSync(FVGSD_TOOLS_PATH);
 
 async function createTempPlanningDir(): Promise<string> {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-phase-int-'));
+  const tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-phase-int-'));
 
   // Create .planning structure
   const planningDir = join(tmpDir, '.planning');
@@ -66,7 +66,7 @@ async function createTempPlanningDir(): Promise<string> {
 
 // ─── Test suite ──────────────────────────────────────────────────────────────
 
-describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-tools.cjs', () => {
+describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real fvgsd-tools.cjs', () => {
   let tmpDir: string;
   let tools: GSDTools;
 
@@ -74,7 +74,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
     tmpDir = await createTempPlanningDir();
     tools = new GSDTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      gsdToolsPath: FVGSD_TOOLS_PATH,
       timeoutMs: 10_000,
     });
   });
@@ -214,7 +214,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
       maxBudgetPerStep: 0.10,
     });
 
-    // Proves the full wiring works: GSD → PhaseRunner → GSDTools → gsd-tools.cjs
+    // Proves the full wiring works: GSD → PhaseRunner → GSDTools → fvgsd-tools.cjs
     expect(result.phaseNumber).toBe('01');
     expect(result.phaseName).toBe('integration-test');
     expect(result.steps.length).toBeGreaterThanOrEqual(1);
@@ -232,7 +232,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: PhaseRunner against real gsd-t
  * - Plan 01 has a SUMMARY.md (marks it as completed)
  */
 async function createMultiWavePlanningDir(): Promise<string> {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-wave-int-'));
+  const tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-wave-int-'));
 
   const planningDir = join(tmpDir, '.planning');
   const phaseDir = join(planningDir, 'phases', '01-wave-test');
@@ -312,7 +312,7 @@ describe.skipIf(!gsdToolsAvailable)('Integration: phasePlanIndex and wave execut
     tmpDir = await createMultiWavePlanningDir();
     tools = new GSDTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      gsdToolsPath: FVGSD_TOOLS_PATH,
       timeoutMs: 10_000,
     });
   });

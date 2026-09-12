@@ -5,9 +5,9 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/domain-probes.md
-@~/.claude/get-shit-done/references/gate-prompts.md
-@~/.claude/get-shit-done/references/universal-anti-patterns.md
+@~/.claude/fvgsd/references/domain-probes.md
+@~/.claude/fvgsd/references/gate-prompts.md
+@~/.claude/fvgsd/references/universal-anti-patterns.md
 </required_reading>
 
 <progressive_disclosure>
@@ -36,8 +36,8 @@ Do not Read mode files unless the corresponding flag/condition is set.
 <downstream_awareness>
 **CONTEXT.md feeds into:**
 
-1. **gsd-phase-researcher** — Reads CONTEXT.md to know WHAT to research
-2. **gsd-planner** — Reads CONTEXT.md to know WHAT decisions are locked
+1. **fvgsd-phase-researcher** — Reads CONTEXT.md to know WHAT to research
+2. **fvgsd-planner** — Reads CONTEXT.md to know WHAT decisions are locked
 
 **Your job:** Capture decisions clearly enough that downstream agents can act on them without asking the user again.
 **Not your job:** Figure out HOW to implement. That's what research and planning do with the decisions you capture.
@@ -103,15 +103,15 @@ Phase: "API documentation"       → Structure/navigation, Code examples depth, 
 
 <process>
 
-**Express path available:** If you already have a PRD or acceptance criteria document, use `/vgsd:plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
+**Express path available:** If you already have a PRD or acceptance criteria document, use `/fvgsd:plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
 
 <step name="initialize" priority="first">
 Phase number from argument (required).
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(gsd-sdk query agent-skills gsd-advisor-researcher)
+AGENT_SKILLS_ADVISOR=$(fvgsd-sdk query agent-skills fvgsd-advisor-researcher)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -121,7 +121,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 **If `phase_found` is false:**
 ```
 Phase [X] not found in roadmap.
-Use /vgsd:progress ${GSD_WS} to see available phases.
+Use /fvgsd:progress ${FVGSD_WS} to see available phases.
 ```
 Exit workflow.
 
@@ -129,7 +129,7 @@ Exit workflow.
 
 ```bash
 # Detect advisor mode (file-existence guard — no Read until needed)
-if [ -f "$HOME/.claude/get-shit-done/USER-PROFILE.md" ]; then
+if [ -f "$HOME/.claude/fvgsd/USER-PROFILE.md" ]; then
   ADVISOR_MODE=true
 else
   ADVISOR_MODE=false
@@ -172,7 +172,7 @@ Write these answers inline before continuing. If a blocking anti-pattern cannot 
 </step>
 
 <step name="check_spec">
-Check if a SPEC.md (from `/vgsd:spec-phase`) exists for this phase. SPEC.md locks requirements before implementation decisions.
+Check if a SPEC.md (from `/fvgsd:spec-phase`) exists for this phase. SPEC.md locks requirements before implementation decisions.
 
 ```bash
 ls ${phase_dir}/*-SPEC.md 2>/dev/null | grep -v AI-SPEC | head -1 || true
@@ -187,7 +187,7 @@ ls ${phase_dir}/*-SPEC.md 2>/dev/null | grep -v AI-SPEC | head -1 || true
 
 **If no SPEC.md is found:** Continue with `spec_loaded = false`.
 
-**Note:** SPEC.md files named `AI-SPEC.md` (from `/vgsd:ai-integration-phase`) are excluded — different purpose.
+**Note:** SPEC.md files named `AI-SPEC.md` (from `/fvgsd:ai-integration-phase`) are excluded — different purpose.
 </step>
 
 <step name="check_existing">
@@ -252,7 +252,7 @@ RAW_SKETCHES=$(ls .planning/sketches/MANIFEST.md 2>/dev/null)
 
 If findings skills exist, read SKILL.md and reference files; extract validated patterns, landmines, constraints, design decisions. Add them to `<prior_decisions>`.
 
-If raw spikes/sketches exist but no findings skill, note: `⚠ Unpackaged spikes/sketches detected — run /vgsd:spike --wrap-up or /vgsd:sketch --wrap-up to make findings available.`
+If raw spikes/sketches exist but no findings skill, note: `⚠ Unpackaged spikes/sketches detected — run /fvgsd:spike --wrap-up or /fvgsd:sketch --wrap-up to make findings available.`
 
 Build internal `<prior_decisions>` with sections for Project-Level (from PROJECT.md / REQUIREMENTS.md), From Prior Phases (per-phase decisions), and From Spike/Sketch Findings (validated patterns, landmines, design decisions).
 
@@ -265,7 +265,7 @@ Build internal `<prior_decisions>` with sections for Project-Level (from PROJECT
 Check pending todos for matches with this phase's scope.
 
 ```bash
-TODO_MATCHES=$(gsd-sdk query todo.match-phase "${PHASE_NUMBER}")
+TODO_MATCHES=$(fvgsd-sdk query todo.match-phase "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `score`, `reasons`).
@@ -280,7 +280,7 @@ Parse JSON for: `todo_count`, `matches[]` (each with `file`, `title`, `area`, `s
 <step name="scout_codebase">
 Lightweight scan of existing code to inform gray area identification (~10% context).
 
-Read `@~/.claude/get-shit-done/references/scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
+Read `@~/.claude/fvgsd/references/scout-codebase.md` — it contains the phase-type→map selection table, single-read rule, no-maps fallback, and `<codebase_context>` output schema. Then execute:
 1. `ls .planning/codebase/*.md` to find existing maps
 2. Select 2–3 maps via the reference's table; or grep fallback if none exist
 3. Build internal `<codebase_context>` per the reference's output schema
@@ -420,11 +420,11 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/vgsd:plan-phase ${PHASE} ${GSD_WS}`
+`/fvgsd:plan-phase ${PHASE} ${FVGSD_WS}`
 
 ---
 
-**Also available:** `--chain` for auto plan+execute after; `/vgsd:plan-phase ${PHASE} --skip-research ${GSD_WS}` to plan without research; `/vgsd:ui-phase ${PHASE} ${GSD_WS}` for UI design contracts; review/edit CONTEXT.md before continuing.
+**Also available:** `--chain` for auto plan+execute after; `/fvgsd:plan-phase ${PHASE} --skip-research ${FVGSD_WS}` to plan without research; `/fvgsd:ui-phase ${PHASE} ${FVGSD_WS}` for UI design contracts; review/edit CONTEXT.md before continuing.
 ```
 </step>
 
@@ -447,7 +447,7 @@ rm -f "${phase_dir}/${padded_phase}-DISCUSS-CHECKPOINT.json"
 
 Commit phase context and discussion log:
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+fvgsd-sdk query commit "docs(${padded_phase}): capture phase context" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context"
@@ -457,11 +457,11 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context"
 Update STATE.md with session info:
 
 ```bash
-gsd-sdk query state.record-session \
+fvgsd-sdk query state.record-session \
   --stopped-at "Phase ${PHASE} context gathered" \
   --resume-file "${phase_dir}/${padded_phase}-CONTEXT.md"
 
-gsd-sdk query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
+fvgsd-sdk query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 

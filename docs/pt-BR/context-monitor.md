@@ -9,7 +9,7 @@ Para detalhes completos de implementação, veja [context-monitor.md em inglês]
 ## Objetivos
 
 - identificar quando a sessão principal está saturando
-- recomendar ações de recuperação (`/clear`, `/vgsd-resume-work`, `/vgsd-progress`)
+- recomendar ações de recuperação (`/clear`, `/fvgsd-resume-work`, `/fvgsd-progress`)
 - manter previsibilidade durante ciclos longos de desenvolvimento
 
 ## Como funciona
@@ -29,9 +29,9 @@ Para detalhes completos de implementação, veja [context-monitor.md em inglês]
 
 ```bash
 /clear
-/vgsd-resume-work
+/fvgsd-resume-work
 # ou
-/vgsd-progress
+/fvgsd-progress
 ```
 
 ---

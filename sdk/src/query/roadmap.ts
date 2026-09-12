@@ -908,7 +908,7 @@ export const roadmapAnalyze: QueryHandler = async (_args, projectDir, workstream
  * Annotate the ROADMAP.md plan list with wave dependency notes and
  * cross-cutting constraints derived from PLAN frontmatter.
  *
- * Delegates to gsd-tools.cjs which holds the full annotation logic.
+ * Delegates to fvgsd-tools.cjs which holds the full annotation logic.
  * Returns { updated, phase, waves, cross_cutting_constraints }.
  */
 export const roadmapAnnotateDependencies: QueryHandler = async (args, projectDir) => {
@@ -920,13 +920,13 @@ export const roadmapAnnotateDependencies: QueryHandler = async (args, projectDir
   const { spawnSync } = await import('node:child_process');
   const toolsPath = resolveGsdToolsPath(projectDir);
 
-  // CRITICAL: set GSD_SDK_NESTED=1 so the CJS router in the child process
+  // CRITICAL: set FVGSD_SDK_NESTED=1 so the CJS router in the child process
   // detects nesting and routes directly to cmdRoadmapAnnotateDependencies
   // instead of dispatching back through executeForCjs.  Without this guard,
-  // SDK→spawn(gsd-tools)→router→SDK→spawn(gsd-tools)→… loops until the
+  // SDK→spawn(fvgsd-tools)→router→SDK→spawn(fvgsd-tools)→… loops until the
   // synckit 15s timeout fires and bug-3537's annotate test surfaces a
   // misleading "code=null" failure.
-  const childEnv: NodeJS.ProcessEnv = { ...process.env, GSD_SDK_NESTED: '1' };
+  const childEnv: NodeJS.ProcessEnv = { ...process.env, FVGSD_SDK_NESTED: '1' };
 
   const result = spawnSync(process.execPath, [toolsPath, 'roadmap', 'annotate-dependencies', phase], {
     cwd: projectDir,
@@ -938,17 +938,17 @@ export const roadmapAnnotateDependencies: QueryHandler = async (args, projectDir
   });
 
   if (result.error) {
-    return { data: { updated: false, reason: result.error.message || 'gsd-tools invocation failed' } };
+    return { data: { updated: false, reason: result.error.message || 'fvgsd-tools invocation failed' } };
   }
 
   if (result.status !== 0) {
-    return { data: { updated: false, reason: result.stderr?.trim() || 'gsd-tools error' } };
+    return { data: { updated: false, reason: result.stderr?.trim() || 'fvgsd-tools error' } };
   }
 
   try {
     return { data: JSON.parse(result.stdout.trim()) };
   } catch {
-    return { data: { updated: false, reason: 'failed to parse gsd-tools output' } };
+    return { data: { updated: false, reason: 'failed to parse fvgsd-tools output' } };
   }
 };
 

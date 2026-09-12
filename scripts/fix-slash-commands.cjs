@@ -2,14 +2,14 @@
 /**
  * One-shot script + library: bidirectional Vibe GSD command namespace normalizer.
  *
- * - Default direction (transformContent): /gsd-<cmd> or /vgsd-<cmd> → /vgsd:<cmd>
+ * - Default direction (transformContent): /gsd-<cmd> or /fvgsd-<cmd> → /fvgsd:<cmd>
  *   (keeps monorepo sources, docs, and workflows in the active Vibe colon form).
- * - Reverse direction (transformContentToHyphen): gsd:<cmd> or vgsd:<cmd> → vgsd-<cmd>
+ * - Reverse direction (transformContentToHyphen): gsd:<cmd> or fvgsd:<cmd> → fvgsd-<cmd>
  *   (used during skill installation for runtimes that register skills under the
  *   canonical hyphen form established in #2808).
  *
  * Both directions only rewrite known commands from `commands/gsd/*.md` (longest-first
- * matching + word-boundary safety). Non-commands (gsd-sdk, gsd-tools, etc.) are
+ * matching + word-boundary safety). Non-commands (fvgsd-sdk, fvgsd-tools, etc.) are
  * intentionally left untouched.
  *
  * The transforms are pure and exported for use by the installer and tests.
@@ -45,28 +45,28 @@ function isTestFile(name) {
 
 function buildPattern(cmdNames) {
   // Empty input would compile a namespace pattern that still matches an empty
-  // command token at a boundary and rewrites it to a stray `/vgsd:`.
+  // command token at a boundary and rewrites it to a stray `/fvgsd:`.
   // Short-circuit so the caller can no-op on a missing/empty registry rather
   // than perform an unintended broad rewrite.
   if (!Array.isArray(cmdNames) || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length); // longest first to avoid partial matches
-  return new RegExp(`/(?:vgsd|gsd)-(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  return new RegExp(`/(?:fvgsd|gsd)-(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 }
 
 /**
- * Pure transform: rewrite hyphen command references to `/vgsd:<cmd>` for the given command names.
- * Returns the rewritten string. Identifiers not in `cmdNames` (e.g. `/gsd-sdk`,
- * `/gsd-tools`) are left untouched.
+ * Pure transform: rewrite hyphen command references to `/fvgsd:<cmd>` for the given command names.
+ * Returns the rewritten string. Identifiers not in `cmdNames` (e.g. `/fvgsd-sdk`,
+ * `/fvgsd-tools`) are left untouched.
  */
 function transformContent(src, cmdNames) {
   const pattern = buildPattern(cmdNames);
   if (!pattern) return src;
-  return src.replace(pattern, (_, cmd) => `/vgsd:${cmd}`);
+  return src.replace(pattern, (_, cmd) => `/fvgsd:${cmd}`);
 }
 
 /**
  * Build regex for the reverse direction (colon form → hyphen form).
- * Matches both legacy "gsd:cmd" and public "vgsd:cmd" forms (the leading / is preserved automatically
+ * Matches both legacy "gsd:cmd" and public "fvgsd:cmd" forms (the leading / is preserved automatically
  * because it is not part of the match). Uses longest-first ordering plus
  * bidirectional word-boundary safety (negative lookbehind on the left, lookahead
  * on the right) so matches only occur at token boundaries.
@@ -74,20 +74,20 @@ function transformContent(src, cmdNames) {
 function buildColonPattern(cmdNames) {
   if (!Array.isArray(cmdNames) || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length);
-  return new RegExp(`(?<![a-zA-Z0-9_-])(?:vgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  return new RegExp(`(?<![a-zA-Z0-9_-])(?:fvgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 }
 
 /**
  * Pure transform (reverse): rewrite colon command references to the public hyphen form
  * for known GSD commands.
  *
- * Non-command identifiers (e.g. gsd-sdk, gsd-tools) are left untouched, matching
+ * Non-command identifiers (e.g. fvgsd-sdk, fvgsd-tools) are left untouched, matching
  * the safety contract of the forward transform.
  */
 function transformContentToHyphen(src, cmdNames) {
   const pattern = buildColonPattern(cmdNames);
   if (!pattern) return src;
-  return src.replace(pattern, (_, cmd) => `vgsd-${cmd}`);
+  return src.replace(pattern, (_, cmd) => `fvgsd-${cmd}`);
 }
 
 function readCmdNames() {

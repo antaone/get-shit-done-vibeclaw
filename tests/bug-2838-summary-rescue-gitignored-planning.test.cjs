@@ -122,7 +122,7 @@ function sh(cwd, cmd) {
  * the rescue block against it. Returns { tmp, wt, summaryFinalPath }.
  */
 function runRescueScenario(rescueBlock) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2838-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2838-'));
   const wt = path.join(tmp, 'wt');
 
   sh(tmp, 'git init -q -b main');
@@ -207,7 +207,7 @@ describe('bug-2838: SUMMARY rescue handles gitignored .planning/',
 
   test('rescue is idempotent when SUMMARY already present in main repo', () => {
     const block = extractRescueBlock(EXECUTE_PHASE_PATH);
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2838-idem-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2838-idem-'));
     const wt = path.join(tmp, 'wt');
     try {
       sh(tmp, 'git init -q -b main');

@@ -6,13 +6,13 @@ offers mid-conversation research when useful, then routes crystallized outputs t
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@~/.claude/get-shit-done/references/questioning.md
-@~/.claude/get-shit-done/references/domain-probes.md
+@~/.claude/fvgsd/references/questioning.md
+@~/.claude/fvgsd/references/domain-probes.md
 </required_reading>
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-phase-researcher — Researches specific questions and returns concise findings
+- fvgsd-phase-researcher — Researches specific questions and returns concise findings
 </available_agent_types>
 
 <process>
@@ -62,7 +62,7 @@ If yes, spawn a research agent:
 ```
 Agent(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
-  subagent_type="gsd-phase-researcher"
+  subagent_type="fvgsd-phase-researcher"
 )
 ```
 
@@ -84,8 +84,8 @@ When the conversation reaches natural conclusions or the developer signals readi
 | Research question | `.planning/research/questions.md` (append) | Open questions that need deeper investigation |
 | Requirement | `REQUIREMENTS.md` (append) | Clear requirements that emerged from discussion |
 | New phase | `ROADMAP.md` (append) | Scope large enough to warrant its own phase |
-| Spike | `/vgsd:spike` (invoke) | Feasibility uncertainty surfaced — "will this API work?", "can we do X?" |
-| Sketch | `/vgsd:sketch` (invoke) | Design direction unclear — "what should this look like?", "how should this feel?" |
+| Spike | `/fvgsd:spike` (invoke) | Feasibility uncertainty surfaced — "will this API work?", "can we do X?" |
+| Sketch | `/fvgsd:sketch` (invoke) | Design direction unclear — "what should this look like?", "how should this feel?" |
 
 Present suggestions:
 ```
@@ -111,11 +111,11 @@ For each selected output, write the file:
 - **Seeds:** Create `.planning/seeds/{slug}.md` with frontmatter (title, trigger_condition, planted_date)
 - **Research questions:** Append to `.planning/research/questions.md`
 - **Requirements:** Append to `.planning/REQUIREMENTS.md` with next available REQ ID
-- **Phases:** Use existing `/vgsd-add-phase` command via SlashCommand
+- **Phases:** Use existing `/fvgsd-add-phase` command via SlashCommand
 
 Commit if `commit_docs` is enabled:
 ```bash
-gsd-sdk query commit "docs: capture exploration — {topic_slug}" --files {file_list}
+fvgsd-sdk query commit "docs: capture exploration — {topic_slug}" --files {file_list}
 ```
 
 ## Step 6: Close
@@ -127,7 +127,7 @@ gsd-sdk query commit "docs: capture exploration — {topic_slug}" --files {file_
 **Outputs:** {count} artifact(s) created
 {list of created files}
 
-Continue exploring with `/vgsd:explore` or start working with `/vgsd:progress --next`.
+Continue exploring with `/fvgsd:explore` or start working with `/fvgsd:progress --next`.
 ```
 
 </process>

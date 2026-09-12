@@ -59,14 +59,14 @@ let _origGsdHome;
 let _isolatedHome;
 function isolateHome() {
   _origHome = process.env.HOME;
-  _origGsdHome = process.env.GSD_HOME;
-  _isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-home-iso-'));
+  _origGsdHome = process.env.FVGSD_HOME;
+  _isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-home-iso-'));
   process.env.HOME = _isolatedHome;
-  process.env.GSD_HOME = _isolatedHome;
+  process.env.FVGSD_HOME = _isolatedHome;
 }
 function restoreHome() {
   if (_origHome === undefined) delete process.env.HOME; else process.env.HOME = _origHome;
-  if (_origGsdHome === undefined) delete process.env.GSD_HOME; else process.env.GSD_HOME = _origGsdHome;
+  if (_origGsdHome === undefined) delete process.env.FVGSD_HOME; else process.env.FVGSD_HOME = _origGsdHome;
   if (_isolatedHome) fs.rmSync(_isolatedHome, { recursive: true, force: true });
   _isolatedHome = null;
 }
@@ -79,34 +79,34 @@ describe('issue #2517: backwards compat — no runtime key set', () => {
 
   test('balanced profile returns Claude alias when runtime absent', () => {
     writeConfig(tmpDir, { model_profile: 'balanced' });
-    // gsd-planner balanced -> opus
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'opus');
+    // fvgsd-planner balanced -> opus
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'opus');
   });
 
   test('inherit profile still returns "inherit" with no runtime', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'inherit');
   });
 
   test('resolve_model_ids:true still maps alias -> full Claude ID with no runtime', () => {
     writeConfig(tmpDir, { model_profile: 'balanced', resolve_model_ids: true });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'claude-opus-4-7');
   });
 
   test('resolve_model_ids:"omit" still returns "" with no runtime', () => {
     writeConfig(tmpDir, { model_profile: 'balanced', resolve_model_ids: 'omit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), '');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), '');
   });
 
   test('reasoning_effort returns null when runtime absent', () => {
     writeConfig(tmpDir, { model_profile: 'balanced' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 
   test('adaptive profile still works without runtime (#1713/#1806)', () => {
     writeConfig(tmpDir, { model_profile: 'adaptive' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'opus');
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'haiku');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'opus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'haiku');
   });
 });
 
@@ -120,7 +120,7 @@ describe('issue #2517: runtime "claude" is a no-op for resolution (finding #4)',
     // `runtime: "claude"` is the implicit default — it must not silently flip
     // resolve_model_ids on. The alias passes through identically to the unset case.
     writeConfig(tmpDir, { runtime: 'claude', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'opus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'opus');
   });
 
   test('runtime:"claude" + resolve_model_ids:"omit" returns "" (finding #4 regression)', () => {
@@ -132,7 +132,7 @@ describe('issue #2517: runtime "claude" is a no-op for resolution (finding #4)',
       model_profile: 'quality',
       resolve_model_ids: 'omit',
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), '');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), '');
   });
 
   test('runtime:"claude" + resolve_model_ids:true maps alias -> full Claude ID', () => {
@@ -141,12 +141,12 @@ describe('issue #2517: runtime "claude" is a no-op for resolution (finding #4)',
       model_profile: 'quality',
       resolve_model_ids: true,
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'claude-opus-4-7');
   });
 
   test('reasoning_effort is null on Claude (never leaks)', () => {
     writeConfig(tmpDir, { runtime: 'claude', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -158,36 +158,36 @@ describe('issue #2517: runtime "codex" — Codex tier resolution', () => {
 
   test('opus tier -> gpt-5.4 with reasoning_effort xhigh', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
-    // gsd-planner quality -> opus -> gpt-5.4
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'xhigh');
+    // fvgsd-planner quality -> opus -> gpt-5.4
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), 'xhigh');
   });
 
   test('sonnet tier -> gpt-5.3-codex with reasoning_effort medium', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'gpt-5.3-codex');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-roadmapper'), 'medium');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'gpt-5.3-codex');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-roadmapper'), 'medium');
   });
 
   test('haiku tier -> gpt-5.4-mini with reasoning_effort medium', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'budget' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.4-mini');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-codebase-mapper'), 'medium');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'gpt-5.4-mini');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-codebase-mapper'), 'medium');
   });
 
   test('adaptive profile resolves on Codex (no #1713/#1806 regression)', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'adaptive' });
-    // gsd-planner adaptive -> opus -> gpt-5.4
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
-    // gsd-codebase-mapper adaptive -> haiku -> gpt-5.4-mini
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.4-mini');
+    // fvgsd-planner adaptive -> opus -> gpt-5.4
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4');
+    // fvgsd-codebase-mapper adaptive -> haiku -> gpt-5.4-mini
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'gpt-5.4-mini');
   });
 
   test('inherit profile still returns "inherit" on Codex', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'inherit');
     // No reasoning_effort when inherit
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 
   test('runtime:"codex" beats resolve_model_ids:"omit" (explicit non-Claude opt-in wins)', () => {
@@ -196,7 +196,7 @@ describe('issue #2517: runtime "codex" — Codex tier resolution', () => {
       model_profile: 'quality',
       resolve_model_ids: 'omit',
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4');
   });
 });
 
@@ -210,9 +210,9 @@ describe('issue #2517: precedence chain', () => {
     writeConfig(tmpDir, {
       runtime: 'codex',
       model_profile: 'quality',
-      model_overrides: { 'gsd-planner': 'gpt-5.4-mini' },
+      model_overrides: { 'fvgsd-planner': 'gpt-5.4-mini' },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4-mini');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4-mini');
   });
 
   test('model_profile_overrides[runtime][tier] beats built-in defaults', () => {
@@ -223,11 +223,11 @@ describe('issue #2517: precedence chain', () => {
         codex: { opus: 'gpt-5-pro' },
       },
     });
-    // gsd-planner quality -> opus -> overridden to gpt-5-pro
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5-pro');
+    // fvgsd-planner quality -> opus -> overridden to gpt-5-pro
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5-pro');
     // haiku not overridden — fall back to spec defaults
-    // gsd-codebase-mapper quality -> sonnet -> gpt-5.3-codex
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.3-codex');
+    // fvgsd-codebase-mapper quality -> sonnet -> gpt-5.3-codex
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'gpt-5.3-codex');
   });
 
   test('partial profile_overrides — only opus overridden, sonnet uses default', () => {
@@ -238,10 +238,10 @@ describe('issue #2517: precedence chain', () => {
         codex: { opus: 'gpt-5-pro' }, // only opus overridden
       },
     });
-    // gsd-planner balanced -> opus -> overridden to gpt-5-pro
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5-pro');
-    // gsd-roadmapper balanced -> sonnet -> spec default
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'gpt-5.3-codex');
+    // fvgsd-planner balanced -> opus -> overridden to gpt-5-pro
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5-pro');
+    // fvgsd-roadmapper balanced -> sonnet -> spec default
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'gpt-5.3-codex');
   });
 
   test('per-agent override beats profile override beats default', () => {
@@ -249,9 +249,9 @@ describe('issue #2517: precedence chain', () => {
       runtime: 'codex',
       model_profile: 'quality',
       model_profile_overrides: { codex: { opus: 'gpt-5-pro' } },
-      model_overrides: { 'gsd-planner': 'custom-model' },
+      model_overrides: { 'fvgsd-planner': 'custom-model' },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'custom-model');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'custom-model');
   });
 });
 
@@ -270,8 +270,8 @@ describe('issue #2517: field-merge of overrides with built-in defaults (finding 
       model_profile: 'quality',
       model_profile_overrides: { codex: { opus: 'gpt-5-pro' } },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5-pro');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'xhigh');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5-pro');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), 'xhigh');
   });
 
   test('partial-object override (no model) keeps model from built-in', () => {
@@ -283,8 +283,8 @@ describe('issue #2517: field-merge of overrides with built-in defaults (finding 
       model_profile: 'quality',
       model_profile_overrides: { codex: { opus: { reasoning_effort: 'low' } } },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'low');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), 'low');
   });
 
   test('full-object override replaces both fields', () => {
@@ -295,8 +295,8 @@ describe('issue #2517: field-merge of overrides with built-in defaults (finding 
         codex: { opus: { model: 'custom-model', reasoning_effort: 'minimal' } },
       },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'custom-model');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'minimal');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'custom-model');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), 'minimal');
   });
 
   test('resolveTierEntry helper: shorthand merge', () => {
@@ -345,9 +345,9 @@ describe('issue #2517: reasoning_effort allowlist gates regardless of overrides 
       },
     });
     // Model still resolves (overrides are honored).
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'mystery-opus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'mystery-opus');
     // …but reasoning_effort does NOT propagate to a runtime not in the allowlist.
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 
   test('typo runtime "codx" with overrides yields null effort (no leak into install path)', () => {
@@ -356,7 +356,7 @@ describe('issue #2517: reasoning_effort allowlist gates regardless of overrides 
       model_profile: 'quality',
       model_profile_overrides: { codx: { opus: { model: 'gpt-5.4', reasoning_effort: 'xhigh' } } },
     });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -369,7 +369,7 @@ describe('issue #2517: unknown runtime + safe fallback', () => {
   test('unknown runtime falls back to Claude-alias safe default (no Codex IDs leaked)', () => {
     writeConfig(tmpDir, { runtime: 'mystery-runtime', model_profile: 'quality' });
     // Should NOT emit gpt-5.4 — should fall back to Claude alias
-    const resolved = resolveModelInternal(tmpDir, 'gsd-planner');
+    const resolved = resolveModelInternal(tmpDir, 'fvgsd-planner');
     assert.notStrictEqual(resolved, 'gpt-5.4');
     assert.strictEqual(resolved, 'opus');
   });
@@ -382,13 +382,13 @@ describe('issue #2517: unknown runtime + safe fallback', () => {
         'mystery-runtime': { opus: 'mystery-opus' },
       },
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'mystery-opus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'mystery-opus');
   });
 
   test('runtime:"codex" but missing model_profile_overrides[codex] uses spec defaults', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
     // No model_profile_overrides at all — built-in Codex defaults take over
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gpt-5.4');
   });
 });
 
@@ -493,11 +493,11 @@ describe('issue #2517: loadConfig warns on unknown runtime/tier (findings #10, #
 // ─── End-to-end: per-project config -> Codex TOML emit (finding #1) ─────────
 describe('issue #2517: install end-to-end — per-project config reaches Codex TOML (finding #1)', () => {
   // Load install.js in test-mode so its module exports are populated.
-  const prevTestMode = process.env.GSD_TEST_MODE;
-  process.env.GSD_TEST_MODE = '1';
+  const prevTestMode = process.env.FVGSD_TEST_MODE;
+  process.env.FVGSD_TEST_MODE = '1';
   const installMod = require('../bin/install.js');
-  if (prevTestMode === undefined) delete process.env.GSD_TEST_MODE;
-  else process.env.GSD_TEST_MODE = prevTestMode;
+  if (prevTestMode === undefined) delete process.env.FVGSD_TEST_MODE;
+  else process.env.FVGSD_TEST_MODE = prevTestMode;
   const { readGsdRuntimeProfileResolver, generateCodexAgentToml } = installMod;
 
   let tmpDir;
@@ -511,7 +511,7 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     assert.ok(resolver, 'expected a resolver from per-project config');
     assert.strictEqual(resolver.runtime, 'codex');
-    const entry = resolver.resolve('gsd-planner');
+    const entry = resolver.resolve('fvgsd-planner');
     assert.deepStrictEqual(entry, { model: 'gpt-5.4', reasoning_effort: 'xhigh' });
   });
 
@@ -524,7 +524,7 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     assert.strictEqual(resolver.runtime, 'codex');
-    const entry = resolver.resolve('gsd-planner');
+    const entry = resolver.resolve('fvgsd-planner');
     assert.strictEqual(entry.model, 'gpt-5.4');
   });
 
@@ -532,8 +532,8 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     const toml = generateCodexAgentToml(
-      'gsd-planner',
-      '---\nname: gsd-planner\ndescription: Planner agent\n---\nBody.\n',
+      'fvgsd-planner',
+      '---\nname: fvgsd-planner\ndescription: Planner agent\n---\nBody.\n',
       null,
       resolver
     );
@@ -552,8 +552,8 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
     });
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     const toml = generateCodexAgentToml(
-      'gsd-planner',
-      '---\nname: gsd-planner\n---\nBody.\n',
+      'fvgsd-planner',
+      '---\nname: fvgsd-planner\n---\nBody.\n',
       null,
       resolver
     );
@@ -599,22 +599,22 @@ describe('issue #2612: runtime "gemini" — Gemini tier resolution', () => {
 
   test('opus tier -> gemini-3-pro', () => {
     writeConfig(tmpDir, { runtime: 'gemini', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gemini-3-pro');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gemini-3-pro');
   });
 
   test('sonnet tier -> gemini-3-flash', () => {
     writeConfig(tmpDir, { runtime: 'gemini', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'gemini-3-flash');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'gemini-3-flash');
   });
 
   test('haiku tier -> gemini-2.5-flash-lite', () => {
     writeConfig(tmpDir, { runtime: 'gemini', model_profile: 'budget' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gemini-2.5-flash-lite');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'gemini-2.5-flash-lite');
   });
 
   test('reasoning_effort is null for gemini (no reasoning_effort in spec)', () => {
     writeConfig(tmpDir, { runtime: 'gemini', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -626,22 +626,22 @@ describe('issue #2612: runtime "qwen" — Qwen tier resolution', () => {
 
   test('opus tier -> qwen3-max-2026-01-23', () => {
     writeConfig(tmpDir, { runtime: 'qwen', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'qwen3-max-2026-01-23');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'qwen3-max-2026-01-23');
   });
 
   test('sonnet tier -> qwen3-coder-plus', () => {
     writeConfig(tmpDir, { runtime: 'qwen', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'qwen3-coder-plus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'qwen3-coder-plus');
   });
 
   test('haiku tier -> qwen3-coder-next', () => {
     writeConfig(tmpDir, { runtime: 'qwen', model_profile: 'budget' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'qwen3-coder-next');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'qwen3-coder-next');
   });
 
   test('reasoning_effort is null for qwen (no reasoning_effort in spec)', () => {
     writeConfig(tmpDir, { runtime: 'qwen', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -653,22 +653,22 @@ describe('issue #2612: runtime "opencode" — OpenCode tier resolution', () => {
 
   test('opus tier -> anthropic/claude-opus-4-7', () => {
     writeConfig(tmpDir, { runtime: 'opencode', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'anthropic/claude-opus-4-7');
   });
 
   test('sonnet tier -> anthropic/claude-sonnet-4-6', () => {
     writeConfig(tmpDir, { runtime: 'opencode', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'anthropic/claude-sonnet-4-6');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'anthropic/claude-sonnet-4-6');
   });
 
   test('haiku tier -> anthropic/claude-haiku-4-5', () => {
     writeConfig(tmpDir, { runtime: 'opencode', model_profile: 'budget' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'anthropic/claude-haiku-4-5');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'anthropic/claude-haiku-4-5');
   });
 
   test('reasoning_effort is null for opencode (no reasoning_effort in spec)', () => {
     writeConfig(tmpDir, { runtime: 'opencode', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -680,22 +680,22 @@ describe('issue #2612: runtime "copilot" — Copilot tier resolution', () => {
 
   test('opus tier -> claude-opus-4-7', () => {
     writeConfig(tmpDir, { runtime: 'copilot', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'claude-opus-4-7');
   });
 
   test('sonnet tier -> claude-sonnet-4-6', () => {
     writeConfig(tmpDir, { runtime: 'copilot', model_profile: 'balanced' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'claude-sonnet-4-6');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'claude-sonnet-4-6');
   });
 
   test('haiku tier -> claude-haiku-4-5', () => {
     writeConfig(tmpDir, { runtime: 'copilot', model_profile: 'budget' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'claude-haiku-4-5');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'claude-haiku-4-5');
   });
 
   test('reasoning_effort is null for copilot (no reasoning_effort in spec)', () => {
     writeConfig(tmpDir, { runtime: 'copilot', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'fvgsd-planner'), null);
   });
 });
 
@@ -741,7 +741,7 @@ describe('issue #2612: Group B runtimes — no built-in map, use unknown-runtime
     try {
       writeConfig(tmpDir, { runtime: 'cursor', model_profile: 'quality' });
       // Should fall back to Claude alias, not emit a provider-specific ID
-      const resolved = resolveModelInternal(tmpDir, 'gsd-planner');
+      const resolved = resolveModelInternal(tmpDir, 'fvgsd-planner');
       assert.strictEqual(resolved, 'opus');
     } finally {
       cleanup(tmpDir);
@@ -765,9 +765,9 @@ describe('issue #2612: partial override merge for new Group A runtimes', () => {
       },
     });
     // opus is overridden
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gemini-3-ultra');
-    // sonnet not overridden — built-in default (quality -> sonnet for gsd-codebase-mapper)
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gemini-3-flash');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'gemini-3-ultra');
+    // sonnet not overridden — built-in default (quality -> sonnet for fvgsd-codebase-mapper)
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'gemini-3-flash');
   });
 
   test('qwen.opus override wins; sonnet and haiku use built-in defaults', () => {
@@ -779,9 +779,9 @@ describe('issue #2612: partial override merge for new Group A runtimes', () => {
       },
     });
     // opus is overridden
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'qwen3-max-custom');
-    // sonnet not overridden — quality -> sonnet for gsd-codebase-mapper
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'qwen3-coder-plus');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'qwen3-max-custom');
+    // sonnet not overridden — quality -> sonnet for fvgsd-codebase-mapper
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'qwen3-coder-plus');
   });
 
   test('opencode.sonnet override wins; opus and haiku still use built-in defaults', () => {
@@ -792,12 +792,12 @@ describe('issue #2612: partial override merge for new Group A runtimes', () => {
         opencode: { sonnet: 'anthropic/claude-sonnet-4-7' },
       },
     });
-    // gsd-planner balanced -> opus -> built-in default
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-7');
-    // gsd-roadmapper balanced -> sonnet -> overridden
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'anthropic/claude-sonnet-4-7');
-    // gsd-codebase-mapper balanced -> haiku -> built-in default (haiku not overridden)
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'anthropic/claude-haiku-4-5');
+    // fvgsd-planner balanced -> opus -> built-in default
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'anthropic/claude-opus-4-7');
+    // fvgsd-roadmapper balanced -> sonnet -> overridden
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-roadmapper'), 'anthropic/claude-sonnet-4-7');
+    // fvgsd-codebase-mapper balanced -> haiku -> built-in default (haiku not overridden)
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'anthropic/claude-haiku-4-5');
   });
 
   test('copilot.haiku override wins; opus and sonnet still use built-in defaults', () => {
@@ -808,9 +808,9 @@ describe('issue #2612: partial override merge for new Group A runtimes', () => {
         copilot: { haiku: 'claude-haiku-4-6' },
       },
     });
-    // gsd-codebase-mapper budget -> haiku -> overridden
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'claude-haiku-4-6');
-    // gsd-planner budget -> sonnet -> built-in default
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-sonnet-4-6');
+    // fvgsd-codebase-mapper budget -> haiku -> overridden
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'claude-haiku-4-6');
+    // fvgsd-planner budget -> sonnet -> built-in default
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'claude-sonnet-4-6');
   });
 });

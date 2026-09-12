@@ -5,7 +5,7 @@
  * - Command frontmatter advertises --research
  * - Workflow includes research step (Step 4.75)
  * - Research artifacts work within quick task directories
- * - Workflow spawns gsd-phase-researcher for research
+ * - Workflow spawns fvgsd-phase-researcher for research
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -96,15 +96,15 @@ describe('quick workflow: research step', () => {
     );
   });
 
-  test('research step spawns gsd-phase-researcher', () => {
+  test('research step spawns fvgsd-phase-researcher', () => {
     content = fs.readFileSync(workflowPath, 'utf-8');
     const researchSection = content.substring(
       content.indexOf('Step 4.75'),
       content.indexOf('Step 5:')
     );
     assert.ok(
-      researchSection.includes('subagent_type="gsd-phase-researcher"'),
-      'research step should spawn gsd-phase-researcher agent'
+      researchSection.includes('subagent_type="fvgsd-phase-researcher"'),
+      'research step should spawn fvgsd-phase-researcher agent'
     );
   });
 

@@ -7,7 +7,7 @@
  * GSD Tools Tests - frontmatter CLI integration
  *
  * Integration tests for the 4 frontmatter subcommands (get, set, merge, validate)
- * exercised through gsd-tools.cjs via execSync.
+ * exercised through fvgsd-tools.cjs via execSync.
  *
  * Each test creates its own temp file, runs the CLI command, asserts output,
  * and cleans up in afterEach (per-test cleanup with individual temp files).
@@ -24,7 +24,7 @@ const { runGsdTools } = require('./helpers.cjs');
 let tempFiles = [];
 
 function writeTempFile(content) {
-  const tmpFile = path.join(os.tmpdir(), `gsd-fm-test-${Date.now()}-${Math.random().toString(36).slice(2)}.md`);
+  const tmpFile = path.join(os.tmpdir(), `fvgsd-fm-test-${Date.now()}-${Math.random().toString(36).slice(2)}.md`);
   fs.writeFileSync(tmpFile, content, 'utf-8');
   tempFiles.push(tmpFile);
   return tmpFile;

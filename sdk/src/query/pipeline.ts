@@ -181,7 +181,7 @@ export function wrapWithPipeline(
         // ─── Dry-run: clone → mutate → diff ──────────────────────────
         let tempDir: string | null = null;
         try {
-          tempDir = await mkdtemp(join(tmpdir(), 'gsd-dryrun-'));
+          tempDir = await mkdtemp(join(tmpdir(), 'fvgsd-dryrun-'));
 
           // Snapshot state before mutation
           const beforeState = await readPlanningState(projectDir);

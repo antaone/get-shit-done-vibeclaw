@@ -133,9 +133,9 @@ describe('runPhaseStepSession', () => {
       expect(opts.model).toBe('claude-sonnet-4-6');
     });
 
-    it('respects GSD_RUNTIME env precedence over config (no Claude id when env=codex)', async () => {
-      const prev = process.env.GSD_RUNTIME;
-      process.env.GSD_RUNTIME = 'codex';
+    it('respects FVGSD_RUNTIME env precedence over config (no Claude id when env=codex)', async () => {
+      const prev = process.env.FVGSD_RUNTIME;
+      process.env.FVGSD_RUNTIME = 'codex';
       try {
         await runPhaseStepSession(
           'prompt',
@@ -145,8 +145,8 @@ describe('runPhaseStepSession', () => {
         const opts = mockQueryCalls[0].options as { model?: string };
         expect(opts.model).toBeUndefined();
       } finally {
-        if (prev === undefined) delete process.env.GSD_RUNTIME;
-        else process.env.GSD_RUNTIME = prev;
+        if (prev === undefined) delete process.env.FVGSD_RUNTIME;
+        else process.env.FVGSD_RUNTIME = prev;
       }
     });
 

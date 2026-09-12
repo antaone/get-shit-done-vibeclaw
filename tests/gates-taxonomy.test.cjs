@@ -91,31 +91,31 @@ describe('gates taxonomy (#1715)', () => {
     );
   });
 
-  test('gsd-plan-checker.md references gates.md in required_reading block', () => {
-    const planChecker = path.join(ROOT, 'agents', 'gsd-plan-checker.md');
+  test('fvgsd-plan-checker.md references gates.md in required_reading block', () => {
+    const planChecker = path.join(ROOT, 'agents', 'fvgsd-plan-checker.md');
     const content = fs.readFileSync(planChecker, 'utf-8');
     const match = content.match(/<required_reading>\r?\n([\s\S]*?)\r?\n<\/required_reading>/);
     assert.ok(
       match,
-      'gsd-plan-checker.md must have a <required_reading> block'
+      'fvgsd-plan-checker.md must have a <required_reading> block'
     );
     assert.ok(
       match[1].includes('references/gates.md'),
-      'gsd-plan-checker.md must reference gates.md inside <required_reading>'
+      'fvgsd-plan-checker.md must reference gates.md inside <required_reading>'
     );
   });
 
-  test('gsd-verifier.md references gates.md in required_reading block', () => {
-    const verifier = path.join(ROOT, 'agents', 'gsd-verifier.md');
+  test('fvgsd-verifier.md references gates.md in required_reading block', () => {
+    const verifier = path.join(ROOT, 'agents', 'fvgsd-verifier.md');
     const content = fs.readFileSync(verifier, 'utf-8');
     const match = content.match(/<required_reading>\r?\n([\s\S]*?)\r?\n<\/required_reading>/);
     assert.ok(
       match,
-      'gsd-verifier.md must have a <required_reading> block'
+      'fvgsd-verifier.md must have a <required_reading> block'
     );
     assert.ok(
       match[1].includes('references/gates.md'),
-      'gsd-verifier.md must reference gates.md inside <required_reading>'
+      'fvgsd-verifier.md must reference gates.md inside <required_reading>'
     );
   });
 

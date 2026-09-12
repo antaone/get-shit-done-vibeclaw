@@ -8,16 +8,16 @@ const { routeRoadmapCommand } = require('../get-shit-done/bin/lib/roadmap-comman
 // These tests exercise the CJS dispatch path of the router. Since #3577 the
 // router prefers the SDK bridge when sdk/dist is present, which would bypass
 // the mocked `roadmap` handlers below. The router gates SDK dispatch on
-// `process.env.GSD_WORKSTREAM` being unset, so set it here to deterministically
+// `process.env.FVGSD_WORKSTREAM` being unset, so set it here to deterministically
 // take the CJS path that the mocks model.
 let _prevWorkstream;
 before(() => {
-  _prevWorkstream = process.env.GSD_WORKSTREAM;
-  process.env.GSD_WORKSTREAM = 'test-unit';
+  _prevWorkstream = process.env.FVGSD_WORKSTREAM;
+  process.env.FVGSD_WORKSTREAM = 'test-unit';
 });
 after(() => {
-  if (_prevWorkstream === undefined) delete process.env.GSD_WORKSTREAM;
-  else process.env.GSD_WORKSTREAM = _prevWorkstream;
+  if (_prevWorkstream === undefined) delete process.env.FVGSD_WORKSTREAM;
+  else process.env.FVGSD_WORKSTREAM = _prevWorkstream;
 });
 
 describe('roadmap-command-router', () => {

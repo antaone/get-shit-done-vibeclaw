@@ -1,5 +1,5 @@
 <purpose>
-Create all phases necessary to close gaps identified by `/vgsd:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/vgsd-add-phase` per gap.
+Create all phases necessary to close gaps identified by `/fvgsd:audit-milestone`. Reads MILESTONE-AUDIT.md, groups gaps into logical phases, creates phase entries in ROADMAP.md, and offers to plan each phase. One command creates all fix phases — no manual `/fvgsd-add-phase` per gap.
 </purpose>
 
 <required_reading>
@@ -22,7 +22,7 @@ Parse YAML frontmatter to extract structured gaps:
 
 If no audit file exists or has no gaps, error:
 ```
-No audit gaps found. Run `/vgsd:audit-milestone` first.
+No audit gaps found. Run `/fvgsd:audit-milestone` first.
 ```
 
 ## 2. Prioritize Gaps
@@ -65,7 +65,7 @@ Gap: Flow "View dashboard" broken at data fetch
 Find highest existing phase:
 ```bash
 # Get sorted phase list, extract last one
-HIGHEST=$(gsd-sdk query phases.list --pick directories[-1])
+HIGHEST=$(fvgsd-sdk query phases.list --pick directories[-1])
 ```
 
 New phases continue from there:
@@ -142,7 +142,7 @@ grep -c "Pending" .planning/REQUIREMENTS.md
 For each new phase (N, N+1, …), resolve the directory name via `init.phase-op` so the `project_code` prefix is honoured:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "{NN}")
+INIT=$(fvgsd-sdk query init.phase-op "{NN}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 expected_phase_dir=$(echo "$INIT" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).expected_phase_dir)")
 mkdir -p "${expected_phase_dir}"
@@ -153,7 +153,7 @@ Repeat for each gap-closure phase number. This produces `{CODE}-{NN}-{slug}/` wh
 ## 9. Commit Roadmap and Requirements Update
 
 ```bash
-gsd-sdk query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
+fvgsd-sdk query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
 ## 10. Offer Next Steps
@@ -172,20 +172,20 @@ gsd-sdk query commit "docs(roadmap): add gap closure phases {N}-{M}" --files .pl
 
 `/clear` then:
 
-`/vgsd:plan-phase {N}`
+`/fvgsd:plan-phase {N}`
 
 ---
 
 **Also available:**
-- `/vgsd:execute-phase {N}` — if plans already exist
+- `/fvgsd:execute-phase {N}` — if plans already exist
 - `cat .planning/ROADMAP.md` — see updated roadmap
 
 ---
 
 **After all gap phases complete:**
 
-`/vgsd:audit-milestone` — re-audit to verify gaps closed
-`/vgsd:complete-milestone {version}` — archive when audit passes
+`/fvgsd:audit-milestone` — re-audit to verify gaps closed
+`/fvgsd:complete-milestone {version}` — archive when audit passes
 ```
 
 </process>
@@ -276,5 +276,5 @@ becomes:
 - [ ] Coverage count updated in REQUIREMENTS.md
 - [ ] Phase directories created
 - [ ] Changes committed (includes REQUIREMENTS.md)
-- [ ] User knows to run `/vgsd:plan-phase` next
+- [ ] User knows to run `/fvgsd:plan-phase` next
 </success_criteria>

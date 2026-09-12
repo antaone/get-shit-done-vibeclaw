@@ -24,10 +24,10 @@ GSD의 discuss 단계는 플래닝 전에 구현 컨텍스트를 수집하는 �
 
 ```bash
 # assumptions 모드 활성화
-gsd-tools config-set workflow.discuss_mode assumptions
+fvgsd-tools config-set workflow.discuss_mode assumptions
 
 # interview 모드로 전환
-gsd-tools config-set workflow.discuss_mode discuss
+fvgsd-tools config-set workflow.discuss_mode discuss
 ```
 
 설정은 프로젝트별로 적용되며 `.planning/config.json`에 저장됩니다.

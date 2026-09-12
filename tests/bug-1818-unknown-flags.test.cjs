@@ -1,7 +1,7 @@
 /**
  * Regression test for bug #1818, updated for #3019.
  *
- * Original #1818 invariant: gsd-tools must NOT silently ignore --help/-h
+ * Original #1818 invariant: fvgsd-tools must NOT silently ignore --help/-h
  * and proceed with a destructive command — that turned AI-agent
  * hallucinations into accidental data loss (e.g. `phases clear --help`
  * deleting phase dirs because the flag was dropped).
@@ -11,13 +11,13 @@
  * exit. Now --help → render top-level usage and exit 0 WITHOUT running
  * the command. Both shapes satisfy the original invariant ("the
  * destructive command did not execute"); the new shape also restores
- * subcommand discoverability for `gsd-sdk query <subcommand> --help`.
+ * subcommand discoverability for `fvgsd-sdk query <subcommand> --help`.
  *
  * The tests therefore assert two things:
  *   1. The destructive command did NOT run (anti-hallucination invariant).
  *   2. The output contains the top-level usage (#3019 discoverability).
  *
- * --version remains rejected — it's never a valid gsd-tools flag and has
+ * --version remains rejected — it's never a valid fvgsd-tools flag and has
  * no discovery use-case.
  */
 

@@ -2,7 +2,7 @@
  * Skill Surface Budget Module — single source of truth for which skills/agents
  * are written to the runtime config dirs (ADR-0011).
  *
- * Background: every installed `gsd-*` skill costs eager system-prompt tokens
+ * Background: every installed `fvgsd-*` skill costs eager system-prompt tokens
  * because runtimes (Claude Code, opencode, etc.) enumerate skill descriptions
  * in `<available_skills>` on every turn. With 68 skills + 33 agents GSD alone
  * consumes ~60% of the default 1%-of-context skill-listing budget, causing
@@ -20,14 +20,14 @@
  *  - loadSkillsManifest: parse requires: frontmatter from commands/gsd/*.md
  *  - resolveProfile: compute transitive closure of profile base over manifest
  *  - stageSkillsForProfile / stageAgentsForProfile: filesystem staging
- *  - readActiveProfile / writeActiveProfile: .gsd-profile marker persistence
- *  - resolveEffectiveProfile: explicit flag > .gsd-profile marker > full
+ *  - readActiveProfile / writeActiveProfile: .fvgsd-profile marker persistence
+ *  - resolveEffectiveProfile: explicit flag > .fvgsd-profile marker > full
  *  - mostRestrictiveProfile: resolve multi-runtime disagreement to smallest set
  *
  * Companion module (Phase 2): get-shit-done/bin/lib/surface.cjs owns the
- * runtime /vgsd:surface command. It reuses stageSkillsForProfile and
+ * runtime /fvgsd:surface command. It reuses stageSkillsForProfile and
  * stageAgentsForProfile from this module for cluster-level enable/disable
- * without reinstall, persisting state in <runtimeConfigDir>/.vgsd-surface.json.
+ * without reinstall, persisting state in <runtimeConfigDir>/.fvgsd-surface.json.
  *
  * Legacy back-compat exports (deprecated, kept for existing callers):
  *  - MINIMAL_SKILL_ALLOWLIST — derived from PROFILES.core
@@ -124,19 +124,19 @@ function parseRequires(content) {
 
 /**
  * Parse agent references from a skill file's body text.
- * Scans the full content for `gsd-<stem>` patterns that correspond to
- * real agent files. Returns all unique `gsd-*` stems found in the body.
+ * Scans the full content for `fvgsd-<stem>` patterns that correspond to
+ * real agent files. Returns all unique `fvgsd-*` stems found in the body.
  *
  * The caller is responsible for filtering by which agents actually exist —
- * this function returns all syntactically valid `gsd-*` matches.
+ * this function returns all syntactically valid `fvgsd-*` matches.
  *
  * @param {string} content full file content
- * @returns {string[]} deduplicated agent stems like ['gsd-planner', 'gsd-executor']
+ * @returns {string[]} deduplicated agent stems like ['fvgsd-planner', 'fvgsd-executor']
  */
 function parseCallsAgents(content) {
   // Match word-boundary gsd-<stem> patterns; stems are lowercase letters and hyphens.
-  // We use a regex that matches `gsd-` followed by one or more lowercase-alpha-or-hyphen chars.
-  // This catches `gsd-planner`, `gsd-plan-checker`, etc. in prose and code.
+  // We use a regex that matches `fvgsd-` followed by one or more lowercase-alpha-or-hyphen chars.
+  // This catches `fvgsd-planner`, `fvgsd-plan-checker`, etc. in prose and code.
   const matches = content.match(/\bgsd-[a-z][a-z-]*/g);
   if (!matches) return [];
   // Deduplicate
@@ -146,7 +146,7 @@ function parseCallsAgents(content) {
 /**
  * Load the requires: dependency graph from a commands/gsd directory.
  * Also derives calls_agents for each skill by scanning the body text for
- * `gsd-*` agent name references. Agent stems are stored under the special
+ * `fvgsd-*` agent name references. Agent stems are stored under the special
  * key `_calls_agents_<stem>` so they don't conflict with skill stems.
  *
  * @param {string} commandsDir absolute path to commands/gsd/
@@ -314,7 +314,7 @@ function stageSkillsForProfile(srcDir, resolvedProfile) {
   if (resolvedProfile.skills === '*') return srcDir;
   if (!fs.existsSync(srcDir)) return srcDir;
 
-  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-profile-skills-'));
+  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-profile-skills-'));
   try {
     const entries = fs.readdirSync(srcDir, { withFileTypes: true });
     for (const entry of entries) {
@@ -339,7 +339,7 @@ function stageSkillsForProfile(srcDir, resolvedProfile) {
 /**
  * Stage a filtered copy of the agents directory for a resolved profile.
  * For 'full', returns srcAgentsDir unchanged.
- * For tiered profiles, copies only agents whose full stem (e.g. 'gsd-planner')
+ * For tiered profiles, copies only agents whose full stem (e.g. 'fvgsd-planner')
  * is in resolvedProfile.agents — which is populated by resolveProfile() from
  * the _calls_agents_* entries in the manifest.
  *
@@ -351,14 +351,14 @@ function stageAgentsForProfile(srcAgentsDir, resolvedProfile) {
   if (resolvedProfile.skills === '*') return srcAgentsDir;
   if (!fs.existsSync(srcAgentsDir)) return srcAgentsDir;
 
-  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-profile-agents-'));
+  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-profile-agents-'));
   try {
     if (resolvedProfile.agents instanceof Set && resolvedProfile.agents.size > 0) {
       const entries = fs.readdirSync(srcAgentsDir, { withFileTypes: true });
       for (const entry of entries) {
         if (!entry.isFile()) continue;
         if (!entry.name.endsWith('.md')) continue;
-        // Agent stem is the full filename without extension, e.g. "gsd-planner"
+        // Agent stem is the full filename without extension, e.g. "fvgsd-planner"
         const stem = entry.name.slice(0, -3);
         if (!resolvedProfile.agents.has(stem)) continue;
         fs.copyFileSync(
@@ -380,7 +380,7 @@ function stageAgentsForProfile(srcAgentsDir, resolvedProfile) {
 function stageSkillsForRuntimeAsSkills(srcCommandsDir, resolvedProfile, converter, prefix) {
   if (!fs.existsSync(srcCommandsDir)) return srcCommandsDir;
 
-  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-profile-runtime-skills-'));
+  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-profile-runtime-skills-'));
   try {
     const entries = fs.readdirSync(srcCommandsDir, { withFileTypes: true });
     for (const entry of entries) {
@@ -408,7 +408,7 @@ function stageSkillsForRuntimeAsSkills(srcCommandsDir, resolvedProfile, converte
 // Profile marker persistence
 // ---------------------------------------------------------------------------
 
-const PROFILE_MARKER_NAME = '.gsd-profile';
+const PROFILE_MARKER_NAME = '.fvgsd-profile';
 
 /**
  * Read the active profile from a runtime config directory.
@@ -555,7 +555,7 @@ function stageSkillsForMode(srcDir, mode) {
   if (!isMinimalMode(mode)) return srcDir;
   if (!fs.existsSync(srcDir)) return srcDir;
 
-  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-minimal-skills-'));
+  const stageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-minimal-skills-'));
   try {
     const entries = fs.readdirSync(srcDir, { withFileTypes: true });
     for (const entry of entries) {

@@ -201,10 +201,10 @@ describe('auto-update', () => {
   // ─── hook tests ─────────────────────────────────────────────────────────────
 
   const isWindows = process.platform === 'win32';
-  const HOOK = path.join(__dirname, '..', 'hooks', 'gsd-graphify-update.sh');
+  const HOOK = path.join(__dirname, '..', 'hooks', 'fvgsd/graphify-update.sh');
 
   function createTempGitRepo(opts = {}) {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3347-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3347-'));
     spawnSync('git', ['init', '-b', opts.defaultBranch || 'main'], {
       cwd: tmpDir,
       stdio: 'ignore',
@@ -552,11 +552,11 @@ describe('auto-update', () => {
       'git pull --ff-only',
       'git rebase --continue',
       'git cherry-pick abc123',
-      // #3653 — `gsd-sdk query commit` invokes git via spawnSync('git', [...]),
+      // #3653 — `fvgsd-sdk query commit` invokes git via spawnSync('git', [...]),
       // so the substring "git commit" never appears in tool_input.command.
       // The hook must match the user-facing SDK invocation directly.
-      'gsd-sdk query commit "docs: probe" --files .planning/STATE.md',
-      'npx gsd-sdk query commit "docs: probe" --files .planning/STATE.md',
+      'fvgsd-sdk query commit "docs: probe" --files .planning/STATE.md',
+      'npx fvgsd-sdk query commit "docs: probe" --files .planning/STATE.md',
     ]) {
       test(`dispatches on: ${cmd}`, (t) => {
         const tmpDir = createTempGitRepo({
@@ -587,7 +587,7 @@ describe('auto-update', () => {
         {
           tool_name: 'Bash',
           tool_input: {
-            command: 'gsd-sdk query commit-to-subrepo "msg" --files packages/foo',
+            command: 'fvgsd-sdk query commit-to-subrepo "msg" --files packages/foo',
           },
         },
         { pathPrepend: mockBin },
@@ -600,13 +600,13 @@ describe('auto-update', () => {
     });
 
     // #3653 — only the SDK `commit` verb invokes git internally. Other
-    // `gsd-sdk query` verbs (phase.complete, roadmap.update-plan-progress,
+    // `fvgsd-sdk query` verbs (phase.complete, roadmap.update-plan-progress,
     // state.begin-phase) mutate .md files but do NOT advance HEAD; matching
     // them would cause a spurious rebuild per state mutation.
     for (const cmd of [
-      'gsd-sdk query phase.complete 109',
-      'gsd-sdk query roadmap.update-plan-progress 109 W001',
-      'gsd-sdk query state.begin-phase 110',
+      'fvgsd-sdk query phase.complete 109',
+      'fvgsd-sdk query roadmap.update-plan-progress 109 W001',
+      'fvgsd-sdk query state.begin-phase 110',
     ]) {
       test(`does NOT dispatch on non-HEAD-advancing SDK verb: ${cmd}`, (t) => {
         const tmpDir = createTempGitRepo({

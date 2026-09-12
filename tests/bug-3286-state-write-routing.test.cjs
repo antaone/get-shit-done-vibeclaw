@@ -2,7 +2,7 @@
 // Regression tests for issue #3286 — three bugs in state.cjs:
 //
 // Bug A: cmdStateRecordMetric / cmdStateAddDecision return { recorded: false }
-//   with exit code 0 when their target section is absent. gsd-executor treats
+//   with exit code 0 when their target section is absent. fvgsd-executor treats
 //   exit 0 as success, silently losing metrics/decisions across an entire phase.
 //   Fix: auto-create the missing section (Bug B subsumes A — silent no-op
 //   disappears). When auto-created, JSON must include created: true.

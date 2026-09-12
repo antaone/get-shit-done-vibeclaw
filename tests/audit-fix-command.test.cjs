@@ -145,15 +145,15 @@ describe('AUDIT-FIX: workflow file', () => {
     assert.ok(content.includes('</success_criteria>'), 'must close <success_criteria> section');
   });
 
-  test('has <available_agent_types> listing gsd-executor', () => {
+  test('has <available_agent_types> listing fvgsd-executor', () => {
     const content = fs.readFileSync(wfPath, 'utf-8');
     assert.ok(
       content.includes('<available_agent_types>'),
       'must have <available_agent_types> section'
     );
     assert.ok(
-      content.includes('gsd-executor'),
-      'must list gsd-executor as available agent type'
+      content.includes('fvgsd-executor'),
+      'must list fvgsd-executor as available agent type'
     );
   });
 });

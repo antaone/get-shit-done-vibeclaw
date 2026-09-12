@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -13,7 +13,7 @@ const { auditWorkflowScriptPaths, AUDIT_FINDING } = require(
 );
 
 // auditWorkflowScriptPaths is a pure function: it walks workflowsDir,
-// extracts every ${GSD_HOME}/<path> script reference, and returns a
+// extracts every ${FVGSD_HOME}/<path> script reference, and returns a
 // structured report. Tests assert on the typed report — no regex on
 // console output.
 
@@ -22,7 +22,7 @@ const { auditWorkflowScriptPaths, AUDIT_FINDING } = require(
 // in before() but never used it, leaking each fixture's mkdtempSync dir.
 let tmpRoot;
 function fixtureRepo({ workflows, files }) {
-  // workflows: { 'foo.md': '...content with ${GSD_HOME}/...' }
+  // workflows: { 'foo.md': '...content with ${FVGSD_HOME}/...' }
   // files:     [ 'get-shit-done/bin/x.cjs', ... ]  — files to create in repo
   const repoRoot = fs.mkdtempSync(path.join(tmpRoot, 'repo-'));
   const workflowsDir = path.join(repoRoot, 'get-shit-done', 'workflows');
@@ -38,7 +38,7 @@ function fixtureRepo({ workflows, files }) {
   return { repoRoot, workflowsDir };
 }
 
-before(() => { tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2995-')); });
+before(() => { tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2995-')); });
 after(() => { fs.rmSync(tmpRoot, { recursive: true, force: true }); });
 
 describe('Bug #2995: post-install script-paths audit (#2995)', () => {
@@ -52,7 +52,7 @@ describe('Bug #2995: post-install script-paths audit (#2995)', () => {
   test('returns { ok: true, findings: [] } when workflow refs an existing, installed-path script', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'good.md': 'node "${GSD_HOME}/get-shit-done/bin/foo.cjs" --json\n',
+        'good.md': 'node "${FVGSD_HOME}/get-shit-done/bin/foo.cjs" --json\n',
       },
       files: ['get-shit-done/bin/foo.cjs'],
     });
@@ -71,7 +71,7 @@ describe('Bug #2995: detection paths', () => {
   test('reports MISSING_FROM_REPO when the referenced file does not exist in the repo', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'foo.md': 'node "${GSD_HOME}/get-shit-done/bin/typo.cjs" --json\n',
+        'foo.md': 'node "${FVGSD_HOME}/get-shit-done/bin/typo.cjs" --json\n',
       },
       files: [],
     });
@@ -92,7 +92,7 @@ describe('Bug #2995: detection paths', () => {
   test('reports NOT_INSTALLED when first path segment is outside installedPrefixes (the #2994 case)', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'foo.md': 'node "${GSD_HOME}/scripts/verify-reapply-patches.cjs"\n',
+        'foo.md': 'node "${FVGSD_HOME}/scripts/verify-reapply-patches.cjs"\n',
       },
       files: ['scripts/verify-reapply-patches.cjs'],  // file exists, but `scripts/` not in installed prefixes
     });
@@ -110,10 +110,10 @@ describe('Bug #2995: detection paths', () => {
     });
   });
 
-  test('handles ${GSD_HOME:-$HOME/.claude}/... default-fallback syntax', () => {
+  test('handles ${FVGSD_HOME:-$HOME/.claude}/... default-fallback syntax', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'a.md': 'node "${GSD_HOME:-$HOME/.claude}/get-shit-done/bin/x.cjs"\n',
+        'a.md': 'node "${FVGSD_HOME:-$HOME/.claude}/get-shit-done/bin/x.cjs"\n',
       },
       files: ['get-shit-done/bin/x.cjs'],
     });
@@ -129,9 +129,9 @@ describe('Bug #2995: detection paths', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
         'multi.md': [
-          'node "${GSD_HOME}/scripts/a.cjs"',
-          'node "${GSD_HOME}/get-shit-done/bin/b.cjs"',
-          'node "${GSD_HOME}/get-shit-done/bin/missing.cjs"',
+          'node "${FVGSD_HOME}/scripts/a.cjs"',
+          'node "${FVGSD_HOME}/get-shit-done/bin/b.cjs"',
+          'node "${FVGSD_HOME}/get-shit-done/bin/missing.cjs"',
         ].join('\n') + '\n',
       },
       files: ['scripts/a.cjs', 'get-shit-done/bin/b.cjs'],
@@ -147,7 +147,7 @@ describe('Bug #2995: detection paths', () => {
     assert.deepEqual(kinds, [AUDIT_FINDING.MISSING_FROM_REPO, AUDIT_FINDING.NOT_INSTALLED]);
   });
 
-  test('extracts no findings from a workflow without GSD_HOME script refs', () => {
+  test('extracts no findings from a workflow without FVGSD_HOME script refs', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
         'plain.md': '# A workflow\n\nSome prose, no script refs.\n',
@@ -212,7 +212,7 @@ describe('Bug #2995: real workflow audit', () => {
   test('a reference that is both not-installed AND missing-from-repo emits both findings (no short-circuit)', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'foo.md': '```bash\nnode "${GSD_HOME}/scripts/missing.cjs"\n```\n',
+        'foo.md': '```bash\nnode "${FVGSD_HOME}/scripts/missing.cjs"\n```\n',
       },
       // Note: scripts/missing.cjs intentionally NOT created in the repo.
     });

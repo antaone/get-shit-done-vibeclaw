@@ -19,8 +19,8 @@ Then verify each level against the actual codebase.
 </core_principle>
 
 <required_reading>
-@~/.claude/get-shit-done/references/verification-patterns.md
-@~/.claude/get-shit-done/templates/verification-report.md
+@~/.claude/fvgsd/references/verification-patterns.md
+@~/.claude/fvgsd/templates/verification-report.md
 </required_reading>
 
 <process>
@@ -29,7 +29,7 @@ Then verify each level against the actual codebase.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -37,14 +37,14 @@ Extract from init JSON: `phase_dir`, `phase_number`, `phase_name`, `has_plans`, 
 
 Then load phase details and list plans/summaries:
 ```bash
-gsd-sdk query roadmap.get-phase "${phase_number}"
+fvgsd-sdk query roadmap.get-phase "${phase_number}"
 grep -E "^| ${phase_number}" .planning/REQUIREMENTS.md 2>/dev/null || true
 ls "$phase_dir"/*-SUMMARY.md "$phase_dir"/*-PLAN.md 2>/dev/null || true
 ```
 
 Load full milestone phases for deferred-item filtering (Step 9b):
 ```bash
-gsd-sdk query roadmap.analyze
+fvgsd-sdk query roadmap.analyze
 ```
 
 Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **requirements** from REQUIREMENTS.md if it exists, and **all milestone phases** from roadmap analyze (for cross-referencing gaps against later phases).
@@ -53,11 +53,11 @@ Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **req
 <step name="establish_must_haves">
 **Option A: Must-haves in PLAN frontmatter**
 
-Use `gsd-sdk query` verify handlers (or legacy gsd-tools) to extract must_haves from each PLAN:
+Use `fvgsd-sdk query` verify handlers (or legacy fvgsd-tools) to extract must_haves from each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  MUST_HAVES=$(gsd-sdk query frontmatter.get "$plan" --field must_haves)
+  MUST_HAVES=$(fvgsd-sdk query frontmatter.get "$plan" --field must_haves)
   echo "=== $plan ===" && echo "$MUST_HAVES"
 done
 ```
@@ -71,7 +71,7 @@ Aggregate all must_haves across plans for phase-level verification.
 If no must_haves in frontmatter (MUST_HAVES returns error or empty), check for Success Criteria:
 
 ```bash
-PHASE_DATA=$(gsd-sdk query roadmap.get-phase "${phase_number}" --raw)
+PHASE_DATA=$(fvgsd-sdk query roadmap.get-phase "${phase_number}" --raw)
 ```
 
 Parse the `success_criteria` array from the JSON output. If non-empty:
@@ -103,11 +103,11 @@ For each truth: identify supporting artifacts → check artifact status → chec
 </step>
 
 <step name="verify_artifacts">
-Use `gsd-sdk query verify.artifacts` (or legacy gsd-tools) for artifact verification against must_haves in each PLAN:
+Use `fvgsd-sdk query verify.artifacts` (or legacy fvgsd-tools) for artifact verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  ARTIFACT_RESULT=$(gsd-sdk query verify.artifacts "$plan")
+  ARTIFACT_RESULT=$(fvgsd-sdk query verify.artifacts "$plan")
   echo "=== $plan ===" && echo "$ARTIFACT_RESULT"
 done
 ```
@@ -146,11 +146,11 @@ wiring or leftover code from plan revisions.
 </step>
 
 <step name="verify_wiring">
-Use `gsd-sdk query verify.key-links` (or legacy gsd-tools) for key link verification against must_haves in each PLAN:
+Use `fvgsd-sdk query verify.key-links` (or legacy fvgsd-tools) for key link verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
-  LINKS_RESULT=$(gsd-sdk query verify.key-links "$plan")
+  LINKS_RESULT=$(fvgsd-sdk query verify.key-links "$plan")
   echo "=== $plan ===" && echo "$LINKS_RESULT"
 done
 ```
@@ -205,7 +205,7 @@ phase.
 no `<decisions>` block.
 
 ```bash
-GATE_CFG=$(gsd-sdk query config-get workflow.context_coverage_gate 2>/dev/null || echo "true")
+GATE_CFG=$(fvgsd-sdk query config-get workflow.context_coverage_gate 2>/dev/null || echo "true")
 if [ "$GATE_CFG" != "false" ]; then
   # Discover the phase CONTEXT.md via glob expansion rather than `ls | head`
   # (review F17 / ShellCheck SC2012). Globs preserve filenames containing
@@ -214,7 +214,7 @@ if [ "$GATE_CFG" != "false" ]; then
   for f in "${PHASE_DIR}"/*-CONTEXT.md; do
     [ -e "$f" ] && CONTEXT_PATH="$f" && break
   done
-  DECISION_RESULT=$(gsd-sdk query check.decision-coverage-verify "${PHASE_DIR}" "${CONTEXT_PATH}")
+  DECISION_RESULT=$(fvgsd-sdk query check.decision-coverage-verify "${PHASE_DIR}" "${CONTEXT_PATH}")
 fi
 ```
 
@@ -249,7 +249,7 @@ inspecting static artifacts.
 
 ```bash
 # Resolve test command: project config > Makefile > language sniff
-TEST_CMD=$(gsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
+TEST_CMD=$(fvgsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
 if [ -z "$TEST_CMD" ]; then
   if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
     TEST_CMD="make test"
@@ -511,7 +511,7 @@ REPORT_PATH="$PHASE_DIR/${PHASE_NUM}-VERIFICATION.md"
 
 Fill template sections: frontmatter (phase/timestamp/status/score), goal achievement, artifact table, wiring table, requirements coverage, anti-patterns, human verification, gaps summary, fix plans (if gaps_found), metadata.
 
-See ~/.claude/get-shit-done/templates/verification-report.md for complete template.
+See ~/.claude/fvgsd/templates/verification-report.md for complete template.
 </step>
 
 <step name="return_to_orchestrator">

@@ -145,21 +145,21 @@ describe('bug #3126: runtime-homes getGlobalSkillDir', () => {
   test('cursor: <configDir>/skills/<skillName>', () => {
     withEnv('CURSOR_CONFIG_DIR', undefined, () => {
       assert.strictEqual(
-        getGlobalSkillDir('cursor', 'gsd-executor'),
-        path.join(os.homedir(), '.cursor', 'skills', 'gsd-executor'),
+        getGlobalSkillDir('cursor', 'fvgsd-executor'),
+        path.join(os.homedir(), '.cursor', 'skills', 'fvgsd-executor'),
       );
     });
   });
   test('hermes: <configDir>/skills/gsd/<skillName>', () => {
     withEnv('HERMES_HOME', undefined, () => {
       assert.strictEqual(
-        getGlobalSkillDir('hermes', 'gsd-executor'),
-        path.join(os.homedir(), '.hermes', 'skills', 'gsd', 'gsd-executor'),
+        getGlobalSkillDir('hermes', 'fvgsd-executor'),
+        path.join(os.homedir(), '.hermes', 'skills', 'gsd', 'fvgsd-executor'),
       );
     });
   });
   test('cline: returns null', () => {
-    assert.strictEqual(getGlobalSkillDir('cline', 'gsd-executor'), null);
+    assert.strictEqual(getGlobalSkillDir('cline', 'fvgsd-executor'), null);
   });
 });
 

@@ -6,7 +6,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before } = require('node:test');
 const assert = require('node:assert/strict');
@@ -31,28 +31,28 @@ describe('#1656: community .sh hooks must be present in hooks/dist', () => {
     });
   });
 
-  test('gsd-session-state.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-session-state.sh');
-    assert.ok(fs.existsSync(p), 'gsd-session-state.sh must be in hooks/dist/ so the installer can copy it');
+  test('fvgsd/session-state.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'fvgsd/session-state.sh');
+    assert.ok(fs.existsSync(p), 'fvgsd/session-state.sh must be in hooks/dist/ so the installer can copy it');
   });
 
-  test('gsd-validate-commit.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-validate-commit.sh');
-    assert.ok(fs.existsSync(p), 'gsd-validate-commit.sh must be in hooks/dist/ so the installer can copy it');
+  test('fvgsd/validate-commit.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'fvgsd/validate-commit.sh');
+    assert.ok(fs.existsSync(p), 'fvgsd/validate-commit.sh must be in hooks/dist/ so the installer can copy it');
   });
 
-  test('gsd-phase-boundary.sh exists in hooks/dist', () => {
-    const p = path.join(HOOKS_DIST, 'gsd-phase-boundary.sh');
-    assert.ok(fs.existsSync(p), 'gsd-phase-boundary.sh must be in hooks/dist/ so the installer can copy it');
+  test('fvgsd/phase-boundary.sh exists in hooks/dist', () => {
+    const p = path.join(HOOKS_DIST, 'fvgsd/phase-boundary.sh');
+    assert.ok(fs.existsSync(p), 'fvgsd/phase-boundary.sh must be in hooks/dist/ so the installer can copy it');
   });
 });
 
 // ─── #1657 ───────────────────────────────────────────────────────────────────
 //
 // Historical context: #1657 originally guarded against a broken `promptSdk()`
-// flow that shipped when `@gsd-build/sdk` did not yet exist on npm. The
+// flow that shipped when `@fvgsd/sdk` did not yet exist on npm. The
 // package was published at v0.1.0 and is now a hard runtime requirement for
-// every /gsd-* command (they all shell out to `gsd-sdk query …`).
+// every /gsd-* command (they all shell out to `fvgsd-sdk query …`).
 //
 // #2385 restored the `--sdk` flag and made SDK install the default path in
 // bin/install.js. These guards are inverted: we now assert that SDK install

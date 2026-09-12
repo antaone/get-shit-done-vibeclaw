@@ -1,5 +1,5 @@
 /**
- * Tests for gsd-statusline.js GSD state display helpers.
+ * Tests for fvgsd/statusline.js GSD state display helpers.
  *
  * Covers:
  * - parseStateMd across YAML-frontmatter, body-fallback, and partial formats
@@ -15,7 +15,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { parseStateMd, formatGsdState, readGsdState } = require('../hooks/gsd-statusline.js');
+const { parseStateMd, formatGsdState, readGsdState } = require('../hooks/fvgsd/statusline.js');
 
 // ─── parseStateMd ───────────────────────────────────────────────────────────
 
@@ -220,7 +220,7 @@ describe('formatGsdState', () => {
 // ─── readGsdState ───────────────────────────────────────────────────────────
 
 describe('readGsdState', () => {
-  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-statusline-test-'));
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-statusline-test-'));
 
   test('finds STATE.md in the starting directory', () => {
     const proj = fs.mkdtempSync(path.join(tmpRoot, 'proj-'));
@@ -275,7 +275,7 @@ describe('readGsdState', () => {
 
 describe('context meter respects CLAUDE_CODE_AUTO_COMPACT_WINDOW (#2219)', () => {
   const { execFileSync } = require('node:child_process');
-  const hookPath = path.join(__dirname, '..', 'hooks', 'gsd-statusline.js');
+  const hookPath = path.join(__dirname, '..', 'hooks', 'fvgsd/statusline.js');
 
   /**
    * Run the statusline hook with a synthetic context_window payload.
@@ -364,7 +364,7 @@ describe('context meter respects CLAUDE_CODE_AUTO_COMPACT_WINDOW (#2219)', () =>
 
   test('bridge used_pct is raw (CC-consistent) regardless of ACW setting (#2451)', () => {
     // Fix for #2451: bridge used_pct must be raw (100 - remaining), not normalized.
-    // This ensures gsd-context-monitor warning messages match CC native /context.
+    // This ensures fvgsd/context-monitor warning messages match CC native /context.
     // The ACW normalization only affects the statusline bar display, not the bridge.
     const { rawUsedPct } = runHook(50, 1_000_000, 400_000);
     assert.strictEqual(rawUsedPct, 50,

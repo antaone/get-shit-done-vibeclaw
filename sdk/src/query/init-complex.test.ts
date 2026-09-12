@@ -15,8 +15,8 @@ let tmpDir: string;
 let previousGsdAgentsDir: string | undefined;
 
 beforeEach(async () => {
-  previousGsdAgentsDir = process.env.GSD_AGENTS_DIR;
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-init-complex-'));
+  previousGsdAgentsDir = process.env.FVGSD_AGENTS_DIR;
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-init-complex-'));
 
   // Create minimal .planning structure
   await mkdir(join(tmpDir, '.planning', 'phases', '09-foundation'), { recursive: true });
@@ -85,8 +85,8 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  if (previousGsdAgentsDir === undefined) delete process.env.GSD_AGENTS_DIR;
-  else process.env.GSD_AGENTS_DIR = previousGsdAgentsDir;
+  if (previousGsdAgentsDir === undefined) delete process.env.FVGSD_AGENTS_DIR;
+  else process.env.FVGSD_AGENTS_DIR = previousGsdAgentsDir;
   await rm(tmpDir, { recursive: true, force: true });
 });
 
@@ -127,12 +127,12 @@ describe('initNewProject', () => {
   it('separates required agent registration from skill payload availability (#3388)', async () => {
     const emptyAgentsDir = join(tmpDir, 'empty-agents');
     await mkdir(emptyAgentsDir, { recursive: true });
-    process.env.GSD_AGENTS_DIR = emptyAgentsDir;
+    process.env.FVGSD_AGENTS_DIR = emptyAgentsDir;
 
     const requiredAgents = [
-      'gsd-project-researcher',
-      'gsd-research-synthesizer',
-      'gsd-roadmapper',
+      'fvgsd-project-researcher',
+      'fvgsd-research-synthesizer',
+      'fvgsd-roadmapper',
     ];
     for (const agent of requiredAgents) {
       await mkdir(join(tmpDir, '.claude', 'skills', agent), { recursive: true });
@@ -142,9 +142,9 @@ describe('initNewProject', () => {
       model_profile: 'balanced',
       commit_docs: false,
       agent_skills: {
-        'gsd-project-researcher': ['.claude/skills/gsd-project-researcher'],
-        'gsd-research-synthesizer': ['.claude/skills/gsd-research-synthesizer'],
-        'gsd-roadmapper': ['.claude/skills/gsd-roadmapper'],
+        'fvgsd-project-researcher': ['.claude/skills/fvgsd-project-researcher'],
+        'fvgsd-research-synthesizer': ['.claude/skills/fvgsd-research-synthesizer'],
+        'fvgsd-roadmapper': ['.claude/skills/fvgsd-roadmapper'],
       },
       workflow: { research: true, plan_check: true, verifier: true, nyquist_validation: true },
     }));
@@ -244,7 +244,7 @@ describe('initProgress', () => {
   // ── #2646: ROADMAP checkbox fallback when no phases/ directory ─────────
   it('derives completed_count from ROADMAP [x] checkboxes when phases/ is absent', async () => {
     // Fresh fixture: NO phases/ directory at all, checkbox-driven ROADMAP.
-    const tmp = await mkdtemp(join(tmpdir(), 'gsd-init-complex-2646-'));
+    const tmp = await mkdtemp(join(tmpdir(), 'fvgsd-init-complex-2646-'));
     try {
       await mkdir(join(tmp, '.planning'), { recursive: true });
       await writeFile(join(tmp, '.planning', 'config.json'), JSON.stringify({
@@ -297,7 +297,7 @@ describe('initProgress', () => {
   });
 
   it('treats terminal heading labels as complete when selecting next_phase (#3472)', async () => {
-    const tmp = await mkdtemp(join(tmpdir(), 'gsd-init-complex-3472-'));
+    const tmp = await mkdtemp(join(tmpdir(), 'fvgsd-init-complex-3472-'));
     try {
       await mkdir(join(tmp, '.planning'), { recursive: true });
       await writeFile(join(tmp, '.planning', 'config.json'), JSON.stringify({
@@ -546,7 +546,7 @@ const WORKSTREAM_ROADMAP = [
 
 describe('initProgress workstream (#2731)', () => {
   it('scans phases from workstream subdirectory, not root', async () => {
-    const tmp = await mkdtemp(join(tmpdir(), 'gsd-ws-progress-'));
+    const tmp = await mkdtemp(join(tmpdir(), 'fvgsd-ws-progress-'));
     try {
       const wsBase = join(tmp, '.planning', 'workstreams', 'production-support');
 
@@ -584,7 +584,7 @@ describe('initProgress workstream (#2731)', () => {
 
 describe('initManager workstream (#2731)', () => {
   it('reads ROADMAP.md from workstream subdirectory, not root', async () => {
-    const tmp = await mkdtemp(join(tmpdir(), 'gsd-ws-manager-'));
+    const tmp = await mkdtemp(join(tmpdir(), 'fvgsd-ws-manager-'));
     try {
       const wsBase = join(tmp, '.planning', 'workstreams', 'production-support');
 
@@ -685,7 +685,7 @@ describe('initProgress + initManager precedence (#2674)', () => {
   let precedenceDir: string;
 
   beforeEach(async () => {
-    precedenceDir = await mkdtemp(join(tmpdir(), 'gsd-2674-'));
+    precedenceDir = await mkdtemp(join(tmpdir(), 'fvgsd-2674-'));
     await mkdir(join(precedenceDir, '.planning', 'phases'), { recursive: true });
     await writeFile(join(precedenceDir, '.planning', 'config.json'), PRECEDENCE_CONFIG);
     await writeFile(join(precedenceDir, '.planning', 'STATE.md'), PRECEDENCE_STATE);

@@ -1,14 +1,14 @@
 # Debug Workflow
 
-Invoked by `/vgsd:debug` (`commands/gsd/debug.md`).
+Invoked by `/fvgsd:debug` (`commands/gsd/debug.md`).
 
 Systematic debugging using the scientific method with subagent isolation.
-Orchestrates symptom gathering, session creation, and delegation to `gsd-debug-session-manager`.
+Orchestrates symptom gathering, session creation, and delegation to `fvgsd-debug-session-manager`.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
-- gsd-debugger — investigates bugs using scientific method
+- fvgsd-debug-session-manager — manages debug checkpoint/continuation loop in isolated context
+- fvgsd-debugger — investigates bugs using scientific method
 </available_agent_types>
 
 <process>
@@ -16,18 +16,18 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ## 0. Initialize Context
 
 ```bash
-INIT=$(gsd-sdk query state.load)
+INIT=$(fvgsd-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Extract `commit_docs` from init JSON. Resolve debugger model:
 ```bash
-debugger_model=$(gsd-sdk query resolve-model gsd-debugger 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+debugger_model=$(fvgsd-sdk query resolve-model fvgsd-debugger 2>/dev/null | jq -r '.model' 2>/dev/null || true)
 ```
 
 Read TDD mode from config:
 ```bash
-TDD_MODE=$(gsd-sdk query config-get workflow.tdd_mode 2>/dev/null | jq -r 'if type == "boolean" then tostring else . end' 2>/dev/null || echo "false")
+TDD_MODE=$(fvgsd-sdk query config-get workflow.tdd_mode 2>/dev/null | jq -r 'if type == "boolean" then tostring else . end' 2>/dev/null || echo "false")
 ```
 
 ## 1a. LIST subcommand
@@ -52,11 +52,11 @@ Active Debug Sessions
      hypothesis: Missing null check on req.body.user
      next: Verify fix passes regression test
 ─────────────────────────────────────────────
-Run `/vgsd:debug continue <slug>` to resume a session.
-No sessions? `/vgsd:debug <description>` to start.
+Run `/fvgsd:debug continue <slug>` to resume a session.
+No sessions? `/fvgsd:debug <description>` to start.
 ```
 
-If no files exist or the glob returns nothing: print "No active debug sessions. Run `/vgsd:debug <issue description>` to start one."
+If no files exist or the glob returns nothing: print "No active debug sessions. Run `/fvgsd:debug <issue description>` to start one."
 
 STOP after displaying list. Do NOT proceed to further steps.
 
@@ -83,9 +83,9 @@ No agent spawn. Just information display. STOP after printing.
 
 When SUBCMD=continue and SLUG is set:
 
-**Sanitize SLUG first:** strip whitespace, reject unless it matches `^[a-z0-9][a-z0-9-]*$`, enforce max 30 chars, reject any `..`, `/`, or `\`. If invalid, print "No active debug session found with slug: {SLUG}. Check `/vgsd:debug list` for active sessions." and stop.
+**Sanitize SLUG first:** strip whitespace, reject unless it matches `^[a-z0-9][a-z0-9-]*$`, enforce max 30 chars, reject any `..`, `/`, or `\`. If invalid, print "No active debug session found with slug: {SLUG}. Check `/fvgsd:debug list` for active sessions." and stop.
 
-Check `.planning/debug/{SLUG}.md` exists. If not, print "No active debug session found with slug: {SLUG}. Check `/vgsd:debug list` for active sessions." and stop.
+Check `.planning/debug/{SLUG}.md` exists. If not, print "No active debug session found with slug: {SLUG}. Check `/fvgsd:debug list` for active sessions." and stop.
 
 Read file and print Current Focus block to console:
 
@@ -128,7 +128,7 @@ goal: find_and_fix
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="fvgsd-debug-session-manager",
   model="{debugger_model}",
   description="Continue debug session {SLUG}"
 )
@@ -185,9 +185,9 @@ Create `.planning/debug/{slug}.md` with initial state using the Write tool (neve
 - symptoms: all gathered values from Step 2
 - Current Focus: next_action = "gather initial evidence"
 
-## 4. Session Management (delegated to gsd-debug-session-manager)
+## 4. Session Management (delegated to fvgsd-debug-session-manager)
 
-After initial context setup, spawn the session manager to handle the full checkpoint/continuation loop. The session manager handles specialist_hint dispatch internally: when gsd-debugger returns ROOT CAUSE FOUND it extracts the specialist_hint field and invokes the matching skill (e.g. typescript-expert, swift-concurrency) before offering fix options.
+After initial context setup, spawn the session manager to handle the full checkpoint/continuation loop. The session manager handles specialist_hint dispatch internally: when fvgsd-debugger returns ROOT CAUSE FOUND it extracts the specialist_hint field and invokes the matching skill (e.g. typescript-expert, swift-concurrency) before offering fix options.
 
 ```
 Agent(
@@ -206,7 +206,7 @@ goal: {if diagnose_only: "find_root_cause_only", else: "find_and_fix"}
 specialist_dispatch_enabled: true
 </session_params>
 """,
-  subagent_type="gsd-debug-session-manager",
+  subagent_type="fvgsd-debug-session-manager",
   model="{debugger_model}",
   description="Debug session {slug}"
 )
@@ -215,7 +215,7 @@ specialist_dispatch_enabled: true
 Display the compact summary returned by the session manager.
 
 If summary shows `DEBUG SESSION COMPLETE`: done.
-If summary shows `ABANDONED`: note session saved at `.planning/debug/{slug}.md` for later `/vgsd:debug continue {slug}`.
+If summary shows `ABANDONED`: note session saved at `.planning/debug/{slug}.md` for later `/fvgsd:debug continue {slug}`.
 
 </process>
 
@@ -225,7 +225,7 @@ If summary shows `ABANDONED`: note session saved at `.planning/debug/{slug}.md` 
 - [ ] Current Focus (hypothesis + next_action) surfaced before session manager spawn
 - [ ] Symptoms gathered (if new session)
 - [ ] Debug session file created with initial state before delegating
-- [ ] gsd-debug-session-manager spawned with security-hardened session_params
+- [ ] fvgsd-debug-session-manager spawned with security-hardened session_params
 - [ ] Session manager handles full checkpoint/continuation loop in isolated context
 - [ ] Compact summary displayed to user after session manager returns
 </success_criteria>

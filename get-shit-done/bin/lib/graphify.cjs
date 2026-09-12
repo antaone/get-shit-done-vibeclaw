@@ -31,7 +31,7 @@ function isGraphifyEnabled(planningDir) {
  * @returns {{ disabled: true, message: string }}
  */
 function disabledResponse() {
-  return { disabled: true, message: 'graphify is not enabled. Enable with: gsd-tools config-set graphify.enabled true' };
+  return { disabled: true, message: 'graphify is not enabled. Enable with: fvgsd-tools config-set graphify.enabled true' };
 }
 
 // ─── Subprocess Helper ───────────────────────────────────────────────────────
@@ -412,10 +412,10 @@ function graphifyStatus(cwd) {
   }
 
   // Auto-update status (#3347). Read .last-build-status.json written by the
-  // hooks/gsd-graphify-update.sh PostToolUse hook (opt-in via graphify.auto_update,
+  // hooks/fvgsd/graphify-update.sh PostToolUse hook (opt-in via graphify.auto_update,
   // default false). When the most recent auto-build is "failed" or still "running",
-  // fold that into the existing `stale: true` signal so consumers (gsd-planner,
-  // gsd-phase-researcher) surface the standard "treat semantic relationships as
+  // fold that into the existing `stale: true` signal so consumers (fvgsd-planner,
+  // fvgsd-phase-researcher) surface the standard "treat semantic relationships as
   // approximate" annotation without per-consumer prompt changes. The full state
   // (running/failed/exit_code/duration_ms/head_at_build) is exposed under
   // `last_build` for callers that want richer context.

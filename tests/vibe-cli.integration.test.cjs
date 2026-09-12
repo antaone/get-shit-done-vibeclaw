@@ -86,7 +86,7 @@ describe('vibe CLI machine-readable surface', () => {
       'entry', 'prepare', 'debug', '--id', 'debug-cli', '--tool', 'codex',
     ]));
     assert.equal(debug.workflow, 'debug-workflow');
-    assert.equal(debug.candidates[0].invocation, '$vgsd-debug');
+    assert.equal(debug.candidates[0].invocation, '$fvgsd-debug');
   });
 
   test('previews and migrates brownfield planning commands for the selected runtime', () => {
@@ -108,7 +108,7 @@ describe('vibe CLI machine-readable surface', () => {
       'entry', 'migrate', 'plan-phase', '--runtime', 'gemini',
     ]));
     assert.equal(migrated.migrated, true);
-    assert.equal(migrated.affected_files[0].references[0].replacement, '/vgsd:plan-phase');
-    assert.match(fs.readFileSync(statePath, 'utf8'), /\/vgsd:plan-phase/);
+    assert.equal(migrated.affected_files[0].references[0].replacement, '/fvgsd:plan-phase');
+    assert.match(fs.readFileSync(statePath, 'utf8'), /\/fvgsd:plan-phase/);
   });
 });

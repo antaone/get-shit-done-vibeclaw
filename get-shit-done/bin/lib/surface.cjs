@@ -2,9 +2,9 @@
 /**
  * Runtime surface module — ADR-0011 Phase 2 (Option B).
  *
- * Manages the runtime enable/disable surface state (the `.vgsd-surface.json` marker in
+ * Manages the runtime enable/disable surface state (the `.fvgsd-surface.json` marker in
  * each runtime's config dir root (e.g., ~/.claude)) independently of the install-time profile marker
- * (`.gsd-profile`). Runtime config locations are resolved by callers.
+ * (`.fvgsd-profile`). Runtime config locations are resolved by callers.
  *
  * Effective skill set = base profile ∪ explicitAdds − disabledClusters − explicitRemoves,
  * then transitively closed via the manifest.
@@ -34,7 +34,7 @@ const {
 const { CLUSTERS, allClusteredSkills } = require('./clusters.cjs');
 const { findInstallSourceRoot } = require('./runtime-artifact-layout.cjs');
 
-const SURFACE_FILE_NAME = '.vgsd-surface.json';
+const SURFACE_FILE_NAME = '.fvgsd-surface.json';
 
 // ---------------------------------------------------------------------------
 // State IO
@@ -127,7 +127,7 @@ function resolveSurface(runtimeConfigDir, manifest, clusterMap) {
   const cm = clusterMap || CLUSTERS;
   const surface = readSurface(runtimeConfigDir);
 
-  // Determine base profile name: from surface state or from .gsd-profile marker
+  // Determine base profile name: from surface state or from .fvgsd-profile marker
   const baseProfileName = (surface && surface.baseProfile)
     ? surface.baseProfile
     : (readActiveProfile(runtimeConfigDir) || 'full');
@@ -225,7 +225,7 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
  * are always preserved.
  *
  * Ownership criteria:
- *   - Non-empty prefix (e.g. 'gsd-'): dir name starts with that prefix AND
+ *   - Non-empty prefix (e.g. 'fvgsd-'): dir name starts with that prefix AND
  *     appears in the manifest (manifest membership is required). Dirs that match
  *     the prefix but are NOT in the manifest are treated as user-owned and
  *     preserved — this prevents data loss for user-created gsd-* directories.
@@ -239,8 +239,8 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
  * (surface apply) and callers that need stand-alone pruning use this function.
  *
  * @param {string} skillsDir        directory that contains the gsd-STEM sub-dirs
- * @param {Set<string>} retainedNames set of directory names to keep (e.g. 'vgsd-help')
- * @param {string} prefix           GSD dir prefix, e.g. 'gsd-' (or '' for Hermes)
+ * @param {Set<string>} retainedNames set of directory names to keep (e.g. 'fvgsd-help')
+ * @param {string} prefix           GSD dir prefix, e.g. 'fvgsd-' (or '' for Hermes)
  * @param {Map<string, string[]>} [manifest] optional; required for Hermes empty-prefix case
  *                                  and for manifest-membership gate in prefixed case.
  *                                  Must be a Map; any other type is treated as missing.
@@ -304,7 +304,7 @@ function pruneSkillDirs(skillsDir, retainedNames, prefix, manifest) {
  * Sync destination directory from staged source.
  *
  * For 'commands' kind: iterate *.md files in destDir, remove if not in staged set.
- * For 'agents' kind: same, but only remove files starting with 'gsd-' prefix.
+ * For 'agents' kind: same, but only remove files starting with 'fvgsd-' prefix.
  * For 'skills' kind: iterate directories in destDir matching kind.prefix; add missing
  *   by copying recursively; remove dirs not in staged set. Preserves dirs not matching
  *   the prefix (user-owned skills). Pruning is delegated to pruneSkillDirs().
@@ -324,7 +324,7 @@ function _syncGsdDir(stagedDir, destDir, kind, manifest) {
 
   // Normalize: allow legacy string context for backward-compat with internal callers
   const kindName = (typeof kind === 'string') ? kind : kind.kind;
-  const kindPrefix = (typeof kind === 'object' && kind !== null) ? kind.prefix : 'gsd-';
+  const kindPrefix = (typeof kind === 'object' && kind !== null) ? kind.prefix : 'fvgsd-';
 
   if (kindName === 'skills') {
     // Skills kind: work with directories, not files.
@@ -360,7 +360,7 @@ function _syncGsdDir(stagedDir, destDir, kind, manifest) {
     // For agents dir: only gsd-* files
     const destEntries = fs.readdirSync(destDir).filter(f => f.endsWith('.md'));
     for (const file of destEntries) {
-      if (kindName === 'agents' && !file.startsWith('gsd-')) continue;
+      if (kindName === 'agents' && !file.startsWith('fvgsd-')) continue;
       if (!stagedFiles.has(file)) {
         try { fs.unlinkSync(path.join(destDir, file)); } catch {}
       }

@@ -1,15 +1,15 @@
 /**
  * Regression test for bug #3359.
  *
- * `npx get-shit-done-cc@latest` can refresh runtime files while an older
- * global `gsd-sdk` earlier on PATH remains the executable workflows call.
- * The installer must not report SDK readiness when the resolved `gsd-sdk`
+ * `npx fvgsd@latest` can refresh runtime files while an older
+ * global `fvgsd-sdk` earlier on PATH remains the executable workflows call.
+ * The installer must not report SDK readiness when the resolved `fvgsd-sdk`
  * version differs from the package/runtime version being installed.
  */
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -23,8 +23,8 @@ const { createTempDir, cleanup, captureConsole } = require('./helpers.cjs');
 
 const isWindows = process.platform === 'win32';
 
-describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
-  { skip: isWindows ? 'POSIX-only: stages bare gsd-sdk shebang shims in a PATH dir; Windows uses .cmd + PATHEXT resolution' : false },
+describe('bug #3359: installer detects stale fvgsd-sdk earlier on PATH',
+  { skip: isWindows ? 'POSIX-only: stages bare fvgsd-sdk shebang shims in a PATH dir; Windows uses .cmd + PATHEXT resolution' : false },
   () => {
   let tmpRoot;
   let sdkDir;
@@ -33,7 +33,7 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
   let savedEnv;
 
   beforeEach(() => {
-    tmpRoot = createTempDir('gsd-3359-');
+    tmpRoot = createTempDir('fvgsd-3359-');
     sdkDir = path.join(tmpRoot, 'sdk');
     pathDir = path.join(tmpRoot, 'global-bin');
     homeDir = path.join(tmpRoot, 'home');
@@ -65,11 +65,11 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
     cleanup(tmpRoot);
   });
 
-	  test('does not print ready when resolved gsd-sdk version differs from installer package version', () => {
-    const staleSdk = path.join(pathDir, 'gsd-sdk');
+	  test('does not print ready when resolved fvgsd-sdk version differs from installer package version', () => {
+    const staleSdk = path.join(pathDir, 'fvgsd-sdk');
     fs.writeFileSync(
       staleSdk,
-      '#!/bin/sh\nprintf "%s\\n" "gsd-sdk v0.0.1"\n',
+      '#!/bin/sh\nprintf "%s\\n" "fvgsd-sdk v0.0.1"\n',
       { mode: 0o755 },
     );
 
@@ -80,31 +80,31 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
 
     assert.ok(
       /version mismatch|different version|stale/i.test(combined),
-      `installer must warn that resolved gsd-sdk is stale. Output:\n${combined}`,
+      `installer must warn that resolved fvgsd-sdk is stale. Output:\n${combined}`,
     );
     assert.ok(
       combined.includes(staleSdk),
-      `warning must include resolved gsd-sdk path. Output:\n${combined}`,
+      `warning must include resolved fvgsd-sdk path. Output:\n${combined}`,
     );
     assert.ok(
       combined.includes('0.0.1') && combined.includes(pkg.version),
       `warning must include detected and installer versions. Output:\n${combined}`,
     );
     assert.ok(
-      /npm install -g get-shit-done-cc@latest/.test(combined),
+      /npm install -g fvgsd@latest/.test(combined),
       `warning must include global update remediation. Output:\n${combined}`,
     );
     assert.ok(
       !/GSD SDK ready/.test(combined),
-      `installer must not report ready while PATH resolves a stale gsd-sdk. Output:\n${combined}`,
+      `installer must not report ready while PATH resolves a stale fvgsd-sdk. Output:\n${combined}`,
     );
 	  });
 
-	  test('prints ready when no stale gsd-sdk is on PATH', () => {
-	    const currentSdk = path.join(pathDir, 'gsd-sdk');
+	  test('prints ready when no stale fvgsd-sdk is on PATH', () => {
+	    const currentSdk = path.join(pathDir, 'fvgsd-sdk');
 	    fs.writeFileSync(
 	      currentSdk,
-	      `#!/bin/sh\nprintf "%s\\n" "gsd-sdk v${pkg.version}"\n`,
+	      `#!/bin/sh\nprintf "%s\\n" "fvgsd-sdk v${pkg.version}"\n`,
 	      { mode: 0o755 },
 	    );
 
@@ -115,7 +115,7 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
 
 	    assert.ok(
 	      /GSD SDK ready/.test(combined),
-	      `installer must report ready when no stale gsd-sdk exists. Output:\n${combined}`,
+	      `installer must report ready when no stale fvgsd-sdk exists. Output:\n${combined}`,
 	    );
 	  });
 
@@ -125,12 +125,12 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
 	    const calls = [];
 	    cp.spawnSync = (command, args, options) => {
 	      calls.push({ command, args, options });
-	      return { status: 0, stdout: `gsd-sdk v${pkg.version}\n`, stderr: '' };
+	      return { status: 0, stdout: `fvgsd-sdk v${pkg.version}\n`, stderr: '' };
 	    };
 	    Object.defineProperty(process, 'platform', { value: 'win32' });
 
 	    try {
-	      assert.equal(readGsdSdkVersion('C:\\tools\\gsd-sdk.cmd'), pkg.version);
+	      assert.equal(readGsdSdkVersion('C:\\tools\\fvgsd-sdk.cmd'), pkg.version);
 	    } finally {
 	      cp.spawnSync = originalSpawnSync;
 	      Object.defineProperty(process, 'platform', platformDescriptor);
@@ -138,7 +138,7 @@ describe('bug #3359: installer detects stale gsd-sdk earlier on PATH',
 
 	    assert.deepEqual(calls.map(({ command, args }) => ({ command, args })), [{
 	      command: 'cmd.exe',
-	      args: ['/c', 'C:\\tools\\gsd-sdk.cmd', '--version'],
+	      args: ['/c', 'C:\\tools\\fvgsd-sdk.cmd', '--version'],
 	    }]);
 	    assert.equal(calls[0].options.encoding, 'utf8');
 	    assert.equal(calls[0].options.timeout, 2000);

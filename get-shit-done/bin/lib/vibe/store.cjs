@@ -8,7 +8,7 @@ const { execGit } = require('../shell-command-projection.cjs');
 const { parseYaml, stringifyYaml } = require('./yaml.cjs');
 const { VibeError, invariant } = require('./errors.cjs');
 
-const STATE_DIR = '.planning-vibe';
+const STATE_DIR = '.planning-fvgsd-vibe';
 const STORE_DIRS = ['routes', 'workflows', 'runs', 'candidates', 'promotions', 'history', 'locks', 'state'];
 const heldLocks = new Set();
 

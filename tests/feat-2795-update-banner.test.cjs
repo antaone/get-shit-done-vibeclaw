@@ -1,8 +1,8 @@
 /**
- * Tests for gsd-update-banner.js (#2795).
+ * Tests for fvgsd/update-banner.js (#2795).
  *
  * The banner hook is an opt-in SessionStart consumer of the update cache that
- * gsd-check-update-worker.js writes. When a user declines GSD's statusline,
+ * fvgsd/check-update-worker.js writes. When a user declines GSD's statusline,
  * install.js may register this hook so update availability still surfaces in
  * runtimes that use a non-GSD statusline.
  *
@@ -20,12 +20,12 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
-const HOOK_PATH = path.join(__dirname, '..', 'hooks', 'gsd-update-banner.js');
+const HOOK_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/update-banner.js');
 const {
   buildBannerOutput,
   shouldSuppressFailureWarning,
   RATE_LIMIT_SECONDS,
-} = require('../hooks/gsd-update-banner.js');
+} = require('../hooks/fvgsd/update-banner.js');
 
 // ─── Pure function: buildBannerOutput ───────────────────────────────────────
 
@@ -111,7 +111,7 @@ describe('buildBannerOutput', () => {
 
 describe('shouldSuppressFailureWarning', () => {
   function tmpDir() {
-    return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-banner-supp-'));
+    return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-banner-supp-'));
   }
 
   test('returns false when sentinel file is missing', () => {
@@ -166,9 +166,9 @@ describe('shouldSuppressFailureWarning', () => {
 
 // ─── End-to-end: spawn the hook against fixture cache states ────────────────
 
-describe('gsd-update-banner.js end-to-end', () => {
+describe('fvgsd/update-banner.js end-to-end', () => {
   function setupHome() {
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-banner-home-'));
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-banner-home-'));
     fs.mkdirSync(path.join(home, '.cache', 'gsd'), { recursive: true });
     return home;
   }
@@ -182,7 +182,7 @@ describe('gsd-update-banner.js end-to-end', () => {
 
   function writeCache(home, contents) {
     fs.writeFileSync(
-      path.join(home, '.cache', 'gsd', 'gsd-update-check.json'),
+      path.join(home, '.cache', 'gsd', 'fvgsd-update-check.json'),
       typeof contents === 'string' ? contents : JSON.stringify(contents)
     );
   }
@@ -291,12 +291,12 @@ describe('gsd-update-banner.js end-to-end', () => {
 
 // ─── Install.js wiring: prompt + SessionStart entry registration ────────────
 //
-// These tests load bin/install.js as a module via GSD_TEST_MODE and assert on
+// These tests load bin/install.js as a module via FVGSD_TEST_MODE and assert on
 // pure exported helpers. The shape mirrors how runtime-prompt-builder /
 // statusline tests interact with install.js.
 
 describe('install.js update-banner wiring', () => {
-  process.env.GSD_TEST_MODE = '1';
+  process.env.FVGSD_TEST_MODE = '1';
   // Re-require fresh so test-mode exports are populated.
   const installPath = path.join(__dirname, '..', 'bin', 'install.js');
   delete require.cache[installPath];
@@ -342,14 +342,14 @@ describe('install.js update-banner wiring', () => {
   test('buildUpdateBannerHookEntry produces a SessionStart hook entry', () => {
     assert.equal(typeof installExports.buildUpdateBannerHookEntry, 'function');
     const entry = installExports.buildUpdateBannerHookEntry(
-      '"/usr/local/bin/node" "/home/u/.claude/hooks/gsd-update-banner.js"'
+      '"/usr/local/bin/node" "/home/u/.claude/hooks/fvgsd/update-banner.js"'
     );
     assert.ok(entry, 'expected hook entry object');
     assert.ok(Array.isArray(entry.hooks), 'entry.hooks must be an array');
     assert.equal(entry.hooks.length, 1);
     assert.equal(entry.hooks[0].type, 'command');
     assert.ok(
-      entry.hooks[0].command.includes('gsd-update-banner.js'),
+      entry.hooks[0].command.includes('fvgsd/update-banner.js'),
       'command must reference the banner hook'
     );
   });

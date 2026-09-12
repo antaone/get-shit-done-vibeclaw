@@ -120,7 +120,7 @@
   - [Autonomous Audit-to-Fix](#98-autonomous-audit-to-fix)
   - [Improved Prompt Injection Scanner](#99-improved-prompt-injection-scanner)
   - [Stall Detection in Plan-Phase](#100-stall-detection-in-plan-phase)
-  - [Hard Stop Safety Gates in /vgsd-progress --next](#101-hard-stop-safety-gates-in-gsd-progress---next)
+  - [Hard Stop Safety Gates in /fvgsd-progress --next](#101-hard-stop-safety-gates-in-gsd-progress---next)
   - [Adaptive Model Preset](#102-adaptive-model-preset)
   - [Post-Merge Hunk Verification](#103-post-merge-hunk-verification)
 - [v1.35.0 Features](#v1350-features)
@@ -175,7 +175,7 @@
 
 ### 1. Project Initialization
 
-**Command:** `/vgsd-new-project [--auto @file.md]`
+**Command:** `/fvgsd-new-project [--auto @file.md]`
 
 **Purpose:** Transform a user's idea into a fully structured project with research, scoped requirements, and a phased roadmap.
 
@@ -214,13 +214,13 @@
 - Research agents have web search capability for current ecosystem information
 - Granularity setting controls phase count: `coarse` (3-5), `standard` (5-8), `fine` (8-12)
 - `--auto` mode extracts all information from the provided document without interactive questioning
-- Existing codebase context (from `/vgsd-map-codebase`) is loaded if present
+- Existing codebase context (from `/fvgsd-map-codebase`) is loaded if present
 
 ---
 
 ### 2. Phase Discussion
 
-**Command:** `/vgsd-discuss-phase [N] [--auto] [--batch]`
+**Command:** `/fvgsd-discuss-phase [N] [--auto] [--batch]`
 
 **Purpose:** Capture user's implementation preferences and decisions before research and planning begin. Eliminates the gray areas that cause AI to guess.
 
@@ -249,7 +249,7 @@
 
 ### 3. UI Design Contract
 
-**Command:** `/vgsd-ui-phase [N]`
+**Command:** `/fvgsd-ui-phase [N]`
 
 **Purpose:** Lock design decisions before planning so that all components in a phase share consistent visual standards.
 
@@ -281,7 +281,7 @@
 
 ### 4. Phase Planning
 
-**Command:** `/vgsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
+**Command:** `/fvgsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
 
 **Purpose:** Research the implementation domain and produce verified, atomic execution plans.
 
@@ -292,7 +292,7 @@
 - REQ-PLAN-04: System MUST include `read_first` and `acceptance_criteria` sections in every plan
 - REQ-PLAN-05: System MUST run plan checker verification loop (up to 3 iterations) unless `--skip-verify` is set
 - REQ-PLAN-06: System MUST support `--skip-research` flag to bypass research phase
-- REQ-PLAN-07: System MUST prompt user to run `/vgsd-ui-phase` if frontend phase detected and no UI-SPEC.md exists (UI safety gate)
+- REQ-PLAN-07: System MUST prompt user to run `/fvgsd-ui-phase` if frontend phase detected and no UI-SPEC.md exists (UI safety gate)
 - REQ-PLAN-08: System MUST include Nyquist validation mapping when `workflow.nyquist_validation` is enabled
 - REQ-PLAN-09: System MUST verify all phase requirements are covered by at least one plan before planning completes (requirements coverage gate)
 
@@ -331,7 +331,7 @@
 
 ### 5. Phase Execution
 
-**Command:** `/vgsd-execute-phase <N>`
+**Command:** `/fvgsd-execute-phase <N>`
 
 **Purpose:** Execute all plans in a phase using wave-based parallelization with fresh context windows per executor.
 
@@ -375,7 +375,7 @@
 
 ### 6. Work Verification
 
-**Command:** `/vgsd-verify-work [N]`
+**Command:** `/fvgsd-verify-work [N]`
 
 **Purpose:** User acceptance testing — walk the user through testing each deliverable and auto-diagnose failures.
 
@@ -393,7 +393,7 @@
 
 ### 6.5. Ship
 
-**Command:** `/vgsd-ship [N] [--draft]`
+**Command:** `/fvgsd-ship [N] [--draft]`
 
 **Purpose:** Bridge local completion → merged PR. After verification passes, push branch, create PR with auto-generated body from planning artifacts, optionally trigger review, and track in STATE.md.
 
@@ -415,7 +415,7 @@
 
 ### 7. UI Review
 
-**Command:** `/vgsd-ui-review [N]`
+**Command:** `/fvgsd-ui-review [N]`
 
 **Purpose:** Retroactive 6-pillar visual audit of implemented frontend code. Works standalone on any project.
 
@@ -440,7 +440,7 @@
 
 ### 8. Milestone Management
 
-**Commands:** `/vgsd-audit-milestone`, `/vgsd-complete-milestone`, `/vgsd-new-milestone [name]`
+**Commands:** `/fvgsd-audit-milestone`, `/fvgsd-complete-milestone`, `/fvgsd-new-milestone [name]`
 
 **Purpose:** Verify milestone completion, archive, tag release, and start the next development cycle.
 
@@ -462,7 +462,7 @@
 
 ### 9. Phase Management
 
-**Commands:** `/vgsd-phase`, `/vgsd-phase --insert [N]`, `/vgsd-phase --remove [N]`
+**Commands:** `/fvgsd-phase`, `/fvgsd-phase --insert [N]`, `/fvgsd-phase --remove [N]`
 
 **Purpose:** Dynamic roadmap modification during development.
 
@@ -477,7 +477,7 @@
 
 ### 10. Quick Mode
 
-**Command:** `/vgsd-quick [--full] [--discuss] [--research]`
+**Command:** `/fvgsd-quick [--full] [--discuss] [--research]`
 
 **Purpose:** Ad-hoc task execution with GSD guarantees but a faster path.
 
@@ -496,7 +496,7 @@
 
 ### 11. Autonomous Mode
 
-**Command:** `/vgsd-autonomous [--from N]`
+**Command:** `/fvgsd-autonomous [--from N]`
 
 **Purpose:** Run all remaining phases autonomously — discuss → plan → execute per phase.
 
@@ -511,7 +511,7 @@
 
 ### 12. Freeform Routing
 
-**Command:** `/vgsd-progress --do` (see also `/vgsd-manager` for interactive routing)
+**Command:** `/fvgsd-progress --do` (see also `/fvgsd-manager` for interactive routing)
 
 **Purpose:** Analyze freeform text and route to the appropriate GSD command.
 
@@ -525,7 +525,7 @@
 
 ### 13. Note Capture
 
-**Command:** `/vgsd-capture`
+**Command:** `/fvgsd-capture`
 
 **Purpose:** Zero-friction idea capture without interrupting workflow. Append timestamped notes, list all notes, or promote notes to structured todos.
 
@@ -540,7 +540,7 @@
 
 ### 14. Auto-Advance (Next)
 
-**Command:** `/vgsd-progress --next`
+**Command:** `/fvgsd-progress --next`
 
 **Purpose:** Automatically detect current project state and advance to the next logical workflow step, eliminating the need to remember which phase/step you're on.
 
@@ -548,18 +548,18 @@
 - REQ-NEXT-01: System MUST read STATE.md, ROADMAP.md, and phase directories to determine current position
 - REQ-NEXT-02: System MUST detect whether discuss, plan, execute, or verify is needed
 - REQ-NEXT-03: System MUST invoke the correct command automatically
-- REQ-NEXT-04: System MUST suggest `/vgsd-new-project` if no project exists
-- REQ-NEXT-05: System MUST suggest `/vgsd-complete-milestone` when all phases are complete
+- REQ-NEXT-04: System MUST suggest `/fvgsd-new-project` if no project exists
+- REQ-NEXT-05: System MUST suggest `/fvgsd-complete-milestone` when all phases are complete
 
 **State Detection Logic:**
 | State | Action |
 |-------|--------|
-| No `.planning/` directory | Suggest `/vgsd-new-project` |
-| Phase has no CONTEXT.md | Run `/vgsd-discuss-phase` |
-| Phase has no PLAN.md files | Run `/vgsd-plan-phase` |
-| Phase has plans but no SUMMARY.md | Run `/vgsd-execute-phase` |
-| Phase executed but no VERIFICATION.md | Run `/vgsd-verify-work` |
-| All phases complete | Suggest `/vgsd-complete-milestone` |
+| No `.planning/` directory | Suggest `/fvgsd-new-project` |
+| Phase has no CONTEXT.md | Run `/fvgsd-discuss-phase` |
+| Phase has no PLAN.md files | Run `/fvgsd-plan-phase` |
+| Phase has plans but no SUMMARY.md | Run `/fvgsd-execute-phase` |
+| Phase executed but no VERIFICATION.md | Run `/fvgsd-verify-work` |
+| All phases complete | Suggest `/fvgsd-complete-milestone` |
 
 ---
 
@@ -574,12 +574,12 @@
 - REQ-NYQ-02: System MUST map each requirement to a specific test command
 - REQ-NYQ-03: System MUST identify Wave 0 tasks (test scaffolding needed before implementation)
 - REQ-NYQ-04: Plan checker MUST enforce Nyquist compliance as 8th verification dimension
-- REQ-NYQ-05: System MUST support retroactive validation via `/vgsd-validate-phase`
+- REQ-NYQ-05: System MUST support retroactive validation via `/fvgsd-validate-phase`
 - REQ-NYQ-06: System MUST be disableable via `workflow.nyquist_validation: false`
 
 **Produces:** `{phase}-VALIDATION.md` — Test coverage contract
 
-**Retroactive Validation (`/vgsd-validate-phase [N]`):**
+**Retroactive Validation (`/fvgsd-validate-phase [N]`):**
 - Scans implementation and maps requirements to tests
 - Identifies gaps where requirements lack automated verification
 - Spawns auditor to generate tests (max 3 attempts)
@@ -607,7 +607,7 @@
 **Requirements:**
 - REQ-POSTVER-01: System MUST check against phase goals, not just task completion
 - REQ-POSTVER-02: System MUST produce VERIFICATION.md with pass/fail analysis
-- REQ-POSTVER-03: System MUST log issues for `/vgsd-verify-work` to address
+- REQ-POSTVER-03: System MUST log issues for `/fvgsd-verify-work` to address
 - REQ-POSTVER-04: System MUST be disableable via `workflow.verifier: false`
 
 ---
@@ -628,7 +628,7 @@
 
 ### 19. Health Validation
 
-**Command:** `/vgsd-health [--repair]`
+**Command:** `/fvgsd-health [--repair]`
 
 **Purpose:** Validate `.planning/` directory integrity and auto-repair issues.
 
@@ -651,7 +651,7 @@
 - REQ-REGR-03: Regressions MUST be surfaced before post-execution verification
 - REQ-REGR-04: System MUST identify which prior phase's tests were broken
 
-**When:** Runs automatically during `/vgsd-execute-phase` before the verifier step.
+**When:** Runs automatically during `/fvgsd-execute-phase` before the verifier step.
 
 ---
 
@@ -665,7 +665,7 @@
 - REQ-COVGATE-03: Uncovered requirements MUST block planning completion
 - REQ-COVGATE-04: System MUST report which specific requirements lack plan coverage
 
-**When:** Runs automatically at the end of `/vgsd-plan-phase` after the plan checker loop.
+**When:** Runs automatically at the end of `/fvgsd-plan-phase` after the plan checker loop.
 
 ---
 
@@ -693,7 +693,7 @@
 
 ### 23. Session Management
 
-**Commands:** `/vgsd-pause-work`, `/vgsd-resume-work`, `/vgsd-progress`
+**Commands:** `/fvgsd-pause-work`, `/fvgsd-resume-work`, `/fvgsd-progress`
 
 **Purpose:** Maintain project continuity across context resets and sessions.
 
@@ -710,7 +710,7 @@
 
 ### 24. Session Reporting
 
-**Command:** `/vgsd-pause-work --report`
+**Command:** `/fvgsd-pause-work --report`
 
 **Purpose:** Generate a structured post-session summary document capturing work performed, outcomes achieved, and estimated resource usage.
 
@@ -749,7 +749,7 @@
 
 ### 26. Model Profiles
 
-**Command:** `/vgsd-config --profile <quality|balanced|budget|adaptive|inherit>`
+**Command:** `/fvgsd-config --profile <quality|balanced|budget|adaptive|inherit>`
 
 **Purpose:** Control which AI model each agent uses, balancing quality vs cost.
 
@@ -766,18 +766,18 @@
 
 | Agent | `quality` | `balanced` | `budget` | `inherit` |
 |-------|-----------|------------|----------|-----------|
-| gsd-planner | Opus | Opus | Sonnet | Inherit |
-| gsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
-| gsd-executor | Opus | Sonnet | Sonnet | Inherit |
-| gsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-debugger | Opus | Sonnet | Sonnet | Inherit |
-| gsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
-| gsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-planner | Opus | Opus | Sonnet | Inherit |
+| fvgsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-executor | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-debugger | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
+| fvgsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
 
 ---
 
@@ -785,7 +785,7 @@
 
 ### 27. Codebase Mapping
 
-**Command:** `/vgsd-map-codebase [area]`
+**Command:** `/fvgsd-map-codebase [area]`
 
 **Purpose:** Analyze an existing codebase before starting a new project, so GSD understands what exists.
 
@@ -793,7 +793,7 @@
 - REQ-MAP-01: System MUST spawn parallel mapper agents for each analysis area
 - REQ-MAP-02: System MUST produce structured documents in `.planning/codebase/`
 - REQ-MAP-03: System MUST detect: tech stack, architecture patterns, coding conventions, concerns
-- REQ-MAP-04: Subsequent `/vgsd-new-project` MUST load codebase mapping and focus questions on what's being added
+- REQ-MAP-04: Subsequent `/fvgsd-new-project` MUST load codebase mapping and focus questions on what's being added
 - REQ-MAP-05: Optional `[area]` argument MUST scope mapping to a specific area
 
 **Produces:**
@@ -818,12 +818,12 @@ against the mapping point, not HEAD.
 ### 27a. Post-Execute Codebase Drift Detection
 
 **Introduced by:** #2003
-**Trigger:** Runs automatically at the end of every `/vgsd-execute-phase`
+**Trigger:** Runs automatically at the end of every `/fvgsd-execute-phase`
 **Configuration:**
 - `workflow.drift_threshold` (integer, default `3`) — minimum new
   structural elements before the gate acts.
 - `workflow.drift_action` (`warn` | `auto-remap`, default `warn`) —
-  warn-only or spawn `gsd-codebase-mapper` with `--paths` scoped to
+  warn-only or spawn `fvgsd-codebase-mapper` with `--paths` scoped to
   affected subtrees.
 
 **What counts as drift:**
@@ -842,7 +842,7 @@ continues. Drift detection cannot fail verification.
 - REQ-DRIFT-02: Action fires only when element count ≥ `workflow.drift_threshold`
 - REQ-DRIFT-03: `warn` action MUST NOT spawn any agent
 - REQ-DRIFT-04: `auto-remap` action MUST pass sanitized `--paths` to the mapper
-- REQ-DRIFT-05: Detection/remap failure MUST be non-blocking for `/vgsd-execute-phase`
+- REQ-DRIFT-05: Detection/remap failure MUST be non-blocking for `/fvgsd-execute-phase`
 - REQ-DRIFT-06: `last_mapped_commit` round-trip through YAML frontmatter
   on each `.planning/codebase/*.md` file
 
@@ -852,7 +852,7 @@ continues. Drift detection cannot fail verification.
 
 ### 28. Debug System
 
-**Command:** `/vgsd-debug [description]`
+**Command:** `/fvgsd-debug [description]`
 
 **Purpose:** Systematic debugging with persistent state across context resets.
 
@@ -870,7 +870,7 @@ continues. Drift detection cannot fail verification.
 
 ### 29. Todo Management
 
-**Commands:** `/vgsd-capture [desc]`, `/vgsd-capture --list`
+**Commands:** `/fvgsd-capture [desc]`, `/fvgsd-capture --list`
 
 **Purpose:** Capture ideas and tasks during sessions for later work.
 
@@ -884,7 +884,7 @@ continues. Drift detection cannot fail verification.
 
 ### 30. Statistics Dashboard
 
-**Command:** `/vgsd-stats`
+**Command:** `/fvgsd-stats`
 
 **Purpose:** Display project metrics — phases, plans, requirements, git history, and timeline.
 
@@ -898,7 +898,7 @@ continues. Drift detection cannot fail verification.
 
 ### 31. Update System
 
-**Command:** `/vgsd-update`
+**Command:** `/fvgsd-update`
 
 **Purpose:** Update GSD to the latest version with changelog preview.
 
@@ -906,14 +906,14 @@ continues. Drift detection cannot fail verification.
 - REQ-UPDATE-01: System MUST check for new versions via npm
 - REQ-UPDATE-02: System MUST display changelog for new version before updating
 - REQ-UPDATE-03: System MUST be runtime-aware and target the correct directory
-- REQ-UPDATE-04: System MUST back up locally modified files to `gsd-local-patches/`
-- REQ-UPDATE-05: `/vgsd-update --reapply` MUST restore local modifications after update
+- REQ-UPDATE-04: System MUST back up locally modified files to `fvgsd-local-patches/`
+- REQ-UPDATE-05: `/fvgsd-update --reapply` MUST restore local modifications after update
 
 ---
 
 ### 32. Settings Management
 
-**Command:** `/vgsd-settings`
+**Command:** `/fvgsd-settings`
 
 **Purpose:** Interactive configuration of workflow toggles and model profile.
 
@@ -948,7 +948,7 @@ continues. Drift detection cannot fail verification.
 
 ### 33. Test Generation
 
-**Command:** `/vgsd-add-tests [N]`
+**Command:** `/fvgsd-add-tests [N]`
 
 **Purpose:** Generate tests for a completed phase based on UAT criteria and implementation.
 
@@ -1041,24 +1041,24 @@ fix(03-01): correct auth token expiry
 
 **Statusline Display:**
 ```text
-[⬆ /vgsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
+[⬆ /fvgsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
 ```
 
 Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 
 **Update Banner (opt-in, when GSD statusline isn't used):**
 
-When the user declines (or keeps a non-GSD) statusline, the installer offers a SessionStart banner that surfaces update availability without occupying statusline real estate. The banner reads `~/.cache/gsd/gsd-update-check.json` (written by `gsd-check-update-worker.js`) and emits one line only when an update is available:
+When the user declines (or keeps a non-GSD) statusline, the installer offers a SessionStart banner that surfaces update availability without occupying statusline real estate. The banner reads `~/.cache/gsd/gsd-update-check.json` (written by `fvgsd/check-update-worker.js`) and emits one line only when an update is available:
 
 ```text
-GSD update available: 1.39.0 → 1.40.0. Run /vgsd-update.
+GSD update available: 1.39.0 → 1.40.0. Run /fvgsd-update.
 ```
 
-The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by `npx @opengsd/get-shit-done-redux --uninstall` or by deleting the SessionStart entry that references `gsd-update-banner.js`.
+The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by `npx @opengsd/get-shit-done-redux --uninstall` or by deleting the SessionStart entry that references `fvgsd/update-banner.js`.
 
 ### 38. Developer Profiling
 
-**Command:** `/vgsd-profile-user [--questionnaire] [--refresh]`
+**Command:** `/fvgsd-profile-user [--questionnaire] [--refresh]`
 
 **Purpose:** Analyze Claude Code session history to build behavioral profiles across 8 dimensions, generating artifacts that personalize Claude's responses to the developer's style.
 
@@ -1083,7 +1083,7 @@ The banner is silent when up-to-date and rate-limits "check failed" diagnostics 
 **Pipeline Modules:**
 - `profile-pipeline.cjs` — Session scanning, message extraction, sampling
 - `profile-output.cjs` — Profile rendering, questionnaire, artifact generation
-- `gsd-user-profiler` agent — Behavioral analysis from session data
+- `fvgsd-user-profiler` agent — Behavioral analysis from session data
 
 **Requirements:**
 - REQ-PROF-01: Session analysis MUST cover at least 8 behavioral dimensions
@@ -1115,14 +1115,14 @@ After Level 3 wiring verification passes, spot-check individual exports for actu
 
 ### 40. Verification Debt Tracking
 
-**Command:** `/vgsd-audit-uat`
+**Command:** `/fvgsd-audit-uat`
 
 **Purpose:** Prevent silent loss of UAT/verification items when projects advance past phases with outstanding tests. Surfaces verification debt across all prior phases so items are never forgotten.
 
 **Components:**
 
 **1. Cross-Phase Health Check** (progress.md Step 1.6)
-Every `/vgsd-progress` call scans ALL phases in the current milestone for outstanding items (pending, skipped, blocked, human_needed). Displays a non-blocking warning section with actionable links.
+Every `/fvgsd-progress` call scans ALL phases in the current milestone for outstanding items (pending, skipped, blocked, human_needed). Displays a non-blocking warning section with actionable links.
 
 **2. `status: partial`** (verify-work.md, UAT.md)
 New UAT status that distinguishes between "session ended" and "all tests resolved". Prevents `status: complete` when tests are still pending, blocked, or skipped without reason.
@@ -1137,12 +1137,12 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 `phase complete` CLI returns verification debt warnings in its JSON output. Transition workflow surfaces outstanding items before confirmation.
 
 **Requirements:**
-- REQ-DEBT-01: System MUST surface outstanding UAT/verification items from ALL prior phases in `/vgsd-progress`
+- REQ-DEBT-01: System MUST surface outstanding UAT/verification items from ALL prior phases in `/fvgsd-progress`
 - REQ-DEBT-02: System MUST distinguish incomplete testing (partial) from completed testing (complete)
 - REQ-DEBT-03: System MUST categorize blocked tests with `blocked_by` tags
 - REQ-DEBT-04: System MUST persist human_needed verification items as trackable UAT files
 - REQ-DEBT-05: System MUST warn (non-blocking) during phase completion and transition when verification debt exists
-- REQ-DEBT-06: `/vgsd-audit-uat` MUST scan all phases, categorize items by testability, and produce a human test plan
+- REQ-DEBT-06: `/fvgsd-audit-uat` MUST scan all phases, categorize items by testability, and produce a human test plan
 
 ---
 
@@ -1150,7 +1150,7 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 
 ### 41. Fast Mode
 
-**Command:** `/vgsd-fast [task description]`
+**Command:** `/fvgsd-fast [task description]`
 
 **Purpose:** Execute trivial tasks inline without spawning subagents or generating PLAN.md files. For tasks too small to justify planning overhead: typo fixes, config changes, small refactors, forgotten commits, simple additions.
 
@@ -1160,15 +1160,15 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 - REQ-FAST-03: System MUST track the task in `.planning/quick/` for state consistency
 - REQ-FAST-04: System MUST NOT be used for tasks requiring research, multi-step planning, or verification
 
-**When to use vs `/vgsd-quick`:**
-- `/vgsd-fast` — One-sentence tasks executable in under 2 minutes (typo, config change, small addition)
-- `/vgsd-quick` — Anything needing research, multi-step planning, or verification
+**When to use vs `/fvgsd-quick`:**
+- `/fvgsd-fast` — One-sentence tasks executable in under 2 minutes (typo, config change, small addition)
+- `/fvgsd-quick` — Anything needing research, multi-step planning, or verification
 
 ---
 
 ### 42. Cross-AI Peer Review
 
-**Command:** `/vgsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--ollama] [--lm-studio] [--llama-cpp] [--all]`
+**Command:** `/fvgsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--ollama] [--lm-studio] [--llama-cpp] [--all]`
 
 **Purpose:** Invoke external AI CLIs (Gemini, Claude, Codex, CodeRabbit, OpenCode, Qwen Code, Cursor) to independently review phase plans. Produces structured REVIEWS.md with per-reviewer feedback.
 
@@ -1177,14 +1177,14 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 - REQ-REVIEW-02: System MUST build a structured review prompt from phase plans
 - REQ-REVIEW-03: System MUST invoke each selected CLI independently
 - REQ-REVIEW-04: System MUST collect responses and produce `REVIEWS.md`
-- REQ-REVIEW-05: Reviews MUST be consumable by `/vgsd-plan-phase --reviews`
+- REQ-REVIEW-05: Reviews MUST be consumable by `/fvgsd-plan-phase --reviews`
 - REQ-REVIEW-06: System MUST support project-level no-flag defaults via `review.default_reviewers`
 - REQ-REVIEW-07: Reviewer precedence MUST be explicit flags > `--all` > `review.default_reviewers` > all detected reviewers
 
 **Produces:** `{phase}-REVIEWS.md` — Per-reviewer structured feedback
 
 **User configuration note:**
-- Set `review.default_reviewers` in `.planning/config.json` (or via `gsd config-set`) to control no-flag `/vgsd-review` fan-out.
+- Set `review.default_reviewers` in `.planning/config.json` (or via `gsd config-set`) to control no-flag `/fvgsd-review` fan-out.
 - Use `--all` for a full pre-merge sweep without changing project defaults.
 - For local model servers with small context windows, set `review.max_prompt_tokens_per_reviewer` to auto-trim prompts per reviewer — see [Prompt budgets for small-context reviewers](../docs/CONFIGURATION.md#prompt-budgets-for-small-context-reviewers) in CONFIGURATION.md.
 
@@ -1192,17 +1192,17 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 
 ### 43. Backlog Parking Lot
 
-**Commands:** `/vgsd-capture --backlog <description>`, `/vgsd-review-backlog`, `/vgsd-capture --seed <idea>`
+**Commands:** `/fvgsd-capture --backlog <description>`, `/fvgsd-review-backlog`, `/fvgsd-capture --seed <idea>`
 
 **Purpose:** Capture ideas that aren't ready for active planning. Backlog items use 999.x numbering to stay outside the active phase sequence. Seeds are forward-looking ideas with trigger conditions that surface automatically at the right milestone.
 
 **Requirements:**
 - REQ-BACKLOG-01: Backlog items MUST use 999.x numbering to stay outside active phase sequence
-- REQ-BACKLOG-02: Phase directories MUST be created immediately so `/vgsd-discuss-phase` and `/vgsd-plan-phase` work on them
-- REQ-BACKLOG-03: `/vgsd-review-backlog` MUST support promote, keep, and remove actions per item
+- REQ-BACKLOG-02: Phase directories MUST be created immediately so `/fvgsd-discuss-phase` and `/fvgsd-plan-phase` work on them
+- REQ-BACKLOG-03: `/fvgsd-review-backlog` MUST support promote, keep, and remove actions per item
 - REQ-BACKLOG-04: Promoted items MUST be renumbered into the active milestone sequence
 - REQ-SEED-01: Seeds MUST capture the full WHY and WHEN to surface conditions
-- REQ-SEED-02: `/vgsd-new-milestone` MUST scan seeds and present matches
+- REQ-SEED-02: `/fvgsd-new-milestone` MUST scan seeds and present matches
 
 **Produces:**
 | Artifact | Description |
@@ -1214,9 +1214,9 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 
 ### 44. Persistent Context Threads
 
-**Command:** `/vgsd-thread [name | description]`
+**Command:** `/fvgsd-thread [name | description]`
 
-**Purpose:** Lightweight cross-session knowledge stores for work that spans multiple sessions but doesn't belong to any specific phase. Lighter weight than `/vgsd-pause-work` — no phase state, no plan context.
+**Purpose:** Lightweight cross-session knowledge stores for work that spans multiple sessions but doesn't belong to any specific phase. Lighter weight than `/fvgsd-pause-work` — no phase state, no plan context.
 
 **Requirements:**
 - REQ-THREAD-01: System MUST support create, list, and resume modes
@@ -1231,7 +1231,7 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 
 ### 45. PR Branch Filtering
 
-**Command:** `/vgsd-pr-branch [target branch]`
+**Command:** `/fvgsd-pr-branch [target branch]`
 
 **Purpose:** Create a clean branch suitable for pull requests by filtering out `.planning/` commits. Reviewers see only code changes, not GSD planning artifacts.
 
@@ -1255,11 +1255,11 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 - Field name validation — prevents injection through config field names
 - Shell argument validation — sanitizes user text before shell interpolation
 
-**2. Prompt Injection Guard Hook** (`gsd-prompt-guard.js`)
+**2. Prompt Injection Guard Hook** (`fvgsd/prompt-guard.js`)
 PreToolUse hook that scans Write/Edit calls targeting `.planning/` for injection patterns. Advisory-only — logs detection for awareness without blocking legitimate operations.
 
-**3. Workflow Guard Hook** (`gsd-workflow-guard.js`)
-PreToolUse hook that detects when Claude attempts file edits outside a GSD workflow context. Advises using `/vgsd-quick` or `/vgsd-fast` instead of direct edits. Configurable via `hooks.workflow_guard` (default: false).
+**3. Workflow Guard Hook** (`fvgsd/workflow-guard.js`)
+PreToolUse hook that detects when Claude attempts file edits outside a GSD workflow context. Advises using `/fvgsd-quick` or `/fvgsd-fast` instead of direct edits. Configurable via `hooks.workflow_guard` (default: false).
 
 **4. CI-Ready Injection Scanner** (`prompt-injection-scan.test.cjs`)
 Test suite that scans all agent, workflow, and command files for embedded injection vectors.
@@ -1286,7 +1286,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 48. Discussion Audit Trail
 
-**Purpose:** Auto-generate `DISCUSSION-LOG.md` during `/vgsd-discuss-phase` for full audit trail of decisions made during discussion.
+**Purpose:** Auto-generate `DISCUSSION-LOG.md` during `/fvgsd-discuss-phase` for full audit trail of decisions made during discussion.
 
 **Requirements:**
 - REQ-DISCLOG-01: System MUST auto-generate DISCUSSION-LOG.md during discuss-phase
@@ -1299,7 +1299,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 49. Forensics
 
-**Command:** `/vgsd-forensics [description]`
+**Command:** `/fvgsd-forensics [description]`
 
 **Purpose:** Post-mortem investigation of failed or stuck GSD workflows.
 
@@ -1325,7 +1325,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 50. Milestone Summary
 
-**Command:** `/vgsd-milestone-summary [version]`
+**Command:** `/fvgsd-milestone-summary [version]`
 
 **Purpose:** Generate comprehensive project summary from milestone artifacts for team onboarding.
 
@@ -1348,7 +1348,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 51. Workstream Namespacing
 
-**Command:** `/vgsd-workstreams`
+**Command:** `/fvgsd-workstreams`
 
 **Purpose:** Parallel workstreams for concurrent work on different milestone areas.
 
@@ -1371,7 +1371,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 52. Manager Dashboard
 
-**Command:** `/vgsd-manager`
+**Command:** `/fvgsd-manager`
 
 **Purpose:** Interactive command center for managing multiple phases from one terminal.
 
@@ -1391,7 +1391,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 53. Assumptions Discussion Mode
 
-**Command:** `/vgsd-discuss-phase` with `workflow.discuss_mode: 'assumptions'`
+**Command:** `/fvgsd-discuss-phase` with `workflow.discuss_mode: 'assumptions'`
 
 **Purpose:** Replace interview-style questioning with codebase-first assumption analysis.
 
@@ -1417,20 +1417,20 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 54. UI Phase Auto-Detection
 
-**Part of:** `/vgsd-new-project` and `/vgsd-progress`
+**Part of:** `/fvgsd-new-project` and `/fvgsd-progress`
 
-**Purpose:** Automatically detect UI-heavy projects and surface `/vgsd-ui-phase` recommendation.
+**Purpose:** Automatically detect UI-heavy projects and surface `/fvgsd-ui-phase` recommendation.
 
 **Requirements:**
 - REQ-UI-DETECT-01: System MUST detect UI signals in project description (keywords, framework references)
 - REQ-UI-DETECT-02: System MUST annotate ROADMAP.md phases with `ui_hint` when applicable
-- REQ-UI-DETECT-03: System MUST suggest `/vgsd-ui-phase` in next steps for UI-heavy phases
-- REQ-UI-DETECT-04: System MUST NOT make `/vgsd-ui-phase` mandatory
+- REQ-UI-DETECT-03: System MUST suggest `/fvgsd-ui-phase` in next steps for UI-heavy phases
+- REQ-UI-DETECT-04: System MUST NOT make `/fvgsd-ui-phase` mandatory
 
 **Process:**
 1. **Detect** — Scan project description and tech stack for UI signals (keywords, framework references)
 2. **Annotate** — Add `ui_hint` markers to applicable phases in ROADMAP.md
-3. **Surface** — Include `/vgsd-ui-phase` recommendation in next steps for UI-heavy phases
+3. **Surface** — Include `/fvgsd-ui-phase` recommendation in next steps for UI-heavy phases
 
 ---
 
@@ -1509,7 +1509,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 59. Schema Drift Detection
 
-**Command:** Automatic during `/vgsd-execute-phase`
+**Command:** Automatic during `/fvgsd-execute-phase`
 
 **Purpose:** Detect when ORM schema files are modified without corresponding migration or push commands, preventing false-positive verification.
 
@@ -1517,7 +1517,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 - REQ-SCHEMA-01: System MUST detect modifications to ORM schema files (Prisma, Drizzle, Payload, Sanity, Mongoose)
 - REQ-SCHEMA-02: System MUST verify corresponding migration/push commands exist when schema changes are detected
 - REQ-SCHEMA-03: System MUST implement two-layer defense: plan-time injection and execute-time gate
-- REQ-SCHEMA-04: System MUST support `GSD_SKIP_SCHEMA_CHECK` env var to override detection
+- REQ-SCHEMA-04: System MUST support `FVGSD_SKIP_SCHEMA_CHECK` env var to override detection
 - REQ-SCHEMA-05: System MUST prevent false-positive verification when schema is modified without migration
 
 **Process:**
@@ -1526,13 +1526,13 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 3. **Gate** — Block execution if schema drift is detected without migration (execute-time gate)
 4. **Inject** — Add migration reminders during plan generation (plan-time injection)
 
-**Config:** `GSD_SKIP_SCHEMA_CHECK` environment variable to bypass detection.
+**Config:** `FVGSD_SKIP_SCHEMA_CHECK` environment variable to bypass detection.
 
 ---
 
 ### 60. Security Enforcement
 
-**Command:** `/vgsd-secure-phase <N>`
+**Command:** `/fvgsd-secure-phase <N>`
 
 **Purpose:** Threat-model-anchored security verification for phase implementations.
 
@@ -1540,7 +1540,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 - REQ-SEC-01: System MUST perform threat-model-anchored verification (not blind scanning)
 - REQ-SEC-02: System MUST support configurable OWASP ASVS verification levels (1-3)
 - REQ-SEC-03: System MUST block phase advancement based on configurable severity threshold
-- REQ-SEC-04: System MUST spawn `gsd-security-auditor` agent for analysis
+- REQ-SEC-04: System MUST spawn `fvgsd-security-auditor` agent for analysis
 
 **Produces:**
 | Artifact | Description |
@@ -1549,7 +1549,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 **Process:**
 1. **Model** — Build threat model from phase implementation context
-2. **Audit** — Spawn `gsd-security-auditor` to verify against threat model
+2. **Audit** — Spawn `fvgsd-security-auditor` to verify against threat model
 3. **Gate** — Block phase advancement if findings meet or exceed `security_block_on` severity
 
 **Config:**
@@ -1563,13 +1563,13 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 61. Documentation Generation
 
-**Command:** `/vgsd-docs-update`
+**Command:** `/fvgsd-docs-update`
 
 **Purpose:** Generate and verify project documentation with accuracy checks.
 
 **Requirements:**
-- REQ-DOCS-01: System MUST spawn `gsd-doc-writer` agent to generate documentation
-- REQ-DOCS-02: System MUST spawn `gsd-doc-verifier` agent to check accuracy
+- REQ-DOCS-01: System MUST spawn `fvgsd-doc-writer` agent to generate documentation
+- REQ-DOCS-02: System MUST spawn `fvgsd-doc-verifier` agent to check accuracy
 - REQ-DOCS-03: System MUST verify generated documentation against actual implementation
 
 **Produces:**
@@ -1578,15 +1578,15 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 | Updated project documentation | Generated and verified documentation files |
 
 **Process:**
-1. **Generate** — Spawn `gsd-doc-writer` to create or update documentation from implementation
-2. **Verify** — Spawn `gsd-doc-verifier` to check documentation accuracy against codebase
+1. **Generate** — Spawn `fvgsd-doc-writer` to create or update documentation from implementation
+2. **Verify** — Spawn `fvgsd-doc-verifier` to check documentation accuracy against codebase
 3. **Output** — Produce verified documentation with accuracy annotations
 
 ---
 
 ### 62. Discuss Chain Mode
 
-**Flag:** `/vgsd-discuss-phase <N> --chain`
+**Flag:** `/fvgsd-discuss-phase <N> --chain`
 
 **Purpose:** Auto-chain discuss, plan, and execute phases in one flow to reduce manual command sequencing.
 
@@ -1604,7 +1604,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 63. Single-Phase Autonomous
 
-**Flag:** `/vgsd-autonomous --only N`
+**Flag:** `/fvgsd-autonomous --only N`
 
 **Purpose:** Execute just one phase autonomously instead of all remaining phases.
 
@@ -1622,7 +1622,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 64. Scope Reduction Detection
 
-**Part of:** `/vgsd-plan-phase`
+**Part of:** `/fvgsd-plan-phase`
 
 **Purpose:** Prevent silent requirement dropping during plan generation with three-layer defense.
 
@@ -1641,7 +1641,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 65. Claim Provenance Tagging
 
-**Part of:** `/vgsd-plan-phase --research-phase <N>`
+**Part of:** `/fvgsd-plan-phase --research-phase <N>`
 
 **Purpose:** Ensure research claims are tagged with source evidence and assumptions are logged separately.
 
@@ -1700,13 +1700,13 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 **Purpose:** Migrate GSD commands to Claude Code 2.1.88+ skills format with backward compatibility.
 
 **Requirements:**
-- REQ-SKILLS-01: Installer MUST write `skills/vgsd-*/SKILL.md` for Claude Code 2.1.88+
+- REQ-SKILLS-01: Installer MUST write `skills/fvgsd-*/SKILL.md` for Claude Code 2.1.88+
 - REQ-SKILLS-02: Installer MUST auto-clean legacy `commands/gsd/` directory
 - REQ-SKILLS-03: Installer MUST maintain backward compatibility with older Claude Code versions via Gemini path
 
 **Process:**
 1. **Detect** — Check Claude Code version to determine skills support
-2. **Migrate** — Write `skills/vgsd-*/SKILL.md` files for each GSD command
+2. **Migrate** — Write `skills/fvgsd-*/SKILL.md` files for each GSD command
 3. **Clean** — Remove legacy `commands/gsd/` directory if skills are installed
 4. **Fallback** — Maintain Gemini path compatibility for older Claude Code versions
 
@@ -1740,7 +1740,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 70. Autonomous `--to N` Flag
 
-**Flag:** `/vgsd-autonomous --to N`
+**Flag:** `/fvgsd-autonomous --to N`
 
 **Purpose:** Stop autonomous execution after completing a specific phase, allowing partial autonomous runs.
 
@@ -1758,7 +1758,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 71. Research Gate
 
-**Part of:** `/vgsd-plan-phase`
+**Part of:** `/fvgsd-plan-phase`
 
 **Purpose:** Block planning when RESEARCH.md has unresolved open questions, preventing plans built on incomplete information.
 
@@ -1776,7 +1776,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 72. Verifier Milestone Scope Filtering
 
-**Part of:** `/vgsd-execute-phase` (verifier step)
+**Part of:** `/fvgsd-execute-phase` (verifier step)
 
 **Purpose:** Distinguish between genuine gaps and items deferred to later phases, reducing false negatives in verification.
 
@@ -1826,7 +1826,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 75. Discuss-Phase `--power` Flag
 
-**Flag:** `/vgsd-discuss-phase --power`
+**Flag:** `/fvgsd-discuss-phase --power`
 
 **Purpose:** File-based bulk question answering for discuss-phase, enabling batch input from a prepared answers file.
 
@@ -1839,7 +1839,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 76. Debug `--diagnose` Flag
 
-**Flag:** `/vgsd-debug --diagnose`
+**Flag:** `/fvgsd-debug --diagnose`
 
 **Purpose:** Diagnosis-only mode that investigates without attempting fixes.
 
@@ -1852,9 +1852,9 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 77. Phase Dependency Analysis
 
-**Command:** `/vgsd-manager --analyze-deps`
+**Command:** `/fvgsd-manager --analyze-deps`
 
-**Purpose:** Detect phase dependencies and suggest `Depends on` entries for ROADMAP.md before running `/vgsd-manager`.
+**Purpose:** Detect phase dependencies and suggest `Depends on` entries for ROADMAP.md before running `/fvgsd-manager`.
 
 **Requirements:**
 - REQ-DEP-01: System MUST detect file overlap between phases
@@ -1868,7 +1868,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 78. Anti-Pattern Severity Levels
 
-**Part of:** `/vgsd-resume-work`
+**Part of:** `/fvgsd-resume-work`
 
 **Purpose:** Mandatory understanding checks at resume with severity-based anti-pattern enforcement.
 
@@ -1893,7 +1893,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 80. Planner Reachability Check
 
-**Part of:** `/vgsd-plan-phase`
+**Part of:** `/fvgsd-plan-phase`
 
 **Purpose:** Validate that plan steps are achievable before committing to execution.
 
@@ -1905,7 +1905,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 81. Playwright-MCP UI Verification
 
-**Part of:** `/vgsd-verify-work` (optional)
+**Part of:** `/fvgsd-verify-work` (optional)
 
 **Purpose:** Automated visual verification using Playwright-MCP during verify-phase.
 
@@ -1918,7 +1918,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 82. Pause-Work Expansion
 
-**Part of:** `/vgsd-pause-work`
+**Part of:** `/fvgsd-pause-work`
 
 **Purpose:** Support non-phase contexts with richer handoff data for broader pause-work applicability.
 
@@ -1972,7 +1972,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 86. Autonomous `--interactive` Flag
 
-**Flag:** `/vgsd-autonomous --interactive`
+**Flag:** `/fvgsd-autonomous --interactive`
 
 **Purpose:** Lean-context autonomous mode that keeps discuss-phase interactive (user answers questions) while dispatching plan and execute as background agents.
 
@@ -2004,15 +2004,15 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 88. Community Hooks Opt-In
 
-**Hooks:** `gsd-validate-commit.sh`, `gsd-session-state.sh`, `gsd-phase-boundary.sh`
+**Hooks:** `fvgsd/validate-commit.sh`, `fvgsd/session-state.sh`, `fvgsd/phase-boundary.sh`
 
 **Purpose:** Optional git and session hooks for GSD projects, gated behind `hooks.community: true` in config.
 
 **Requirements:**
 - REQ-COMMUNITY-01: All community hooks MUST be no-ops unless `hooks.community` is `true` in `.planning/config.json`
-- REQ-COMMUNITY-02: `gsd-validate-commit.sh` MUST enforce Conventional Commits format on git commit messages
-- REQ-COMMUNITY-03: `gsd-session-state.sh` MUST track session state transitions
-- REQ-COMMUNITY-04: `gsd-phase-boundary.sh` MUST enforce phase boundary checks
+- REQ-COMMUNITY-02: `fvgsd/validate-commit.sh` MUST enforce Conventional Commits format on git commit messages
+- REQ-COMMUNITY-03: `fvgsd/session-state.sh` MUST track session state transitions
+- REQ-COMMUNITY-04: `fvgsd/phase-boundary.sh` MUST enforce phase boundary checks
 
 **Config:**
 | Setting | Type | Default | Description |
@@ -2035,7 +2035,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
   - [Autonomous Audit-to-Fix](#98-autonomous-audit-to-fix)
   - [Improved Prompt Injection Scanner](#99-improved-prompt-injection-scanner)
   - [Stall Detection in Plan-Phase](#100-stall-detection-in-plan-phase)
-  - [Hard Stop Safety Gates in /vgsd-progress --next](#101-hard-stop-safety-gates-in-gsd-progress---next)
+  - [Hard Stop Safety Gates in /fvgsd-progress --next](#101-hard-stop-safety-gates-in-gsd-progress---next)
   - [Adaptive Model Preset](#102-adaptive-model-preset)
   - [Post-Merge Hunk Verification](#103-post-merge-hunk-verification)
 
@@ -2064,7 +2064,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 90. Queryable Codebase Intelligence
 
-**Command:** `/vgsd-map-codebase --query [<term>|status|diff|refresh]`
+**Command:** `/fvgsd-map-codebase --query [<term>|status|diff|refresh]`
 **Config:** `intel.enabled`
 
 **Purpose:** Maintain a queryable JSON index of codebase structure, API surface, dependency graph, file roles, and architecture decisions in `.planning/intel/`. Enables targeted lookups without reading the entire codebase.
@@ -2132,15 +2132,15 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 93. Code Review Pipeline
 
-**Commands:** `/vgsd-code-review`, `/vgsd-code-review --fix`
+**Commands:** `/fvgsd-code-review`, `/fvgsd-code-review --fix`
 
 **Purpose:** Structured review of source files changed during a phase, with a separate auto-fix pass that commits each fix atomically.
 
 **Requirements:**
-- REQ-REVIEW-01: `vgsd-code-review` MUST scope files to the phase using SUMMARY.md and git diff fallback
+- REQ-REVIEW-01: `fvgsd-code-review` MUST scope files to the phase using SUMMARY.md and git diff fallback
 - REQ-REVIEW-02: Review MUST support three depth levels: `quick`, `standard`, `deep`
 - REQ-REVIEW-03: Findings MUST be severity-classified: Critical, Warning, Info
-- REQ-REVIEW-04: `vgsd-code-review --fix` MUST read REVIEW.md and fix Critical + Warning findings by default
+- REQ-REVIEW-04: `fvgsd-code-review --fix` MUST read REVIEW.md and fix Critical + Warning findings by default
 - REQ-REVIEW-05: Each fix MUST be committed atomically with a descriptive message
 - REQ-REVIEW-06: `--auto` flag MUST enable fix + re-review iteration loop, capped at 3 iterations
 - REQ-REVIEW-07: Feature MUST be gated by `workflow.code_review` config flag
@@ -2155,7 +2155,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 94. Socratic Exploration
 
-**Command:** `/vgsd-explore [topic]`
+**Command:** `/fvgsd-explore [topic]`
 
 **Purpose:** Guide a developer through exploring an idea via Socratic probing questions before committing to a plan. Routes outputs to the appropriate GSD artifact: notes, todos, seeds, research questions, requirements updates, or a new phase.
 
@@ -2169,7 +2169,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 95. Safe Undo
 
-**Command:** `/vgsd-undo --last N | --phase NN | --plan NN-MM`
+**Command:** `/fvgsd-undo --last N | --phase NN | --plan NN-MM`
 
 **Purpose:** Roll back GSD phase or plan commits safely using the phase manifest and git log, with dependency checks and a hard confirmation gate before any revert is applied.
 
@@ -2184,7 +2184,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 96. Plan Import
 
-**Command:** `/vgsd-import --from <filepath>`
+**Command:** `/fvgsd-import --from <filepath>`
 
 **Purpose:** Ingest an external plan file into the GSD planning system with conflict detection against `PROJECT.md` decisions, converting it to a valid GSD PLAN.md and validating it through the plan-checker.
 
@@ -2192,26 +2192,26 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 - REQ-IMPORT-01: Importer MUST detect conflicts between the external plan and existing PROJECT.md decisions
 - REQ-IMPORT-02: All detected conflicts MUST be presented to the user for resolution before writing
 - REQ-IMPORT-03: Imported plan MUST be written as a valid GSD PLAN.md format
-- REQ-IMPORT-04: Written plan MUST pass `gsd-plan-checker` validation
+- REQ-IMPORT-04: Written plan MUST pass `fvgsd-plan-checker` validation
 
 ---
 
 ### 97. Rapid Codebase Scan
 
-**Command:** `/vgsd-map-codebase --fast [--focus tech|arch|quality|concerns]`
+**Command:** `/fvgsd-map-codebase --fast [--focus tech|arch|quality|concerns]`
 
-**Purpose:** Lightweight alternative to `/vgsd-map-codebase` that spawns a single mapper agent for one or two combined focus areas, producing targeted output in `.planning/codebase/` without the overhead of 4 parallel agents.
+**Purpose:** Lightweight alternative to `/fvgsd-map-codebase` that spawns a single mapper agent for one or two combined focus areas, producing targeted output in `.planning/codebase/` without the overhead of 4 parallel agents.
 
 **Requirements:**
 - REQ-SCAN-01: Scan MUST spawn exactly one mapper agent (not four parallel agents)
 - REQ-SCAN-02: Focus area MUST be one of: `tech`, `arch`, `quality`, `concerns`, or the combined `tech+arch` shorthand (default: `tech+arch`); combined focus runs as a single agent covering both areas in one pass
-- REQ-SCAN-03: Output MUST be written to `.planning/codebase/` in the same format as `/vgsd-map-codebase`
+- REQ-SCAN-03: Output MUST be written to `.planning/codebase/` in the same format as `/fvgsd-map-codebase`
 
 ---
 
 ### 98. Autonomous Audit-to-Fix
 
-**Command:** `/vgsd-audit-fix [--source <audit>] [--severity high|medium|all] [--max N] [--dry-run]`
+**Command:** `/fvgsd-audit-fix [--source <audit>] [--severity high|medium|all] [--max N] [--dry-run]`
 
 **Purpose:** End-to-end pipeline that runs an audit, classifies findings as auto-fixable vs. manual-only, then autonomously fixes auto-fixable issues with test verification and atomic commits.
 
@@ -2226,7 +2226,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 99. Improved Prompt Injection Scanner
 
-**Hook:** `gsd-prompt-guard.js`
+**Hook:** `fvgsd/prompt-guard.js`
 **Script:** `scripts/prompt-injection-scan.sh`
 
 **Purpose:** Enhanced detection of prompt injection attempts in planning artifacts, adding invisible Unicode character detection, encoding obfuscation patterns, and entropy-based analysis.
@@ -2241,7 +2241,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 100. Stall Detection in Plan-Phase
 
-**Command:** `/vgsd-plan-phase`
+**Command:** `/fvgsd-plan-phase`
 
 **Purpose:** Detect when the planner revision loop has stalled — producing the same output across multiple iterations — and break the cycle by escalating to a different strategy or exiting with a clear diagnostic.
 
@@ -2252,14 +2252,14 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ---
 
-### 101. Hard Stop Safety Gates in /vgsd-progress --next
+### 101. Hard Stop Safety Gates in /fvgsd-progress --next
 
-**Command:** `/vgsd-progress --next`
+**Command:** `/fvgsd-progress --next`
 
-**Purpose:** Prevent `/vgsd-progress --next` from entering runaway loops by adding hard stop safety gates and a consecutive-call guard that interrupts autonomous chaining when repeated identical steps are detected.
+**Purpose:** Prevent `/fvgsd-progress --next` from entering runaway loops by adding hard stop safety gates and a consecutive-call guard that interrupts autonomous chaining when repeated identical steps are detected.
 
 **Requirements:**
-- REQ-NEXT-GATE-01: `/vgsd-progress --next` MUST track consecutive same-step calls
+- REQ-NEXT-GATE-01: `/fvgsd-progress --next` MUST track consecutive same-step calls
 - REQ-NEXT-GATE-02: On repeated same-step, system MUST present a hard stop gate to the user
 - REQ-NEXT-GATE-03: User MUST explicitly confirm to continue past a hard stop gate
 
@@ -2273,13 +2273,13 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 **Requirements:**
 - REQ-ADAPTIVE-01: `adaptive` preset MUST assign model tiers based on agent role (planner → quality tier, executor → balanced tier, etc.)
-- REQ-ADAPTIVE-02: `adaptive` MUST be selectable via `/vgsd-config --profile adaptive`
+- REQ-ADAPTIVE-02: `adaptive` MUST be selectable via `/fvgsd-config --profile adaptive`
 
 ---
 
 ### 103. Post-Merge Hunk Verification
 
-**Command:** `/vgsd-update --reapply`
+**Command:** `/fvgsd-update --reapply`
 
 **Purpose:** After applying local patches post-update, verify that all hunks were actually applied by comparing the expected patch content against the live filesystem. Surface any dropped or partial hunks immediately rather than silently accepting incomplete merges.
 
@@ -2307,8 +2307,8 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 **Requirements:**
 - REQ-CLINE-02: Cline install MUST write `.clinerules` to `~/.cline/` (global) or `./.cline/` (local). No custom slash commands — rules-based integration only. Flag: `--cline`.
-- REQ-CODEBUDDY-01: CodeBuddy install MUST deploy skills to `~/.codebuddy/skills/vgsd-*/SKILL.md`. Flag: `--codebuddy`.
-- REQ-QWEN-01: Qwen Code install MUST deploy skills to `~/.qwen/skills/vgsd-*/SKILL.md`, following the open standard used by Claude Code 2.1.88+. `QWEN_CONFIG_DIR` env var overrides the default path. Flag: `--qwen`.
+- REQ-CODEBUDDY-01: CodeBuddy install MUST deploy skills to `~/.codebuddy/skills/fvgsd-*/SKILL.md`. Flag: `--codebuddy`.
+- REQ-QWEN-01: Qwen Code install MUST deploy skills to `~/.qwen/skills/fvgsd-*/SKILL.md`, following the open standard used by Claude Code 2.1.88+. `QWEN_CONFIG_DIR` env var overrides the default path. Flag: `--qwen`.
 
 **Runtime summary:**
 
@@ -2322,7 +2322,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 105. GSD-2 Reverse Migration
 
-**Command:** `/vgsd-import --from-gsd2 [--dry-run] [--force] [--path <dir>]`
+**Command:** `/fvgsd-import --from-gsd2 [--dry-run] [--force] [--path <dir>]`
 
 **Purpose:** Migrate a project from GSD-2 format (`.gsd/` directory with Milestone→Slice→Task hierarchy) back to the v1 `.planning/` format, restoring full compatibility with all GSD v1 commands.
 
@@ -2345,7 +2345,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 106. AI Integration Phase Wizard
 
-**Command:** `/vgsd-ai-integration-phase [N]`
+**Command:** `/fvgsd-ai-integration-phase [N]`
 
 **Purpose:** Guide developers through selecting, integrating, and planning evaluation for AI/LLM capabilities in a project phase. Produces a structured `AI-SPEC.md` that feeds into planning and verification.
 
@@ -2361,7 +2361,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 107. AI Eval Review
 
-**Command:** `/vgsd-eval-review [N]`
+**Command:** `/fvgsd-eval-review [N]`
 
 **Purpose:** Retroactively audit an executed AI phase's evaluation coverage against the `AI-SPEC.md` plan. Identifies gaps between planned and implemented evaluation before the phase is closed.
 
@@ -2379,7 +2379,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 108. Plan Bounce
 
-**Command:** `/vgsd-plan-phase N --bounce`
+**Command:** `/fvgsd-plan-phase N --bounce`
 
 **Purpose:** After plans pass the checker, optionally refine them through an external script (a second AI, a linter, a custom validator). The bounce step backs up each plan, runs the script, validates YAML frontmatter integrity on the result, re-runs the plan checker, and restores the original if anything fails.
 
@@ -2396,9 +2396,9 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 109. External Code Review Command
 
-**Command:** `/vgsd-ship` (enhanced)
+**Command:** `/fvgsd-ship` (enhanced)
 
-**Purpose:** Before the manual review step in `/vgsd-ship`, automatically run an external code review command if configured. The command receives the diff and phase context via stdin and returns a JSON verdict (`APPROVED` or `REVISE`). Falls through to the existing manual review flow regardless of outcome.
+**Purpose:** Before the manual review step in `/fvgsd-ship`, automatically run an external code review command if configured. The command receives the diff and phase context via stdin and returns a JSON verdict (`APPROVED` or `REVISE`). Falls through to the existing manual review flow regardless of outcome.
 
 **Requirements:**
 - REQ-EXTREVIEW-01: `workflow.code_review_command` must be set to a command string; null means skip
@@ -2413,7 +2413,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 110. Cross-AI Execution Delegation
 
-**Command:** `/vgsd-execute-phase N --cross-ai`
+**Command:** `/fvgsd-execute-phase N --cross-ai`
 
 **Purpose:** Delegate individual plans to an external AI runtime for execution. Plans with `cross_ai: true` in their frontmatter (or all plans when `--cross-ai` is used) are sent to the configured command via stdin. Successfully handled plans are removed from the normal executor queue.
 
@@ -2430,7 +2430,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 111. Architectural Responsibility Mapping
 
-**Command:** `/vgsd-plan-phase` (enhanced research step)
+**Command:** `/fvgsd-plan-phase` (enhanced research step)
 
 **Purpose:** During phase research, the phase-researcher now maps each capability to its architectural tier owner (browser, frontend server, API, CDN/static, database). The planner cross-references tasks against this map, and the plan-checker enforces tier compliance as Dimension 7c.
 
@@ -2445,7 +2445,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 112. Extract Learnings
 
-**Command:** `/vgsd-extract-learnings N`
+**Command:** `/fvgsd-extract-learnings N`
 
 **Purpose:** Extract structured knowledge from completed phase artifacts. Reads PLAN.md and SUMMARY.md (required) plus VERIFICATION.md, UAT.md, and STATE.md (optional) to produce four categories of learnings: decisions, lessons, patterns, and surprises. Optionally captures each item to an external knowledge base via `capture_thought` tool.
 
@@ -2470,13 +2470,13 @@ capture_thought({
 })
 ```
 
-Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style servers, `claude-mem`, or `mem0`-style servers) can implement this tool name to have learnings routed into their knowledge base automatically with `project`, `phase`, and `source` metadata. Everyone else can use `/vgsd-extract-learnings` without any extra setup — the `LEARNINGS.md` artifact is the feature.
+Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style servers, `claude-mem`, or `mem0`-style servers) can implement this tool name to have learnings routed into their knowledge base automatically with `project`, `phase`, and `source` metadata. Everyone else can use `/fvgsd-extract-learnings` without any extra setup — the `LEARNINGS.md` artifact is the feature.
 
 ---
 
 ### 113. SDK Workstream Support
 
-**Command:** `gsd-sdk init @prd.md --ws my-workstream`
+**Command:** `fvgsd-sdk init @prd.md --ws my-workstream`
 
 **Purpose:** Route all SDK `.planning/` paths to `.planning/workstreams/<name>/`, enabling multi-workstream projects without "Project already exists" errors. The `--ws` flag validates the workstream name and propagates to all subsystems (tools, config, context engine).
 
@@ -2504,7 +2504,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ### 115. Configurable CLAUDE.md Path
 
-**Purpose:** Allow projects to store their CLAUDE.md in a non-root location. The `claude_md_path` config key controls where `/vgsd-profile-user` and related commands write the generated CLAUDE.md file.
+**Purpose:** Allow projects to store their CLAUDE.md in a non-root location. The `claude_md_path` config key controls where `/fvgsd-profile-user` and related commands write the generated CLAUDE.md file.
 
 **Requirements:**
 - REQ-CMDPATH-01: `claude_md_path` defaults to `./CLAUDE.md`
@@ -2536,9 +2536,9 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ### 117. Spike Command
 
-**Command:** `/vgsd-spike [idea] [--quick]`
+**Command:** `/fvgsd-spike [idea] [--quick]`
 
-**Purpose:** Run 2–5 focused feasibility experiments before committing to an implementation approach. Each experiment uses Given/When/Then framing, produces executable code, and returns a VALIDATED / INVALIDATED / PARTIAL verdict. Companion `/vgsd-spike --wrap-up` packages findings into a project-local skill.
+**Purpose:** Run 2–5 focused feasibility experiments before committing to an implementation approach. Each experiment uses Given/When/Then framing, produces executable code, and returns a VALIDATED / INVALIDATED / PARTIAL verdict. Companion `/fvgsd-spike --wrap-up` packages findings into a project-local skill.
 
 **Requirements:**
 - REQ-SPIKE-01: Each experiment MUST produce a Given/When/Then hypothesis before any code is written
@@ -2546,7 +2546,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-SPIKE-03: Each experiment MUST return one of: VALIDATED, INVALIDATED, or PARTIAL verdict with evidence
 - REQ-SPIKE-04: Results MUST be stored in `.planning/spikes/NNN-experiment-name/` with a README and MANIFEST.md
 - REQ-SPIKE-05: `--quick` flag skips intake conversation and uses the argument text as the experiment direction
-- REQ-SPIKE-06: `/vgsd-spike --wrap-up` MUST package findings into `.claude/skills/spike-findings-[project]/`
+- REQ-SPIKE-06: `/fvgsd-spike --wrap-up` MUST package findings into `.claude/skills/spike-findings-[project]/`
 
 **Produces:**
 
@@ -2554,15 +2554,15 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 |----------|-------------|
 | `.planning/spikes/NNN-name/README.md` | Hypothesis, experiment code, verdict, and evidence |
 | `.planning/spikes/MANIFEST.md` | Index of all spikes with verdicts |
-| `.claude/skills/spike-findings-[project]/` | Packaged findings (via `/vgsd-spike --wrap-up`) |
+| `.claude/skills/spike-findings-[project]/` | Packaged findings (via `/fvgsd-spike --wrap-up`) |
 
 ---
 
 ### 118. Sketch Command
 
-**Command:** `/vgsd-sketch [idea] [--quick] [--text]`
+**Command:** `/fvgsd-sketch [idea] [--quick] [--text]`
 
-**Purpose:** Explore design directions through throwaway HTML mockups before committing to implementation. Produces 2–3 interactive variants per design question, all viewable directly in a browser with no build step. Companion `/vgsd-sketch --wrap-up` packages winning decisions into a project-local skill.
+**Purpose:** Explore design directions through throwaway HTML mockups before committing to implementation. Produces 2–3 interactive variants per design question, all viewable directly in a browser with no build step. Companion `/fvgsd-sketch --wrap-up` packages winning decisions into a project-local skill.
 
 **Requirements:**
 - REQ-SKETCH-01: Each sketch MUST answer one specific visual design question
@@ -2572,7 +2572,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-SKETCH-05: A shared `themes/default.css` MUST provide CSS variables adapted to the agreed aesthetic
 - REQ-SKETCH-06: `--quick` flag skips mood intake; `--text` flag replaces `AskUserQuestion` with numbered lists for non-Claude runtimes
 - REQ-SKETCH-07: The winning variant MUST be marked in the README frontmatter and with a ★ in the HTML tab
-- REQ-SKETCH-08: `/vgsd-sketch --wrap-up` MUST package winning decisions into `.claude/skills/sketch-findings-[project]/`
+- REQ-SKETCH-08: `/fvgsd-sketch --wrap-up` MUST package winning decisions into `.claude/skills/sketch-findings-[project]/`
 
 **Produces:**
 | Artifact | Description |
@@ -2581,7 +2581,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 | `.planning/sketches/NNN-name/README.md` | Design question, variants, winner, what to look for |
 | `.planning/sketches/themes/default.css` | Shared CSS theme variables |
 | `.planning/sketches/MANIFEST.md` | Index of all sketches with winners |
-| `.claude/skills/sketch-findings-[project]/` | Packaged decisions (via `/vgsd-sketch --wrap-up`) |
+| `.claude/skills/sketch-findings-[project]/` | Packaged decisions (via `/fvgsd-sketch --wrap-up`) |
 
 ---
 
@@ -2590,7 +2590,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 **Purpose:** Keep agent prompt files lean with tiered line-count limits enforced in CI. Oversized agents are caught before they bloat context windows in production.
 
 **Requirements:**
-- REQ-BUDGET-01: `agents/vgsd-*.md` files are classified into three tiers: XL (≤ 1 600 lines), Large (≤ 1 000 lines), Default (≤ 500 lines)
+- REQ-BUDGET-01: `agents/fvgsd-*.md` files are classified into three tiers: XL (≤ 1 600 lines), Large (≤ 1 000 lines), Default (≤ 500 lines)
 - REQ-BUDGET-02: Tier assignment is declared in the file's YAML frontmatter (`size: xl | large | default`)
 - REQ-BUDGET-03: `tests/agent-size-budget.test.cjs` enforces limits and fails CI on violation
 - REQ-BUDGET-04: Files without a `size` frontmatter key default to the Default (500-line) limit
@@ -2614,14 +2614,14 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ### 121. Knowledge Graph Integration
 
-**Purpose:** Build, query, and inspect a lightweight knowledge graph of the project in `.planning/graphs/`. Opt-in per project. Exposed as the `/vgsd-graphify` user-facing command and the `gsd-tools.cjs graphify …` programmatic verb family. Complements `/vgsd-map-codebase --query` (snapshot-oriented) with a graph-oriented view of nodes and edges across commands, agents, workflows, and phases.
+**Purpose:** Build, query, and inspect a lightweight knowledge graph of the project in `.planning/graphs/`. Opt-in per project. Exposed as the `/fvgsd-graphify` user-facing command and the `fvgsd-tools.cjs graphify …` programmatic verb family. Complements `/fvgsd-map-codebase --query` (snapshot-oriented) with a graph-oriented view of nodes and edges across commands, agents, workflows, and phases.
 
 **Requirements:**
-- REQ-GRAPH-01: Opt-in via `graphify.enabled: true` in `.planning/config.json`. When disabled, `/vgsd-graphify` prints an activation hint and stops without writing.
-- REQ-GRAPH-02: Slash-command `/vgsd-graphify` exposes subcommands `build`, `query <term>`, `status`, `diff`. The programmatic CLI `node gsd-tools.cjs graphify …` additionally exposes `snapshot`, which is also invoked automatically as the final step of `graphify build`.
+- REQ-GRAPH-01: Opt-in via `graphify.enabled: true` in `.planning/config.json`. When disabled, `/fvgsd-graphify` prints an activation hint and stops without writing.
+- REQ-GRAPH-02: Slash-command `/fvgsd-graphify` exposes subcommands `build`, `query <term>`, `status`, `diff`. The programmatic CLI `node fvgsd-tools.cjs graphify …` additionally exposes `snapshot`, which is also invoked automatically as the final step of `graphify build`.
 - REQ-GRAPH-03: Build runs within the configurable `graphify.build_timeout` (seconds); exceeding the timeout aborts cleanly without leaving a partial graph.
 - REQ-GRAPH-04: `graphify.cjs` falls back to `graph.links` when `graph.edges` is absent so older graph artifacts keep rendering.
-- REQ-GRAPH-05: CJS-only surface; `gsd-sdk query` does not yet register graphify handlers.
+- REQ-GRAPH-05: CJS-only surface; `fvgsd-sdk query` does not yet register graphify handlers.
 
 **Configuration:** `graphify.enabled`, `graphify.build_timeout`
 **Reference files:** `commands/gsd/graphify.md`, `bin/lib/graphify.cjs`
@@ -2636,13 +2636,13 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 **Requirements:**
 - REQ-CONSOLIDATE-01: Four new grouped skills replace clusters of micro-skills:
-  - `/vgsd-capture` — folds add-todo (default), note (`--note`), add-backlog (`--backlog`), plant-seed (`--seed`), check-todos (`--list`)
-  - `/vgsd-phase` — folds add-phase (default), insert-phase (`--insert`), remove-phase (`--remove`), edit-phase (`--edit`)
-  - `/vgsd-config` — folds settings-advanced (`--advanced`), settings-integrations (`--integrations`), set-profile (`--profile`)
-  - `/vgsd-workspace` — folds new-workspace (`--new`), list-workspaces (`--list`), remove-workspace (`--remove`)
-- REQ-CONSOLIDATE-02: Six existing parents absorb wrap-up / sub-operations as flags: `/vgsd-update --sync`, `/vgsd-update --reapply`, `/vgsd-sketch --wrap-up`, `/vgsd-spike --wrap-up`, `/vgsd-map-codebase --fast`, `/vgsd-map-codebase --query`, `/vgsd-code-review --fix`, `/vgsd-progress --do`, `/vgsd-progress --next`.
+  - `/fvgsd-capture` — folds add-todo (default), note (`--note`), add-backlog (`--backlog`), plant-seed (`--seed`), check-todos (`--list`)
+  - `/fvgsd-phase` — folds add-phase (default), insert-phase (`--insert`), remove-phase (`--remove`), edit-phase (`--edit`)
+  - `/fvgsd-config` — folds settings-advanced (`--advanced`), settings-integrations (`--integrations`), set-profile (`--profile`)
+  - `/fvgsd-workspace` — folds new-workspace (`--new`), list-workspaces (`--list`), remove-workspace (`--remove`)
+- REQ-CONSOLIDATE-02: Six existing parents absorb wrap-up / sub-operations as flags: `/fvgsd-update --sync`, `/fvgsd-update --reapply`, `/fvgsd-sketch --wrap-up`, `/fvgsd-spike --wrap-up`, `/fvgsd-map-codebase --fast`, `/fvgsd-map-codebase --query`, `/fvgsd-code-review --fix`, `/fvgsd-progress --do`, `/fvgsd-progress --next`.
 - REQ-CONSOLIDATE-03: Deleted micro-skill slash forms (the bare `gsd-add-todo`, `gsd-add-backlog`, `gsd-plant-seed`, `gsd-check-todos`, `gsd-add-phase`, `gsd-insert-phase`, `gsd-remove-phase`, `gsd-edit-phase`, `gsd-new-workspace`, `gsd-list-workspaces`, `gsd-remove-workspace`, `gsd-settings-advanced`, `gsd-settings-integrations`, `gsd-set-profile`, `gsd-sketch-wrap-up`, `gsd-spike-wrap-up`, `gsd-reapply-patches`, `gsd-code-review-fix`, …) MUST resolve to "Unknown command" — no shadow stubs.
-- REQ-CONSOLIDATE-04: `autonomous.md` invokes `/vgsd-code-review --fix` (was previously calling the deleted `gsd-code-review-fix`).
+- REQ-CONSOLIDATE-04: `autonomous.md` invokes `/fvgsd-code-review --fix` (was previously calling the deleted `gsd-code-review-fix`).
 
 **Reference issue:** [#2790](https://github.com/gsd-build/get-shit-done/issues/2790)
 
@@ -2653,12 +2653,12 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 **Purpose:** Replace the flat eager skill listing with a two-stage hierarchical routing layer. The model sees 6 namespace routers instead of 86 entries, selects a namespace, then routes to the sub-skill. Descriptions use pipe-separated keyword tags (≤ 60 chars) for routing density.
 
 **Commands:**
-- `/vgsd-workflow` — phase pipeline router (discuss / plan / execute / verify / phase / progress)
-- `/vgsd-project` — project lifecycle (milestones, audits, summary)
-- `/vgsd-quality` — quality gates (code review, debug, audit, security, eval, ui)
-- `/vgsd-context` — codebase intelligence (map, graphify, docs, learnings)
-- `/vgsd-manage` — config / workspace / workstreams / thread / update / ship / inbox
-- `/vgsd-ideate` — exploration & capture (explore, sketch, spike, spec, capture)
+- `/fvgsd-workflow` — phase pipeline router (discuss / plan / execute / verify / phase / progress)
+- `/fvgsd-project` — project lifecycle (milestones, audits, summary)
+- `/fvgsd-quality` — quality gates (code review, debug, audit, security, eval, ui)
+- `/fvgsd-context` — codebase intelligence (map, graphify, docs, learnings)
+- `/fvgsd-manage` — config / workspace / workstreams / thread / update / ship / inbox
+- `/fvgsd-ideate` — exploration & capture (explore, sketch, spike, spec, capture)
 
 **Token cost:**
 
@@ -2678,13 +2678,13 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ### 124. Context-Window Utilization Guard
 
-**Command:** `/vgsd-health --context`
+**Command:** `/fvgsd-health --context`
 
-**Purpose:** Quality guard against context-window saturation. Two thresholds: 60 % utilization warns ("consider `/vgsd-thread`"), 70 % is critical ("reasoning quality may degrade"; matches the fracture-point per recent context-attention research).
+**Purpose:** Quality guard against context-window saturation. Two thresholds: 60 % utilization warns ("consider `/fvgsd-thread`"), 70 % is critical ("reasoning quality may degrade"; matches the fracture-point per recent context-attention research).
 
 **Requirements:**
-- REQ-CTX-GUARD-01: `/vgsd-health --context` prints a structured status line with current utilization, threshold tier (`ok` / `warn` / `critical`), and a remediation suggestion.
-- REQ-CTX-GUARD-02: The same triage is exposed as `gsd-sdk query validate.context --tokens-used <int> --context-window <int>` — a structured envelope for status-line and hook callers (#125). Both flags are required; the handler returns the same `{ percent, state }` envelope as the pure classifier in REQ-CTX-GUARD-03.
+- REQ-CTX-GUARD-01: `/fvgsd-health --context` prints a structured status line with current utilization, threshold tier (`ok` / `warn` / `critical`), and a remediation suggestion.
+- REQ-CTX-GUARD-02: The same triage is exposed as `fvgsd-sdk query validate.context --tokens-used <int> --context-window <int>` — a structured envelope for status-line and hook callers (#125). Both flags are required; the handler returns the same `{ percent, state }` envelope as the pure classifier in REQ-CTX-GUARD-03.
 - REQ-CTX-GUARD-03: The classifier (`bin/lib/context-utilization.cjs`) is pure: input `(tokensUsed, contextWindow)`, output `{ percent, state }`. Easy to unit-test, easy to reuse from any caller.
 
 **Reference issue:** [#2792](https://github.com/gsd-build/get-shit-done/issues/2792)
@@ -2720,11 +2720,11 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 | Slot | Agents assigned |
 |------|-----------------|
-| `planning` | `gsd-planner`, `gsd-roadmapper`, `gsd-pattern-mapper` |
+| `planning` | `fvgsd-planner`, `fvgsd-roadmapper`, `fvgsd-pattern-mapper` |
 | `discuss` | (reserved for future subagent) |
-| `research` | `gsd-phase-researcher`, `gsd-project-researcher`, `gsd-research-synthesizer`, `gsd-codebase-mapper`, `gsd-ui-researcher` |
-| `execution` | `gsd-executor`, `gsd-debugger`, `gsd-doc-writer` |
-| `verification` | `gsd-verifier`, `gsd-plan-checker`, `gsd-integration-checker`, `gsd-nyquist-auditor`, `gsd-ui-checker`, `gsd-ui-auditor`, `gsd-doc-verifier` |
+| `research` | `fvgsd-phase-researcher`, `fvgsd-project-researcher`, `fvgsd-research-synthesizer`, `fvgsd-codebase-mapper`, `fvgsd-ui-researcher` |
+| `execution` | `fvgsd-executor`, `fvgsd-debugger`, `fvgsd-doc-writer` |
+| `verification` | `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-nyquist-auditor`, `fvgsd-ui-checker`, `fvgsd-ui-auditor`, `fvgsd-doc-verifier` |
 | `completion` | (reserved for future subagent) |
 
 **Accepted values:** `"opus"` / `"sonnet"` / `"haiku"` / `"inherit"`
@@ -2796,11 +2796,11 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 **Document:** [`docs/issue-driven-orchestration.md`](issue-driven-orchestration.md)
 
 **Covered workflow:**
-1. Create an isolated workspace per issue (`/vgsd-workspace --new`)
-2. Run the manager dashboard to get oriented (`/vgsd-manager`)
-3. Execute autonomously (`/vgsd-autonomous`)
-4. Verify and review (`/vgsd-verify-work`, `/vgsd-review`)
-5. Ship and close the issue (`/vgsd-ship`)
+1. Create an isolated workspace per issue (`/fvgsd-workspace --new`)
+2. Run the manager dashboard to get oriented (`/fvgsd-manager`)
+3. Execute autonomously (`/fvgsd-autonomous`)
+4. Verify and review (`/fvgsd-verify-work`, `/fvgsd-review`)
+5. Ship and close the issue (`/fvgsd-ship`)
 
 No new commands or daemon process — purely a documentation artifact that maps existing primitives onto a tracker-driven workflow.
 
@@ -2812,7 +2812,7 @@ No new commands or daemon process — purely a documentation artifact that maps 
 
 **Purpose:** Surface whether the architecture graph was built from the current commit or an older one, complementing the existing mtime-based stale signal.
 
-**Command:** `/vgsd-graphify status`
+**Command:** `/fvgsd-graphify status`
 
 **New fields returned (graphify v0.7+ graphs):**
 
@@ -2844,9 +2844,9 @@ Source commit: abc1234 (3 commits behind HEAD)
 
 | Verb | Returns | Used by |
 |------|---------|---------|
-| `gsd-sdk query phase.mvp-mode <N>` | `{active, source, roadmap_mode, config_mvp_mode, cli_flag_present}` | `plan-phase`, `execute-phase`, `verify-work`, `progress` |
-| `gsd-sdk query task.is-behavior-adding <plan-file>` | `{is_behavior_adding, checks: {tdd_true, has_behavior_block, has_source_files}, reason}` | `gsd-executor` agent |
-| `gsd-sdk query user-story.validate "<text>"` | `{valid, slots: {role, capability, outcome}, errors[]}` | `gsd-verifier`, `/vgsd-mvp-phase` |
+| `fvgsd-sdk query phase.mvp-mode <N>` | `{active, source, roadmap_mode, config_mvp_mode, cli_flag_present}` | `plan-phase`, `execute-phase`, `verify-work`, `progress` |
+| `fvgsd-sdk query task.is-behavior-adding <plan-file>` | `{is_behavior_adding, checks: {tdd_true, has_behavior_block, has_source_files}, reason}` | `fvgsd-executor` agent |
+| `fvgsd-sdk query user-story.validate "<text>"` | `{valid, slots: {role, capability, outcome}, errors[]}` | `fvgsd-verifier`, `/fvgsd-mvp-phase` |
 
 **Resolution precedence for `phase.mvp-mode`:**
 CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
@@ -2890,10 +2890,10 @@ CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
 | `standard` | Core plus common phase-management commands |
 | `full` | Complete surface; default |
 
-**Runtime control:** `/vgsd:surface` lists profile state and enables, disables, or resets skill clusters without reinstalling.
+**Runtime control:** `/fvgsd:surface` lists profile state and enables, disables, or resets skill clusters without reinstalling.
 
 **Requirements:**
-- REQ-SURFACE-01: Installer MUST resolve `--profile=<name>` and persist the active profile in `.gsd-profile`.
+- REQ-SURFACE-01: Installer MUST resolve `--profile=<name>` and persist the active profile in `.fvgsd-profile`.
 - REQ-SURFACE-02: `--minimal` and `--core-only` MUST remain aliases for `--profile=core`.
 - REQ-SURFACE-03: Runtime surface state MUST persist outside the install profile marker.
 
@@ -2923,7 +2923,7 @@ CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
 
 ### 135. Custom Ship PR Body Sections
 
-**Command:** `/vgsd-ship`
+**Command:** `/fvgsd-ship`
 
 **Config key:** `ship.pr_body_sections`
 
@@ -2942,11 +2942,11 @@ CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
 
 ### 136. Review Default Reviewers
 
-**Command:** `/vgsd-review`
+**Command:** `/fvgsd-review`
 
 **Config key:** `review.default_reviewers`
 
-**Purpose:** Let teams choose the default reviewer subset for no-flag `/vgsd-review` runs.
+**Purpose:** Let teams choose the default reviewer subset for no-flag `/fvgsd-review` runs.
 
 **Precedence:**
 ```text
@@ -2964,7 +2964,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 
 ### 137. Fallow Structural Review Pre-Pass
 
-**Command:** `/vgsd-code-review`
+**Command:** `/fvgsd-code-review`
 
 **Config keys:** `code_quality.fallow.*`
 
@@ -3000,7 +3000,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 
 ### 139. Quota and Rate-Limit Failure Classification
 
-**Command:** `/vgsd-execute-phase`
+**Command:** `/fvgsd-execute-phase`
 
 **Purpose:** Treat provider quota and rate-limit failures as wait-and-resume conditions, not normal executor failures.
 
@@ -3037,7 +3037,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 
 ### 141. Milestone Tag Creation Toggle
 
-**Command:** `/vgsd-complete-milestone`
+**Command:** `/fvgsd-complete-milestone`
 
 **Config key:** `git.create_tag`
 
@@ -3056,7 +3056,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 
 ### 142. Structured JSON Error Mode
 
-**CLI:** `gsd-tools --json-errors`
+**CLI:** `fvgsd-tools --json-errors`
 
 **Purpose:** Give SDK and automation callers stable machine-readable error envelopes.
 

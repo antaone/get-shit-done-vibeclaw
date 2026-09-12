@@ -1,6 +1,6 @@
 # Manual Update (Non-npm Install)
 
-Use this procedure when `npx get-shit-done-cc@latest` is unavailable — e.g. during a publish outage or if you are working directly from the source repo.
+Use this procedure when `npx fvgsd@latest` is unavailable — e.g. during a publish outage or if you are working directly from the source repo.
 
 ## Prerequisites
 
@@ -48,9 +48,9 @@ Use `--local` instead of `--global` for a project-scoped install.
 
 The installer performs a clean wipe-and-replace of GSD-managed directories only:
 
-- `~/.claude/get-shit-done/` — workflows, references, templates
+- `~/.claude/fvgsd/` — workflows, references, templates
 - `~/.claude/commands/gsd/` — slash commands
-- `~/.claude/agents/vgsd-*.md` — GSD agents
+- `~/.claude/agents/fvgsd-*.md` — GSD agents
 - `~/.claude/hooks/dist/` — compiled hooks
 
 **What is preserved:**
@@ -59,4 +59,4 @@ The installer performs a clean wipe-and-replace of GSD-managed directories only:
 - Your `CLAUDE.md` files
 - Custom hooks
 
-Locally modified GSD files are automatically backed up to `gsd-local-patches/` before the install. Run `/vgsd-update --reapply` after updating to merge your modifications back in.
+Locally modified GSD files are automatically backed up to `fvgsd-local-patches/` before the install. Run `/fvgsd-update --reapply` after updating to merge your modifications back in.

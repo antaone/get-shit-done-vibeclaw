@@ -2,7 +2,7 @@
  * Codebase Drift Detection (#2003)
  *
  * Detects structural drift between a committed codebase and the
- * `.planning/codebase/STRUCTURE.md` map produced by `gsd-codebase-mapper`.
+ * `.planning/codebase/STRUCTURE.md` map produced by `fvgsd-codebase-mapper`.
  *
  * Four categories of drift element:
  *   - new_dir    → a newly-added file whose directory prefix does not appear

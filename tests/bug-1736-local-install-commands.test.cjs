@@ -10,7 +10,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, before, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -43,7 +43,7 @@ describe('#1736: local Claude install populates .claude/commands/gsd/', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-local-install-1736-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-local-install-1736-'));
   });
 
   afterEach(() => {

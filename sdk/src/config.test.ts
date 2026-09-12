@@ -11,16 +11,16 @@ describe('loadConfig', () => {
   let prevGsdHome: string | undefined;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `fvgsd-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
     // Isolate ~/.gsd/defaults.json by pointing HOME at an empty tmp dir.
-    fakeHome = join(tmpdir(), `gsd-home-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    fakeHome = join(tmpdir(), `fvgsd-home-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(fakeHome, { recursive: true });
     prevHome = process.env.HOME;
     process.env.HOME = fakeHome;
-    // Also isolate GSD_HOME (loadUserDefaults prefers it over HOME).
-    prevGsdHome = process.env.GSD_HOME;
-    delete process.env.GSD_HOME;
+    // Also isolate FVGSD_HOME (loadUserDefaults prefers it over HOME).
+    prevGsdHome = process.env.FVGSD_HOME;
+    delete process.env.FVGSD_HOME;
   });
 
   afterEach(async () => {
@@ -28,8 +28,8 @@ describe('loadConfig', () => {
     await rm(fakeHome, { recursive: true, force: true });
     if (prevHome === undefined) delete process.env.HOME;
     else process.env.HOME = prevHome;
-    if (prevGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = prevGsdHome;
+    if (prevGsdHome === undefined) delete process.env.FVGSD_HOME;
+    else process.env.FVGSD_HOME = prevGsdHome;
   });
 
   async function writeUserDefaults(defaults: unknown) {

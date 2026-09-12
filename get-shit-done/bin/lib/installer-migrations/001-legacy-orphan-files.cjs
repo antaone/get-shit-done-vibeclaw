@@ -25,14 +25,14 @@ module.exports = {
           type: 'remove-managed',
           relPath,
           reason: 'legacy orphan hook file retired by installer migration',
-          ownershipEvidence: 'legacy hook path is manifest-managed in gsd-file-manifest.json',
+          ownershipEvidence: 'legacy hook path is manifest-managed in fvgsd-file-manifest.json',
         });
       } else if (artifact.classification === 'managed-modified') {
         actions.push({
           type: 'backup-and-remove',
           relPath,
           reason: 'legacy orphan hook file retired by installer migration',
-          ownershipEvidence: 'legacy hook path is manifest-managed in gsd-file-manifest.json',
+          ownershipEvidence: 'legacy hook path is manifest-managed in fvgsd-file-manifest.json',
         });
       }
     }

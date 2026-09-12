@@ -6,7 +6,7 @@ import { routeNextAction } from './route-next-action.js';
 
 describe('routeNextAction', () => {
   it('suggests new-project when STATE.md is missing', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-rna-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-rna-'));
     await mkdir(join(dir, '.planning'), { recursive: true });
     const { data } = await routeNextAction([], dir);
     expect(data).toMatchObject({
@@ -16,7 +16,7 @@ describe('routeNextAction', () => {
   });
 
   it('routes to resume-work when paused', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-rna-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-rna-'));
     await mkdir(join(dir, '.planning'), { recursive: true });
     await writeFile(
       join(dir, '.planning', 'STATE.md'),
@@ -37,7 +37,7 @@ milestone: v1.0
   });
 
   it('blocks when .continue-here.md exists', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-rna-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-rna-'));
     await mkdir(join(dir, '.planning'), { recursive: true });
     await writeFile(join(dir, '.planning', '.continue-here.md'), 'checkpoint\n', 'utf-8');
     await writeFile(

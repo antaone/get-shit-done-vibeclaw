@@ -1,19 +1,19 @@
 # GSD CLI ツールリファレンス
 
-> `gsd-tools.cjs` のプログラマティック API リファレンスです。ワークフローやエージェントが内部的に使用します。ユーザー向けコマンドについては、[コマンドリファレンス](COMMANDS.md) を参照してください。
+> `fvgsd-tools.cjs` のプログラマティック API リファレンスです。ワークフローやエージェントが内部的に使用します。ユーザー向けコマンドについては、[コマンドリファレンス](COMMANDS.md) を参照してください。
 
 ---
 
 ## 概要
 
-`gsd-tools.cjs` は、GSD の約50個のコマンド、ワークフロー、エージェントファイル全体で繰り返し使われるインライン bash パターンを置き換える Node.js CLI ユーティリティです。設定の解析、モデル解決、フェーズ検索、git コミット、サマリー検証、状態管理、テンプレート操作を一元化しています。
+`fvgsd-tools.cjs` は、GSD の約50個のコマンド、ワークフロー、エージェントファイル全体で繰り返し使われるインライン bash パターンを置き換える Node.js CLI ユーティリティです。設定の解析、モデル解決、フェーズ検索、git コミット、サマリー検証、状態管理、テンプレート操作を一元化しています。
 
-**配置場所:** `get-shit-done/bin/gsd-tools.cjs`
+**配置場所:** `get-shit-done/bin/fvgsd-tools.cjs`
 **モジュール:** `get-shit-done/bin/lib/` 内の15個のドメインモジュール
 
 **使い方:**
 ```bash
-node gsd-tools.cjs <command> [args] [--raw] [--cwd <path>]
+node fvgsd-tools.cjs <command> [args] [--raw] [--cwd <path>]
 ```
 
 **グローバルフラグ:**
@@ -30,40 +30,40 @@ node gsd-tools.cjs <command> [args] [--raw] [--cwd <path>]
 
 ```bash
 # プロジェクトの全設定 + 状態を JSON として読み込む
-node gsd-tools.cjs state load
+node fvgsd-tools.cjs state load
 
 # STATE.md のフロントマターを JSON として出力
-node gsd-tools.cjs state json
+node fvgsd-tools.cjs state json
 
 # 単一フィールドを更新
-node gsd-tools.cjs state update <field> <value>
+node fvgsd-tools.cjs state update <field> <value>
 
 # STATE.md の内容または特定セクションを取得
-node gsd-tools.cjs state get [section]
+node fvgsd-tools.cjs state get [section]
 
 # 複数フィールドの一括更新
-node gsd-tools.cjs state patch --field1 val1 --field2 val2
+node fvgsd-tools.cjs state patch --field1 val1 --field2 val2
 
 # プランカウンターをインクリメント
-node gsd-tools.cjs state advance-plan
+node fvgsd-tools.cjs state advance-plan
 
 # 実行メトリクスを記録
-node gsd-tools.cjs state record-metric --phase N --plan M --duration Xmin [--tasks N] [--files N]
+node fvgsd-tools.cjs state record-metric --phase N --plan M --duration Xmin [--tasks N] [--files N]
 
 # プログレスバーを再計算
-node gsd-tools.cjs state update-progress
+node fvgsd-tools.cjs state update-progress
 
 # 決定事項を追加
-node gsd-tools.cjs state add-decision --summary "..." [--phase N] [--rationale "..."]
+node fvgsd-tools.cjs state add-decision --summary "..." [--phase N] [--rationale "..."]
 # ファイルから追加する場合:
-node gsd-tools.cjs state add-decision --summary-file path [--rationale-file path]
+node fvgsd-tools.cjs state add-decision --summary-file path [--rationale-file path]
 
 # ブロッカーの追加・解決
-node gsd-tools.cjs state add-blocker --text "..."
-node gsd-tools.cjs state resolve-blocker --text "..."
+node fvgsd-tools.cjs state add-blocker --text "..."
+node fvgsd-tools.cjs state resolve-blocker --text "..."
 
 # セッション継続性を記録
-node gsd-tools.cjs state record-session --stopped-at "..." [--resume-file path]
+node fvgsd-tools.cjs state record-session --stopped-at "..." [--resume-file path]
 ```
 
 ### State スナップショット
@@ -71,7 +71,7 @@ node gsd-tools.cjs state record-session --stopped-at "..." [--resume-file path]
 STATE.md 全体の構造化パース:
 
 ```bash
-node gsd-tools.cjs state-snapshot
+node fvgsd-tools.cjs state-snapshot
 ```
 
 現在位置、フェーズ、プラン、ステータス、決定事項、ブロッカー、メトリクス、最終アクティビティを含む JSON を返します。
@@ -84,28 +84,28 @@ node gsd-tools.cjs state-snapshot
 
 ```bash
 # 番号でフェーズディレクトリを検索
-node gsd-tools.cjs find-phase <phase>
+node fvgsd-tools.cjs find-phase <phase>
 
 # 挿入用の次の小数フェーズ番号を計算
-node gsd-tools.cjs phase next-decimal <phase>
+node fvgsd-tools.cjs phase next-decimal <phase>
 
 # ロードマップに新しいフェーズを追加 + ディレクトリを作成
-node gsd-tools.cjs phase add <description>
+node fvgsd-tools.cjs phase add <description>
 
 # 既存フェーズの後に小数フェーズを挿入
-node gsd-tools.cjs phase insert <after> <description>
+node fvgsd-tools.cjs phase insert <after> <description>
 
 # フェーズを削除し、後続を振り直し
-node gsd-tools.cjs phase remove <phase> [--force]
+node fvgsd-tools.cjs phase remove <phase> [--force]
 
 # フェーズを完了としてマークし、状態 + ロードマップを更新
-node gsd-tools.cjs phase complete <phase>
+node fvgsd-tools.cjs phase complete <phase>
 
 # ウェーブとステータス付きでプランをインデックス化
-node gsd-tools.cjs phase-plan-index <phase>
+node fvgsd-tools.cjs phase-plan-index <phase>
 
 # フィルタリング付きでフェーズを一覧表示
-node gsd-tools.cjs phases list [--type planned|executed|all] [--phase N] [--include-archived]
+node fvgsd-tools.cjs phases list [--type planned|executed|all] [--phase N] [--include-archived]
 ```
 
 ---
@@ -116,13 +116,13 @@ node gsd-tools.cjs phases list [--type planned|executed|all] [--phase N] [--incl
 
 ```bash
 # ROADMAP.md からフェーズセクションを抽出
-node gsd-tools.cjs roadmap get-phase <phase>
+node fvgsd-tools.cjs roadmap get-phase <phase>
 
 # ディスク状態を含む完全なロードマップ解析
-node gsd-tools.cjs roadmap analyze
+node fvgsd-tools.cjs roadmap analyze
 
 # ディスクからプログレステーブル行を更新
-node gsd-tools.cjs roadmap update-plan-progress <N>
+node fvgsd-tools.cjs roadmap update-plan-progress <N>
 ```
 
 ---
@@ -133,16 +133,16 @@ node gsd-tools.cjs roadmap update-plan-progress <N>
 
 ```bash
 # デフォルト値で config.json を初期化
-node gsd-tools.cjs config-ensure-section
+node fvgsd-tools.cjs config-ensure-section
 
 # 設定値をセット（ドット記法）
-node gsd-tools.cjs config-set <key> <value>
+node fvgsd-tools.cjs config-set <key> <value>
 
 # 設定値を取得
-node gsd-tools.cjs config-get <key>
+node fvgsd-tools.cjs config-get <key>
 
 # モデルプロファイルを設定
-node gsd-tools.cjs config-set-model-profile <profile>
+node fvgsd-tools.cjs config-set-model-profile <profile>
 ```
 
 ---
@@ -151,11 +151,11 @@ node gsd-tools.cjs config-set-model-profile <profile>
 
 ```bash
 # 現在のプロファイルに基づいてエージェント用モデルを取得
-node gsd-tools.cjs resolve-model <agent-name>
+node fvgsd-tools.cjs resolve-model <agent-name>
 # 戻り値: opus | sonnet | haiku | inherit
 ```
 
-エージェント名: `gsd-planner`, `gsd-executor`, `gsd-phase-researcher`, `gsd-project-researcher`, `gsd-research-synthesizer`, `gsd-verifier`, `gsd-plan-checker`, `gsd-integration-checker`, `gsd-roadmapper`, `gsd-debugger`, `gsd-codebase-mapper`, `gsd-nyquist-auditor`
+エージェント名: `fvgsd-planner`, `fvgsd-executor`, `fvgsd-phase-researcher`, `fvgsd-project-researcher`, `fvgsd-research-synthesizer`, `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-roadmapper`, `fvgsd-debugger`, `fvgsd-codebase-mapper`, `fvgsd-nyquist-auditor`
 
 ---
 
@@ -165,25 +165,25 @@ node gsd-tools.cjs resolve-model <agent-name>
 
 ```bash
 # SUMMARY.md ファイルを検証
-node gsd-tools.cjs verify-summary <path> [--check-count N]
+node fvgsd-tools.cjs verify-summary <path> [--check-count N]
 
 # PLAN.md の構造 + タスクをチェック
-node gsd-tools.cjs verify plan-structure <file>
+node fvgsd-tools.cjs verify plan-structure <file>
 
 # 全プランにサマリーがあるか確認
-node gsd-tools.cjs verify phase-completeness <phase>
+node fvgsd-tools.cjs verify phase-completeness <phase>
 
 # @参照 + パスが解決可能か確認
-node gsd-tools.cjs verify references <file>
+node fvgsd-tools.cjs verify references <file>
 
 # コミットハッシュの一括検証
-node gsd-tools.cjs verify commits <hash1> [hash2] ...
+node fvgsd-tools.cjs verify commits <hash1> [hash2] ...
 
 # must_haves.artifacts をチェック
-node gsd-tools.cjs verify artifacts <plan-file>
+node fvgsd-tools.cjs verify artifacts <plan-file>
 
 # must_haves.key_links をチェック
-node gsd-tools.cjs verify key-links <plan-file>
+node fvgsd-tools.cjs verify key-links <plan-file>
 ```
 
 ---
@@ -194,10 +194,10 @@ node gsd-tools.cjs verify key-links <plan-file>
 
 ```bash
 # フェーズ番号、ディスク/ロードマップの同期を確認
-node gsd-tools.cjs validate consistency
+node fvgsd-tools.cjs validate consistency
 
 # .planning/ の整合性チェック、任意で修復
-node gsd-tools.cjs validate health [--repair]
+node fvgsd-tools.cjs validate health [--repair]
 ```
 
 ---
@@ -208,10 +208,10 @@ node gsd-tools.cjs validate health [--repair]
 
 ```bash
 # 粒度に基づいてサマリーテンプレートを選択
-node gsd-tools.cjs template select <type>
+node fvgsd-tools.cjs template select <type>
 
 # 変数でテンプレートを穴埋め
-node gsd-tools.cjs template fill <type> --phase N [--plan M] [--name "..."] [--type execute|tdd] [--wave N] [--fields '{json}']
+node fvgsd-tools.cjs template fill <type> --phase N [--plan M] [--name "..."] [--type execute|tdd] [--wave N] [--fields '{json}']
 ```
 
 `fill` のテンプレートタイプ: `summary`, `plan`, `verification`
@@ -224,16 +224,16 @@ node gsd-tools.cjs template fill <type> --phase N [--plan M] [--name "..."] [--t
 
 ```bash
 # フロントマターを JSON として抽出
-node gsd-tools.cjs frontmatter get <file> [--field key]
+node fvgsd-tools.cjs frontmatter get <file> [--field key]
 
 # 単一フィールドを更新
-node gsd-tools.cjs frontmatter set <file> --field key --value jsonVal
+node fvgsd-tools.cjs frontmatter set <file> --field key --value jsonVal
 
 # JSON をフロントマターにマージ
-node gsd-tools.cjs frontmatter merge <file> --data '{json}'
+node fvgsd-tools.cjs frontmatter merge <file> --data '{json}'
 
 # 必須フィールドを検証
-node gsd-tools.cjs frontmatter validate <file> --schema plan|summary|verification
+node fvgsd-tools.cjs frontmatter validate <file> --schema plan|summary|verification
 ```
 
 ---
@@ -244,16 +244,16 @@ node gsd-tools.cjs frontmatter validate <file> --schema plan|summary|verificatio
 
 ```bash
 # CONTEXT.md テンプレートを作成
-node gsd-tools.cjs scaffold context --phase N
+node fvgsd-tools.cjs scaffold context --phase N
 
 # UAT.md テンプレートを作成
-node gsd-tools.cjs scaffold uat --phase N
+node fvgsd-tools.cjs scaffold uat --phase N
 
 # VERIFICATION.md テンプレートを作成
-node gsd-tools.cjs scaffold verification --phase N
+node fvgsd-tools.cjs scaffold verification --phase N
 
 # フェーズディレクトリを作成
-node gsd-tools.cjs scaffold phase-dir --phase N --name "phase name"
+node fvgsd-tools.cjs scaffold phase-dir --phase N --name "phase name"
 ```
 
 ---
@@ -263,24 +263,24 @@ node gsd-tools.cjs scaffold phase-dir --phase N --name "phase name"
 特定のワークフローに必要なすべてのコンテキストを一度に読み込みます。プロジェクト情報、設定、状態、ワークフロー固有のデータを含む JSON を返します。
 
 ```bash
-node gsd-tools.cjs init execute-phase <phase>
-node gsd-tools.cjs init plan-phase <phase>
-node gsd-tools.cjs init new-project
-node gsd-tools.cjs init new-milestone
-node gsd-tools.cjs init quick <description>
-node gsd-tools.cjs init resume
-node gsd-tools.cjs init verify-work <phase>
-node gsd-tools.cjs init phase-op <phase>
-node gsd-tools.cjs init todos [area]
-node gsd-tools.cjs init milestone-op
-node gsd-tools.cjs init map-codebase
-node gsd-tools.cjs init progress
+node fvgsd-tools.cjs init execute-phase <phase>
+node fvgsd-tools.cjs init plan-phase <phase>
+node fvgsd-tools.cjs init new-project
+node fvgsd-tools.cjs init new-milestone
+node fvgsd-tools.cjs init quick <description>
+node fvgsd-tools.cjs init resume
+node fvgsd-tools.cjs init verify-work <phase>
+node fvgsd-tools.cjs init phase-op <phase>
+node fvgsd-tools.cjs init todos [area]
+node fvgsd-tools.cjs init milestone-op
+node fvgsd-tools.cjs init map-codebase
+node fvgsd-tools.cjs init progress
 ```
 
 **大容量ペイロードの処理:** 出力が約50KBを超える場合、CLI は一時ファイルに書き出し、`@file:/tmp/gsd-init-XXXXX.json` を返します。ワークフローは `@file:` プレフィックスを確認し、ディスクから読み込みます:
 
 ```bash
-INIT=$(node gsd-tools.cjs init execute-phase "1")
+INIT=$(node fvgsd-tools.cjs init execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -290,10 +290,10 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 
 ```bash
 # マイルストーンをアーカイブ
-node gsd-tools.cjs milestone complete <version> [--name <name>] [--archive-phases]
+node fvgsd-tools.cjs milestone complete <version> [--name <name>] [--archive-phases]
 
 # 要件を完了としてマーク
-node gsd-tools.cjs requirements mark-complete <ids>
+node fvgsd-tools.cjs requirements mark-complete <ids>
 # 受け付ける形式: REQ-01,REQ-02 または REQ-01 REQ-02 または [REQ-01, REQ-02]
 ```
 
@@ -303,45 +303,45 @@ node gsd-tools.cjs requirements mark-complete <ids>
 
 ```bash
 # テキストを URL セーフなスラッグに変換
-node gsd-tools.cjs generate-slug "Some Text Here"
+node fvgsd-tools.cjs generate-slug "Some Text Here"
 # → some-text-here
 
 # タイムスタンプを取得
-node gsd-tools.cjs current-timestamp [full|date|filename]
+node fvgsd-tools.cjs current-timestamp [full|date|filename]
 
 # 保留中の TODO をカウントして一覧表示
-node gsd-tools.cjs list-todos [area]
+node fvgsd-tools.cjs list-todos [area]
 
 # ファイル/ディレクトリの存在確認
-node gsd-tools.cjs verify-path-exists <path>
+node fvgsd-tools.cjs verify-path-exists <path>
 
 # 全 SUMMARY.md データを集約
-node gsd-tools.cjs history-digest
+node fvgsd-tools.cjs history-digest
 
 # SUMMARY.md から構造化データを抽出
-node gsd-tools.cjs summary-extract <path> [--fields field1,field2]
+node fvgsd-tools.cjs summary-extract <path> [--fields field1,field2]
 
 # プロジェクト統計
-node gsd-tools.cjs stats [json|table]
+node fvgsd-tools.cjs stats [json|table]
 
 # 進捗表示
-node gsd-tools.cjs progress [json|table|bar]
+node fvgsd-tools.cjs progress [json|table|bar]
 
 # TODO を完了にする
-node gsd-tools.cjs todo complete <filename>
+node fvgsd-tools.cjs todo complete <filename>
 
 # UAT 監査 — 全フェーズの未解決項目をスキャン
-node gsd-tools.cjs audit-uat
+node fvgsd-tools.cjs audit-uat
 
 # 設定チェック付き git コミット
-node gsd-tools.cjs commit <message> [--files f1 f2] [--amend] [--no-verify]
+node fvgsd-tools.cjs commit <message> [--files f1 f2] [--amend] [--no-verify]
 ```
 
 > **`--no-verify`**: プリコミットフックをスキップします。ウェーブベース実行時に並列エグゼキューターエージェントが使用し、ビルドロックの競合（例: Rust プロジェクトでの cargo ロック競合）を回避します。オーケストレーターは各ウェーブ完了後にフックを一度実行します。順次実行時には `--no-verify` を使用せず、フックを通常通り実行してください。
 
 ```bash
 # Web 検索（Brave API キーが必要）
-node gsd-tools.cjs websearch <query> [--limit N] [--freshness day|week|month]
+node fvgsd-tools.cjs websearch <query> [--limit N] [--freshness day|week|month]
 ```
 
 ---

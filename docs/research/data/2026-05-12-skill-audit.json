@@ -8,7 +8,7 @@
   "skills": [
     {
       "stem": "add-tests",
-      "name": "vgsd:add-tests",
+      "name": "fvgsd:add-tests",
       "desc": "Generate tests for a completed phase based on UAT criteria and implementation",
       "desc_chars": 77,
       "calls_skills": [
@@ -19,23 +19,23 @@
     },
     {
       "stem": "ai-integration-phase",
-      "name": "vgsd:ai-integration-phase",
+      "name": "fvgsd:ai-integration-phase",
       "desc": "Generate an AI-SPEC.md design contract for phases that involve building AI systems.",
       "desc_chars": 83,
       "calls_skills": [
         "phase"
       ],
       "calls_agents": [
-        "gsd-ai-researcher",
-        "gsd-domain-researcher",
-        "gsd-eval-planner",
-        "gsd-framework-selector"
+        "fvgsd-ai-researcher",
+        "fvgsd-domain-researcher",
+        "fvgsd-eval-planner",
+        "fvgsd-framework-selector"
       ],
       "called_by": []
     },
     {
       "stem": "audit-fix",
-      "name": "vgsd:audit-fix",
+      "name": "fvgsd:audit-fix",
       "desc": "Autonomous audit-to-fix pipeline \u2014 find issues, classify, fix, test, commit",
       "desc_chars": 75,
       "calls_skills": [
@@ -46,7 +46,7 @@
     },
     {
       "stem": "audit-milestone",
-      "name": "vgsd:audit-milestone",
+      "name": "fvgsd:audit-milestone",
       "desc": "Audit milestone completion against original intent before archiving",
       "desc_chars": 67,
       "calls_skills": [
@@ -57,7 +57,7 @@
     },
     {
       "stem": "audit-uat",
-      "name": "vgsd:audit-uat",
+      "name": "fvgsd:audit-uat",
       "desc": "Cross-phase audit of all outstanding UAT and verification items",
       "desc_chars": 63,
       "calls_skills": [],
@@ -68,7 +68,7 @@
     },
     {
       "stem": "autonomous",
-      "name": "vgsd:autonomous",
+      "name": "fvgsd:autonomous",
       "desc": "Run all remaining phases autonomously \u2014 discuss\u2192plan\u2192execute per phase",
       "desc_chars": 70,
       "calls_skills": [
@@ -81,7 +81,7 @@
     },
     {
       "stem": "capture",
-      "name": "vgsd:capture",
+      "name": "fvgsd:capture",
       "desc": "Capture ideas, tasks, notes, and seeds to their destination",
       "desc_chars": 59,
       "calls_skills": [],
@@ -92,7 +92,7 @@
     },
     {
       "stem": "cleanup",
-      "name": "vgsd:cleanup",
+      "name": "fvgsd:cleanup",
       "desc": "Archive accumulated phase directories from completed milestones",
       "desc_chars": 63,
       "calls_skills": [
@@ -105,7 +105,7 @@
     },
     {
       "stem": "code-review",
-      "name": "vgsd:code-review",
+      "name": "fvgsd:code-review",
       "desc": "Review source files changed during a phase for bugs, security issues, and code quality problems",
       "desc_chars": 95,
       "calls_skills": [
@@ -116,8 +116,8 @@
         "review"
       ],
       "calls_agents": [
-        "gsd-code-fixer",
-        "gsd-code-reviewer"
+        "fvgsd-code-fixer",
+        "fvgsd-code-reviewer"
       ],
       "called_by": [
         "config"
@@ -125,7 +125,7 @@
     },
     {
       "stem": "complete-milestone",
-      "name": "vgsd:complete-milestone",
+      "name": "fvgsd:complete-milestone",
       "desc": "Archive completed milestone and prepare for next version",
       "desc_chars": 56,
       "calls_skills": [
@@ -138,7 +138,7 @@
     },
     {
       "stem": "config",
-      "name": "vgsd:config",
+      "name": "fvgsd:config",
       "desc": "Configure GSD settings \u2014 workflow toggles, advanced knobs, integrations, and model profile",
       "desc_chars": 90,
       "calls_skills": [
@@ -159,19 +159,19 @@
     },
     {
       "stem": "debug",
-      "name": "vgsd:debug",
+      "name": "fvgsd:debug",
       "desc": "Systematic debugging with persistent state across context resets",
       "desc_chars": 64,
       "calls_skills": [],
       "calls_agents": [
-        "gsd-debug-session-manager",
-        "gsd-debugger"
+        "fvgsd-debug-session-manager",
+        "fvgsd-debugger"
       ],
       "called_by": []
     },
     {
       "stem": "discuss-phase",
-      "name": "vgsd:discuss-phase",
+      "name": "fvgsd:discuss-phase",
       "desc": "Gather phase context through adaptive questioning before planning.",
       "desc_chars": 66,
       "calls_skills": [
@@ -186,21 +186,21 @@
     },
     {
       "stem": "docs-update",
-      "name": "vgsd:docs-update",
+      "name": "fvgsd:docs-update",
       "desc": "Generate or update project documentation verified against the codebase",
       "desc_chars": 70,
       "calls_skills": [
         "update"
       ],
       "calls_agents": [
-        "gsd-doc-verifier",
-        "gsd-doc-writer"
+        "fvgsd-doc-verifier",
+        "fvgsd-doc-writer"
       ],
       "called_by": []
     },
     {
       "stem": "eval-review",
-      "name": "vgsd:eval-review",
+      "name": "fvgsd:eval-review",
       "desc": "Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan.",
       "desc_chars": 96,
       "calls_skills": [
@@ -211,7 +211,7 @@
     },
     {
       "stem": "execute-phase",
-      "name": "vgsd:execute-phase",
+      "name": "fvgsd:execute-phase",
       "desc": "Execute all plans in a phase with wave-based parallelization",
       "desc_chars": 60,
       "calls_skills": [
@@ -226,7 +226,7 @@
     },
     {
       "stem": "explore",
-      "name": "vgsd:explore",
+      "name": "fvgsd:explore",
       "desc": "Socratic ideation and idea routing \u2014 think through ideas before committing to plans",
       "desc_chars": 83,
       "calls_skills": [],
@@ -235,7 +235,7 @@
     },
     {
       "stem": "extract-learnings",
-      "name": "vgsd:extract-learnings",
+      "name": "fvgsd:extract-learnings",
       "desc": "Extract decisions, lessons, patterns, and surprises from completed phase artifacts",
       "desc_chars": 82,
       "calls_skills": [
@@ -246,7 +246,7 @@
     },
     {
       "stem": "fast",
-      "name": "vgsd:fast",
+      "name": "fvgsd:fast",
       "desc": "Execute a trivial task inline \u2014 no subagents, no planning overhead",
       "desc_chars": 66,
       "calls_skills": [
@@ -259,7 +259,7 @@
     },
     {
       "stem": "forensics",
-      "name": "vgsd:forensics",
+      "name": "fvgsd:forensics",
       "desc": "Post-mortem investigation for failed GSD workflows \u2014 diagnoses what went wrong.",
       "desc_chars": 79,
       "calls_skills": [
@@ -272,7 +272,7 @@
     },
     {
       "stem": "graphify",
-      "name": "vgsd:graphify",
+      "name": "fvgsd:graphify",
       "desc": "Build, query, and inspect the project knowledge graph in .planning/graphs/",
       "desc_chars": 74,
       "calls_skills": [
@@ -286,7 +286,7 @@
     },
     {
       "stem": "health",
-      "name": "vgsd:health",
+      "name": "fvgsd:health",
       "desc": "Diagnose planning directory health and optionally repair issues",
       "desc_chars": 63,
       "calls_skills": [],
@@ -295,7 +295,7 @@
     },
     {
       "stem": "help",
-      "name": "vgsd:help",
+      "name": "fvgsd:help",
       "desc": "Show available GSD commands and usage guide",
       "desc_chars": 43,
       "calls_skills": [],
@@ -304,12 +304,12 @@
     },
     {
       "stem": "import",
-      "name": "vgsd:import",
+      "name": "fvgsd:import",
       "desc": "Ingest external plans with conflict detection against project decisions before writing anything.",
       "desc_chars": 96,
       "calls_skills": [],
       "calls_agents": [
-        "gsd-plan-checker"
+        "fvgsd-plan-checker"
       ],
       "called_by": [
         "code-review",
@@ -318,7 +318,7 @@
     },
     {
       "stem": "inbox",
-      "name": "vgsd:inbox",
+      "name": "fvgsd:inbox",
       "desc": "Triage and review open GitHub issues and PRs against project templates and contribution guidelines.",
       "desc_chars": 99,
       "calls_skills": [
@@ -331,18 +331,18 @@
     },
     {
       "stem": "ingest-docs",
-      "name": "vgsd:ingest-docs",
+      "name": "fvgsd:ingest-docs",
       "desc": "Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo.",
       "desc_chars": 90,
       "calls_skills": [],
       "calls_agents": [
-        "gsd-roadmapper"
+        "fvgsd-roadmapper"
       ],
       "called_by": []
     },
     {
       "stem": "manager",
-      "name": "vgsd:manager",
+      "name": "fvgsd:manager",
       "desc": "Interactive command center for managing multiple phases from one terminal",
       "desc_chars": 73,
       "calls_skills": [
@@ -353,20 +353,20 @@
     },
     {
       "stem": "map-codebase",
-      "name": "vgsd:map-codebase",
+      "name": "fvgsd:map-codebase",
       "desc": "Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents",
       "desc_chars": 85,
       "calls_skills": [
         "config"
       ],
       "calls_agents": [
-        "gsd-codebase-mapper"
+        "fvgsd-codebase-mapper"
       ],
       "called_by": []
     },
     {
       "stem": "milestone-summary",
-      "name": "vgsd:milestone-summary",
+      "name": "fvgsd:milestone-summary",
       "desc": "Generate a comprehensive project summary from milestone artifacts for team onboarding and review",
       "desc_chars": 96,
       "calls_skills": [
@@ -377,7 +377,7 @@
     },
     {
       "stem": "mvp-phase",
-      "name": "vgsd:mvp-phase",
+      "name": "fvgsd:mvp-phase",
       "desc": "Plan a phase as a vertical MVP slice \u2014 user story, SPIDR splitting, then plan-phase",
       "desc_chars": 83,
       "calls_skills": [
@@ -390,7 +390,7 @@
     },
     {
       "stem": "new-milestone",
-      "name": "vgsd:new-milestone",
+      "name": "fvgsd:new-milestone",
       "desc": "Start a new milestone cycle \u2014 update PROJECT.md and route to requirements",
       "desc_chars": 73,
       "calls_skills": [
@@ -402,7 +402,7 @@
     },
     {
       "stem": "new-project",
-      "name": "vgsd:new-project",
+      "name": "fvgsd:new-project",
       "desc": "Initialize a new project with deep context gathering and PROJECT.md",
       "desc_chars": 67,
       "calls_skills": [
@@ -417,7 +417,7 @@
     },
     {
       "stem": "ns-context",
-      "name": "vgsd-context",
+      "name": "fvgsd-context",
       "desc": "codebase intelligence | map graphify docs learnings",
       "desc_chars": 51,
       "calls_skills": [
@@ -428,7 +428,7 @@
     },
     {
       "stem": "ns-ideate",
-      "name": "vgsd-ideate",
+      "name": "fvgsd-ideate",
       "desc": "exploration capture | explore sketch spike spec capture",
       "desc_chars": 55,
       "calls_skills": [
@@ -441,7 +441,7 @@
     },
     {
       "stem": "ns-manage",
-      "name": "vgsd-manage",
+      "name": "fvgsd-manage",
       "desc": "config workspace | workstreams thread update ship inbox",
       "desc_chars": 55,
       "calls_skills": [
@@ -455,7 +455,7 @@
     },
     {
       "stem": "ns-project",
-      "name": "vgsd-project",
+      "name": "fvgsd-project",
       "desc": "project lifecycle | milestones audits summary",
       "desc_chars": 45,
       "calls_skills": [],
@@ -464,7 +464,7 @@
     },
     {
       "stem": "ns-review",
-      "name": "vgsd-quality",
+      "name": "fvgsd-quality",
       "desc": "quality gates | code review debug audit security eval ui",
       "desc_chars": 56,
       "calls_skills": [
@@ -476,7 +476,7 @@
     },
     {
       "stem": "ns-workflow",
-      "name": "vgsd-workflow",
+      "name": "fvgsd-workflow",
       "desc": "workflow | discuss plan execute verify phase progress",
       "desc_chars": 53,
       "calls_skills": [
@@ -488,7 +488,7 @@
     },
     {
       "stem": "pause-work",
-      "name": "vgsd:pause-work",
+      "name": "fvgsd:pause-work",
       "desc": "Create context handoff when pausing work mid-phase",
       "desc_chars": 50,
       "calls_skills": [
@@ -500,7 +500,7 @@
     },
     {
       "stem": "phase",
-      "name": "vgsd:phase",
+      "name": "fvgsd:phase",
       "desc": "CRUD for phases in ROADMAP.md \u2014 add, insert, remove, or edit phases",
       "desc_chars": 67,
       "calls_skills": [],
@@ -548,7 +548,7 @@
     },
     {
       "stem": "plan-phase",
-      "name": "vgsd:plan-phase",
+      "name": "fvgsd:plan-phase",
       "desc": "Create detailed phase plan (PLAN.md) with verification loop",
       "desc_chars": 59,
       "calls_skills": [
@@ -558,9 +558,9 @@
         "update"
       ],
       "calls_agents": [
-        "gsd-phase-researcher",
-        "gsd-plan-checker",
-        "gsd-planner"
+        "fvgsd-phase-researcher",
+        "fvgsd-plan-checker",
+        "fvgsd-planner"
       ],
       "called_by": [
         "mvp-phase",
@@ -569,7 +569,7 @@
     },
     {
       "stem": "plan-review-convergence",
-      "name": "vgsd:plan-review-convergence",
+      "name": "fvgsd:plan-review-convergence",
       "desc": "Cross-AI plan convergence loop \u2014 replan with review feedback until no HIGH concerns remain.",
       "desc_chars": 91,
       "calls_skills": [
@@ -577,14 +577,14 @@
         "review"
       ],
       "calls_agents": [
-        "gsd-plan-checker",
-        "gsd-planner"
+        "fvgsd-plan-checker",
+        "fvgsd-planner"
       ],
       "called_by": []
     },
     {
       "stem": "pr-branch",
-      "name": "vgsd:pr-branch",
+      "name": "fvgsd:pr-branch",
       "desc": "Create a clean PR branch by filtering out .planning/ commits \u2014 ready for code review",
       "desc_chars": 84,
       "calls_skills": [
@@ -595,7 +595,7 @@
     },
     {
       "stem": "profile-user",
-      "name": "vgsd:profile-user",
+      "name": "fvgsd:profile-user",
       "desc": "Generate developer behavioral profile and create Claude-discoverable artifacts",
       "desc_chars": 78,
       "calls_skills": [],
@@ -604,7 +604,7 @@
     },
     {
       "stem": "progress",
-      "name": "vgsd:progress",
+      "name": "fvgsd:progress",
       "desc": "Check progress, advance workflow, or dispatch freeform intent \u2014 the unified GSD situational command",
       "desc_chars": 99,
       "calls_skills": [
@@ -621,15 +621,15 @@
     },
     {
       "stem": "quick",
-      "name": "vgsd:quick",
+      "name": "fvgsd:quick",
       "desc": "Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents",
       "desc_chars": 98,
       "calls_skills": [
         "phase"
       ],
       "calls_agents": [
-        "gsd-executor",
-        "gsd-planner"
+        "fvgsd-executor",
+        "fvgsd-planner"
       ],
       "called_by": [
         "code-review",
@@ -638,7 +638,7 @@
     },
     {
       "stem": "resume-work",
-      "name": "vgsd:resume-work",
+      "name": "fvgsd:resume-work",
       "desc": "Resume work from previous session with full context restoration",
       "desc_chars": 63,
       "calls_skills": [],
@@ -647,7 +647,7 @@
     },
     {
       "stem": "review-backlog",
-      "name": "vgsd:review-backlog",
+      "name": "fvgsd:review-backlog",
       "desc": "Review and promote backlog items to active milestone",
       "desc_chars": 52,
       "calls_skills": [
@@ -659,7 +659,7 @@
     },
     {
       "stem": "review",
-      "name": "vgsd:review",
+      "name": "fvgsd:review",
       "desc": "Request cross-AI peer review of phase plans from external AI CLIs",
       "desc_chars": 65,
       "calls_skills": [
@@ -683,7 +683,7 @@
     },
     {
       "stem": "secure-phase",
-      "name": "vgsd:secure-phase",
+      "name": "fvgsd:secure-phase",
       "desc": "Retroactively verify threat mitigations for a completed phase",
       "desc_chars": 61,
       "calls_skills": [
@@ -694,7 +694,7 @@
     },
     {
       "stem": "settings",
-      "name": "vgsd:settings",
+      "name": "fvgsd:settings",
       "desc": "Configure GSD workflow toggles and model profile",
       "desc_chars": 48,
       "calls_skills": [
@@ -708,7 +708,7 @@
     },
     {
       "stem": "ship",
-      "name": "vgsd:ship",
+      "name": "fvgsd:ship",
       "desc": "Create PR, run review, and prepare for merge after verification passes",
       "desc_chars": 70,
       "calls_skills": [
@@ -719,7 +719,7 @@
     },
     {
       "stem": "sketch",
-      "name": "vgsd:sketch",
+      "name": "fvgsd:sketch",
       "desc": "Sketch UI/design ideas with throwaway HTML mockups, or propose what to sketch next (frontier mode)",
       "desc_chars": 98,
       "calls_skills": [
@@ -730,7 +730,7 @@
     },
     {
       "stem": "spec-phase",
-      "name": "vgsd:spec-phase",
+      "name": "fvgsd:spec-phase",
       "desc": "Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.",
       "desc_chars": 94,
       "calls_skills": [
@@ -744,7 +744,7 @@
     },
     {
       "stem": "spike",
-      "name": "vgsd:spike",
+      "name": "fvgsd:spike",
       "desc": "Spike an idea through experiential exploration, or propose what to spike next (frontier mode)",
       "desc_chars": 93,
       "calls_skills": [],
@@ -756,7 +756,7 @@
     },
     {
       "stem": "stats",
-      "name": "vgsd:stats",
+      "name": "fvgsd:stats",
       "desc": "Display project statistics \u2014 phases, plans, requirements, git metrics, and timeline",
       "desc_chars": 83,
       "calls_skills": [
@@ -770,7 +770,7 @@
     },
     {
       "stem": "thread",
-      "name": "vgsd:thread",
+      "name": "fvgsd:thread",
       "desc": "Manage persistent context threads for cross-session work",
       "desc_chars": 56,
       "calls_skills": [
@@ -783,21 +783,21 @@
     },
     {
       "stem": "ui-phase",
-      "name": "vgsd:ui-phase",
+      "name": "fvgsd:ui-phase",
       "desc": "Generate UI design contract (UI-SPEC.md) for frontend phases",
       "desc_chars": 60,
       "calls_skills": [
         "phase"
       ],
       "calls_agents": [
-        "gsd-ui-checker",
-        "gsd-ui-researcher"
+        "fvgsd-ui-checker",
+        "fvgsd-ui-researcher"
       ],
       "called_by": []
     },
     {
       "stem": "ui-review",
-      "name": "vgsd:ui-review",
+      "name": "fvgsd:ui-review",
       "desc": "Retroactive 6-pillar visual audit of implemented frontend code",
       "desc_chars": 62,
       "calls_skills": [
@@ -808,7 +808,7 @@
     },
     {
       "stem": "ultraplan-phase",
-      "name": "vgsd:ultraplan-phase",
+      "name": "fvgsd:ultraplan-phase",
       "desc": "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back.",
       "desc_chars": 94,
       "calls_skills": [
@@ -820,7 +820,7 @@
     },
     {
       "stem": "undo",
-      "name": "vgsd:undo",
+      "name": "fvgsd:undo",
       "desc": "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks.",
       "desc_chars": 97,
       "calls_skills": [
@@ -831,7 +831,7 @@
     },
     {
       "stem": "update",
-      "name": "vgsd:update",
+      "name": "fvgsd:update",
       "desc": "Update GSD to latest version with changelog display",
       "desc_chars": 51,
       "calls_skills": [],
@@ -846,7 +846,7 @@
     },
     {
       "stem": "validate-phase",
-      "name": "vgsd:validate-phase",
+      "name": "fvgsd:validate-phase",
       "desc": "Retroactively audit and fill Nyquist validation gaps for a completed phase",
       "desc_chars": 74,
       "calls_skills": [
@@ -857,7 +857,7 @@
     },
     {
       "stem": "verify-work",
-      "name": "vgsd:verify-work",
+      "name": "fvgsd:verify-work",
       "desc": "Validate built features through conversational UAT",
       "desc_chars": 50,
       "calls_skills": [
@@ -870,7 +870,7 @@
     },
     {
       "stem": "workspace",
-      "name": "vgsd:workspace",
+      "name": "fvgsd:workspace",
       "desc": "Manage GSD workspaces \u2014 create, list, or remove isolated workspace environments",
       "desc_chars": 79,
       "calls_skills": [],
@@ -879,7 +879,7 @@
     },
     {
       "stem": "workstreams",
-      "name": "vgsd:workstreams",
+      "name": "fvgsd:workstreams",
       "desc": "Manage parallel workstreams \u2014 list, create, switch, status, progress, complete, and resume",
       "desc_chars": 90,
       "calls_skills": [
@@ -996,23 +996,23 @@
     ]
   },
   "agent_usage": {
-    "gsd-ai-researcher": 1,
-    "gsd-domain-researcher": 1,
-    "gsd-eval-planner": 1,
-    "gsd-framework-selector": 1,
-    "gsd-code-fixer": 1,
-    "gsd-code-reviewer": 1,
-    "gsd-debug-session-manager": 1,
-    "gsd-debugger": 1,
-    "gsd-doc-verifier": 1,
-    "gsd-doc-writer": 1,
-    "gsd-plan-checker": 3,
-    "gsd-roadmapper": 1,
-    "gsd-codebase-mapper": 1,
-    "gsd-phase-researcher": 1,
-    "gsd-planner": 3,
-    "gsd-executor": 1,
-    "gsd-ui-checker": 1,
-    "gsd-ui-researcher": 1
+    "fvgsd-ai-researcher": 1,
+    "fvgsd-domain-researcher": 1,
+    "fvgsd-eval-planner": 1,
+    "fvgsd-framework-selector": 1,
+    "fvgsd-code-fixer": 1,
+    "fvgsd-code-reviewer": 1,
+    "fvgsd-debug-session-manager": 1,
+    "fvgsd-debugger": 1,
+    "fvgsd-doc-verifier": 1,
+    "fvgsd-doc-writer": 1,
+    "fvgsd-plan-checker": 3,
+    "fvgsd-roadmapper": 1,
+    "fvgsd-codebase-mapper": 1,
+    "fvgsd-phase-researcher": 1,
+    "fvgsd-planner": 3,
+    "fvgsd-executor": 1,
+    "fvgsd-ui-checker": 1,
+    "fvgsd-ui-researcher": 1
   }
 }

@@ -17,14 +17,14 @@ const { loadConfig } = require('../get-shit-done/bin/lib/core.cjs');
 
 /** Create a bare temp dir (no .planning/) to simulate pre-project context */
 function createBareTmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-test-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-test-'));
 }
 
 describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
   test('pre-project, no defaults.json → hardcoded defaults', (t) => {
     const tmpDir = createBareTmpDir();
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     assert.strictEqual(config.model_profile, 'balanced');
@@ -36,7 +36,7 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
   test('pre-project, defaults.json exists → merges with hardcoded defaults', (t) => {
     const tmpDir = createBareTmpDir();
 
-    // Create ~/.gsd/defaults.json under fake GSD_HOME
+    // Create ~/.gsd/defaults.json under fake FVGSD_HOME
     const gsdDir = path.join(tmpDir, '.gsd');
     fs.mkdirSync(gsdDir, { recursive: true });
     fs.writeFileSync(
@@ -44,8 +44,8 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
       JSON.stringify({ model_profile: 'quality', context_window: 1000000 })
     );
 
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     // Values from defaults.json
@@ -70,8 +70,8 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
       JSON.stringify({ model_profile: 'quality', context_window: 1000000 })
     );
 
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     // Hardcoded defaults — NOT defaults.json values
@@ -95,8 +95,8 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
       JSON.stringify({ model_profile: 'quality', context_window: 1000000 })
     );
 
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     assert.strictEqual(config.model_profile, 'budget');
@@ -117,8 +117,8 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
       })
     );
 
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     assert.strictEqual(config.model_profile, 'quality');
@@ -133,8 +133,8 @@ describe('loadConfig ~/.gsd/defaults.json fallback (#1683)', () => {
     fs.mkdirSync(gsdDir, { recursive: true });
     fs.writeFileSync(path.join(gsdDir, 'defaults.json'), '{ not valid json !!!');
 
-    process.env.GSD_HOME = tmpDir;
-    t.after(() => { delete process.env.GSD_HOME; cleanup(tmpDir); });
+    process.env.FVGSD_HOME = tmpDir;
+    t.after(() => { delete process.env.FVGSD_HOME; cleanup(tmpDir); });
 
     const config = loadConfig(tmpDir);
     assert.strictEqual(config.model_profile, 'balanced');

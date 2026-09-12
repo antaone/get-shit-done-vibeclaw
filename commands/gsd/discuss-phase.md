@@ -1,5 +1,5 @@
 ---
-name: vgsd:discuss-phase
+name: fvgsd:discuss-phase
 description: Gather phase context through adaptive questioning before planning.
 argument-hint: "<phase> [--all] [--auto] [--chain] [--batch] [--analyze] [--text] [--power] [--assumptions]"
 allowed-tools:
@@ -16,12 +16,12 @@ requires: [config, phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "discuss-phase" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "discuss-phase" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -58,18 +58,18 @@ Context files are resolved in-workflow using `init phase-op` and roadmap/state t
 <process>
 **Mode routing:**
 ```bash
-DISCUSS_MODE=$(gsd-sdk query config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
+DISCUSS_MODE=$(fvgsd-sdk query config-get workflow.discuss_mode 2>/dev/null || echo "discuss")
 ```
 
 If `--assumptions` is in $ARGUMENTS:
-Read and execute `~/.claude/get-shit-done/workflows/list-phase-assumptions.md` end-to-end.
+Read and execute `~/.claude/fvgsd/workflows/list-phase-assumptions.md` end-to-end.
 Stop here.
 
 Otherwise, if `DISCUSS_MODE` is `"assumptions"`:
-Read and execute `~/.claude/get-shit-done/workflows/discuss-phase-assumptions.md` end-to-end.
+Read and execute `~/.claude/fvgsd/workflows/discuss-phase-assumptions.md` end-to-end.
 
 Otherwise (`"discuss"` / unset / any other value):
-Read and execute `~/.claude/get-shit-done/workflows/discuss-phase.md` end-to-end.
+Read and execute `~/.claude/fvgsd/workflows/discuss-phase.md` end-to-end.
 
 **MANDATORY:** Read the appropriate workflow file BEFORE taking any action. The objective and success_criteria sections in this command file are summaries — the workflow file contains the complete step-by-step process with all required behaviors, config checks, and interaction patterns. Do not improvise from the summary.
 

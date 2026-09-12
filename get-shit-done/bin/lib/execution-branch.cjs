@@ -3,12 +3,12 @@
 /**
  * Execution Branch Guard
  *
- * Gives every vgsd workflow a branch-aware preflight without competing with
+ * Gives every fvgsd workflow a branch-aware preflight without competing with
  * VibeClaw's candidate lifecycle:
  *
  * - valid Vibe candidate worktrees are accepted as-is;
  * - an initialized VibeClaw project fails closed outside a candidate;
- * - standalone vgsd use gets a runtime/command/execution-aware branch;
+ * - standalone fvgsd use gets a runtime/command/execution-aware branch;
  * - Git-local metadata lets a later `vibe init` discover standalone work.
  */
 
@@ -19,7 +19,7 @@ const { execGit: execGitSeam } = require('./shell-command-projection.cjs');
 const { VibeStore } = require('./vibe/store.cjs');
 const { VibeError } = require('./vibe/errors.cjs');
 
-const SMART_BRANCH_PREFIX = 'vgsd/';
+const SMART_BRANCH_PREFIX = 'fvgsd/';
 const METADATA_VERSION = 1;
 const ALLOWED_CANDIDATE_STATUSES = new Set(['prepared', 'running']);
 
@@ -51,7 +51,7 @@ function normalizeRuntime(value) {
 function detectRuntime(cwd, env = process.env, explicitRuntime = null) {
   if (env.VIBE_TOOL) return normalizeRuntime(env.VIBE_TOOL);
   if (explicitRuntime && explicitRuntime !== 'auto') return normalizeRuntime(explicitRuntime);
-  if (env.GSD_RUNTIME) return normalizeRuntime(env.GSD_RUNTIME);
+  if (env.FVGSD_RUNTIME) return normalizeRuntime(env.FVGSD_RUNTIME);
 
   const markers = [
     ['codex', ['CODEX_THREAD_ID']],
@@ -85,7 +85,7 @@ function resolveRepoContext(cwd, options = {}) {
     return {
       ok: false,
       reason: 'git_repository_required',
-      message: 'vgsd execution requires a Git repository so branch safety can be verified.',
+      message: 'fvgsd execution requires a Git repository so branch safety can be verified.',
       stderr: rootResult.stderr,
     };
   }
@@ -157,7 +157,7 @@ function executionId(env, options = {}) {
 }
 
 function metadataDirectory(commonDir) {
-  return path.join(commonDir, 'vgsd', 'executions');
+  return path.join(commonDir, 'fvgsd', 'executions');
 }
 
 function metadataPath(commonDir, branch) {
@@ -248,7 +248,7 @@ function inspectVibeCandidate(store, repo, runtime, env) {
       message: candidates.length > 1
         ? 'More than one Vibe candidate matches this branch; execution is ambiguous.'
         : 'VibeClaw is initialized, but this worktree is not a prepared Vibe candidate.',
-      hint: 'Run the installed `vgsd-vibe` command for this workflow to choose one or more tools and prepare candidate worktrees.',
+      hint: 'Run the installed `fvgsd-vibe` command for this workflow to choose one or more tools and prepare candidate worktrees.',
     };
   }
 
@@ -280,7 +280,7 @@ function inspectVibeCandidate(store, repo, runtime, env) {
     return {
       allowed: false,
       reason: 'vibe_tool_mismatch',
-      message: `This candidate belongs to '${candidateRuntime}', but the current vgsd runtime is '${runtime}'.`,
+      message: `This candidate belongs to '${candidateRuntime}', but the current fvgsd runtime is '${runtime}'.`,
     };
   }
 
@@ -341,7 +341,7 @@ function inspectGitHandoff(repo, runtime, command, options = {}) {
       branch: repo.branch,
       candidate_id: parsed.candidate_id,
       message: `Multi-machine candidate '${repo.branch}' must track its published remote branch.`,
-      hint: `Fetch the coordinator remote and check out '${repo.branch}' with --track before running vgsd.`,
+      hint: `Fetch the coordinator remote and check out '${repo.branch}' with --track before running fvgsd.`,
     };
   }
   const remote = upstream.slice(0, -(repo.branch.length + 1));
@@ -371,7 +371,7 @@ function inspectGitHandoff(repo, runtime, command, options = {}) {
       message: identityResult.exitCode === 2
         ? `Remote '${remote}' has no Vibe handoff identity for '${parsed.candidate_id}'.`
         : `Could not verify Vibe handoff '${parsed.candidate_id}' against remote '${remote}'.`,
-      hint: identityResult.stderr || 'Fetch the published handoff or restore remote access before running vgsd.',
+      hint: identityResult.stderr || 'Fetch the published handoff or restore remote access before running fvgsd.',
     };
   }
   const identities = parseRemoteLines(identityResult.stdout)
@@ -405,7 +405,7 @@ function inspectGitHandoff(repo, runtime, command, options = {}) {
       reason: 'handoff_runtime_required',
       branch: repo.branch,
       candidate_id: parsed.candidate_id,
-      message: `Multi-machine handoff '${parsed.candidate_id}' requires an explicit vgsd runtime identity.`,
+      message: `Multi-machine handoff '${parsed.candidate_id}' requires an explicit fvgsd runtime identity.`,
     };
   }
   if (runtime !== 'unknown' && parsed.tool !== runtime) {
@@ -415,7 +415,7 @@ function inspectGitHandoff(repo, runtime, command, options = {}) {
       reason: 'handoff_tool_mismatch',
       branch: repo.branch,
       candidate_id: parsed.candidate_id,
-      message: `This handoff belongs to '${parsed.tool}', but the current vgsd runtime is '${runtime}'.`,
+      message: `This handoff belongs to '${parsed.tool}', but the current fvgsd runtime is '${runtime}'.`,
     };
   }
 
@@ -497,7 +497,7 @@ function inspectGitHandoff(repo, runtime, command, options = {}) {
         branch: repo.branch,
         candidate_id: parsed.candidate_id,
         message: localAncestor.exitCode === 0
-          ? `Worker branch is behind '${remote}/${repo.branch}'; fetch and fast-forward before running vgsd.`
+          ? `Worker branch is behind '${remote}/${repo.branch}'; fetch and fast-forward before running fvgsd.`
           : `Worker branch has diverged from '${remote}/${repo.branch}'.`,
       };
     }
@@ -581,7 +581,7 @@ function inspectExecutionBranch(options = {}) {
         runtime,
         execution: smart,
         message: `Standalone branch '${repo.branch}' belongs to '${smart.runtime}', not '${runtime}'.`,
-        hint: 'Switch back to the branch this execution started from, then rerun the command so vgsd can create a tool-specific branch.',
+        hint: 'Switch back to the branch this execution started from, then rerun the command so fvgsd can create a tool-specific branch.',
       };
     }
     if (smart.command !== command) {
@@ -651,8 +651,8 @@ function inspectExecutionBranch(options = {}) {
       branch: repo.branch,
       command,
       runtime,
-      message: `Branch '${repo.branch}' looks Vibe-managed, but no .planning-vibe state could be found.`,
-      hint: 'Restore the matching .planning-vibe state or switch to a normal branch before retrying.',
+      message: `Branch '${repo.branch}' looks Vibe-managed, but no .planning-fvgsd-vibe state could be found.`,
+      hint: 'Restore the matching .planning-fvgsd-vibe state or switch to a normal branch before retrying.',
     };
   }
 
@@ -773,7 +773,7 @@ function discoverStandaloneExecutions(projectRoot, options = {}) {
   }
 
   const refs = invokeGit(
-    ['for-each-ref', '--format=%(refname:short)\t%(objectname)', 'refs/heads/vgsd/'],
+    ['for-each-ref', '--format=%(refname:short)\t%(objectname)', 'refs/heads/fvgsd/'],
     repo.root,
     options.gitOptions,
   );

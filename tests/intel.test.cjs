@@ -2,7 +2,7 @@
  * Tests for get-shit-done/bin/lib/intel.cjs
  *
  * Covers: query, status, diff, validate, snapshot, patch-meta,
- * extract-exports, enabled/disabled gating, and CLI routing via gsd-tools.
+ * extract-exports, enabled/disabled gating, and CLI routing via fvgsd-tools.
  */
 
 'use strict';
@@ -560,9 +560,9 @@ describe('intelExtractExports', () => {
   });
 });
 
-// ─── CLI routing via gsd-tools ──────────────────────────────────────────────
+// ─── CLI routing via fvgsd-tools ──────────────────────────────────────────────
 
-describe('gsd-tools intel subcommands', () => {
+describe('fvgsd-tools intel subcommands', () => {
   let tmpDir;
 
   beforeEach(() => {

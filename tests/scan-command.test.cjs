@@ -48,10 +48,10 @@ describe('scan command', () => {
       'Workflow should mention overwrite prompt for existing documents');
   });
 
-  test('workflow references gsd-codebase-mapper', () => {
+  test('workflow references fvgsd-codebase-mapper', () => {
     const p = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'scan.md');
     const content = fs.readFileSync(p, 'utf-8');
-    assert.ok(content.includes('gsd-codebase-mapper'),
-      'Workflow should reference the gsd-codebase-mapper agent');
+    assert.ok(content.includes('fvgsd-codebase-mapper'),
+      'Workflow should reference the fvgsd-codebase-mapper agent');
   });
 });

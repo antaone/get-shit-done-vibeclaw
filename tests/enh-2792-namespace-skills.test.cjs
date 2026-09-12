@@ -12,21 +12,21 @@ const path = require('node:path');
 const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
 
 const NAMESPACE_SKILLS = [
-  { file: 'ns-workflow.md', name: 'gsd-workflow' },
-  { file: 'ns-project.md',  name: 'gsd-project' },
-  { file: 'ns-review.md',   name: 'gsd-quality' },
-  { file: 'ns-context.md',  name: 'gsd-context' },
-  { file: 'ns-manage.md',   name: 'gsd-manage' },
-  { file: 'ns-ideate.md',   name: 'gsd-ideate' },
+  { file: 'ns-workflow.md', name: 'fvgsd-workflow' },
+  { file: 'ns-project.md',  name: 'fvgsd-project' },
+  { file: 'ns-review.md',   name: 'fvgsd-quality' },
+  { file: 'ns-context.md',  name: 'fvgsd-context' },
+  { file: 'ns-manage.md',   name: 'fvgsd-manage' },
+  { file: 'ns-ideate.md',   name: 'fvgsd-ideate' },
 ];
 
 // Route targets named in any namespace body. The cross-reference test below
 // asserts that every one of these resolves to a surviving command file or to
 // a known consolidated parent (which absorbs flag-form invocations of folded
-// skills, e.g. `gsd-map-codebase --fast` for the former `gsd-scan`).
+// skills, e.g. `fvgsd-map-codebase --fast` for the former `fvgsd-scan`).
 const FLAG_FORM_PARENTS = new Set([
-  'gsd-code-review',     // --fix absorbs former gsd-code-review-fix
-  'gsd-map-codebase',    // --fast absorbs scan, --query absorbs intel
+  'fvgsd-code-review',     // --fix absorbs former gsd-code-review-fix
+  'fvgsd-map-codebase',    // --fast absorbs scan, --query absorbs intel
 ]);
 
 /**
@@ -156,7 +156,7 @@ describe('Namespace skill bodies carry a routing table', () => {
 // itself is covered by tests/context-utilization.test.cjs and the SDK
 // CLI by tests/validate-context.test.cjs.
 
-describe('gsd-health --context flag is wired into command + workflow', () => {
+describe('fvgsd-health --context flag is wired into command + workflow', () => {
   const HEALTH_CMD = path.join(COMMANDS_DIR, 'health.md');
   const HEALTH_WORKFLOW = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'health.md');
 
@@ -190,7 +190,7 @@ describe('gsd-health --context flag is wired into command + workflow', () => {
     );
   });
 
-  test('workflow context_check invokes gsd-sdk query validate.context', () => {
+  test('workflow context_check invokes fvgsd-sdk query validate.context', () => {
     const raw = fs.readFileSync(HEALTH_WORKFLOW, 'utf-8');
     // Extract just the context_check step's body so a stray reference
     // elsewhere in the file can't satisfy this assertion.
@@ -199,8 +199,8 @@ describe('gsd-health --context flag is wired into command + workflow', () => {
     const stepBody = stepMatch[1];
     assert.match(
       stepBody,
-      /gsd-sdk\s+query\s+validate\.context/,
-      'context_check must call `gsd-sdk query validate.context`',
+      /fvgsd-sdk\s+query\s+validate\.context/,
+      'context_check must call `fvgsd-sdk query validate.context`',
     );
     assert.match(stepBody, /--tokens-used/, 'context_check must pass --tokens-used');
     assert.match(stepBody, /--context-window/, 'context_check must pass --context-window');
@@ -218,18 +218,18 @@ describe('Namespace router targets resolve to surviving skills', () => {
     if (!f.endsWith('.md')) continue;
     const base = f.replace(/\.md$/, '');
     if (base.startsWith('ns-')) continue; // namespace routers themselves
-    surviving.add(`gsd-${base}`);
+    surviving.add(`fvgsd-${base}`);
     // The PR #2858 rename canonicalized extract_learnings → extract-learnings.
     // Until #2790 rebases onto current main, accept either source filename
     // as resolving to the canonical hyphenated identifier.
-    if (base === 'extract_learnings') surviving.add('gsd-extract-learnings');
+    if (base === 'extract_learnings') surviving.add('fvgsd-extract-learnings');
   }
 
   for (const { file } of NAMESPACE_SKILLS) {
     test(`${file} — every routing target resolves`, () => {
       const fm = readNamespaceFile(file);
       // Extract every gsd-<name> token that appears in a table-row right column.
-      // Strip flag suffixes (`gsd-foo --bar` → `gsd-foo`) before resolving.
+      // Strip flag suffixes (`fvgsd-foo --bar` → `fvgsd-foo`) before resolving.
       const targets = new Set();
       for (const line of fm._body.split('\n')) {
         // Only consider markdown table data rows: lines that start with `|`

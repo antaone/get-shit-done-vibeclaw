@@ -56,12 +56,12 @@ function cleanup(dir) {
 
 /**
  * Run the installer with CLAUDE_CONFIG_DIR redirected to a temp directory.
- * Explicitly removes GSD_TEST_MODE so the subprocess actually runs the installer
+ * Explicitly removes FVGSD_TEST_MODE so the subprocess actually runs the installer
  * (not just the export block). Uses --yes to suppress interactive prompts.
  */
 function runInstaller(configDir) {
   const env = { ...process.env, CLAUDE_CONFIG_DIR: configDir };
-  delete env.GSD_TEST_MODE;
+  delete env.FVGSD_TEST_MODE;
   // --no-sdk: this test covers user-artifact preservation only; skip SDK
   // build (covered by install-smoke.yml) to keep the test deterministic.
   execFileSync(process.execPath, [INSTALL_SCRIPT, '--claude', '--global', '--yes', '--no-sdk'], {
@@ -77,7 +77,7 @@ describe('#1924: USER-PROFILE.md preserved across re-install (global Claude)', (
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-1924-userprofile-');
+    tmpDir = createTempDir('fvgsd-1924-userprofile-');
   });
 
   afterEach(() => {
@@ -152,7 +152,7 @@ describe('#1924: dev-preferences.md preserved across re-install (global Claude)'
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-1924-devprefs-');
+    tmpDir = createTempDir('fvgsd-1924-devprefs-');
   });
 
   afterEach(() => {
@@ -177,7 +177,7 @@ describe('#1924: dev-preferences.md preserved across re-install (global Claude)'
 
     // Content is migrated to the new canonical skills location (#2973).
     // The old commands/gsd/ path is cleaned up; the skill file carries the content.
-    const devPrefSkillPath = path.join(tmpDir, 'skills', 'gsd-dev-preferences', 'SKILL.md');
+    const devPrefSkillPath = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
     assert.ok(
       fs.existsSync(devPrefSkillPath),
       'dev-preferences.md must be migrated to skills/gsd-dev-preferences/SKILL.md — gsd-update legacy cleanup must not silently drop user-generated content'
@@ -211,7 +211,7 @@ describe('#1924: dev-preferences.md preserved across re-install (global Claude)'
 
     // In the layout-driven path (B2), commands/gsd/ is fully removed but
     // dev-preferences.md content is migrated to the new canonical skill location.
-    const devPrefSkillPath = path.join(tmpDir, 'skills', 'gsd-dev-preferences', 'SKILL.md');
+    const devPrefSkillPath = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
     assert.ok(
       fs.existsSync(devPrefSkillPath),
       'dev-preferences.md content must be migrated to skills/gsd-dev-preferences/SKILL.md'
@@ -229,7 +229,7 @@ describe('#1924: dev-preferences.md preserved across re-install (global Claude)'
 // ─── Test 3: profile-user.md backup path is outside get-shit-done/ ───────────
 
 describe('#1924: profile-user.md backup path must be outside get-shit-done/', () => {
-  test('profile-user.md backup uses ~/.claude/USER-PROFILE.backup.md not ~/.claude/get-shit-done/USER-PROFILE.backup.md', () => {
+  test('profile-user.md backup uses ~/.claude/USER-PROFILE.backup.md not ~/.claude/fvgsd/USER-PROFILE.backup.md', () => {
     const workflowPath = path.join(
       __dirname, '..', 'get-shit-done', 'workflows', 'profile-user.md'
     );
@@ -254,17 +254,17 @@ describe('#1924: profile-user.md backup path must be outside get-shit-done/', ()
 
 describe('#1924: preserveUserArtifacts helper exists in install.js', () => {
   test('install.js exports preserveUserArtifacts function', () => {
-    // Set GSD_TEST_MODE so require() reaches the module.exports block
-    const origMode = process.env.GSD_TEST_MODE;
-    process.env.GSD_TEST_MODE = '1';
+    // Set FVGSD_TEST_MODE so require() reaches the module.exports block
+    const origMode = process.env.FVGSD_TEST_MODE;
+    process.env.FVGSD_TEST_MODE = '1';
     let mod;
     try {
       mod = require(INSTALL_SCRIPT);
     } finally {
       if (origMode === undefined) {
-        delete process.env.GSD_TEST_MODE;
+        delete process.env.FVGSD_TEST_MODE;
       } else {
-        process.env.GSD_TEST_MODE = origMode;
+        process.env.FVGSD_TEST_MODE = origMode;
       }
     }
 

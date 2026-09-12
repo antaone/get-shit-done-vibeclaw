@@ -60,7 +60,7 @@ describe('bug #3689 — resume-project.md continue-here scan under zsh NOMATCH',
   let tmpDir;
 
   before(() => {
-    tmpDir = createTempDir('gsd-bug-3689-');
+    tmpDir = createTempDir('fvgsd-bug-3689-');
     // Reproduce the common new-project layout: a `.planning/` with a
     // suffixed continue-here file and *no* spike / sketch / deliberation
     // subdirectories.
@@ -107,7 +107,7 @@ describe('bug #3689 — empty workspace exits cleanly', () => {
   let tmpDir;
 
   before(() => {
-    tmpDir = createTempDir('gsd-bug-3689-');
+    tmpDir = createTempDir('fvgsd-bug-3689-');
     // No .planning/ at all, no .continue-here files. Pure greenfield.
   });
 

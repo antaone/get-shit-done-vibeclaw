@@ -222,7 +222,7 @@ export const frontmatterSet: QueryHandler = async (args, projectDir) => {
  * Reads a file, merges JSON object into existing frontmatter, writes back.
  * Port of `cmdFrontmatterMerge` from frontmatter.cjs lines 344-356.
  *
- * @param args - `file --data <json>` (gsd-tools) or `[file, jsonString]` (SDK)
+ * @param args - `file --data <json>` (fvgsd-tools) or `[file, jsonString]` (SDK)
  * @param projectDir - Project root directory
  * @returns QueryResult with { merged: true, fields: [...] }
  */

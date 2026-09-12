@@ -4,8 +4,8 @@ Generate, update, and verify all project documentation — both canonical doc ty
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-doc-writer — Writes and updates project documentation files
-- gsd-doc-verifier — Verifies factual claims in docs against the live codebase
+- fvgsd-doc-writer — Writes and updates project documentation files
+- fvgsd-doc-verifier — Verifies factual claims in docs against the live codebase
 </available_agent_types>
 
 <process>
@@ -14,9 +14,9 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load docs-update context:
 
 ```bash
-INIT=$(gsd-sdk query docs-init)
+INIT=$(fvgsd-sdk query docs-init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS=$(gsd-sdk query agent-skills gsd-doc-writer)
+AGENT_SKILLS=$(fvgsd-sdk query agent-skills fvgsd-doc-writer)
 ```
 
 Extract from init JSON:
@@ -109,8 +109,8 @@ After assembling the canonical doc queue above, scan the `existing_docs` array f
 
 For each non-canonical existing doc found:
 - Add to a separate `review_queue`
-- These will be passed to gsd-doc-verifier in the verify_docs step for accuracy checking
-- If inaccuracies are found, they will be dispatched to gsd-doc-writer in `fix` mode for surgical corrections
+- These will be passed to fvgsd-doc-verifier in the verify_docs step for accuracy checking
+- If inaccuracies are found, they will be dispatched to fvgsd-doc-writer in `fix` mode for surgical corrections
 
 If non-canonical docs are found, display them in the queue presentation:
 
@@ -155,7 +155,7 @@ AskUserQuestion([{
 4. For each gap the user selects:
    - Add to the generation queue with mode = `"create"`
    - Set the output path to match the project's existing doc directory structure
-   - The gsd-doc-writer will receive a `doc_assignment` with `type: "custom"` and a description of what to document, using the project's source files as content discovery targets
+   - The fvgsd-doc-writer will receive a `doc_assignment` with `type: "custom"` and a description of what to document, using the project's source files as content discovery targets
 
 If no gaps are detected, omit this section entirely.
 
@@ -373,7 +373,7 @@ After all decisions recorded, continue to detect_runtime_capabilities.
 <step name="dispatch_wave_1" condition="Task tool is available">
 **Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 1` for this step.
 
-Spawn 3 parallel gsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION.
+Spawn 3 parallel fvgsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION.
 
 These are foundational docs with no cross-references needed, making them ideal for parallel generation.
 
@@ -383,7 +383,7 @@ Use `run_in_background=true` for all three to enable parallel execution.
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate README.md for target project",
@@ -405,7 +405,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate ARCHITECTURE.md for target project",
@@ -427,7 +427,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate CONFIGURATION.md for target project",
@@ -512,7 +512,7 @@ Use `run_in_background=true` for all Wave 2 agents to enable parallel execution 
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate GETTING-STARTED.md for target project",
@@ -538,7 +538,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate DEVELOPMENT.md for target project",
@@ -564,7 +564,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate TESTING.md for target project",
@@ -590,7 +590,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate API.md for target project",
@@ -616,7 +616,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate DEPLOYMENT.md for target project",
@@ -643,7 +643,7 @@ Write the doc file directly. Return confirmation only — do not return doc cont
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate CONTRIBUTING.md for target project",
@@ -728,11 +728,11 @@ Determine mode:
 - If `{package_dir}/README.md` exists: mode = `update`, read existing content
 - Else: mode = `create`
 
-Spawn a `gsd-doc-writer` agent with `run_in_background=true`:
+Spawn a `fvgsd-doc-writer` agent with `run_in_background=true`:
 
 ```
 Agent(
-  subagent_type="gsd-doc-writer",
+  subagent_type="fvgsd-doc-writer",
   model="{doc_writer_model}",
   run_in_background=true,
   description="Generate per-package README for {package_dir}",
@@ -755,7 +755,7 @@ Write {package_dir}/README.md directly. Return confirmation only — do not retu
 
 Collect confirmations via TaskOutput for all package agents. Note failures in the final report.
 
-**Fallback when Task tool is unavailable:** Generate per-package READMEs sequentially inline after the `sequential_generation` step. For each package directory with a `package.json`, construct the equivalent `doc_assignment` block and generate the README following gsd-doc-writer instructions.
+**Fallback when Task tool is unavailable:** Generate per-package READMEs sequentially inline after the `sequential_generation` step. For each package directory with a `package.json`, construct the equivalent `doc_assignment` block and generate the README following fvgsd-doc-writer instructions.
 
 Continue to commit_docs.
 </step>
@@ -767,7 +767,7 @@ When the `Task` tool is unavailable, generate docs sequentially in the current c
 
 **IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, or equivalent tools available in your runtime).
 
-Read `agents/gsd-doc-writer.md` instructions once before beginning. Follow the create_mode or update_mode instructions from that agent for each doc, using the same doc_assignment fields as the parallel path.
+Read `agents/fvgsd-doc-writer.md` instructions once before beginning. Follow the create_mode or update_mode instructions from that agent for each doc, using the same doc_assignment fields as the parallel path.
 
 **Wave 1 (sequential — complete all three before starting Wave 2):**
 
@@ -775,18 +775,18 @@ For each Wave 1 doc, construct the equivalent doc_assignment block and generate 
 
 1. **README** — mode from resolve_modes; for update/supplement mode, include existing_content
    - Construct doc_assignment: `type: readme`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
-   - Explore the codebase (Read, Grep, Glob, Bash) following gsd-doc-writer create_mode / update_mode instructions
+   - Explore the codebase (Read, Grep, Glob, Bash) following fvgsd-doc-writer create_mode / update_mode instructions
    - Write the file to the resolved path (README.md)
 
 2. **ARCHITECTURE** — mode from resolve_modes; for update/supplement mode, include existing_content
    - Construct doc_assignment: `type: architecture`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
-   - Explore the codebase following gsd-doc-writer instructions
+   - Explore the codebase following fvgsd-doc-writer instructions
    - Write the file to the resolved path (docs/ARCHITECTURE.md, or ARCHITECTURE.md if found at root as fallback)
 
 3. **CONFIGURATION** — mode from resolve_modes; for update/supplement mode, include existing_content
    - Construct doc_assignment: `type: configuration`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
    - Apply VERIFY markers to any infrastructure claim not discoverable from the repository
-   - Explore the codebase following gsd-doc-writer instructions
+   - Explore the codebase following fvgsd-doc-writer instructions
    - Write the file to the resolved path (docs/CONFIGURATION.md, or CONFIGURATION.md if found at root as fallback)
 
 **Wave 2 (sequential — begin only after all Wave 1 docs are written):**
@@ -807,7 +807,7 @@ After all 9 root-level docs are written, generate per-package READMEs sequential
 For each resolved package directory (from workspace glob expansion) that contains a `package.json`:
 - Determine mode: if `{package_dir}/README.md` exists, mode = `update`; else mode = `create`
 - Construct doc_assignment: `type: readme`, `mode: {create|update}`, `scope: per_package`, `package_dir: {absolute path}`, `project_context: {INIT JSON with project_root set to package directory}`, `existing_content:` (if update)
-- Follow gsd-doc-writer instructions for per_package scope
+- Follow fvgsd-doc-writer instructions for per_package scope
 - Write the file to `{package_dir}/README.md`
 
 Continue to verify_docs.
@@ -830,7 +830,7 @@ Extract `canonical_queue` (items with `status: "completed"`) and `review_queue` 
 
 For each doc in `canonical_queue` that was successfully written to disk:
 
-1. Spawn the `gsd-doc-verifier` agent (or invoke sequentially if Task tool is unavailable) with a `<verify_assignment>` block:
+1. Spawn the `fvgsd-doc-verifier` agent (or invoke sequentially if Task tool is unavailable) with a `<verify_assignment>` block:
    ```xml
    <verify_assignment>
    doc_path: {relative path to the doc file, e.g. README.md}
@@ -848,11 +848,11 @@ This is NOT optional. Every doc in `review_queue` MUST be verified.
 
 For each doc in `review_queue` from the manifest:
 
-1. Spawn the `gsd-doc-verifier` agent with the same `<verify_assignment>` block as above.
+1. Spawn the `fvgsd-doc-verifier` agent with the same `<verify_assignment>` block as above.
 2. Read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
 3. Update the manifest: set `status: "verified"` for each review_queue doc processed.
 
-Non-canonical docs with failures ARE eligible for the fix_loop. When a non-canonical doc has `claims_failed > 0`, dispatch it to gsd-doc-writer in `fix` mode with the failures array — the writer's fix mode does surgical corrections on specific lines regardless of doc type (no template needed). The writer MUST NOT restructure, rephrase, or reformat any content beyond the failing claims.
+Non-canonical docs with failures ARE eligible for the fix_loop. When a non-canonical doc has `claims_failed > 0`, dispatch it to fvgsd-doc-writer in `fix` mode with the failures array — the writer's fix mode does surgical corrections on specific lines regardless of doc type (no template needed). The writer MUST NOT restructure, rephrase, or reformat any content beyond the failing claims.
 
 **Phase 3: Present combined verification summary**
 
@@ -900,7 +900,7 @@ Correct flagged inaccuracies by re-sending failing docs to the doc-writer in fix
 
 1. For each doc with `claims_failed > 0` in the latest verification_results:
    a. Read the current file content from disk.
-   b. Spawn `gsd-doc-writer` agent (or invoke sequentially) with a fix assignment:
+   b. Spawn `fvgsd-doc-writer` agent (or invoke sequentially) with a fix assignment:
       ```xml
       <doc_assignment>
       type: {original doc type from the queue, e.g. readme}
@@ -956,10 +956,10 @@ Continue to scan_for_secrets.
 <step name="verify_only_report">
 **Reached when `--verify-only` is present in `$ARGUMENTS`.** This is an early-exit step — do not proceed to dispatch, generation, commit, or report steps after this step.
 
-Invoke the gsd-doc-verifier agent in read-only mode for each file in `existing_docs` from the init JSON:
+Invoke the fvgsd-doc-verifier agent in read-only mode for each file in `existing_docs` from the init JSON:
 
 1. For each doc in `existing_docs`:
-   a. Spawn `gsd-doc-verifier` (or invoke sequentially if Task tool is unavailable) with:
+   a. Spawn `fvgsd-doc-verifier` (or invoke sequentially if Task tool is unavailable) with:
       ```xml
       <verify_assignment>
       doc_path: {doc.path}
@@ -994,8 +994,8 @@ Failed claims:
 
 Display note:
 ```
-To fix failures automatically: /vgsd:docs-update (runs generation + fix loop)
-To regenerate all docs from scratch: /vgsd:docs-update --force
+To fix failures automatically: /fvgsd:docs-update (runs generation + fix loop)
+To regenerate all docs from scratch: /fvgsd:docs-update --force
 ```
 
 Clean up temp files: remove `.planning/tmp/verify-*.json` files.
@@ -1030,7 +1030,7 @@ This would expose credentials if committed.
 Action required:
 1. Review the flagged lines above
 2. Remove any real secrets from the doc files
-3. Re-run /vgsd:docs-update to regenerate clean docs
+3. Re-run /fvgsd:docs-update to regenerate clean docs
 ```
 
 Then confirm with AskUserQuestion:
@@ -1060,7 +1060,7 @@ Only run this step if `commit_docs` is `true` from the init JSON. If `commit_doc
 Assemble the list of files that were actually generated (do not include files that failed or were skipped):
 
 ```bash
-gsd-sdk query commit "docs: generate project documentation" \
+fvgsd-sdk query commit "docs: generate project documentation" \
   --files README.md docs/ARCHITECTURE.md docs/CONFIGURATION.md docs/GETTING-STARTED.md docs/DEVELOPMENT.md docs/TESTING.md
 # Append any conditional docs that were generated:
 # --files ... docs/API.md docs/DEPLOYMENT.md CONTRIBUTING.md
@@ -1132,7 +1132,7 @@ All generated files committed.
 Remind the user they can fact-check generated docs:
 
 ```
-Run `/vgsd:docs-update --verify-only` to fact-check generated docs against the codebase.
+Run `/fvgsd:docs-update --verify-only` to fact-check generated docs against the codebase.
 ```
 
 End workflow.
@@ -1157,5 +1157,5 @@ End workflow.
 - [ ] verify_docs step checked all generated docs against the live codebase
 - [ ] fix_loop ran at most 2 iterations and halted on regression
 - [ ] scan_for_secrets ran before commit and blocked on detected patterns
-- [ ] --verify-only invokes gsd-doc-verifier for full fact-checking (not just VERIFY marker count)
+- [ ] --verify-only invokes fvgsd-doc-verifier for full fact-checking (not just VERIFY marker count)
 </success_criteria>

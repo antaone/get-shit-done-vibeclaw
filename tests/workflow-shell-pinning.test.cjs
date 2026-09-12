@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Asserts that every `run:` step whose command begins with `npm ` in any
@@ -304,7 +304,7 @@ function findViolations(filePath) {
  * Used by the defaults.run.shell unit test below.
  */
 function findViolationsInString(yamlContent) {
-  const tmpPath = path.join(require('os').tmpdir(), `gsd-shell-test-${process.pid}.yml`);
+  const tmpPath = path.join(require('os').tmpdir(), `fvgsd-shell-test-${process.pid}.yml`);
   fs.writeFileSync(tmpPath, yamlContent, 'utf8');
   try {
     return findViolations(tmpPath);

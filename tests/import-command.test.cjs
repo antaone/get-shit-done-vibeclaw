@@ -54,8 +54,8 @@ describe('import command references', () => {
 
   test('references the import workflow', () => {
     assert.ok(
-      content.includes('@~/.claude/get-shit-done/workflows/import.md'),
-      'command should reference the workflow via @~/.claude/get-shit-done/workflows/import.md'
+      content.includes('@~/.claude/fvgsd/workflows/import.md'),
+      'command should reference the workflow via @~/.claude/fvgsd/workflows/import.md'
     );
   });
 });
@@ -112,8 +112,8 @@ describe('import workflow content', () => {
 
   test('includes plan-checker validation gate', () => {
     assert.ok(
-      content.includes('gsd-plan-checker'),
-      'workflow should delegate validation to gsd-plan-checker'
+      content.includes('fvgsd-plan-checker'),
+      'workflow should delegate validation to fvgsd-plan-checker'
     );
   });
 

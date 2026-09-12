@@ -1,12 +1,12 @@
 'use strict';
 
 /**
- * Context-utilization classifier for `vgsd-health --context`.
+ * Context-utilization classifier for `fvgsd-health --context`.
  *
  * Pure function. Callers pass tokensUsed + contextWindow; the
  * classifier returns the percent and one of three states. Recommendation
  * strings are NOT in this module — formatting is the renderer's job
- * (see `validate context` in gsd-tools.cjs). That separation lets the
+ * (see `validate context` in fvgsd-tools.cjs). That separation lets the
  * copy change without touching this module's tests.
  *
  * Thresholds:

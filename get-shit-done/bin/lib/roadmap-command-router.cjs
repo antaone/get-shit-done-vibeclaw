@@ -9,24 +9,24 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
 
 /**
  * Manifest-backed roadmap subcommand router.
- * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving existing command semantics.
  *
  * Phase 6: all roadmap.* subcommands have SDK equivalents and are dispatched
  * via executeForCjs (the sync bridge). CJS fallback retained when:
- * - GSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
+ * - FVGSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
  * - SDK is unavailable (build not present).
  *
  * CJS-only subcommands: none.
  * SDK-only (unsupported in CJS router): none.
  */
 function routeRoadmapCommand({ roadmap, args, cwd, raw, error }) {
-  const activeWorkstream = process.env.GSD_WORKSTREAM;
-  // GSD_SDK_NESTED is set by SDK handlers that spawn gsd-tools.cjs as a
+  const activeWorkstream = process.env.FVGSD_WORKSTREAM;
+  // FVGSD_SDK_NESTED is set by SDK handlers that spawn fvgsd-tools.cjs as a
   // child process (e.g. roadmapAnnotateDependencies).  Without this guard
   // the child process re-dispatches through the SDK bridge, which spawns
   // again, ad infinitum until the synckit 15s timeout fires.  Bug #3537
   // annotate-dependencies parity.
-  const nested = process.env.GSD_SDK_NESTED === '1';
+  const nested = process.env.FVGSD_SDK_NESTED === '1';
   const sdkAvailable = !activeWorkstream && !nested && tryLoadSdk();
 
   function sdkHandler(registryCommand, registryArgs, legacyArgs, cjsFallback) {

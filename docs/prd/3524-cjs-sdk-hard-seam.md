@@ -35,7 +35,7 @@ The fix is mechanical: for every hand-synced pair, replace one side with a gener
 
 ## Non-goals
 
-- Removing the CJS CLI. `gsd-tools` continues to exist for shell-script back-compat. (Its dispatcher delegates to the SDK runtime bridge after Phase 5; the external CLI contract is unchanged.)
+- Removing the CJS CLI. `fvgsd-tools` continues to exist for shell-script back-compat. (Its dispatcher delegates to the SDK runtime bridge after Phase 5; the external CLI contract is unchanged.)
 - Migrating CJS-only Modules (graphify, gsd2-import, schema-detect, fallow-runner, intel, drift) to SDK handlers.
 - Defining a Verify Module before the verify surface has a shared Interface. Verify-surface deepening is precondition work for a future enhancement.
 
@@ -149,24 +149,24 @@ Phases are sized to ship in one to two PRs each. Each phase has its own GitHub i
 
 ### Phase 5 — CJS Command Router Adapter: delegate to the SDK runtime bridge
 
-**Why fifth.** Phases 1–4 collapse drift in *shared* logic. Phase 5 collapses drift in *parallel* logic — the per-side state/verify/init/phase/roadmap/validate handler implementations on the CJS side. After Phase 5, every canonical command running via `gsd-tools` executes the same SDK handler that `gsd-sdk query` executes, in-process, with no subprocess hop. The seam becomes a real wall.
+**Why fifth.** Phases 1–4 collapse drift in *shared* logic. Phase 5 collapses drift in *parallel* logic — the per-side state/verify/init/phase/roadmap/validate handler implementations on the CJS side. After Phase 5, every canonical command running via `fvgsd-tools` executes the same SDK handler that `fvgsd-sdk query` executes, in-process, with no subprocess hop. The seam becomes a real wall.
 
 **Scope:**
 - Amend the existing `CJS Command Router Adapter Module` CONTEXT.md entry to document runtime-bridge delegation.
-- Expose a synchronous-friendly entry on `QueryRuntimeBridge` for CJS callers. Today `QueryRuntimeBridge.execute()` is async; the bridge gains a `executeForCjs(input) → { exitCode, stdoutChunks, stderrLines }` synchronous wrapper that runs the dispatch under `deasync` or a controlled `runUntil` semantic. (Toolchain choice resolved in the Phase 5 issue; if synchronous bridging is not viable, fall back to `Atomics.wait` on a worker channel — never `gsd-sdk` subprocess.)
+- Expose a synchronous-friendly entry on `QueryRuntimeBridge` for CJS callers. Today `QueryRuntimeBridge.execute()` is async; the bridge gains a `executeForCjs(input) → { exitCode, stdoutChunks, stderrLines }` synchronous wrapper that runs the dispatch under `deasync` or a controlled `runUntil` semantic. (Toolchain choice resolved in the Phase 5 issue; if synchronous bridging is not viable, fall back to `Atomics.wait` on a worker channel — never `fvgsd-sdk` subprocess.)
 - Replace each canonical-family `handlers` map in `bin/lib/*-command-router.cjs` with a generated delegate emitter that, per subcommand, calls `executeForCjs({ canonical, argv, env, cwd })` and writes the result through the existing CJS output Adapter.
 - For each canonical command family in order — `state.*`, `verify.*`, `phase.*`, `phases.*`, `validate.*`, `roadmap.*`, `init.*`, `frontmatter.*`, `config.*`, plus the non-family commands listed in `sdk/src/query/command-manifest.non-family.ts` — migrate one family per sub-PR. Run the golden parity matrix per family before merging.
 - Delete CJS-side handler files (or shrink to delegates) for each migrated family: `state.cjs`, `verify.cjs`, `init.cjs`, `phase.cjs`, `phases.cjs`, `validate.cjs`, `roadmap.cjs`, `milestone.cjs`, `frontmatter.cjs`, `config.cjs` write paths, plan-scan handlers, etc. The pure-transform Shared Modules from Phases 1–4 remain untouched; only the per-family handler entry points are replaced.
 - CJS-only Module handlers (`graphify`, `gsd2-import`, `schema-detect`, `fallow-runner`, `intel`, `drift`, `installer-migrations`) keep their in-process CJS implementations. They are not in the canonical family registry and do not route through the SDK runtime bridge.
-- Extend `sdk/src/golden/golden.integration.test.ts` to verify identical exit code + stdout chunks + stderr lines between `gsd-tools <family> <subcommand>` (now delegated) and `gsd-sdk query <canonical>` for every canonical command in the manifest.
+- Extend `sdk/src/golden/golden.integration.test.ts` to verify identical exit code + stdout chunks + stderr lines between `fvgsd-tools <family> <subcommand>` (now delegated) and `fvgsd-sdk query <canonical>` for every canonical command in the manifest.
 
 **Acceptance criteria:**
 - [ ] CONTEXT.md "CJS Command Router Adapter Module" entry documents runtime-bridge delegation.
 - [ ] `QueryRuntimeBridge.executeForCjs` (or equivalent) ships with the synchronous semantics resolved in the phase issue.
 - [ ] Every canonical command family in `command-manifest.*.ts` routes via `executeForCjs`. CJS-only commands continue to route via the existing CJS handler.
 - [ ] Each per-family CJS handler file (`state.cjs`, `verify.cjs`, …) contains no command-specific logic — only the delegate wiring or has been deleted entirely.
-- [ ] Golden parity matrix verifies output equivalence across `gsd-tools` and `gsd-sdk` for every canonical command. No regressions in workflow markdown that calls `gsd-tools`.
-- [ ] Subprocess overhead per `gsd-tools` invocation does not increase (the bridge is in-process, not a `gsd-sdk` subprocess).
+- [ ] Golden parity matrix verifies output equivalence across `fvgsd-tools` and `fvgsd-sdk` for every canonical command. No regressions in workflow markdown that calls `fvgsd-tools`.
+- [ ] Subprocess overhead per `fvgsd-tools` invocation does not increase (the bridge is in-process, not a `fvgsd-sdk` subprocess).
 
 **Rollback (per family):** Each family's PR is independently revertible. The CJS handler files for an un-migrated family remain on disk in git history; if a family's delegation regresses, revert that family's PR and the CJS-side handler is restored.
 
@@ -198,18 +198,18 @@ Phases are sized to ship in one to two PRs each. Each phase has its own GitHub i
 
 ### Backwards compatibility
 
-The CJS public CLI surface (`gsd-tools <subcommand>`) does not change. Flags, exit codes, stdout shapes preserved. Every phase replaces internal implementations behind the existing Module Interfaces; the external contracts are pinned by the existing golden parity suite plus the new fixture matrices.
+The CJS public CLI surface (`fvgsd-tools <subcommand>`) does not change. Flags, exit codes, stdout shapes preserved. Every phase replaces internal implementations behind the existing Module Interfaces; the external contracts are pinned by the existing golden parity suite plus the new fixture matrices.
 
 ### Performance
 
 No subprocess overhead anywhere. The generated `.cjs` files are `require`-able CommonJS modules; the SDK consumes the TS source directly. Module load cost adds ≤ 10 ms per `require` across all phases combined.
 
-Phase 5 specifically preserves the in-process model: `QueryRuntimeBridge.executeForCjs` runs the SDK handler in the same Node process as the CJS dispatcher. No `gsd-sdk` subprocess is invoked. Synchronous bridging adds at most a handful of microseconds per call vs the previous direct CJS handler invocation, dominated by the existing dispatch policy overhead.
+Phase 5 specifically preserves the in-process model: `QueryRuntimeBridge.executeForCjs` runs the SDK handler in the same Node process as the CJS dispatcher. No `fvgsd-sdk` subprocess is invoked. Synchronous bridging adds at most a handful of microseconds per call vs the previous direct CJS handler invocation, dominated by the existing dispatch policy overhead.
 
 ### Build/install pipeline impact
 
 - Each generator runs at build time on the developer machine (and in CI for the freshness check). No runtime generator execution.
-- The published `get-shit-done-cc` package already includes both `get-shit-done/bin/` and `sdk/dist/`. The generated `.cjs` files are committed to the repo (like `command-aliases.generated.cjs` today), so the install flow is unchanged — no on-install code generation.
+- The published `fvgsd` package already includes both `get-shit-done/bin/` and `sdk/dist/`. The generated `.cjs` files are committed to the repo (like `command-aliases.generated.cjs` today), so the install flow is unchanged — no on-install code generation.
 - `npm run build:sdk` continues to do what it does. Generators are invoked via `npm run gen:<module>` per the existing precedent.
 
 ### Risks
@@ -219,12 +219,12 @@ Phase 5 specifically preserves the in-process model: `QueryRuntimeBridge.execute
 | Generator output drifts from source between commits | Medium | `check-<module>-fresh.mjs` per Module catches this at PR time. Precedent already in use for command-aliases. |
 | A Shared Module's TS source uses features not expressible in CommonJS output | Low | Generator emits a CJS-compatible subset (no ESM-only syntax in source). Existing `gen-command-aliases.ts` template covers this. |
 | Phase 2's removal of inline `_deepMergeConfig` changes a subtle merge semantic | Medium | Golden parity matrix is the test. If `_deepMergeConfig` and the new Module disagree on a fixture, the matrix fails and the new Module is amended before merge. |
-| `migrateOnDisk` rollout silently changes user-visible behavior on upgrade | Medium | `migrateOnDisk` is explicit and opt-in; installer calls it once on next upgrade, with a release-note entry. Standalone command `gsd-tools migrate-config` for manual invocation. |
+| `migrateOnDisk` rollout silently changes user-visible behavior on upgrade | Medium | `migrateOnDisk` is explicit and opt-in; installer calls it once on next upgrade, with a release-note entry. Standalone command `fvgsd-tools migrate-config` for manual invocation. |
 | CODEOWNERS rule slows down architecture-team responsiveness | Medium | Apply CODEOWNERS only to source-of-truth directories and manifests. Adapters and `.generated.*` files remain open. Architecture team commits to a ≤ 24 h SLA. |
 | Phase 3's audit surfaces more pairs than expected, scope creeps | Medium | Each non-Phase-1/2 Module is scope-checked in its phase issue. Pairs that don't fit cleanly are deferred with a documented reason. |
 | Phase 5's synchronous-bridging mechanism (`executeForCjs`) has no clean shape — `deasync` is C++-bound, `Atomics.wait` requires a Worker, refactoring every SDK handler to be sync is huge | High | Phase 5 spike resolves this before any family migration. If no clean mechanism exists, Phase 5 is descoped to the families whose SDK handlers are already synchronous, and the remainder shift to a follow-up enhancement. |
 | Phase 5 family migrations regress observable CJS output (exit codes, stdout/stderr shape) | Medium | Golden parity matrix per family is the gate. A family's PR cannot merge until the matrix is green across every canonical command in that family. |
-| Phase 5 changes startup time because the SDK runtime bridge eagerly loads more handlers than the previous CJS routers | Low | Lazy-load handlers behind the bridge (already the SDK's model). Measure `time gsd-tools state load` before/after migration; fail the family PR if median latency regresses >20 ms. |
+| Phase 5 changes startup time because the SDK runtime bridge eagerly loads more handlers than the previous CJS routers | Low | Lazy-load handlers behind the bridge (already the SDK's model). Measure `time fvgsd-tools state load` before/after migration; fail the family PR if median latency regresses >20 ms. |
 
 ### Open questions (resolved before the phase that depends on them)
 

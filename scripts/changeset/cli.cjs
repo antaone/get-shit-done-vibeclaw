@@ -32,7 +32,7 @@ function parseArgs(argv) {
     toRef: null,
     output: null,
     repoSlug: 'gsd-build/get-shit-done',
-    installCommand: 'npx get-shit-done-cc@latest',
+    installCommand: 'npx fvgsd@latest',
     json: false,
   };
   if (argv.length === 0) return { ok: true, opts };

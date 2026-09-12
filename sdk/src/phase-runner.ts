@@ -20,7 +20,7 @@ import type {
 } from './types.js';
 import { PhaseStepType, PhaseType, GSDEventType } from './types.js';
 import type { GSDConfig } from './config.js';
-import type { GSDTools } from './gsd-tools.js';
+import type { GSDTools } from './fvgsd-tools.js';
 import type { GSDEventStream } from './event-stream.js';
 import type { PromptFactory } from './phase-prompt.js';
 import type { ContextEngine } from './context-engine.js';
@@ -346,7 +346,7 @@ export class PhaseRunner {
 
   /**
    * Run the plan-check step.
-   * Loads the gsd-plan-checker agent definition, runs a Verify-scoped session,
+   * Loads the fvgsd-plan-checker agent definition, runs a Verify-scoped session,
    * and parses output for PASS/FAIL signals.
    */
   private async runPlanCheckStep(
@@ -638,7 +638,7 @@ export class PhaseRunner {
       step: PhaseStepType.Execute,
     });
 
-    // Get the plan index from gsd-tools
+    // Get the plan index from fvgsd-tools
     let planIndex: PhasePlanIndex;
     try {
       planIndex = await this.tools.phasePlanIndex(phaseNumber);

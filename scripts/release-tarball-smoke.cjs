@@ -7,7 +7,7 @@
  * Guards against the class of bugs that can't be caught by working-tree tests:
  *   - #3684: maskIfSecret import/export mismatch shipped in v1.42.3 (runtime
  *     crash on installed package, invisible to unit tests)
- *   - #3668: 75/78 workflows call bare `gsd-sdk` without fallback; --local users
+ *   - #3668: 75/78 workflows call bare `fvgsd-sdk` without fallback; --local users
  *     see `command not found`
  *
  * Strategy: pack the working tree, install into a temp prefix, invoke the
@@ -30,16 +30,16 @@
  *     - Assert commands/gsd/<cmd>.md exists in the installed package
  *     - Parse the .md for a workflow @-import or inline reference
  *     - Assert the referenced workflow .md exists in the installed package
- *   If 'init' is in lifecycleCommands, runs `get-shit-done-cc --local --claude`
+ *   If 'init' is in lifecycleCommands, runs `fvgsd --local --claude`
  *   in fixtureDir to verify the installer is callable (INIT_FAILED on crash).
  *   Non-interactive: --local --claude flags skip all prompts.
  *
  * Workflow-body checks (Cycle 3 — informational until #3668 is fixed):
- *   - Calls `gsd-sdk "query" state.json --project-dir <fixtureDir>` to verify
+ *   - Calls `fvgsd-sdk "query" state.json --project-dir <fixtureDir>` to verify
  *     the SDK binary is callable and produces parseable JSON (SDK_BINARY_NOT_CALLABLE).
  *   - Scans all installed get-shit-done/workflows/*.md for:
  *     (a) legacy/current colon-namespace leaks (WORKFLOW_BODY_COLON_LEAK)
- *     (b) bare `gsd-sdk` query invocations in shell fences without a `command -v gsd-sdk`
+ *     (b) bare `fvgsd-sdk` query invocations in shell fences without a `command -v fvgsd-sdk`
  *         guard in the same fence (WORKFLOW_MISSING_SDK_FALLBACK — #3668).
  *   Both checks populate result.details with counters but do NOT return a failure
  *   code by default; they are informational until the upstream fixes land.
@@ -78,19 +78,19 @@ const SMOKE = Object.freeze({
 // ---------------------------------------------------------------------------
 
 /**
- * Locate the lib/node_modules/get-shit-done-cc package root inside an
+ * Locate the lib/node_modules/fvgsd package root inside an
  * npm --prefix install directory.
  */
 function pkgRoot(installPrefix) {
-  // POSIX: <prefix>/lib/node_modules/get-shit-done-cc
-  // Windows: <prefix>/node_modules/get-shit-done-cc
-  const posix = path.join(installPrefix, 'lib', 'node_modules', 'get-shit-done-cc');
-  const win = path.join(installPrefix, 'node_modules', 'get-shit-done-cc');
+  // POSIX: <prefix>/lib/node_modules/fvgsd
+  // Windows: <prefix>/node_modules/fvgsd
+  const posix = path.join(installPrefix, 'lib', 'node_modules', 'fvgsd');
+  const win = path.join(installPrefix, 'node_modules', 'fvgsd');
   return fs.existsSync(posix) ? posix : win;
 }
 
 /**
- * Locate the installed gsd-sdk binary (symlink in <prefix>/bin/).
+ * Locate the installed fvgsd-sdk binary (symlink in <prefix>/bin/).
  */
 function findGsdSdkBin(installPrefix) {
   const binDir = process.platform === 'win32'
@@ -98,8 +98,8 @@ function findGsdSdkBin(installPrefix) {
     : path.join(installPrefix, 'bin');
 
   const candidates = process.platform === 'win32'
-    ? [path.join(binDir, 'gsd-sdk.cmd'), path.join(binDir, 'gsd-sdk')]
-    : [path.join(binDir, 'gsd-sdk')];
+    ? [path.join(binDir, 'fvgsd-sdk.cmd'), path.join(binDir, 'fvgsd-sdk')]
+    : [path.join(binDir, 'fvgsd-sdk')];
 
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;
@@ -108,7 +108,7 @@ function findGsdSdkBin(installPrefix) {
 }
 
 /**
- * Locate the get-shit-done-cc installer binary (the symlink in <prefix>/bin/).
+ * Locate the fvgsd installer binary (the symlink in <prefix>/bin/).
  */
 function findInstallerBin(installPrefix) {
   const binDir = process.platform === 'win32'
@@ -116,8 +116,8 @@ function findInstallerBin(installPrefix) {
     : path.join(installPrefix, 'bin');
 
   const candidates = process.platform === 'win32'
-    ? [path.join(binDir, 'get-shit-done-cc.cmd'), path.join(binDir, 'get-shit-done-cc')]
-    : [path.join(binDir, 'get-shit-done-cc')];
+    ? [path.join(binDir, 'fvgsd.cmd'), path.join(binDir, 'fvgsd')]
+    : [path.join(binDir, 'fvgsd')];
 
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;
@@ -131,8 +131,8 @@ function findInstallerBin(installPrefix) {
  * Structured parser — only inspects individual lines; never regexes on the
  * whole-file string. Two recognised forms (in priority order):
  *
- *   1. @-import line:  `@~/.claude/get-shit-done/workflows/<name>.md`
- *   2. Inline mention: any line containing `~/.claude/get-shit-done/workflows/<name>.md`
+ *   1. @-import line:  `@~/.claude/fvgsd/workflows/<name>.md`
+ *   2. Inline mention: any line containing `~/.claude/fvgsd/workflows/<name>.md`
  *      (takes the LAST occurrence so conditional-dispatch files resolve to the
  *       default / unconditional branch, e.g. discuss-phase.md)
  *
@@ -190,7 +190,7 @@ function readInstalledCmdNames(pkg) {
  * should receive hyphen-form commands.
  *
  * Uses the word-boundary-safe regex shape from scripts/fix-slash-commands.cjs:
- * We check both the current `/vgsd:<cmd>` source form and legacy
+ * We check both the current `/fvgsd:<cmd>` source form and legacy
  * `/gsd:<cmd>` references leaking into installed workflow bodies.
  *
  * Returns the first leaking { line, lineNumber } or null.
@@ -198,7 +198,7 @@ function readInstalledCmdNames(pkg) {
 function scanWorkflowColonLeak(filePath, cmdNames) {
   if (!cmdNames || cmdNames.length === 0) return null;
   const sorted = [...cmdNames].sort((a, b) => b.length - a.length);
-  const pattern = new RegExp(`/(?:vgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
+  const pattern = new RegExp(`/(?:fvgsd|gsd):(${sorted.join('|')})(?=[^a-zA-Z0-9_-]|$)`, 'g');
 
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split(/\r?\n/);
@@ -212,11 +212,11 @@ function scanWorkflowColonLeak(filePath, cmdNames) {
 }
 
 /**
- * Scan a single workflow .md file for bare `gsd-sdk` query invocations inside
- * shell fences that lack a `command -v gsd-sdk` guard in the same fence.
+ * Scan a single workflow .md file for bare `fvgsd-sdk` query invocations inside
+ * shell fences that lack a `command -v fvgsd-sdk` guard in the same fence.
  *
  * Structured check: walks lines, tracks open/close shell fences (```bash /
- * ```sh / ``` alone), collects `gsd-sdk` query lines and the fence's guard
+ * ```sh / ``` alone), collects `fvgsd-sdk` query lines and the fence's guard
  * state, then emits findings per-fence.
  *
  * Returns the first unguarded { line, lineNumber } or null.
@@ -228,7 +228,7 @@ function scanWorkflowMissingSdkFallback(filePath) {
   const FENCE_OPEN = /^```(?:bash|sh)?\s*$/;
   const FENCE_CLOSE = /^```\s*$/;
   const SDK_QUERY = /\bgsd-sdk\s+query\b/;
-  const COMMAND_V = /\bcommand\s+-v\s+gsd-sdk\b/;
+  const COMMAND_V = /\bcommand\s+-v\s+fvgsd-sdk\b/;
 
   let inFence = false;
   let fenceHasGuard = false;
@@ -322,7 +322,7 @@ function runSmoke({
     };
   }
 
-  // --- Locate the installed gsd-sdk binary ---------------------------------
+  // --- Locate the installed fvgsd-sdk binary ---------------------------------
   const actualBin = findGsdSdkBin(installPrefix);
 
   if (!actualBin) {
@@ -335,7 +335,7 @@ function runSmoke({
     };
   }
 
-  // --- Invoke `gsd-sdk --version` ------------------------------------------
+  // --- Invoke `fvgsd-sdk --version` ------------------------------------------
   const versionResult = spawnSync(
     process.execPath,
     [actualBin, '--version'],
@@ -354,7 +354,7 @@ function runSmoke({
     };
   }
 
-  // Output format: "gsd-sdk v1.50.0-canary.0\n"
+  // Output format: "fvgsd-sdk v1.50.0-canary.0\n"
   const rawOutput = (versionResult.stdout || '').trim();
   const versionMatch = rawOutput.match(/v(.+)$/);
   const installedVersion = versionMatch ? versionMatch[1] : rawOutput;
@@ -387,18 +387,18 @@ function runSmoke({
         code: SMOKE.INIT_FAILED,
         details: {
           ...details,
-          reason: 'get-shit-done-cc binary not found in installPrefix',
+          reason: 'fvgsd binary not found in installPrefix',
           installPrefix,
         },
       };
     }
 
     // Non-interactive: --local --claude installs to .claude/ in cwd (fixtureDir).
-    // GSD_TEST_MODE must be cleared — install.js skips its main() block when
-    // GSD_TEST_MODE is set, which would cause the installer to exit 0 silently
+    // FVGSD_TEST_MODE must be cleared — install.js skips its main() block when
+    // FVGSD_TEST_MODE is set, which would cause the installer to exit 0 silently
     // without actually creating any files.
     const initEnv = { ...process.env };
-    delete initEnv.GSD_TEST_MODE;
+    delete initEnv.FVGSD_TEST_MODE;
 
     const initResult = spawnSync(
       process.execPath,
@@ -497,7 +497,7 @@ function runSmoke({
   // Cycle 3: SDK binary callable + workflow-body validation (informational)
   // ─────────────────────────────────────────────────────────────────────────
 
-  // --- Verify `gsd-sdk` query is callable and returns parseable JSON -------
+  // --- Verify `fvgsd-sdk` query is callable and returns parseable JSON -------
   const sdkQueryDir = fixtureDir || os.tmpdir();
   const sdkQueryResult = spawnSync(
     process.execPath,
@@ -531,7 +531,7 @@ function runSmoke({
       details: {
         ...details,
         sdkBin: actualBin,
-        reason: 'gsd-sdk query-state output is not valid JSON',
+        reason: 'fvgsd-sdk query-state output is not valid JSON',
         sdkQueryStdout: sdkQueryResult.stdout,
       },
     };
@@ -605,9 +605,9 @@ function cliMain() {
   const expectedVersion = process.env.SMOKE_FORCE_EXPECTED_VERSION || pkg.version;
 
   // Pack the working tree into a temp directory
-  const packDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-smoke-pack-'));
-  const installPrefix = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-smoke-prefix-'));
-  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-smoke-fixture-'));
+  const packDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-smoke-pack-'));
+  const installPrefix = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-smoke-prefix-'));
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-smoke-fixture-'));
 
   let tarballPath;
   try {

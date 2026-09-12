@@ -104,7 +104,7 @@ function extractStep25Bash() {
  * defaults to `main`, every assertion below collapses (#2921 CR nitpick).
  */
 function setupFixture(defaultBranch = 'trunk') {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-quick-branching-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-quick-branching-'));
   const seedPath = path.join(root, 'seed');
   const originPath = path.join(root, 'origin.git');
   const clonePath = path.join(root, 'clone');
@@ -138,7 +138,7 @@ function runStep(bash, cwd, branchName) {
   // Write the script to a sibling tempdir, not inside the repo — putting it in
   // `cwd` would create an untracked file that trips `git status --porcelain`
   // and steers the step into the dirty-tree path.
-  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-quick-step-'));
+  const scriptDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-quick-step-'));
   const scriptPath = path.join(scriptDir, 'step25.sh');
   const script = `#!/usr/bin/env bash\nset -uo pipefail\nbranch_name="${branchName}"\n${bash}\n`;
   fs.writeFileSync(scriptPath, script, { mode: 0o755 });

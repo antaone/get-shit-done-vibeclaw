@@ -24,7 +24,7 @@ const COMMAND_ALIASES_FILE = path.join(
   'lib',
   'command-aliases.generated.cjs',
 );
-const GSD_TOOLS = path.join(REPO_ROOT, 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const FVGSD_TOOLS = path.join(REPO_ROOT, 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
 
 const MISSING_14 = [
   'check.decision-coverage-plan',
@@ -133,13 +133,13 @@ describe('feat-3251: command-aliases.generated.cjs manifest coverage', () => {
 });
 
 function createProject() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3251-dispatch-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3251-dispatch-'));
   fs.mkdirSync(path.join(dir, '.planning', 'phases'), { recursive: true });
   return dir;
 }
 
 function runGsdTools(args, projectDir) {
-  return spawnSync(process.execPath, [GSD_TOOLS, ...args], {
+  return spawnSync(process.execPath, [FVGSD_TOOLS, ...args], {
     cwd: projectDir,
     encoding: 'utf8',
     timeout: 30000,
@@ -167,7 +167,7 @@ function snapshotProjectState(projectDir) {
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-describe('feat-3251: generated aliases dispatch through real gsd-tools behavior', () => {
+describe('feat-3251: generated aliases dispatch through real fvgsd-tools behavior', () => {
   test('phase.mvp-mode spaced alias resolves CLI flag precedence', () => {
     const projectDir = createProject();
     try {

@@ -24,11 +24,11 @@
  *     backup and abort so the user never gets a broken Codex CLI.
  */
 
-// Scope GSD_TEST_MODE to module load only — restore prior value (or unset) so
+// Scope FVGSD_TEST_MODE to module load only — restore prior value (or unset) so
 // downstream tests in the same node process never see test-only behaviour
 // leak through (#2760 CR4 finding 5).
-const previousGsdTestMode = process.env.GSD_TEST_MODE;
-process.env.GSD_TEST_MODE = '1';
+const previousGsdTestMode = process.env.FVGSD_TEST_MODE;
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -46,9 +46,9 @@ const {
 } = require('../bin/install.js');
 
 if (previousGsdTestMode === undefined) {
-  delete process.env.GSD_TEST_MODE;
+  delete process.env.FVGSD_TEST_MODE;
 } else {
-  process.env.GSD_TEST_MODE = previousGsdTestMode;
+  process.env.FVGSD_TEST_MODE = previousGsdTestMode;
 }
 
 function runCodexInstall(codexHome, cwd = path.join(__dirname, '..')) {
@@ -103,7 +103,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-d3-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-d3-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -121,8 +121,8 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const parsed = parseTomlToObject(content);
 
     const sessionStartCommands = readHooksSessionStartCommands(codexHome);
-    const managed = sessionStartCommands.filter((cmd) => /gsd-check-update/.test(cmd));
-    assert.equal(managed.length, 1, 'hooks.json must contain exactly one managed gsd-check-update command');
+    const managed = sessionStartCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
+    assert.equal(managed.length, 1, 'hooks.json must contain exactly one managed fvgsd/check-update command');
     assert.ok(
       !parsed.hooks || !Array.isArray(parsed.hooks.SessionStart),
       'config.toml should not carry managed SessionStart hooks for GSD'
@@ -172,7 +172,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /gsd-check-update/.test(cmd)),
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
       'GSD handler must appear in hooks.json SessionStart entries: ' + JSON.stringify(hooksJsonCommands)
     );
     assert.ok(!Array.isArray(parsed.hooks), 'no flat [[hooks]] entries');
@@ -187,7 +187,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
       '# GSD Hooks',
       '[[hooks]]',
       'event = "SessionStart"',
-      'command = "node /old/path/to/gsd-check-update.js"',
+      'command = "node /old/path/to/fvgsd/check-update.js"',
       '',
     ].join('\n');
     writeCodexConfig(codexHome, legacyConfig);
@@ -200,7 +200,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     assert.ok(!Array.isArray(parsed.hooks), 'flat [[hooks]] must be stripped on upgrade');
     // Only one GSD hook entry must exist (no duplication) in hooks.json.
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /gsd-check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed handler after upgrade');
   });
 
@@ -213,7 +213,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
       '',
       '# GSD Hooks',
       '[[hooks.SessionStart]]',
-      'command = "node /old/path/to/gsd-check-update.js"',
+      'command = "node /old/path/to/fvgsd/check-update.js"',
       '',
     ].join('\n');
     writeCodexConfig(codexHome, prBranchConfig);
@@ -223,7 +223,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const parsed = parseTomlToObject(content);
 
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /gsd-check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed handler after upgrade from PR-#2802-shape');
   });
 
@@ -234,7 +234,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const content = readCodexConfig(codexHome);
 
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /gsd-check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed SessionStart handler after double install');
   });
 });
@@ -244,7 +244,7 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-f2-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-f2-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -276,10 +276,10 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
     );
     assert.equal(parsed.agents.default, undefined, 'bare [agents] default key must be stripped');
     assert.equal(parsed.agents.extra_key, undefined, 'bare [agents] extra_key must be stripped');
-    const gsdAgents = Object.keys(parsed.agents).filter((k) => k.startsWith('gsd-'));
+    const gsdAgents = Object.keys(parsed.agents).filter((k) => k.startsWith('fvgsd-'));
     assert.ok(
       gsdAgents.length > 0 && gsdAgents.every((k) => typeof parsed.agents[k] === 'object'),
-      'agents.gsd-* struct form must be present: ' + JSON.stringify(Object.keys(parsed.agents))
+      'agents.fvgsd-* struct form must be present: ' + JSON.stringify(Object.keys(parsed.agents))
     );
 
     // User's unrelated [model] section preserved structurally.
@@ -315,10 +315,10 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
       'agents must be a table-of-tables in parsed structure (sequence form must be stripped), got: '
         + (Array.isArray(parsed.agents) ? 'array' : typeof parsed.agents)
     );
-    const gsdAgents = Object.keys(parsed.agents).filter((k) => k.startsWith('gsd-'));
+    const gsdAgents = Object.keys(parsed.agents).filter((k) => k.startsWith('fvgsd-'));
     assert.ok(
       gsdAgents.length > 0,
-      'agents.gsd-* struct form must be present: ' + JSON.stringify(Object.keys(parsed.agents))
+      'agents.fvgsd-* struct form must be present: ' + JSON.stringify(Object.keys(parsed.agents))
     );
 
     // User's unrelated [projects."/tmp/x"] section preserved structurally.
@@ -337,7 +337,7 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
 // seam mutation invisible to siblings.
 describe('#2760 fix 3 — Post-write Codex schema validation', { concurrency: false }, () => {
   test('passes a clean config produced by GSD install', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-f3a-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-f3a-'));
     try {
       const codexHome = path.join(tmpDir, 'codex-home');
       runCodexInstall(codexHome);
@@ -372,7 +372,7 @@ describe('#2760 fix 3 — Post-write Codex schema validation', { concurrency: fa
   });
 
   test('aborts install and restores pre-install backup when post-write validation fails', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-f3b-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-f3b-'));
     const installModule = require('../bin/install.js');
     try {
       const codexHome = path.join(tmpDir, 'codex-home');
@@ -465,7 +465,7 @@ describe('#2760 fix 4 — Write-failure rollback (atomic write + snapshot restor
   let originalRenameSync;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-f4-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-f4-'));
     codexHome = path.join(tmpDir, 'codex-home');
     originalWriteFileSync = fs.writeFileSync;
     originalRenameSync = fs.renameSync;
@@ -611,7 +611,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-cr4-f2-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-cr4-f2-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -619,12 +619,12 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('pre-install legacy flat [[hooks]] gsd-check-update + user namespaced [[hooks.SessionStart]] → post-install converges on namespaced AoT', () => {
+  test('pre-install legacy flat [[hooks]] fvgsd/check-update + user namespaced [[hooks.SessionStart]] → post-install converges on namespaced AoT', () => {
     // Reproduce the upgrade scenario:
     //   - User has [[hooks.SessionStart]] entry of their own (signal that GSD
     //     should emit in the namespaced shape).
     //   - A previous GSD install left the legacy flat [[hooks]] managed block
-    //     for gsd-check-update. The pre-CR4 strip step would short-circuit
+    //     for fvgsd/check-update. The pre-CR4 strip step would short-circuit
     //     the namespaced emit and leave the user stuck in the mixed layout.
     const userPlusLegacy = [
       '[[hooks.SessionStart]]',
@@ -633,7 +633,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
       '# GSD Hooks',
       '[[hooks]]',
       'event = "SessionStart"',
-      'command = "node /old/path/hooks/gsd-check-update.js"',
+      'command = "node /old/path/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     writeCodexConfig(codexHome, userPlusLegacy);
@@ -668,7 +668,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /gsd-check-update/.test(cmd)),
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
       'GSD entry must appear in hooks.json SessionStart entries: '
         + JSON.stringify(hooksJsonCommands)
     );
@@ -681,10 +681,10 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
         + JSON.stringify(parsed.hooks)
     );
 
-    // No duplicate gsd-check-update entries — exactly one managed entry.
-    const gsdEntries = hooksJsonCommands.filter((cmd) => typeof cmd === 'string' && /gsd-check-update/.test(cmd));
+    // No duplicate fvgsd/check-update entries — exactly one managed entry.
+    const gsdEntries = hooksJsonCommands.filter((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd));
     assert.equal(gsdEntries.length, 1,
-      'exactly one gsd-check-update entry after migration, got: ' + gsdEntries.length);
+      'exactly one fvgsd/check-update entry after migration, got: ' + gsdEntries.length);
   });
 });
 
@@ -755,7 +755,7 @@ describe('#2760 CR4 finding 1 — atomicWriteFileSync failure aborts install (po
   let consoleOutput;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-cr4-f1-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-cr4-f1-'));
     codexHome = path.join(tmpDir, 'codex-home');
     originalRenameSync = fs.renameSync;
     originalConsoleLog = console.log;
@@ -836,7 +836,7 @@ describe('#2760 CR5 finding 1 — pre-write failures abort install (outer catch 
   const installModule = require('../bin/install.js');
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-cr5-f1-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-cr5-f1-'));
     codexHome = path.join(tmpDir, 'codex-home');
     originalConsoleLog = console.log;
     consoleOutput = [];
@@ -991,7 +991,7 @@ describe('#2760 CR5 finding 3 — migration emits namespaced AoT (no flat/namesp
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2760-cr5-f3-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2760-cr5-f3-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -1061,11 +1061,11 @@ describe('#2760 CR5 finding 3 — migration emits namespaced AoT (no flat/namesp
       'user SessionStart command "y" must be preserved in namespaced array: ' +
         JSON.stringify(ssCommands)
     );
-    // GSD's managed gsd-check-update entry also lives in the namespaced array.
+    // GSD's managed fvgsd/check-update entry also lives in the namespaced array.
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /gsd-check-update/.test(cmd)),
-      'managed gsd-check-update entry must appear in hooks.json SessionStart entries: ' +
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
+      'managed fvgsd/check-update entry must appear in hooks.json SessionStart entries: ' +
         JSON.stringify(hooksJsonCommands)
     );
 

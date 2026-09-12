@@ -30,7 +30,7 @@ Use this document at the start of a new session so work continues in context wit
    - `QUERY-HANDLERS.md` is maintained and current.
 
 3. **Track D — CJS deprecation headers** (done)
-   - `gsd-tools.cjs` already has `@deprecated` JSDoc header (lines 3-6) pointing to `gsd-sdk query` and `@gsd-build/sdk`.
+   - `fvgsd-tools.cjs` already has `@deprecated` JSDoc header (lines 3-6) pointing to `fvgsd-sdk query` and `@fvgsd/sdk`.
    - No additional CJS file deletion in scope per #2302.
 
 4. **CI verification** (should run before any PR)
@@ -45,7 +45,7 @@ Use this document at the start of a new session so work continues in context wit
 | Parity | **Done** | 127/128 covered; strict rows, mutation subprocess, composition goldens |
 | Registry | **Done** | CJS-only matrix in `QUERY-HANDLERS.md`; `docs/CLI-TOOLS.md` updated |
 | Runners (Track C) | **Not started** | `PhaseRunner`/`InitRunner` still use `GSDTools` subprocess bridge |
-| Deprecation (Track D) | **Done** | `@deprecated` header on `gsd-tools.cjs` |
+| Deprecation (Track D) | **Done** | `@deprecated` header on `fvgsd-tools.cjs` |
 | Docs | **Partial** | `QUERY-HANDLERS.md` current; `CHANGELOG.md` [Unreleased] needs Phase 3 entries |
 | CI | **Not verified** | Unit tests green (1261/1261); integration suite not run this session |
 
@@ -85,7 +85,7 @@ These were fixed by **aligning the TypeScript handler with the CJS implementatio
 1. **Find the CJS source of truth**  
    - `scan-sessions`: `get-shit-done/bin/lib/profile-pipeline.cjs` → `cmdScanSessions`  
    - `workstream status`: `get-shit-done/bin/lib/workstream.cjs` → `cmdWorkstreamStatus`  
-   - `gsd-tools.cjs` `runCommand` switch shows the top-level command and argv.
+   - `fvgsd-tools.cjs` `runCommand` switch shows the top-level command and argv.
 
 2. **Implement or adjust the SDK module**  
    - Example: `sdk/src/query/profile-scan-sessions.ts` mirrors the project-array build from `cmdScanSessions`; `scanSessions` in `profile.ts` parses `--path` / `--verbose`, throws when no sessions root (same error text as CJS), returns `{ data: projects }` where `projects` matches CJS JSON array.
@@ -126,16 +126,16 @@ All 127 portable canonicals have subprocess or in-process parity coverage. Summa
 
 ## Next batch — summary / audit / skill / validate / UAT / intel / profile / init
 
-**Same workflow as above:** read `gsd-tools.cjs` `runCommand` for argv → implement/adjust `sdk/src/query/*.ts` → add `READ_ONLY_JSON_PARITY_ROWS` and/or a **named `describe` block** with documented omissions → `npm run build` → `read-only-parity.integration.test.ts` + `golden-policy.test.ts`.
+**Same workflow as above:** read `fvgsd-tools.cjs` `runCommand` for argv → implement/adjust `sdk/src/query/*.ts` → add `READ_ONLY_JSON_PARITY_ROWS` and/or a **named `describe` block** with documented omissions → `npm run build` → `read-only-parity.integration.test.ts` + `golden-policy.test.ts`.
 
-| Priority | Command (CLI) | `gsd-tools.cjs` case / args | CJS implementation | SDK module | Notes |
+| Priority | Command (CLI) | `fvgsd-tools.cjs` case / args | CJS implementation | SDK module | Notes |
 | -------- | ------------- | -------------------------- | -------------------- | ---------- | ----- |
 | ~~1~~ | ~~`summary-extract <path>`~~ `[--fields a,b]` | `summary-extract` | `commands.cjs` `cmdSummaryExtract` (~L425) | `summary.ts` `summaryExtract` | **Done:** strict `READ_ONLY_JSON_PARITY_ROWS`; `summary.ts` aligned with `commands.cjs`; `extractFrontmatterLeading` in `frontmatter.ts` for first-`---`-block parity with `frontmatter.cjs`. |
 | ~~2~~ | ~~`history-digest`~~ | `history-digest` | `commands.cjs` `cmdHistoryDigest` (~L133) | `summary.ts` `historyDigest` | **Done:** same row / handler alignment as above. |
 | ~~3~~ | ~~`audit-open`~~ | `audit-open` `[--json]` | `audit.cjs` `auditOpenArtifacts` + optional `formatAuditReport` | `audit-open.ts` | **Done:** `--json` parity test + `scanned_at` normalization; `sanitizeForDisplay` = `security.cjs`. |
 | ~~4~~ | ~~`audit-uat`~~ | `audit-uat` | `uat.cjs` `cmdAuditUat` | `uat.ts` `auditUat` | **Done:** `auditUat` ports `cmdAuditUat` (`parseUatItems`, milestone filter, `summary.by_*`); strict `READ_ONLY_JSON_PARITY_ROWS` row. |
 | ~~5~~ | ~~`skill-manifest`~~ | `skill-manifest` + args | `init.cjs` `cmdSkillManifest` (~L1829) | `skill-manifest.ts` | **Done:** strict row; `extractFrontmatterLeading` for CJS parity (see `QUERY-HANDLERS.md`). |
-| ~~6~~ | ~~`validate agents`~~ | `validate` + `agents` | `verify.cjs` `cmdValidateAgents` (~L997) | `validate.ts` `validateAgents` | **Done:** strict row; `getAgentsDir` parity with `core.cjs`; `MODEL_PROFILES` includes `gsd-pattern-mapper` (sync with `model-profiles.cjs`). |
+| ~~6~~ | ~~`validate agents`~~ | `validate` + `agents` | `verify.cjs` `cmdValidateAgents` (~L997) | `validate.ts` `validateAgents` | **Done:** strict row; `getAgentsDir` parity with `core.cjs`; `MODEL_PROFILES` includes `fvgsd-pattern-mapper` (sync with `model-profiles.cjs`). |
 | ~~7~~ | ~~`uat render-checkpoint --file <path>`~~ | `uat` subcommand | `uat.cjs` `cmdRenderCheckpoint` | `uat.ts` `uatRenderCheckpoint` | **Done:** strict row; fixture `sdk/src/golden/fixtures/uat-render-checkpoint-sample.md`; see `QUERY-HANDLERS.md`. |
 | ~~8~~ | ~~`intel extract-exports <file>`~~ | `intel` `extract-exports` | `intel.cjs` `intelExtractExports` (~L502) | `intel.ts` `intelExtractExports` | **Done:** strict row + handler parity with `intel.cjs` (fixed file e.g. `sdk/src/query/utils.ts`). |
 | ~~9~~ | ~~`extract-messages`~~ | `extract-messages` + project/session flags | `profile-pipeline.cjs` | `profile.ts` `extractMessages` | **Done:** `profile-extract-messages.ts` + golden `output_file` strip + JSONL compare; fixture `extract-messages-sessions/`. |
@@ -181,8 +181,8 @@ Confirm against `GOLDEN_PARITY_EXCEPTIONS` in `golden-policy.ts` for the live li
 | `sdk/src/query/profile-output.ts` | CJS-parity profile output handlers. |
 | `sdk/src/phase-runner.ts` | **Track C target** — currently uses `GSDTools`. |
 | `sdk/src/init-runner.ts` | **Track C target** — currently uses `GSDTools`. |
-| `sdk/src/gsd-tools.ts` | Subprocess bridge; **not deleted** in Phase 3 scope. |
-| `get-shit-done/bin/gsd-tools.cjs` | `runCommand` — argv routing. Has `@deprecated` header. |
+| `sdk/src/fvgsd-tools.ts` | Subprocess bridge; **not deleted** in Phase 3 scope. |
+| `get-shit-done/bin/fvgsd-tools.cjs` | `runCommand` — argv routing. Has `@deprecated` header. |
 | `get-shit-done/bin/lib/*.cjs` | Per-command implementations (CJS source of truth). |
 
 ---

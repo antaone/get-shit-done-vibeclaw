@@ -44,7 +44,7 @@ const HYPHEN_NAME_AGENT_RUNTIMES = new Set(['claude', 'qwen', 'hermes']);
 
 /**
  * #3677 predicate — true when an agent body needs a colon command reference
- * normalized to the public `/vgsd-<cmd>` form
+ * normalized to the public `/fvgsd-<cmd>` form
  * normalization at install time.
  */
 function shouldNormalizeHyphenNamespaceInAgentBody(runtime) {
@@ -66,7 +66,7 @@ function normalizeAgentBodyForRuntime(content, runtime, cmdNames) {
 /**
  * Normalize known legacy/public colon command references to VibeClaw's
  * collision-free public hyphen namespace. Internal identifiers such as
- * gsd-tools and gsd-sdk are intentionally untouched by the roster-aware
+ * fvgsd-tools and fvgsd-sdk are intentionally untouched by the roster-aware
  * transformer.
  */
 function normalizePublicCommandNamespaceToHyphen(content, cmdNames = null) {
@@ -83,8 +83,8 @@ const dim = '\x1b[2m';
 const reset = '\x1b[0m';
 
 // Codex config.toml constants
-const GSD_CODEX_MARKER = '# GSD Agent Configuration \u2014 managed by get-shit-done installer';
-const GSD_CODEX_HOOKS_OWNERSHIP_PREFIX = '# GSD codex_hooks ownership: ';
+const FVGSD_CODEX_MARKER = '# GSD Agent Configuration \u2014 managed by get-shit-done installer';
+const FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX = '# GSD codex_hooks ownership: ';
 // Codex's hook-enabling feature flag (issue #3566). Codex itself marks
 // `codex_hooks` as a `legacy_key` in codex-rs/features/src/legacy.rs; the
 // canonical current key under [features] is `hooks`. The installer always
@@ -100,25 +100,25 @@ function isCodexHooksFeatureKey(key) {
 }
 
 // Copilot instructions marker constants
-const GSD_COPILOT_INSTRUCTIONS_MARKER = '<!-- GSD Configuration \u2014 managed by get-shit-done installer -->';
-const GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = '<!-- /GSD Configuration -->';
+const FVGSD_COPILOT_INSTRUCTIONS_MARKER = '<!-- GSD Configuration \u2014 managed by get-shit-done installer -->';
+const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = '<!-- /GSD Configuration -->';
 
-// GSD-managed files under hooks/lib/ (helpers required by gsd-*.sh hooks).
-// git-cmd.js does not start with "gsd-" (shared classifier for #3129), gsd-graphify-rebuild.sh does.
-const GSD_HOOK_LIB_FILES = ['git-cmd.js', 'gsd-graphify-rebuild.sh'];
+// GSD-managed files under hooks/fvgsd/lib/ (helpers required by gsd-*.sh hooks).
+// git-cmd.js does not start with "fvgsd-" (shared classifier for #3129), graphify-rebuild.sh does.
+const FVGSD_HOOK_LIB_FILES = ['git-cmd.js', 'graphify-rebuild.sh'];
 
 const CODEX_AGENT_SANDBOX = {
-  'gsd-executor': 'workspace-write',
-  'gsd-planner': 'workspace-write',
-  'gsd-phase-researcher': 'workspace-write',
-  'gsd-project-researcher': 'workspace-write',
-  'gsd-research-synthesizer': 'workspace-write',
-  'gsd-verifier': 'workspace-write',
-  'gsd-codebase-mapper': 'workspace-write',
-  'gsd-roadmapper': 'workspace-write',
-  'gsd-debugger': 'workspace-write',
-  'gsd-plan-checker': 'read-only',
-  'gsd-integration-checker': 'read-only',
+  'fvgsd-executor': 'workspace-write',
+  'fvgsd-planner': 'workspace-write',
+  'fvgsd-phase-researcher': 'workspace-write',
+  'fvgsd-project-researcher': 'workspace-write',
+  'fvgsd-research-synthesizer': 'workspace-write',
+  'fvgsd-verifier': 'workspace-write',
+  'fvgsd-codebase-mapper': 'workspace-write',
+  'fvgsd-roadmapper': 'workspace-write',
+  'fvgsd-debugger': 'workspace-write',
+  'fvgsd-plan-checker': 'read-only',
+  'fvgsd-integration-checker': 'read-only',
 };
 
 // Copilot tool name mapping — Claude Code tools to GitHub Copilot tools
@@ -149,9 +149,9 @@ const pkg = require('../package.json');
 // of cwd, but keeping the require at the top makes the dependency explicit and
 // surfaces resolution failures at process start instead of at first install call.
 const _gsdLibDir = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib');
-const { MODEL_PROFILES: GSD_MODEL_PROFILES } = require(path.join(_gsdLibDir, 'model-profiles.cjs'));
+const { MODEL_PROFILES: FVGSD_MODEL_PROFILES } = require(path.join(_gsdLibDir, 'model-profiles.cjs'));
 const {
-  RUNTIME_PROFILE_MAP: GSD_RUNTIME_PROFILE_MAP,
+  RUNTIME_PROFILE_MAP: FVGSD_RUNTIME_PROFILE_MAP,
   resolveTierEntry: gsdResolveTierEntry,
 } = require(path.join(_gsdLibDir, 'core.cjs'));
 
@@ -206,7 +206,7 @@ const hasBoth = args.includes('--both'); // Legacy flag, keeps working
 const hasAll = args.includes('--all');
 const hasUninstall = args.includes('--uninstall') || args.includes('-u');
 const hasSkillsRoot = args.includes('--skills-root');
-const hasPortableHooks = args.includes('--portable-hooks') || process.env.GSD_PORTABLE_HOOKS === '1';
+const hasPortableHooks = args.includes('--portable-hooks') || process.env.FVGSD_PORTABLE_HOOKS === '1';
 const hasMinimal = args.includes('--minimal') || args.includes('--core-only');
 // --profile=<name> or --profile=<n1>,<n2> (composable); mutually exclusive with --minimal
 const _profileArgRaw = (() => {
@@ -288,7 +288,7 @@ Please install a Linux-native Node.js inside WSL:
   curl -fsSL https://fnm.vercel.app/install | bash
   fnm install --lts
 
-Then re-run: npx get-shit-done-cc@latest
+Then re-run: npx fvgsd@latest
 `);
     process.exit(1);
   }
@@ -611,7 +611,7 @@ if (hasUninstall) {
 
 // Show help if requested
 if (hasHelp) {
-  console.log(`  ${yellow}Usage:${reset} npx get-shit-done-cc [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--hermes${reset}                  Install for Hermes Agent only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n    ${cyan}--portable-hooks${reset}          Emit \$HOME-relative hook paths in settings.json\n                              (for WSL/Docker bind-mount setups; also GSD_PORTABLE_HOOKS=1)\n    ${cyan}--profile=<name>${reset}         Install a named skill profile. Profiles:\n                              core     — 9 main-loop skills incl. Vibe (~130 desc tokens)\n                              standard — 15 skills incl. phase, review, config (~700)\n                              full     — all 68 skills (default)\n                              Composable: --profile=core,audit installs union of closures.\n                              Profile is persisted and respected by \`gsd update\`.\n    ${cyan}--minimal${reset}                 Alias for --profile=core (back-compat).\n                              Cuts cold-start overhead from ~12k tokens to ~700.\n                              Alias: --core-only.\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx get-shit-done-cc\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx get-shit-done-cc --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx get-shit-done-cc --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    npx get-shit-done-cc --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx get-shit-done-cc --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    npx get-shit-done-cc --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    npx get-shit-done-cc --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    npx get-shit-done-cc --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    npx get-shit-done-cc --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    npx get-shit-done-cc --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    npx get-shit-done-cc --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    npx get-shit-done-cc --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    npx get-shit-done-cc --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    npx get-shit-done-cc --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    npx get-shit-done-cc --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    npx get-shit-done-cc --trae --local\n\n    ${dim}# Install for Hermes Agent globally${reset}\n    npx get-shit-done-cc --hermes --global\n\n    ${dim}# Install for Hermes Agent locally${reset}\n    npx get-shit-done-cc --hermes --local\n\n    ${dim}# Install for Cline locally${reset}\n    npx get-shit-done-cc --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    npx get-shit-done-cc --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    npx get-shit-done-cc --codebuddy --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx get-shit-done-cc --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx get-shit-done-cc --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    npx get-shit-done-cc --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    npx get-shit-done-cc --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / HERMES_HOME / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR environment variables.\n`);
+  console.log(`  ${yellow}Usage:${reset} npx fvgsd [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--hermes${reset}                  Install for Hermes Agent only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n    ${cyan}--portable-hooks${reset}          Emit \$HOME-relative hook paths in settings.json\n                              (for WSL/Docker bind-mount setups; also FVGSD_PORTABLE_HOOKS=1)\n    ${cyan}--profile=<name>${reset}         Install a named skill profile. Profiles:\n                              core     — 9 main-loop skills incl. Vibe (~130 desc tokens)\n                              standard — 15 skills incl. phase, review, config (~700)\n                              full     — all 68 skills (default)\n                              Composable: --profile=core,audit installs union of closures.\n                              Profile is persisted and respected by \`gsd update\`.\n    ${cyan}--minimal${reset}                 Alias for --profile=core (back-compat).\n                              Cuts cold-start overhead from ~12k tokens to ~700.\n                              Alias: --core-only.\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx fvgsd\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx fvgsd --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx fvgsd --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    npx fvgsd --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx fvgsd --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    npx fvgsd --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    npx fvgsd --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    npx fvgsd --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    npx fvgsd --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    npx fvgsd --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    npx fvgsd --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    npx fvgsd --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    npx fvgsd --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    npx fvgsd --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    npx fvgsd --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    npx fvgsd --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    npx fvgsd --trae --local\n\n    ${dim}# Install for Hermes Agent globally${reset}\n    npx fvgsd --hermes --global\n\n    ${dim}# Install for Hermes Agent locally${reset}\n    npx fvgsd --hermes --local\n\n    ${dim}# Install for Cline locally${reset}\n    npx fvgsd --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    npx fvgsd --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    npx fvgsd --codebuddy --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx fvgsd --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx fvgsd --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    npx fvgsd --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    npx fvgsd --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / HERMES_HOME / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR environment variables.\n`);
   process.exit(0);
 }
 
@@ -726,7 +726,7 @@ function resolveBashRunner(opts) {
   const env = (opts && opts.env) || process.env;
   const exists = (opts && opts.existsSync) || fs.existsSync;
   const candidates = [];
-  if (env.GSD_BASH_PATH) candidates.push(env.GSD_BASH_PATH);
+  if (env.FVGSD_BASH_PATH) candidates.push(env.FVGSD_BASH_PATH);
   if (env.ProgramFiles) candidates.push(path.win32.join(env.ProgramFiles, 'Git', 'bin', 'bash.exe'));
   if (env['ProgramFiles(x86)']) candidates.push(path.win32.join(env['ProgramFiles(x86)'], 'Git', 'bin', 'bash.exe'));
   if (env.SystemDrive) {
@@ -850,7 +850,7 @@ function buildCodexHookBlock(targetDir, opts) {
   if (!absoluteRunner) return null;
   const eol = (opts && opts.eol) || '\n';
   const platform = (opts && opts.platform) || process.platform;
-  const updateCheckScript = path.resolve(targetDir, 'hooks', 'gsd-check-update.js');
+  const updateCheckScript = path.resolve(targetDir, 'hooks', 'fvgsd/check-update.js');
   const commandValue = projectCodexHookTomlCommand({
     absoluteRunner,
     scriptPath: updateCheckScript,
@@ -885,10 +885,10 @@ function rewriteLegacyCodexHookBlock(content, absoluteRunner, opts) {
   // either an unquoted path (no spaces) or a toml-escaped quoted path.
   // The whole RHS is a toml-double-quoted string; interior quotes are \".
   // Examples we want to migrate:
-  //   command = "node /Users/x/.codex/hooks/gsd-check-update.js"
-  //   command = "node \"/Users/x/.codex/hooks/gsd-check-update.js\""
+  //   command = "node /Users/x/.codex/hooks/fvgsd/check-update.js"
+  //   command = "node \"/Users/x/.codex/hooks/fvgsd/check-update.js\""
   // Examples we must leave alone:
-  //   command = "\"/usr/local/bin/node\" \"/path/to/gsd-check-update.js\""  ← already absolute
+  //   command = "\"/usr/local/bin/node\" \"/path/to/fvgsd/check-update.js\""  ← already absolute
   //   command = "node /home/me/my-custom.js"                                ← user-owned filename
   const updated = content.replace(
     /^(command\s*=\s*")node\s+((?:\\"[^"]+\\"|\S+))("\s*)$/gm,
@@ -1016,7 +1016,7 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
  * On Windows, Codex runs hook commands from a PowerShell/cmd execution
  * environment. The previous command format was:
  *
- *   "C:/Program Files/nodejs/node.exe" "C:/path/.codex/hooks/gsd-check-update.js"
+ *   "C:/Program Files/nodejs/node.exe" "C:/path/.codex/hooks/fvgsd/check-update.js"
  *
  * This caused `bash.exe: bash.exe: cannot execute binary file` because
  * Codex's hook dispatch shell (Git Bash / MSYS) tried to POSIX-exec node.exe
@@ -1024,7 +1024,7 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
  * binaries that the MSYS layer doesn't know how to fork-exec natively.
  *
  * Fix: write a .cmd shim (same IR pattern as buildWindowsShimTriple for
- * gsd-sdk.cmd) whose content is `@ECHO OFF / @SETLOCAL / @"node.exe" "script.js" %*`.
+ * fvgsd-sdk.cmd) whose content is `@ECHO OFF / @SETLOCAL / @"node.exe" "script.js" %*`.
  * cmd.exe executes
  * .cmd natively via CreateProcess — no POSIX exec layer, no MSYS shebang
  * walk, no PE binary fork-exec failure.
@@ -1072,7 +1072,7 @@ function buildCodexHookWindowsShimIR(scriptAbsPath, absoluteRunnerToken) {
     render: {
       // Mirror buildWindowsShimTriple's CRLF line endings for strict
       // cmd.exe compatibility (LF-only .cmd files work in modern Windows but
-      // CRLF is canonical and what the existing gsd-sdk.cmd triple emits).
+      // CRLF is canonical and what the existing fvgsd-sdk.cmd triple emits).
       cmd: () => `@ECHO OFF\r\n@SETLOCAL\r\n@${runnerQuoted} ${scriptQuoted} %*\r\n`,
     },
   };
@@ -1080,7 +1080,7 @@ function buildCodexHookWindowsShimIR(scriptAbsPath, absoluteRunnerToken) {
 
 /**
  * Ensure Codex hooks.json contains exactly one managed SessionStart
- * gsd-check-update hook entry, while preserving user-owned entries.
+ * fvgsd/check-update hook entry, while preserving user-owned entries.
  *
  * Codex accepts hook config from hooks.json and config.toml. To avoid the
  * startup warning for mixed representations in the same layer, GSD now stores
@@ -1104,7 +1104,7 @@ function ensureCodexHooksJsonSessionStart(targetDir, opts = {}) {
   const hooksJsonPath = path.join(targetDir, 'hooks.json');
   if (!absoluteRunner) return { changed: false, wrote: false, path: hooksJsonPath };
 
-  const scriptPath = path.resolve(targetDir, 'hooks', 'gsd-check-update.js');
+  const scriptPath = path.resolve(targetDir, 'hooks', 'fvgsd/check-update.js');
 
   let managedCommand;
   if (platform === 'win32') {
@@ -1153,7 +1153,7 @@ function removeCodexHooksJsonSessionStart(targetDir) {
  * On Windows, $HOME is not expanded by cmd.exe/PowerShell, so we use the actual path.
  *
  * @param {string} configDir - Resolved absolute config directory path
- * @param {string} hookName - Hook filename (e.g. 'gsd-statusline.js')
+ * @param {string} hookName - Hook filename (e.g. 'fvgsd/statusline.js')
  * @param {{ portableHooks?: boolean, platform?: NodeJS.Platform, runtime?: string }} [opts] - Options
  *   portableHooks: when true, emit $HOME-relative paths instead of absolute paths.
  *   Safe for Linux/macOS global installs and WSL/Docker bind-mount scenarios.
@@ -1340,7 +1340,7 @@ function readGsdGlobalModelOverrides() {
  *
  * This is the fix for #2256: both adapters previously read only the global
  * file, so a per-project `model_overrides` (the common case the reporter
- * described — a per-project override for `gsd-codebase-mapper` in
+ * described — a per-project override for `fvgsd-codebase-mapper` in
  * `.planning/config.json`) was silently dropped and child agents inherited
  * the session default.
  *
@@ -1482,7 +1482,7 @@ function readGsdRuntimeProfileResolver(targetDir = null) {
   return {
     runtime: merged.runtime,
     resolve(agentName) {
-      const agentModels = GSD_MODEL_PROFILES[agentName];
+      const agentModels = FVGSD_MODEL_PROFILES[agentName];
       if (!agentModels) return null;
       const tier = agentModels[profile] || agentModels.balanced;
       if (!tier) return null;
@@ -1773,7 +1773,7 @@ function convertClaudeToCopilotContent(content, isGlobal = false) {
   }
   c = c.replace(/\.\/\.claude\//g, './.github/');
   c = c.replace(/\.claude\//g, '.github/');
-  // CONV-07: Public command namespace conversion → vgsd-
+  // CONV-07: Public command namespace conversion → fvgsd-
   c = normalizePublicCommandNamespaceToHyphen(c);
   // Runtime-neutral agent name replacement (#766)
   c = neutralizeAgentReferences(c, 'copilot-instructions.md');
@@ -1841,7 +1841,7 @@ function skillFrontmatterName(skillDirName) {
  * Convert a Claude command (.md) to a Claude skill (SKILL.md).
  * Claude Code is the native format, so minimal conversion needed —
  * preserve allowed-tools as YAML multiline list, preserve argument-hint.
- * Emits `name: vgsd-<cmd>` (hyphen) so Skill(skill="vgsd-<cmd>") calls and
+ * Emits `name: fvgsd-<cmd>` (hyphen) so Skill(skill="fvgsd-<cmd>") calls and
  * tab autocomplete use the canonical command namespace.
  */
 function convertClaudeCommandToClaudeSkill(content, skillName, runtime = null, cmdNames = null) {
@@ -1849,7 +1849,7 @@ function convertClaudeCommandToClaudeSkill(content, skillName, runtime = null, c
   if (!frontmatter) return content;
 
   // #3583: rewrite legacy or current colon references in the body to the
-  // public hyphen form (vgsd-<cmd>) so installed SKILL.md bodies match the
+  // public hyphen form (fvgsd-<cmd>) so installed SKILL.md bodies match the
   // `name:` Claude Code (and Qwen/Hermes) register under (#2808). `cmdNames`
   // is optional and pre-computed by the caller for performance; direct test
   // calls fall back to reading the list.
@@ -1943,7 +1943,7 @@ function convertClaudeToAntigravityContent(content, isGlobal = false) {
   }
   c = c.replace(/\.\/\.claude\//g, './.agent/');
   c = c.replace(/\.claude\//g, '.agent/');
-  // Public command namespace conversion → vgsd-
+  // Public command namespace conversion → fvgsd-
   c = normalizePublicCommandNamespaceToHyphen(c);
   // Runtime-neutral agent name replacement (#766)
   c = neutralizeAgentReferences(c, 'GEMINI.md');
@@ -2059,7 +2059,7 @@ function convertCursorToolName(claudeTool) {
 }
 
 function convertSlashCommandsToCursorSkillMentions(content) {
-  // Keep leading "/" for slash commands and normalize to public vgsd-.
+  // Keep leading "/" for slash commands and normalize to public fvgsd-.
   return normalizePublicCommandNamespaceToHyphen(content);
 }
 
@@ -2071,7 +2071,7 @@ function convertClaudeToCursorMarkdown(content) {
   converted = converted.replace(/\bAskUserQuestion\b/g, 'conversational prompting');
   // Replace subagent_type from Claude to Cursor format
   converted = converted.replace(/subagent_type="general-purpose"/g, 'subagent_type="generalPurpose"');
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   // Replace project-level Claude conventions with Cursor equivalents
   converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`.cursor/rules/`');
   converted = converted.replace(/\.\/CLAUDE\.md/g, '.cursor/rules/');
@@ -2090,8 +2090,8 @@ function getCursorSkillAdapterHeader(skillName) {
   return `<cursor_skill_adapter>
 ## A. Skill Invocation
 - This skill is invoked when the user mentions \`${skillName}\` or describes a task matching this skill.
-- Treat all user text after the skill mention as \`{{GSD_ARGS}}\`.
-- If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
+- Treat all user text after the skill mention as \`{{FVGSD_ARGS}}\`.
+- If no arguments are present, treat \`{{FVGSD_ARGS}}\` as empty.
 
 ## B. User Prompting
 When the workflow needs user input, prompt the user conversationally:
@@ -2177,7 +2177,7 @@ function convertWindsurfToolName(claudeTool) {
 }
 
 function convertSlashCommandsToWindsurfSkillMentions(content) {
-  // Keep leading "/" for slash commands and normalize to public vgsd-.
+  // Keep leading "/" for slash commands and normalize to public fvgsd-.
   return normalizePublicCommandNamespaceToHyphen(content);
 }
 
@@ -2189,7 +2189,7 @@ function convertClaudeToWindsurfMarkdown(content) {
   converted = converted.replace(/\bAskUserQuestion\b/g, 'conversational prompting');
   // Replace subagent_type from Claude to Windsurf format
   converted = converted.replace(/subagent_type="general-purpose"/g, 'subagent_type="generalPurpose"');
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   // Replace project-level Claude conventions with Windsurf equivalents
   converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`.windsurf/rules`');
   converted = converted.replace(/\.\/CLAUDE\.md/g, '.windsurf/rules');
@@ -2208,8 +2208,8 @@ function getWindsurfSkillAdapterHeader(skillName) {
   return `<windsurf_skill_adapter>
 ## A. Skill Invocation
 - This skill is invoked when the user mentions \`${skillName}\` or describes a task matching this skill.
-- Treat all user text after the skill mention as \`{{GSD_ARGS}}\`.
-- If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
+- Treat all user text after the skill mention as \`{{FVGSD_ARGS}}\`.
+- If no arguments are present, treat \`{{FVGSD_ARGS}}\` as empty.
 
 ## B. User Prompting
 When the workflow needs user input, prompt the user conversationally:
@@ -2311,7 +2311,7 @@ function convertClaudeToAugmentMarkdown(content) {
   converted = converted.replace(/\bAskUserQuestion\b/g, 'conversational prompting');
   // Replace subagent_type from Claude to Augment format
   converted = converted.replace(/subagent_type="general-purpose"/g, 'subagent_type="generalPurpose"');
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   // Replace project-level Claude conventions with Augment equivalents
   converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`.augment/rules/`');
   converted = converted.replace(/\.\/CLAUDE\.md/g, '.augment/rules/');
@@ -2330,8 +2330,8 @@ function getAugmentSkillAdapterHeader(skillName) {
   return `<augment_skill_adapter>
 ## A. Skill Invocation
 - This skill is invoked when the user mentions \`${skillName}\` or describes a task matching this skill.
-- Treat all user text after the skill mention as \`{{GSD_ARGS}}\`.
-- If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
+- Treat all user text after the skill mention as \`{{FVGSD_ARGS}}\`.
+- If no arguments are present, treat \`{{FVGSD_ARGS}}\` as empty.
 
 ## B. User Prompting
 When the workflow needs user input, prompt the user conversationally:
@@ -2407,7 +2407,7 @@ function convertClaudeToTraeMarkdown(content) {
   converted = converted.replace(/\bEdit\(/g, 'StrReplace(');
   // Replace general-purpose subagent type with Trae's equivalent "general_purpose_task"
   converted = converted.replace(/subagent_type="general-purpose"/g, 'subagent_type="general_purpose_task"');
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`.trae/rules/`');
   converted = converted.replace(/\.\/CLAUDE\.md/g, '.trae/rules/');
   converted = converted.replace(/`CLAUDE\.md`/g, '`.trae/rules/`');
@@ -2460,7 +2460,7 @@ function convertClaudeToCodebuddyMarkdown(content) {
   let converted = convertSlashCommandsToCodebuddySkillMentions(content);
   // CodeBuddy uses the same tool names as Claude Code (Bash, Edit, Read, Write, etc.)
   // No tool name conversion needed
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   converted = converted.replace(/`\.\/CLAUDE\.md`/g, '`CODEBUDDY.md`');
   converted = converted.replace(/\.\/CLAUDE\.md/g, 'CODEBUDDY.md');
   converted = converted.replace(/`CLAUDE\.md`/g, '`CODEBUDDY.md`');
@@ -2537,24 +2537,24 @@ function convertClaudeAgentToClineAgent(content) {
 
 function convertSlashCommandsToCodexSkillMentions(content) {
   // Convert colon-style skill invocations to Codex $ prefix
-  let converted = content.replace(/\/(?:vgsd|gsd):([a-z0-9-]+)/gi, (_, commandName) => {
-    return `$vgsd-${String(commandName).toLowerCase()}`;
+  let converted = content.replace(/\/(?:fvgsd|gsd):([a-z0-9-]+)/gi, (_, commandName) => {
+    return `$fvgsd-${String(commandName).toLowerCase()}`;
   });
   // Convert hyphen-style command references (workflow output) to Codex $ prefix.
-  // Negative lookbehind excludes file paths like bin/gsd-tools.cjs where
+  // Negative lookbehind excludes file paths like bin/fvgsd-tools.cjs where
   // the slash is preceded by a word char, dot, or another slash.
-  converted = converted.replace(/(?<![a-zA-Z0-9./])\/(?:vgsd|gsd)-([a-z0-9-]+)/gi, (_, commandName) => {
-    return `$vgsd-${String(commandName).toLowerCase()}`;
+  converted = converted.replace(/(?<![a-zA-Z0-9./])\/(?:fvgsd|gsd)-([a-z0-9-]+)/gi, (_, commandName) => {
+    return `$fvgsd-${String(commandName).toLowerCase()}`;
   });
   converted = converted.replace(/\$gsd-([a-z0-9-]+)/gi, (_, commandName) => {
-    return `$vgsd-${String(commandName).toLowerCase()}`;
+    return `$fvgsd-${String(commandName).toLowerCase()}`;
   });
   return converted;
 }
 
 function convertClaudeToCodexMarkdown(content) {
   let converted = convertSlashCommandsToCodexSkillMentions(content);
-  converted = converted.replace(/\$ARGUMENTS\b/g, '{{GSD_ARGS}}');
+  converted = converted.replace(/\$ARGUMENTS\b/g, '{{FVGSD_ARGS}}');
   // Remove /clear references — Codex has no equivalent command
   // Handle backtick-wrapped: `\/clear` then: → (removed)
   converted = converted.replace(/`\/clear`\s*,?\s*then:?\s*\n?/gi, '');
@@ -2584,8 +2584,8 @@ function getCodexSkillAdapterHeader(skillName) {
   return `<codex_skill_adapter>
 ## A. Skill Invocation
 - This skill is invoked by mentioning \`${invocation}\`.
-- Treat all user text after \`${invocation}\` as \`{{GSD_ARGS}}\`.
-- If no arguments are present, treat \`{{GSD_ARGS}}\` as empty.
+- Treat all user text after \`${invocation}\` as \`{{FVGSD_ARGS}}\`.
+- If no arguments are present, treat \`{{FVGSD_ARGS}}\` as empty.
 
 ## B. AskUserQuestion → request_user_input Mapping
 GSD workflows use \`AskUserQuestion\` (Claude Code syntax). Translate to Codex \`request_user_input\`:
@@ -2746,7 +2746,7 @@ function generateCodexConfigBlock(agents, targetDir) {
     ? path.join(targetDir, 'agents').replace(/\\/g, '/')
     : 'agents';
   const lines = [
-    GSD_CODEX_MARKER,
+    FVGSD_CODEX_MARKER,
     '',
   ];
 
@@ -2771,8 +2771,8 @@ function generateCodexConfigBlock(agents, targetDir) {
  * so uninstall returns the file to its pre-GSD shape.
  *
  * Handles BOTH shapes so reinstall self-heals configs from all GSD versions:
- *   - Current (#2727): `[agents.gsd-*]` struct tables (Codex 0.120.0+).
- *   - Legacy (#2645): `[[agents]]` array-of-tables whose `name = "gsd-*"`.
+ *   - Current (#2727): `[agents.fvgsd-*]` struct tables (Codex 0.120.0+).
+ *   - Legacy (#2645): `[[agents]]` array-of-tables whose `name = "fvgsd-*"`.
  *
  * A section runs from its header to the next `[` header or EOF.
  */
@@ -2780,17 +2780,17 @@ function stripCodexGsdAgentSections(content) {
   // Use the TOML-aware section parser so we never absorb adjacent user-authored
   // tables — even if their headers are indented or otherwise oddly placed.
   const sections = getTomlTableSections(content).filter((section) => {
-    // Current `[agents.gsd-<name>]` struct tables (#2727, Codex 0.120.0+).
-    if (!section.array && /^agents\.gsd-/.test(section.path)) {
+    // Current `[agents.fvgsd-<name>]` struct tables (#2727, Codex 0.120.0+).
+    if (!section.array && /^agents\.fvgsd-/.test(section.path)) {
       return true;
     }
 
     // Legacy `[[agents]]` array-of-tables (#2645) — only strip blocks whose
-    // `name = "gsd-..."`, preserving user-authored [[agents]] entries.
+    // `name = "fvgsd-..."`, preserving user-authored [[agents]] entries.
     if (section.array && section.path === 'agents') {
       const body = content.slice(section.headerEnd, section.end);
       const nameMatch = body.match(/^[ \t]*name[ \t]*=[ \t]*["']([^"']+)["']/m);
-      return Boolean(nameMatch && /^gsd-/.test(nameMatch[1]));
+      return Boolean(nameMatch && /^fvgsd-/.test(nameMatch[1]));
     }
 
     return false;
@@ -2808,7 +2808,7 @@ function stripCodexGsdAgentSections(content) {
  */
 function stripGsdFromCodexConfig(content) {
   const eol = detectLineEnding(content);
-  const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+  const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
   const codexHooksOwnership = getManagedCodexHooksOwnership(content);
 
   if (markerIndex !== -1) {
@@ -2831,7 +2831,7 @@ function stripGsdFromCodexConfig(content) {
   cleaned = cleaned.replace(/^multi_agent\s*=\s*true\s*(?:\r?\n)?/m, '');
   cleaned = cleaned.replace(/^default_mode_request_user_input\s*=\s*true\s*(?:\r?\n)?/m, '');
 
-  // Remove [agents.gsd-*] sections (from header to next section or EOF)
+  // Remove [agents.fvgsd-*] sections (from header to next section or EOF)
   cleaned = stripCodexGsdAgentSections(cleaned);
 
   // Remove [features] section if now empty (only header, no keys before next section)
@@ -3436,24 +3436,24 @@ function stripCodexHooksFeatureAssignments(content, ownership = null) {
 }
 
 function getManagedCodexHooksOwnership(content) {
-  const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+  const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
   if (markerIndex === -1) {
     return null;
   }
 
-  const afterMarker = content.slice(markerIndex + GSD_CODEX_MARKER.length);
+  const afterMarker = content.slice(markerIndex + FVGSD_CODEX_MARKER.length);
   const match = afterMarker.match(/^\r?\n# GSD codex_hooks ownership: (section|root_dotted)\r?\n/);
   return match ? match[1] : null;
 }
 
 function setManagedCodexHooksOwnership(content, ownership) {
-  const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+  const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
   if (markerIndex === -1) {
     return content;
   }
 
   const eol = detectLineEnding(content);
-  const markerEnd = markerIndex + GSD_CODEX_MARKER.length;
+  const markerEnd = markerIndex + FVGSD_CODEX_MARKER.length;
   const afterMarker = content.slice(markerEnd);
   const normalizedAfterMarker = afterMarker.replace(
     /^\r?\n# GSD codex_hooks ownership: (?:section|root_dotted)\r?\n/,
@@ -3467,7 +3467,7 @@ function setManagedCodexHooksOwnership(content, ownership) {
   const remainder = normalizedAfterMarker.replace(/^\r?\n/, '');
   return content.slice(0, markerEnd) +
     eol +
-    `${GSD_CODEX_HOOKS_OWNERSHIP_PREFIX}${ownership}${eol}` +
+    `${FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX}${ownership}${eol}` +
     remainder;
 }
 
@@ -3502,7 +3502,7 @@ function isLegacyGsdAgentsSection(body) {
 
 function stripLeakedGsdCodexSections(content) {
   // Defensive precedence (#2760): we own the `agents` namespace under our
-  // managed `gsd-*` names, and the legacy bare-table and sequence forms
+  // managed `fvgsd-*` names, and the legacy bare-table and sequence forms
   // (`[agents]`, `[[agents]]`) are invalid in the current Codex schema —
   // they trigger "invalid type: ..., expected struct AgentsToml" and break
   // every Codex CLI invocation. They MUST never coexist with the new
@@ -3512,8 +3512,8 @@ function stripLeakedGsdCodexSections(content) {
   // ≥0.124 — purging is the only path to a loadable config.
   const leakedSections = getTomlTableSections(content)
     .filter((section) => {
-      // Legacy [agents.gsd-<name>] map tables (pre-#2645).
-      if (!section.array && section.path.startsWith('agents.gsd-')) return true;
+      // Legacy [agents.fvgsd-<name>] map tables (pre-#2645).
+      if (!section.array && section.path.startsWith('agents.fvgsd-')) return true;
 
       // ANY bare [agents] single-bracket table — invalid in current Codex
       // schema, always purged at install time (#2760). Previously gated
@@ -3524,7 +3524,7 @@ function stripLeakedGsdCodexSections(content) {
 
       // ANY [[agents]] array-of-tables — invalid in current Codex schema,
       // always purged at install time (#2760). Previously gated on
-      // `name = "gsd-..."` which preserved user-authored entries that are
+      // `name = "fvgsd-..."` which preserved user-authored entries that are
       // themselves rejected by Codex 0.124+.
       if (section.array && section.path === 'agents') return true;
 
@@ -3579,7 +3579,7 @@ function stripStaleGsdHookBlocks(configContent) {
   }
 
   // A section is GSD-managed if any structural `command` key inside its
-  // body parses to a string whose basename matches `gsd-(check-update|
+  // body parses to a string whose basename matches `fvgsd-(check-update|
   // update-check).js`. The TOML line parser already classified each line's
   // `keySegments`, so we never inspect raw text — this handles arbitrary
   // whitespace, key reordering, and additional keys robustly.
@@ -3896,7 +3896,7 @@ function migrateCodexHooksMapFormat(content) {
   // If no marker exists, append at the end of the file.
   if (flatAotBlocks.length > 0) {
     const insertionText = flatAotBlocks.join('');
-    const markerIdx = result.indexOf(GSD_CODEX_MARKER);
+    const markerIdx = result.indexOf(FVGSD_CODEX_MARKER);
     if (markerIdx !== -1) {
       const before = result.slice(0, markerIdx).trimEnd();
       const after = result.slice(markerIdx);
@@ -4643,7 +4643,7 @@ function mergeCodexConfig(configPath, gsdBlock) {
   const existing = fs.readFileSync(configPath, 'utf8');
   const eol = detectLineEnding(existing);
   const normalizedGsdBlock = gsdBlock.replace(/\r?\n/g, eol);
-  const markerIndex = existing.indexOf(GSD_CODEX_MARKER);
+  const markerIndex = existing.indexOf(FVGSD_CODEX_MARKER);
 
   // Case 2: Has GSD marker — truncate and re-append
   if (markerIndex !== -1) {
@@ -4890,9 +4890,9 @@ function hasEnabledCodexHooksFeature(configContent) {
  * @param {string} gsdContent - Template content (without markers)
  */
 function mergeCopilotInstructions(filePath, gsdContent) {
-  const gsdBlock = GSD_COPILOT_INSTRUCTIONS_MARKER + '\n' +
+  const gsdBlock = FVGSD_COPILOT_INSTRUCTIONS_MARKER + '\n' +
     gsdContent.trim() + '\n' +
-    GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER;
+    FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER;
 
   // Case 1: No file — create fresh
   if (!fs.existsSync(filePath)) {
@@ -4901,13 +4901,13 @@ function mergeCopilotInstructions(filePath, gsdContent) {
   }
 
   const existing = fs.readFileSync(filePath, 'utf8');
-  const openIndex = existing.indexOf(GSD_COPILOT_INSTRUCTIONS_MARKER);
-  const closeIndex = existing.indexOf(GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER);
+  const openIndex = existing.indexOf(FVGSD_COPILOT_INSTRUCTIONS_MARKER);
+  const closeIndex = existing.indexOf(FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER);
 
   // Case 2: Has GSD markers — replace between markers
   if (openIndex !== -1 && closeIndex !== -1) {
     const before = existing.substring(0, openIndex).trimEnd();
-    const after = existing.substring(closeIndex + GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER.length).trimStart();
+    const after = existing.substring(closeIndex + FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER.length).trimStart();
     let newContent = '';
     if (before) newContent += before + '\n\n';
     newContent += gsdBlock;
@@ -4929,12 +4929,12 @@ function mergeCopilotInstructions(filePath, gsdContent) {
  * @returns {string|null} - Cleaned content or null if empty
  */
 function stripGsdFromCopilotInstructions(content) {
-  const openIndex = content.indexOf(GSD_COPILOT_INSTRUCTIONS_MARKER);
-  const closeIndex = content.indexOf(GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER);
+  const openIndex = content.indexOf(FVGSD_COPILOT_INSTRUCTIONS_MARKER);
+  const closeIndex = content.indexOf(FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER);
 
   if (openIndex !== -1 && closeIndex !== -1) {
     const before = content.substring(0, openIndex).trimEnd();
-    const after = content.substring(closeIndex + GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER.length).trimStart();
+    const after = content.substring(closeIndex + FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER.length).trimStart();
     const cleaned = (before + (before && after ? '\n\n' : '') + after).trim();
     if (!cleaned) return null;
     return cleaned + '\n';
@@ -4953,7 +4953,7 @@ function installCodexConfig(targetDir, agentsSrc) {
   const agentsTomlDir = path.join(targetDir, 'agents');
   fs.mkdirSync(agentsTomlDir, { recursive: true });
 
-  const agentEntries = fs.readdirSync(agentsSrc).filter(f => f.startsWith('gsd-') && f.endsWith('.md'));
+  const agentEntries = fs.readdirSync(agentsSrc).filter(f => f.startsWith('fvgsd-') && f.endsWith('.md'));
   const agents = [];
 
   // Compute the Codex GSD install path (absolute, so subagents with empty $HOME work — #820)
@@ -4967,7 +4967,7 @@ function installCodexConfig(targetDir, agentsSrc) {
     content = content.replace(/\$HOME\/\.claude\/get-shit-done\//g, codexGsdPath);
     // Route TOML emit through the same full Claude→Codex conversion pipeline
     // used on the `.md` emit path (#2639). Covers: slash-command rewrites,
-    // $ARGUMENTS → {{GSD_ARGS}}, /clear removal, anchored and bare .claude/
+    // $ARGUMENTS → {{FVGSD_ARGS}}, /clear removal, anchored and bare .claude/
     // paths, .claudeignore → .codexignore, and standalone "Claude" /
     // CLAUDE.md neutralization via neutralizeAgentReferences(..., 'AGENTS.md').
     content = convertClaudeToCodexMarkdown(content);
@@ -4981,7 +4981,7 @@ function installCodexConfig(targetDir, agentsSrc) {
     // `~/.gsd/defaults.json` (project wins on conflict) so Codex TOML files
     // embed the configured model — Codex cannot receive model inline (#2256).
     // Previously only the global file was read, which silently dropped the
-    // per-project override the reporter had set for gsd-codebase-mapper.
+    // per-project override the reporter had set for fvgsd-codebase-mapper.
     // #2517 — also pass the runtime-aware tier resolver so profile tiers can
     // resolve to Codex-native model IDs + reasoning_effort when `runtime: "codex"`
     // is set in defaults.json.
@@ -5058,7 +5058,7 @@ let _gsdCommandRosterWarned = false;
  * Caches the result after the first scan. Emits a one-shot warning if the
  * source directory cannot be located — an empty roster silently neutralises
  * every Gemini slash-command conversion, which is the bug this code exists
- * to prevent. The warning is gated on GSD_TEST_MODE to keep test output clean.
+ * to prevent. The warning is gated on FVGSD_TEST_MODE to keep test output clean.
  * @returns {Set<string>} Set of command names (without .md extension)
  */
 function getGsdCommandRoster() {
@@ -5073,11 +5073,11 @@ function getGsdCommandRoster() {
     );
   } else {
     _gsdCommandRoster = new Set();
-    if (!_gsdCommandRosterWarned && !process.env.GSD_TEST_MODE) {
+    if (!_gsdCommandRosterWarned && !process.env.FVGSD_TEST_MODE) {
       _gsdCommandRosterWarned = true;
       console.warn(
         `WARNING: GSD command roster not found at ${gsdSrc}. ` +
-        `Gemini /vgsd- → /vgsd: conversion will be a no-op. ` +
+        `Gemini /fvgsd- → /fvgsd: conversion will be a no-op. ` +
         `This usually means the package was installed without commands/gsd/.`
       );
     }
@@ -5085,7 +5085,7 @@ function getGsdCommandRoster() {
   return _gsdCommandRoster;
 }
 
-// Test-only: reset the cached roster. Exported via GSD_TEST_MODE bundle below.
+// Test-only: reset the cached roster. Exported via FVGSD_TEST_MODE bundle below.
 function _resetGsdCommandRoster() {
   _gsdCommandRoster = null;
   _gsdCommandRosterWarned = false;
@@ -5105,11 +5105,11 @@ function convertSlashCommandsToGeminiMentions(content) {
   //   sentence-ending punctuation like `/gsd-help.` because `.` at end of
   //   string or before whitespace is not followed by a lowercase letter.
   // - Roster lookup ensures only real commands convert — agent names like
-  //   `gsd-planner` (no leading slash anyway) and unknown tokens pass through.
+  //   `fvgsd-planner` (no leading slash anyway) and unknown tokens pass through.
   //
   // GSD commands are always lowercase, so no case-insensitive flag.
-  return content.replace(/(?<![A-Za-z0-9./])\/(?:vgsd|gsd)-([a-z0-9-]+)(?!\/)(?!\.[a-z])/g, (match, commandName) => {
-    return commands.has(commandName) ? `/vgsd:${commandName}` : match;
+  return content.replace(/(?<![A-Za-z0-9./])\/(?:fvgsd|gsd)-([a-z0-9-]+)(?!\/)(?!\.[a-z])/g, (match, commandName) => {
+    return commands.has(commandName) ? `/fvgsd:${commandName}` : match;
   });
 }
 
@@ -5645,7 +5645,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
       const destPath = path.join(destDir, destName);
 
       let content = fs.readFileSync(srcPath, 'utf8');
-      content = content.replace(/__VGSD_RUNTIME__/g, runtime);
+      content = content.replace(/__FVGSD_RUNTIME__/g, runtime);
       const globalClaudeRegex = /~\/\.claude\//g;
       const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
       const localClaudeRegex = /\.\/\.claude\//g;
@@ -5666,7 +5666,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
   }
 }
 
-function listCodexSkillNames(skillsDir, prefix = 'vgsd-') {
+function listCodexSkillNames(skillsDir, prefix = 'fvgsd-') {
   if (!fs.existsSync(skillsDir)) return [];
   const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
   return entries
@@ -5724,7 +5724,7 @@ function listCodexSkillNames(skillsDir, prefix = 'vgsd-') {
  */
 
 /**
- * Write the Hermes "vgsd" category DESCRIPTION.md.
+ * Write the Hermes "fvgsd" category DESCRIPTION.md.
  * Hermes' skill loader reads DESCRIPTION.md at the top of each skill category
  * directory and surfaces it in the system prompt so the model knows when to
  * reach for that category. Per spec in #2841 we collapse all 86 GSD commands
@@ -5734,9 +5734,9 @@ function writeHermesCategoryDescription(categoryDir) {
   fs.mkdirSync(categoryDir, { recursive: true });
   const body = [
     '---',
-    'name: vgsd',
+    'name: fvgsd',
     `version: ${pkg.version}`,
-    'description: Get Shit Done — disciplined planning, execution, and shipping workflows. Use any vgsd-* skill in this category to drive a project through new-project → discuss-phase → plan-phase → execute-phase → ship.',
+    'description: Get Shit Done — disciplined planning, execution, and shipping workflows. Use any fvgsd-* skill in this category to drive a project through new-project → discuss-phase → plan-phase → execute-phase → ship.',
     '---',
     '',
     '# Get Shit Done (GSD)',
@@ -5744,7 +5744,7 @@ function writeHermesCategoryDescription(categoryDir) {
     'GSD is a structured development workflow. Skills in this category cover',
     'project initialization, phase planning, execution, code review, and shipping.',
     '',
-    'Invoke any `vgsd-*` skill in this category to drive the corresponding step.',
+    'Invoke any `fvgsd-*` skill in this category to drive the corresponding step.',
     '',
   ].join('\n');
   fs.writeFileSync(path.join(categoryDir, 'DESCRIPTION.md'), body);
@@ -5765,7 +5765,7 @@ function writeHermesCategoryDescription(categoryDir) {
  *
  * These files are created/refreshed by user-facing workflows (e.g.
  * /gsd-profile-user) and must be preserved across reinstalls. Critically, they
- * MUST be excluded from gsd-file-manifest.json — otherwise saveLocalPatches()
+ * MUST be excluded from fvgsd-file-manifest.json — otherwise saveLocalPatches()
  * will compare a refreshed file against a stale manifest hash and emit a
  * spurious "locally modified GSD file" warning (bug #2771).
  *
@@ -5818,10 +5818,10 @@ function restoreUserArtifacts(destDir, saved) {
  * Migrate a legacy dev-preferences.md (saved from commands/gsd/) into the
  * runtime-aware SKILL.md location used by the writer after #2973.
  *
- * For runtimes with a nested skills layout (Hermes: skills/vgsd/<stem>/),
- * the target is <configDir>/skills/vgsd/dev-preferences/SKILL.md.
- * For runtimes with a flat skills layout (prefix='vgsd-'), the target is
- * <configDir>/skills/vgsd-dev-preferences/SKILL.md.
+ * For runtimes with a nested skills layout (Hermes: skills/fvgsd/<stem>/),
+ * the target is <configDir>/skills/fvgsd/dev-preferences/SKILL.md.
+ * For runtimes with a flat skills layout (prefix='fvgsd-'), the target is
+ * <configDir>/skills/fvgsd-dev-preferences/SKILL.md.
  *
  * Skips silently if no legacy file was preserved, or if a SKILL.md already
  * exists at the new location (don't clobber user-customized skill content
@@ -5841,11 +5841,11 @@ function migrateLegacyDevPreferencesToSkill(targetDir, saved, runtime, scope = '
     const layout = resolveRuntimeArtifactLayout(runtime, targetDir, scope);
     const skillsKindEntry = layout.kinds.find((k) => k.kind === 'skills');
     if (!skillsKindEntry) return false; // runtime has no skills layout (e.g. cline)
-    const stemName = skillsKindEntry.prefix === '' ? 'dev-preferences' : 'vgsd-dev-preferences';
+    const stemName = skillsKindEntry.prefix === '' ? 'dev-preferences' : 'fvgsd-dev-preferences';
     skillDir = path.join(targetDir, skillsKindEntry.destSubpath, stemName);
   } else {
     // Legacy fallback for callers that have not yet been updated to pass runtime
-    skillDir = path.join(targetDir, 'skills', 'vgsd-dev-preferences');
+    skillDir = path.join(targetDir, 'skills', 'fvgsd-dev-preferences');
   }
   const skillFile = path.join(skillDir, 'SKILL.md');
   if (fs.existsSync(skillFile)) return false;
@@ -5909,7 +5909,7 @@ function applyRuntimeContentRewritesInPlace(stagedDir, runtime, pathPrefix) {
 function _applyRuntimeRewrites(content, runtime, pathPrefix) {
   const dirName = getDirName(runtime);
   const normalizedPathPrefix = pathPrefix.replace(/\/$/, '');
-  content = content.replace(/__VGSD_RUNTIME__/g, runtime);
+  content = content.replace(/__FVGSD_RUNTIME__/g, runtime);
 
   switch (runtime) {
     case 'codex':
@@ -6080,7 +6080,7 @@ function _applyRuntimeRewrites(content, runtime, pathPrefix) {
  *   - commands: write as `${prefix}${stem}.md` unless destSubpath already
  *     encodes the GSD namespace as its last segment (e.g. `commands/gsd`), in
  *     which case write as `${stem}.md` (directory IS the namespace).
- *   - agents: write as-is (files already carry their own `gsd-` prefix).
+ *   - agents: write as-is (files already carry their own `fvgsd-` prefix).
  */
 function _copyStaged(stagedDir, destDir, kind) {
   if (!fs.existsSync(stagedDir)) return;
@@ -6174,8 +6174,8 @@ function _pruneLegacyFlatSkills(flatSkillsDir, saved) {
   const managedNames = new Set(readGsdCommandNames());
   let next = saved;
   for (const entry of fs.readdirSync(flatSkillsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || !entry.name.startsWith('gsd-')) continue;
-    const stem = entry.name.slice('gsd-'.length);
+    if (!entry.isDirectory() || !entry.name.startsWith('fvgsd-')) continue;
+    const stem = entry.name.slice('fvgsd-'.length);
     if (stem === 'dev-preferences') {
       next = _captureLegacyDevPreferences(next, path.join(flatSkillsDir, entry.name, 'SKILL.md'));
     } else if (!managedNames.has(stem)) {
@@ -6192,8 +6192,8 @@ function _pruneLegacyHermesCategory(nestedGsdDir, saved) {
   let next = saved;
   for (const entry of fs.readdirSync(nestedGsdDir, { withFileTypes: true })) {
     const fullPath = path.join(nestedGsdDir, entry.name);
-    const normalizedName = entry.name.startsWith('gsd-')
-      ? entry.name.slice('gsd-'.length)
+    const normalizedName = entry.name.startsWith('fvgsd-')
+      ? entry.name.slice('fvgsd-'.length)
       : entry.name;
     if (entry.isDirectory() && normalizedName === 'dev-preferences') {
       next = _captureLegacyDevPreferences(next, path.join(fullPath, 'SKILL.md'));
@@ -6212,8 +6212,8 @@ function _pruneLegacyFlatCommands(flatCommandsDir) {
   if (!fs.existsSync(flatCommandsDir)) return;
   const managedNames = new Set(readGsdCommandNames());
   for (const entry of fs.readdirSync(flatCommandsDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.startsWith('gsd-') || !entry.name.endsWith('.md')) continue;
-    const stem = entry.name.slice('gsd-'.length, -'.md'.length);
+    if (!entry.isFile() || !entry.name.startsWith('fvgsd-') || !entry.name.endsWith('.md')) continue;
+    const stem = entry.name.slice('fvgsd-'.length, -'.md'.length);
     if (!managedNames.has(stem)) continue;
     fs.rmSync(path.join(flatCommandsDir, entry.name), { force: true });
   }
@@ -6241,7 +6241,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
     fs.rmSync(legacyCommandsGsd, { recursive: true });
   }
 
-  // Every pre-vgsd skills runtime used flat gsd-* directories. Remove only
+  // Every pre-fvgsd skills runtime used flat gsd-* directories. Remove only
   // known public commands; unknown prefixed directories may be user-owned.
   const flatSkillsDir = path.join(configDir, 'skills');
   savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
@@ -6255,7 +6255,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
   const flatCommandsDir = path.join(configDir, 'command');
   _pruneLegacyFlatCommands(flatCommandsDir);
 
-  // Migrate dev-preferences content into the runtime's new vgsd namespace.
+  // Migrate dev-preferences content into the runtime's new fvgsd namespace.
   if (savedLegacyArtifacts) {
     const layout = resolveRuntimeArtifactLayout(runtime, configDir, scope);
     const skillsKindEntry = layout.kinds.find((kind) => kind.kind === 'skills');
@@ -6275,7 +6275,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
       } else if (content) {
         // Rules-only runtimes have no command/skill layout. Keep the user file
         // under the new namespace so an upgrade never discards it.
-        const destDir = path.join(configDir, 'commands', 'vgsd');
+        const destDir = path.join(configDir, 'commands', 'fvgsd');
         fs.mkdirSync(destDir, { recursive: true });
         const destFile = path.join(destDir, 'dev-preferences.md');
         if (!fs.existsSync(destFile)) fs.writeFileSync(destFile, content, 'utf8');
@@ -6398,7 +6398,7 @@ function installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile) {
       // Preserve every subdir that is NOT in the staged set — those are user-added dirs
       // (e.g. user-content/) that GSD does not manage.
       //
-      // For prefix='gsd-' (others): _removeGsdEntries removes only gsd-* entries.
+      // For prefix='fvgsd-' (others): _removeGsdEntries removes only gsd-* entries.
       // Non-gsd-* user dirs (e.g. my-custom-skill/) are untouched. Only preserve the
       // explicit user-owned GSD-prefixed skill gsd-dev-preferences, which GSD does not
       // reinstall from source but must survive the prune (#2973).
@@ -6418,7 +6418,7 @@ function installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile) {
       } else {
         // Non-Hermes: only preserve explicitly user-owned GSD-prefixed skill dirs.
         // gsd-dev-preferences is the sole user-customisable skill in this category.
-        const USER_OWNED_SKILL_DIRS = ['vgsd-dev-preferences'];
+        const USER_OWNED_SKILL_DIRS = ['fvgsd-dev-preferences'];
         for (const dirName of USER_OWNED_SKILL_DIRS) {
           const skillDir = path.join(dest, dirName);
           if (!fs.existsSync(skillDir)) continue;
@@ -6568,7 +6568,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       // Replace ~/.claude/ and $HOME/.claude/ and ./.claude/ with runtime-appropriate paths
       // Skip generic replacement for Copilot — convertClaudeToCopilotContent handles all paths
       let content = fs.readFileSync(srcPath, 'utf8');
-      content = content.replace(/__VGSD_RUNTIME__/g, runtime);
+      content = content.replace(/__FVGSD_RUNTIME__/g, runtime);
       if (!isCopilot && !isAntigravity) {
         const globalClaudeRegex = /~\/\.claude\//g;
         const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
@@ -6585,7 +6585,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       }
       content = processAttribution(content, getCommitAttribution(runtime));
 
-      // #3683 — normalize command references to /vgsd-<cmd> in any body passing through
+      // #3683 — normalize command references to /fvgsd-<cmd> in any body passing through
       // copyWithPathReplacement for runtimes that register commands under the
       // hyphen form; normalizeAgentBodyForRuntime self-gates on
       // shouldNormalizeHyphenNamespaceInAgentBody(runtime) and is a no-op for
@@ -6703,11 +6703,11 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
  */
 function cleanupOrphanedHooks(settings) {
   const orphanedHookPatterns = [
-    'gsd-notify.sh',  // Removed in v1.6.x
-    'hooks/statusline.js',  // Renamed to gsd-statusline.js in v1.9.0
-    'gsd-intel-index.js',  // Removed in v1.9.2
-    'gsd-intel-session.js',  // Removed in v1.9.2
-    'gsd-intel-prune.js',  // Removed in v1.9.2
+    'fvgsd-notify.sh',  // Removed in v1.6.x
+    'hooks/statusline.js',  // Renamed to fvgsd/statusline.js in v1.9.0
+    'fvgsd-intel-index.js',  // Removed in v1.9.2
+    'fvgsd-intel-session.js',  // Removed in v1.9.2
+    'fvgsd-intel-prune.js',  // Removed in v1.9.2
   ];
 
   let cleanedHooks = false;
@@ -6749,7 +6749,7 @@ function cleanupOrphanedHooks(settings) {
       /hooks([\/\\])statusline\.js/,
       'hooks$1gsd-statusline.js'
     );
-    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/gsd-statusline.js)`);
+    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/fvgsd/statusline.js)`);
   }
 
   return settings;
@@ -6893,7 +6893,7 @@ function uninstall(isGlobal, runtime = 'claude') {
 
   // Remove profile marker so a clean reinstall defaults to full surface.
   try {
-    fs.unlinkSync(path.join(targetDir, '.gsd-profile'));
+    fs.unlinkSync(path.join(targetDir, '.fvgsd-profile'));
     removedCount++;
   } catch {}
 
@@ -6909,7 +6909,7 @@ function uninstall(isGlobal, runtime = 'claude') {
       const tomlFiles = fs.readdirSync(codexAgentsDir);
       let tomlCount = 0;
       for (const file of tomlFiles) {
-        if (file.startsWith('gsd-') && file.endsWith('.toml')) {
+        if (file.startsWith('fvgsd-') && file.endsWith('.toml')) {
           fs.unlinkSync(path.join(codexAgentsDir, file));
           tomlCount++;
         }
@@ -6962,7 +6962,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   }
 
   // 1c. Claude local: remove commands/gsd/ (primary local install location).
-  //     The layout's _removeGsdEntries uses the 'gsd-' prefix which applies to
+  //     The layout's _removeGsdEntries uses the 'fvgsd-' prefix which applies to
   //     flat command dirs (OpenCode/Kilo). Claude local files use no prefix inside
   //     the namespaced directory, so layout does not remove them. Handle inline.
   //     Preserve dev-preferences.md across the wipe (#1423).
@@ -7030,8 +7030,8 @@ function uninstall(isGlobal, runtime = 'claude') {
         // Compute the actual path written so the log line is accurate per-runtime
         const _layout = resolveRuntimeArtifactLayout(runtime, targetDir, _uninstallScope);
         const _sk = _layout.kinds.find((k) => k.kind === 'skills');
-        const _stem = _sk && _sk.prefix === '' ? 'dev-preferences' : 'vgsd-dev-preferences';
-        const _skillRelPath = _sk ? `${_sk.destSubpath}/${_stem}/SKILL.md` : 'skills/vgsd-dev-preferences/SKILL.md';
+        const _stem = _sk && _sk.prefix === '' ? 'dev-preferences' : 'fvgsd-dev-preferences';
+        const _skillRelPath = _sk ? `${_sk.destSubpath}/${_stem}/SKILL.md` : 'skills/fvgsd-dev-preferences/SKILL.md';
         console.log(`  ${green}✓${reset} Migrated dev-preferences.md → ${_skillRelPath} (#2973)`);
       } else {
         // Migration failed or already exists — restore to legacy location so user content is not lost
@@ -7069,7 +7069,7 @@ function uninstall(isGlobal, runtime = 'claude') {
     const files = fs.readdirSync(agentsDir);
     let agentCount = 0;
     for (const file of files) {
-      if (file.startsWith('gsd-') && file.endsWith('.md')) {
+      if (file.startsWith('fvgsd-') && file.endsWith('.md')) {
         fs.unlinkSync(path.join(agentsDir, file));
         agentCount++;
       }
@@ -7083,7 +7083,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   // 4. Remove GSD hooks
   const hooksDir = path.join(targetDir, 'hooks');
   if (fs.existsSync(hooksDir)) {
-    const gsdHooks = ['gsd-statusline.js', 'gsd-check-update.js', 'gsd-check-update.cmd', 'gsd-context-monitor.js', 'gsd-prompt-guard.js', 'gsd-read-guard.js', 'gsd-read-injection-scanner.js', 'gsd-update-banner.js', 'gsd-workflow-guard.js', 'gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh', 'gsd-graphify-update.sh'];
+    const gsdHooks = ['fvgsd/statusline.js', 'fvgsd/check-update.js', 'fvgsd/check-update.cmd', 'fvgsd/context-monitor.js', 'fvgsd/prompt-guard.js', 'fvgsd/read-guard.js', 'fvgsd/read-injection-scanner.js', 'fvgsd/update-banner.js', 'fvgsd/workflow-guard.js', 'fvgsd/session-state.sh', 'fvgsd/validate-commit.sh', 'fvgsd/phase-boundary.sh', 'fvgsd/graphify-update.sh'];
     let hookCount = 0;
     for (const hook of gsdHooks) {
       const hookPath = path.join(hooksDir, hook);
@@ -7097,13 +7097,13 @@ function uninstall(isGlobal, runtime = 'claude') {
       console.log(`  ${green}✓${reset} Removed ${hookCount} GSD hooks`);
     }
 
-    // Remove only the GSD-managed files from hooks/lib/ (git-cmd.js + gsd-graphify-rebuild.sh).
-    // hooks/lib/ lives inside the user's runtime hooks directory (shared space) and
+    // Remove only the GSD-managed files from hooks/fvgsd/lib/ (git-cmd.js + graphify-rebuild.sh).
+    // hooks/fvgsd/lib/ lives inside the user's runtime hooks directory (shared space) and
     // may contain user-owned custom helpers. We must not recursively delete the dir.
     const hooksLibDir = path.join(hooksDir, 'lib');
     if (fs.existsSync(hooksLibDir)) {
       let removedLibFiles = 0;
-      for (const file of GSD_HOOK_LIB_FILES) {
+      for (const file of FVGSD_HOOK_LIB_FILES) {
         const filePath = path.join(hooksLibDir, file);
         try {
           fs.unlinkSync(filePath);
@@ -7120,7 +7120,7 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
       if (removedLibFiles > 0) {
         removedCount++;
-        console.log(`  ${green}✓${reset} Removed ${removedLibFiles} hooks/lib/ helper(s)`);
+        console.log(`  ${green}✓${reset} Removed ${removedLibFiles} hooks/fvgsd/lib/ helper(s)`);
       }
     }
   }
@@ -7153,7 +7153,7 @@ function uninstall(isGlobal, runtime = 'claude') {
 
     // Remove GSD statusline if it references our hook
     if (settings.statusLine && settings.statusLine.command &&
-      settings.statusLine.command.includes('gsd-statusline')) {
+      settings.statusLine.command.includes('fvgsd/statusline')) {
       delete settings.statusLine;
       settingsModified = true;
       console.log(`  ${green}✓${reset} Removed GSD statusline from settings`);
@@ -7410,7 +7410,7 @@ function configureOpencodePermissions(isGlobal = true, configDir = null) {
   // Use ~ shorthand if it's in the default location, otherwise use full path
   const defaultConfigDir = path.join(os.homedir(), '.config', 'opencode');
   const gsdPath = opencodeConfigDir === defaultConfigDir
-    ? '~/.config/opencode/get-shit-done/*'
+    ? '~/.config/opencode/fvgsd/*'
     : `${opencodeConfigDir.replace(/\\/g, '/')}/get-shit-done/*`;
 
   let modified = false;
@@ -7558,8 +7558,8 @@ function verifyFileInstalled(filePath, description) {
 // Local Patch Persistence
 // ──────────────────────────────────────────────────────
 
-const PATCHES_DIR_NAME = 'gsd-local-patches';
-const MANIFEST_NAME = 'gsd-file-manifest.json';
+const PATCHES_DIR_NAME = 'fvgsd-local-patches';
+const MANIFEST_NAME = 'fvgsd-file-manifest.json';
 
 /**
  * Compute SHA256 hash of file contents
@@ -7657,14 +7657,14 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
   const isCline = runtime === 'cline';
   const isHermes = runtime === 'hermes';
   const gsdDir = path.join(configDir, 'get-shit-done');
-  const commandsDir = path.join(configDir, 'commands', 'vgsd');
+  const commandsDir = path.join(configDir, 'commands', 'fvgsd');
   const opencodeCommandDir = path.join(configDir, 'command');
-  // Hermes nests GSD skills under skills/vgsd/ as a single category (#2841).
+  // Hermes nests GSD skills under skills/fvgsd/ as a single category (#2841).
   // All other runtimes that use the Codex-style skills layout use a flat skills/ root.
   const codexSkillsDir = isHermes
-    ? path.join(configDir, 'skills', 'vgsd')
+    ? path.join(configDir, 'skills', 'fvgsd')
     : path.join(configDir, 'skills');
-  const codexSkillsManifestPrefix = isHermes ? 'skills/vgsd/' : 'skills/';
+  const codexSkillsManifestPrefix = isHermes ? 'skills/fvgsd/' : 'skills/';
   const agentsDir = path.join(configDir, 'agents');
   const manifest = {
     version: pkg.version,
@@ -7683,7 +7683,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
     if (USER_OWNED_ARTIFACTS.includes(rel)) continue;
     manifest.files['get-shit-done/' + rel] = hash;
   }
-  // Record commands/vgsd/ for any runtime that emits it (Gemini globally,
+  // Record commands/fvgsd/ for any runtime that emits it (Gemini globally,
   // Claude Code locally — see #2923). Manifest must reflect everything on
   // disk so saveLocalPatches() can detect user edits and so per-runtime
   // assertions about minimal-mode emit can read manifest.files instead of
@@ -7691,19 +7691,19 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
   if (fs.existsSync(commandsDir)) {
     const cmdHashes = generateManifest(commandsDir);
     for (const [rel, hash] of Object.entries(cmdHashes)) {
-      manifest.files['commands/vgsd/' + rel] = hash;
+      manifest.files['commands/fvgsd/' + rel] = hash;
     }
   }
   if ((isOpencode || isKilo) && fs.existsSync(opencodeCommandDir)) {
     for (const file of fs.readdirSync(opencodeCommandDir)) {
-      if (file.startsWith('vgsd-') && file.endsWith('.md')) {
+      if (file.startsWith('fvgsd-') && file.endsWith('.md')) {
         manifest.files['command/' + file] = fileHash(path.join(opencodeCommandDir, file));
       }
     }
   }
   if ((isCodex || isCopilot || isAntigravity || isCursor || isWindsurf || isTrae || (!isOpencode && !isGemini)) && fs.existsSync(codexSkillsDir)) {
-    // Hermes uses prefix '' (bare stem names); all others use 'vgsd-'
-    const skillListPrefix = isHermes ? '' : 'vgsd-';
+    // Hermes uses prefix '' (bare stem names); all others use 'fvgsd-'
+    const skillListPrefix = isHermes ? '' : 'fvgsd-';
     for (const skillName of listCodexSkillNames(codexSkillsDir, skillListPrefix)) {
       const skillRoot = path.join(codexSkillsDir, skillName);
       const skillHashes = generateManifest(skillRoot);
@@ -7715,13 +7715,13 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
     if (isHermes) {
       const descPath = path.join(codexSkillsDir, 'DESCRIPTION.md');
       if (fs.existsSync(descPath)) {
-        manifest.files['skills/vgsd/DESCRIPTION.md'] = fileHash(descPath);
+        manifest.files['skills/fvgsd/DESCRIPTION.md'] = fileHash(descPath);
       }
     }
   }
   if (fs.existsSync(agentsDir)) {
     for (const file of fs.readdirSync(agentsDir)) {
-      if (file.startsWith('gsd-') && file.endsWith('.md')) {
+      if (file.startsWith('fvgsd-') && file.endsWith('.md')) {
         manifest.files['agents/' + file] = fileHash(path.join(agentsDir, file));
       }
     }
@@ -7740,17 +7740,17 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
     const hooksDir = path.join(configDir, 'hooks');
     if (fs.existsSync(hooksDir)) {
       for (const file of fs.readdirSync(hooksDir)) {
-        if (file.startsWith('gsd-') && (file.endsWith('.js') || file.endsWith('.sh'))) {
+        if (file.startsWith('fvgsd-') && (file.endsWith('.js') || file.endsWith('.sh'))) {
           manifest.files['hooks/' + file] = fileHash(path.join(hooksDir, file));
         }
       }
-      // Track hooks/lib/ helpers so saveLocalPatches() can back up user edits
-      // to git-cmd.js (validate-commit classifier) and gsd-graphify-rebuild.sh.
+      // Track hooks/fvgsd/lib/ helpers so saveLocalPatches() can back up user edits
+      // to git-cmd.js (validate-commit classifier) and graphify-rebuild.sh.
       const hooksLibDir = path.join(hooksDir, 'lib');
       if (fs.existsSync(hooksLibDir)) {
         for (const file of fs.readdirSync(hooksLibDir)) {
-          if (GSD_HOOK_LIB_FILES.includes(file)) {
-            manifest.files['hooks/lib/' + file] = fileHash(path.join(hooksLibDir, file));
+          if (FVGSD_HOOK_LIB_FILES.includes(file)) {
+            manifest.files['hooks/fvgsd/lib/' + file] = fileHash(path.join(hooksLibDir, file));
           }
         }
       }
@@ -7762,7 +7762,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
 }
 
 /**
- * Populate gsd-pristine/ with the transformed pristine versions of every
+ * Populate fvgsd-pristine/ with the transformed pristine versions of every
  * `modified` file, derived from the current package's source tree by
  * running the install transform pipeline (`copyWithPathReplacement`)
  * into a tmp directory, then copying out only the relevant paths.
@@ -7791,7 +7791,7 @@ function populatePristineDir({ packageSrc, pristineDir, modified, runtime, pathP
   // top-level dir that actually contains a modified path; root-level files
   // are copied directly without the transform pipeline (they don't need
   // path replacement).
-  const stageRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-pristine-stage-'));
+  const stageRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-pristine-stage-'));
   let written = 0;
   try {
     const topLevels = new Set();
@@ -7847,13 +7847,13 @@ function populatePristineDir({ packageSrc, pristineDir, modified, runtime, pathP
 
 /**
  * Detect user-modified GSD files by comparing against install manifest.
- * Backs up modified files to gsd-local-patches/ for reapply after update.
- * Also saves pristine copies (from manifest) to gsd-pristine/ to enable
+ * Backs up modified files to fvgsd-local-patches/ for reapply after update.
+ * Also saves pristine copies (from manifest) to fvgsd-pristine/ to enable
  * three-way merge during reapply-patches (pristine vs user vs new).
  *
  * The optional `pristineCtx` parameter (set by the install entry point)
  * carries the source package root, runtime, pathPrefix, and isGlobal
- * needed to populate gsd-pristine/. If omitted (legacy callers), pristine
+ * needed to populate fvgsd-pristine/. If omitted (legacy callers), pristine
  * stays empty — the verifier falls back to its over-broad heuristic, same
  * behavior as before #2998.
  */
@@ -7873,7 +7873,7 @@ function saveLocalPatches(configDir, pristineCtx) {
   }
 
   const patchesDir = path.join(configDir, PATCHES_DIR_NAME);
-  const pristineDir = path.join(configDir, 'gsd-pristine');
+  const pristineDir = path.join(configDir, 'fvgsd-pristine');
   const modified = [];
   const pristineHashes = {};
 
@@ -7919,7 +7919,7 @@ function saveLocalPatches(configDir, pristineCtx) {
       console.log('     ' + dim + f + reset);
     }
 
-    // #2998: populate gsd-pristine/ via the install transform pipeline so the
+    // #2998: populate fvgsd-pristine/ via the install transform pipeline so the
     // reapply-patches verifier (#2972) gets a real diff baseline instead of
     // falling back to its over-broad "every significant backup line" heuristic.
     if (pristineCtx) {
@@ -7938,7 +7938,7 @@ function saveLocalPatches(configDir, pristineCtx) {
           isGlobal: pristineCtx.isGlobal,
         });
         if (written > 0) {
-          console.log('  ' + green + '✓' + reset + '  Populated ' + cyan + 'gsd-pristine/' + reset + ' (' + written + ' file(s)) for three-way merge');
+          console.log('  ' + green + '✓' + reset + '  Populated ' + cyan + 'fvgsd-pristine/' + reset + ' (' + written + ' file(s)) for three-way merge');
         }
       } catch (err) {
         // Soft failure: keep the install moving even if the transform pipeline
@@ -7946,7 +7946,7 @@ function saveLocalPatches(configDir, pristineCtx) {
         // verifier falls back cleanly to its pre-#2998 heuristic instead of
         // reading half-populated data (#3004 CR).
         try { fs.rmSync(pristineDir, { recursive: true, force: true }); } catch { /* best-effort */ }
-        console.log('  ' + yellow + 'i' + reset + '  Could not populate gsd-pristine/ (' + (err && err.message ? err.message : 'unknown') + '). Falls back to over-broad verify heuristic.');
+        console.log('  ' + yellow + 'i' + reset + '  Could not populate fvgsd-pristine/ (' + (err && err.message ? err.message : 'unknown') + '). Falls back to over-broad verify heuristic.');
       }
     }
   }
@@ -7966,14 +7966,14 @@ function reportLocalPatches(configDir, runtime = 'claude') {
 
   if (meta.files && meta.files.length > 0) {
     const reapplyCommand = (runtime === 'opencode' || runtime === 'kilo' || runtime === 'copilot')
-      ? '/vgsd-update --reapply'
+      ? '/fvgsd-update --reapply'
       : runtime === 'gemini'
-        ? '/vgsd:update --reapply'
+        ? '/fvgsd:update --reapply'
         : runtime === 'codex'
-          ? '$vgsd-update --reapply'
+          ? '$fvgsd-update --reapply'
         : runtime === 'cursor'
-          ? 'vgsd-update --reapply (mention the skill name)'
-          : '/vgsd-update --reapply';
+          ? 'fvgsd-update --reapply (mention the skill name)'
+          : '/fvgsd-update --reapply';
     console.log('');
     console.log('  ' + yellow + 'Local patches detected' + reset + ' (from v' + meta.from_version + '):');
     for (const f of meta.files) {
@@ -8017,10 +8017,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   const dirName = getDirName(runtime);
   const src = path.join(__dirname, '..');
 
-  // Reusable helper to copy hooks/lib/ (git-cmd.js + gsd-graphify-rebuild.sh).
+  // Reusable helper to copy hooks/fvgsd/lib/ (git-cmd.js + graphify-rebuild.sh).
   // Defined early so it is visible to both the main and Codex code paths.
   // `allowlist` (when non-empty) restricts copying to the named top-level entries,
-  // keeping install scope aligned with GSD_HOOK_LIB_FILES (which uninstall/manifest manage).
+  // keeping install scope aligned with FVGSD_HOOK_LIB_FILES (which uninstall/manifest manage).
   const copyLibDir = (sDir, dDir, allowlist = []) => {
     const allowed = allowlist.length > 0 ? new Set(allowlist) : null;
     for (const entry of fs.readdirSync(sDir)) {
@@ -8035,7 +8035,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         copyLibDir(s, d);
       } else if (entry.endsWith('.sh')) {
         let content = fs.readFileSync(s, 'utf8');
-        content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+        content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
         fs.writeFileSync(d, content);
         try { fs.chmodSync(d, 0o755); } catch (_) { /* Windows */ }
       } else {
@@ -8060,14 +8060,14 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     ? targetDir.replace(os.homedir(), '~')
     : targetDir.replace(process.cwd(), '.');
 
-  // #3406: warn if a stale standalone `@gsd-build/sdk` is globally installed
-  // and shadows the `gsd-sdk` shim this installer wires up. Only meaningful
+  // #3406: warn if a stale standalone `@fvgsd/sdk` is globally installed
+  // and shadows the `fvgsd-sdk` shim this installer wires up. Only meaningful
   // for global installs (the shim collision lives in the global node_modules
-  // bin dir). Guarded by GSD_SKIP_STALE_SDK_CHECK so CI/tests can silence it.
+  // bin dir). Guarded by FVGSD_SKIP_STALE_SDK_CHECK so CI/tests can silence it.
   // #3406 CR: opt-out only on explicit "1" / "true" / "yes" rather than any
-  // non-empty value. Without this guard `GSD_SKIP_STALE_SDK_CHECK=0` and
-  // `GSD_SKIP_STALE_SDK_CHECK=false` would silently disable the check.
-  const skipRaw = process.env.GSD_SKIP_STALE_SDK_CHECK;
+  // non-empty value. Without this guard `FVGSD_SKIP_STALE_SDK_CHECK=0` and
+  // `FVGSD_SKIP_STALE_SDK_CHECK=false` would silently disable the check.
+  const skipRaw = process.env.FVGSD_SKIP_STALE_SDK_CHECK;
   const skipStaleCheck = skipRaw === '1' || skipRaw === 'true' || skipRaw === 'yes';
   if (isGlobal && !skipStaleCheck) {
     try {
@@ -8077,7 +8077,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         try {
           return execFileSync(
             npmCmd,
-            ['ls', '-g', '@gsd-build/sdk', '--json', '--depth=0'],
+            ['ls', '-g', '@fvgsd/sdk', '--json', '--depth=0'],
             { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 10_000 }
           );
         } catch (e) {
@@ -8099,7 +8099,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
   }
 
-  // Path prefix for file references in markdown content (e.g. gsd-tools.cjs).
+  // Path prefix for file references in markdown content (e.g. fvgsd-tools.cjs).
   // Replaces $HOME/.claude/ or ~/.claude/ so the result is <pathPrefix>get-shit-done/bin/...
   // For global installs: use $HOME/ so paths expand correctly inside double-quoted
   // shell commands (~ does NOT expand inside double quotes, causing MODULE_NOT_FOUND).
@@ -8198,7 +8198,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   };
 
   // Save any locally modified GSD files before they get wiped.
-  // The pristine context lets saveLocalPatches populate gsd-pristine/ via
+  // The pristine context lets saveLocalPatches populate fvgsd-pristine/ via
   // the install transform pipeline, giving the reapply-patches Step 5
   // verifier a real diff baseline (#2998).
   saveLocalPatches(targetDir, {
@@ -8245,7 +8245,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const _preSkillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(_preSkillsDir)) {
       for (const entry of fs.readdirSync(_preSkillsDir, { withFileTypes: true })) {
-        if (entry.isDirectory() && /^(?:vgsd|gsd)-/.test(entry.name)) {
+        if (entry.isDirectory() && /^(?:fvgsd|gsd)-/.test(entry.name)) {
           codexPreInstallSkillNames.add(entry.name);
           // Recursively snapshot all files in this skill dir.
           const skillDir = path.join(_preSkillsDir, entry.name);
@@ -8271,7 +8271,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const _preAgentsDir = path.join(targetDir, 'agents');
     if (fs.existsSync(_preAgentsDir)) {
       for (const file of fs.readdirSync(_preAgentsDir)) {
-        if (file.startsWith('gsd-') && (file.endsWith('.md') || file.endsWith('.toml'))) {
+        if (file.startsWith('fvgsd-') && (file.endsWith('.md') || file.endsWith('.toml'))) {
           codexPreInstallAgentFiles.add(file);
           try {
             codexPreInstallAgentContents.set(file, fs.readFileSync(path.join(_preAgentsDir, file)));
@@ -8320,7 +8320,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     if (fs.existsSync(_earlySkillsDir)) {
       try {
         for (const entry of fs.readdirSync(_earlySkillsDir, { withFileTypes: true })) {
-          if (entry.isDirectory() && /^(?:vgsd|gsd)-/.test(entry.name) && !codexPreInstallSkillNames.has(entry.name)) {
+          if (entry.isDirectory() && /^(?:fvgsd|gsd)-/.test(entry.name) && !codexPreInstallSkillNames.has(entry.name)) {
             try { fs.rmSync(path.join(_earlySkillsDir, entry.name), { recursive: true, force: true }); }
             catch (_) { /* best-effort */ }
           }
@@ -8342,7 +8342,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     if (fs.existsSync(_earlyAgentsDir)) {
       try {
         for (const file of fs.readdirSync(_earlyAgentsDir)) {
-          if (file.startsWith('gsd-') && (file.endsWith('.md') || file.endsWith('.toml')) && !codexPreInstallAgentFiles.has(file)) {
+          if (file.startsWith('fvgsd-') && (file.endsWith('.md') || file.endsWith('.toml')) && !codexPreInstallAgentFiles.has(file)) {
             try { fs.unlinkSync(path.join(_earlyAgentsDir, file)); } catch (_) { /* best-effort */ }
           }
         }
@@ -8409,9 +8409,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // behind by a previous version), there is no actual "user choice" to
   // make — the file is a known GSD-managed artifact and the installer is
   // about to write the fresh bundled version. Gating the resolver on
-  // `!isTTY` made `npx get-shit-done-cc@latest --codex` hard-abort with
+  // `!isTTY` made `npx fvgsd@latest --codex` hard-abort with
   // 12 blocked bundled hooks. The env-override branch (operator-supplied
-  // GSD_INSTALLER_MIGRATION_RESOLVE) still applies only in non-TTY mode.
+  // FVGSD_INSTALLER_MIGRATION_RESOLVE) still applies only in non-TTY mode.
   const _migrationIsTty = process.stdin && process.stdin.isTTY === true;
   if (Array.isArray(installerMigrationResult.blocked) &&
       installerMigrationResult.blocked.length > 0 &&
@@ -8478,38 +8478,38 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const scope = isGlobal ? 'global' : 'local';
     installRuntimeArtifacts(runtime, targetDir, scope, _resolvedProfile);
 
-    // Hermes only: write DESCRIPTION.md for the vgsd/ category after layout install
+    // Hermes only: write DESCRIPTION.md for the fvgsd/ category after layout install
     if (isHermes) {
-      writeHermesCategoryDescription(path.join(targetDir, 'skills', 'vgsd'));
+      writeHermesCategoryDescription(path.join(targetDir, 'skills', 'fvgsd'));
     }
 
     // Verify installed artifacts and report
     if (isHermes) {
-      const hermesSkillsDir = path.join(targetDir, 'skills', 'vgsd');
+      const hermesSkillsDir = path.join(targetDir, 'skills', 'fvgsd');
       if (fs.existsSync(hermesSkillsDir)) {
         // Hermes layout uses prefix: '' — skill dirs have bare stem names (no gsd- prefix)
         const count = fs.readdirSync(hermesSkillsDir, { withFileTypes: true })
           .filter(e => e.isDirectory()).length;
         if (count > 0) {
-          console.log(`  ${green}✓${reset} Installed ${count} skills to skills/vgsd/`);
+          console.log(`  ${green}✓${reset} Installed ${count} skills to skills/fvgsd/`);
         } else {
-          failures.push('skills/vgsd/*');
+          failures.push('skills/fvgsd/*');
         }
       } else {
-        failures.push('skills/vgsd/*');
+        failures.push('skills/fvgsd/*');
       }
     } else {
       const skillsDir = path.join(targetDir, 'skills');
       if (fs.existsSync(skillsDir)) {
         const count = fs.readdirSync(skillsDir, { withFileTypes: true })
-          .filter(e => e.isDirectory() && e.name.startsWith('vgsd-')).length;
+          .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-')).length;
         if (count > 0) {
           console.log(`  ${green}✓${reset} Installed ${count} skills to skills/`);
         } else {
-          failures.push('skills/vgsd-*');
+          failures.push('skills/fvgsd-*');
         }
       } else {
-        failures.push('skills/vgsd-*');
+        failures.push('skills/fvgsd-*');
       }
     }
   } else if (isOpencode || isKilo) {
@@ -8517,14 +8517,14 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const commandDir = path.join(targetDir, 'command');
     fs.mkdirSync(commandDir, { recursive: true });
 
-    // Copy commands/gsd/*.md as command/vgsd-*.md (flatten structure)
+    // Copy commands/gsd/*.md as command/fvgsd-*.md (flatten structure)
     const gsdSrc = _stageSkills(_commandsDir);
-    copyFlattenedCommands(gsdSrc, commandDir, 'vgsd', pathPrefix, runtime);
-    if (verifyInstalled(commandDir, 'command/vgsd-*')) {
-      const count = fs.readdirSync(commandDir).filter(f => f.startsWith('vgsd-')).length;
+    copyFlattenedCommands(gsdSrc, commandDir, 'fvgsd', pathPrefix, runtime);
+    if (verifyInstalled(commandDir, 'command/fvgsd-*')) {
+      const count = fs.readdirSync(commandDir).filter(f => f.startsWith('fvgsd-')).length;
       console.log(`  ${green}✓${reset} Installed ${count} commands to command/`);
     } else {
-      failures.push('command/vgsd-*');
+      failures.push('command/fvgsd-*');
     }
   } else if (isCline) {
     // Cline is rules-based — commands are embedded in .clinerules (generated below).
@@ -8534,14 +8534,14 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // #3037: when running --local --gemini and a GSD-managed user-scope
     // command directory already exists at ~/.gemini/commands/gsd/, skip
     // the local copy. Gemini conflict-detects by command name across
-    // scopes and renames every overlapping /vgsd:* command to
-    // /workspace.vgsd:* and /user.vgsd:*, breaking the documented namespace.
+    // scopes and renames every overlapping /fvgsd:* command to
+    // /workspace.fvgsd:* and /user.fvgsd:*, breaking the documented namespace.
     // The user-scope install already provides the same commands, so the
     // local copy adds zero value at the cost of namespace conflicts.
     //
     // CR #3041 (Major): the detection must be specific to PACKAGE-MANAGED
     // GSD content, not just "directory is non-empty". A user who hand-
-    // dropped a single override (e.g. ~/.gemini/commands/vgsd/my-override
+    // dropped a single override (e.g. ~/.gemini/commands/fvgsd/my-override
     // .toml) would otherwise be unable to run a local install at all.
     // Detection rule: at least 3 of the canonical GSD command files
     // ('help.toml', 'progress.toml', 'new-project.toml') must be present.
@@ -8549,58 +8549,58 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // — they're in the core skill set per #2790's consolidation), and 3-of-
     // 3 with that specific basename set is structurally impossible to
     // produce by accident.
-    const homeGeminiGsd = path.join(os.homedir(), '.gemini', 'commands', 'vgsd');
-    const GSD_MANAGED_CANARIES = ['help.toml', 'progress.toml', 'new-project.toml'];
+    const homeGeminiGsd = path.join(os.homedir(), '.gemini', 'commands', 'fvgsd');
+    const FVGSD_MANAGED_CANARIES = ['help.toml', 'progress.toml', 'new-project.toml'];
     const userScopeHasGsd =
       !isGlobal &&
       path.resolve(targetDir) !== path.resolve(path.join(os.homedir(), '.gemini')) &&
       fs.existsSync(homeGeminiGsd) &&
-      GSD_MANAGED_CANARIES.every((f) =>
+      FVGSD_MANAGED_CANARIES.every((f) =>
         fs.existsSync(path.join(homeGeminiGsd, f))
       );
 
     if (userScopeHasGsd) {
       console.log(
-        `  ${yellow}⚠${reset}  Skipping commands/vgsd/ for local install — GSD is already installed at user scope (${homeGeminiGsd}).`
+        `  ${yellow}⚠${reset}  Skipping commands/fvgsd/ for local install — GSD is already installed at user scope (${homeGeminiGsd}).`
       );
       console.log(
-        `      Gemini conflict-detects across scopes and would rename every /vgsd:* command to /workspace.vgsd:* and /user.vgsd:*.`
+        `      Gemini conflict-detects across scopes and would rename every /fvgsd:* command to /workspace.fvgsd:* and /user.fvgsd:*.`
       );
       console.log(
-        `      The user-scope install already provides /vgsd:* commands in this project; no local copy is needed.`
+        `      The user-scope install already provides /fvgsd:* commands in this project; no local copy is needed.`
       );
     } else {
       const commandsDir = path.join(targetDir, 'commands');
       fs.mkdirSync(commandsDir, { recursive: true });
       const gsdSrc = _stageSkills(_commandsDir);
-      const gsdDest = path.join(commandsDir, 'vgsd');
+      const gsdDest = path.join(commandsDir, 'fvgsd');
       copyWithPathReplacement(gsdSrc, gsdDest, pathPrefix, runtime, true, isGlobal);
-      if (verifyInstalled(gsdDest, 'commands/vgsd')) {
-        console.log(`  ${green}✓${reset} Installed commands/vgsd`);
+      if (verifyInstalled(gsdDest, 'commands/fvgsd')) {
+        console.log(`  ${green}✓${reset} Installed commands/fvgsd`);
       } else {
-        failures.push('commands/vgsd');
+        failures.push('commands/fvgsd');
       }
     }
   } else {
-    // Claude Code local: commands/vgsd/ format — Claude Code reads local project
-    // commands from .claude/commands/vgsd/, not .claude/skills/
+    // Claude Code local: commands/fvgsd/ format — Claude Code reads local project
+    // commands from .claude/commands/fvgsd/, not .claude/skills/
     const commandsDir = path.join(targetDir, 'commands');
     fs.mkdirSync(commandsDir, { recursive: true });
     const gsdSrc = _stageSkills(_commandsDir);
-    const gsdDest = path.join(commandsDir, 'vgsd');
+    const gsdDest = path.join(commandsDir, 'fvgsd');
     copyWithPathReplacement(gsdSrc, gsdDest, pathPrefix, runtime, true, isGlobal);
-    if (verifyInstalled(gsdDest, 'commands/vgsd')) {
+    if (verifyInstalled(gsdDest, 'commands/fvgsd')) {
       const count = fs.readdirSync(gsdDest).filter(f => f.endsWith('.md')).length;
-      console.log(`  ${green}✓${reset} Installed ${count} commands to commands/vgsd/`);
+      console.log(`  ${green}✓${reset} Installed ${count} commands to commands/fvgsd/`);
     } else {
-      failures.push('commands/vgsd');
+      failures.push('commands/fvgsd');
     }
 
     // Clean up any stale skills/ from a previous local install
     const staleSkillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(staleSkillsDir)) {
       const staleGsd = fs.readdirSync(staleSkillsDir, { withFileTypes: true })
-        .filter(e => e.isDirectory() && /^(?:vgsd|gsd)-/.test(e.name));
+        .filter(e => e.isDirectory() && /^(?:fvgsd|gsd)-/.test(e.name));
       for (const e of staleGsd) {
         fs.rmSync(path.join(staleSkillsDir, e.name), { recursive: true });
       }
@@ -8617,9 +8617,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   const savedGsdArtifacts = preserveUserArtifacts(skillDest, USER_OWNED_ARTIFACTS);
   copyWithPathReplacement(skillSrc, skillDest, pathPrefix, runtime, false, isGlobal);
   restoreUserArtifacts(skillDest, savedGsdArtifacts);
-  // Vibe is part of the installed vgsd control surface, not merely a
+  // Vibe is part of the installed fvgsd control surface, not merely a
   // repository-development binary. The CLI resolves its core relative to
-  // get-shit-done/bin when copied here, so vgsd-vibe never depends on PATH or
+  // get-shit-done/bin when copied here, so fvgsd-vibe never depends on PATH or
   // a separate global `vibe` link.
   const vibeCliSrc = path.join(src, 'bin', 'vibe.js');
   const vibeCliDest = path.join(skillDest, 'bin', 'vibe.cjs');
@@ -8681,7 +8681,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   if (fs.existsSync(agentsDest)) {
     for (const file of fs.readdirSync(agentsDest)) {
       if (
-        file.startsWith('gsd-') &&
+        file.startsWith('fvgsd-') &&
         (file.endsWith('.md') || (isCodex && file.endsWith('.toml')))
       ) {
         fs.unlinkSync(path.join(agentsDest, file));
@@ -8690,7 +8690,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   if (isMinimalMode(_effectiveInstallMode)) {
-    // Codex registers agents in `config.toml` via `[agents.gsd-*]` sections.
+    // Codex registers agents in `config.toml` via `[agents.fvgsd-*]` sections.
     // Without stripping them here, a full → minimal reinstall would leave the
     // runtime advertising the old full agent surface even though the agent
     // files are gone. Reuse the same helper that powers `--uninstall`.
@@ -8780,7 +8780,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           content = content.replace(/\.claude\//g, '.hermes/');
         }
         // #3677 — normalize legacy/current colon refs in the agent body
-        // to the public hyphen form `/vgsd-<cmd>` for hyphen-`name:`
+        // to the public hyphen form `/fvgsd-<cmd>` for hyphen-`name:`
         // runtimes (claude / qwen / hermes). Self-converting runtimes and
         // Gemini are skipped by the predicate — see
         // shouldNormalizeHyphenNamespaceInAgentBody above. Mirrors the
@@ -8853,16 +8853,16 @@ function install(isGlobal, runtime = 'claude', options = {}) {
               content = content.replace(/CLAUDE\.md/g, 'HERMES.md');
               content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
             }
-            content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+            content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
             fs.writeFileSync(destFile, content);
             // Ensure hook files are executable (fixes #1162 — missing +x permission)
             try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
           } else {
-            // .sh hooks carry a gsd-hook-version header so gsd-check-update.js can
+            // .sh hooks carry a gsd-hook-version header so fvgsd/check-update.js can
             // detect staleness after updates — stamp the version just like .js hooks.
             if (entry.endsWith('.sh')) {
               let content = fs.readFileSync(srcFile, 'utf8');
-              content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+              content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
               fs.writeFileSync(destFile, content);
               try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
             } else {
@@ -8872,7 +8872,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         } else if (fs.statSync(srcFile).isDirectory()) {
           // #3579: recurse one level into hook subdirs (lib/ etc.). The
           // graphify auto-update hook's rebuild helper lives at
-          // hooks/dist/lib/gsd-graphify-rebuild.sh and must land at the
+          // hooks/dist/lib/graphify-rebuild.sh and must land at the
           // mirrored target path so the hook's REBUILD_SCRIPT lookup resolves.
           const subDest = path.join(hooksDest, entry);
           fs.mkdirSync(subDest, { recursive: true });
@@ -8883,7 +8883,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
             const subDestFile = path.join(subDest, subEntry);
             if (subEntry.endsWith('.sh')) {
               let content = fs.readFileSync(subSrcFile, 'utf8');
-              content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+              content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
               fs.writeFileSync(subDestFile, content);
               try { fs.chmodSync(subDestFile, 0o755); } catch (e) { /* Windows */ }
             } else {
@@ -8895,7 +8895,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       if (verifyInstalled(hooksDest, 'hooks')) {
         console.log(`  ${green}✓${reset} Installed hooks (bundled)`);
         // Warn if expected community .sh hooks are missing (non-fatal)
-        const expectedShHooks = ['gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh', 'gsd-graphify-update.sh'];
+        const expectedShHooks = ['fvgsd/session-state.sh', 'fvgsd/validate-commit.sh', 'fvgsd/phase-boundary.sh', 'fvgsd/graphify-update.sh'];
         for (const sh of expectedShHooks) {
           if (!fs.existsSync(path.join(hooksDest, sh))) {
             console.warn(`  ${yellow}⚠${reset}  Missing expected hook: ${sh}`);
@@ -8907,21 +8907,21 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
   }
 
-  // Gate hooks/lib/ install on the same runtimes that receive hooks (see line ~8702).
+  // Gate hooks/fvgsd/lib/ install on the same runtimes that receive hooks (see line ~8702).
   // Codex/Copilot/Cursor/Windsurf/Trae/Cline skip hooks entirely, so they must not
-  // receive the hooks/lib/ helpers either — otherwise the Codex comment downstream
-  // ("we deliberately do *not* copy hooks/lib/ for Codex") is contradicted in practice.
+  // receive the hooks/fvgsd/lib/ helpers either — otherwise the Codex comment downstream
+  // ("we deliberately do *not* copy hooks/fvgsd/lib/ for Codex") is contradicted in practice.
   const hooksLibSrc = path.join(src, 'hooks', 'lib');
   if (!isCodex && !isCopilot && !isCursor && !isWindsurf && !isTrae && !isCline && fs.existsSync(hooksLibSrc)) {
     const hooksLibDest = path.join(targetDir, 'hooks', 'lib');
     fs.mkdirSync(hooksLibDest, { recursive: true });
-    copyLibDir(hooksLibSrc, hooksLibDest, GSD_HOOK_LIB_FILES);
-    console.log(`  ${green}✓${reset} Installed hooks/lib/ helpers (git-cmd, graphify-rebuild, ...)`);
+    copyLibDir(hooksLibSrc, hooksLibDest, FVGSD_HOOK_LIB_FILES);
+    console.log(`  ${green}✓${reset} Installed hooks/fvgsd/lib/ helpers (git-cmd, graphify-rebuild, ...)`);
   }
 
   // Clear stale update cache so next session re-evaluates hook versions
-  // Cache lives at ~/.cache/gsd/ (see hooks/gsd-check-update.js line 35-36)
-  const updateCacheFile = path.join(os.homedir(), '.cache', 'gsd', 'gsd-update-check.json');
+  // Cache lives at ~/.cache/gsd/ (see hooks/fvgsd/check-update.js line 35-36)
+  const updateCacheFile = path.join(os.homedir(), '.cache', 'gsd', 'fvgsd-update-check.json');
   try { fs.unlinkSync(updateCacheFile); } catch (e) { /* cache may not exist yet */ }
 
   if (failures.length > 0) {
@@ -9090,7 +9090,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       if (fs.existsSync(_rollbackSkillsDir)) {
         try {
           for (const entry of fs.readdirSync(_rollbackSkillsDir, { withFileTypes: true })) {
-            if (!entry.isDirectory() || !/^(?:vgsd|gsd)-/.test(entry.name)) continue;
+            if (!entry.isDirectory() || !/^(?:fvgsd|gsd)-/.test(entry.name)) continue;
             if (!codexPreInstallSkillNames.has(entry.name)) {
               // New dir written this session: remove entirely.
               try { fs.rmSync(path.join(_rollbackSkillsDir, entry.name), { recursive: true, force: true }); }
@@ -9121,7 +9121,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       if (fs.existsSync(_rollbackAgentsDir)) {
         try {
           for (const file of fs.readdirSync(_rollbackAgentsDir)) {
-            if (!file.startsWith('gsd-') || (!file.endsWith('.md') && !file.endsWith('.toml'))) continue;
+            if (!file.startsWith('fvgsd-') || (!file.endsWith('.md') && !file.endsWith('.toml'))) continue;
             if (!codexPreInstallAgentFiles.has(file)) {
               // New file written this session: remove.
               try { fs.unlinkSync(path.join(_rollbackAgentsDir, file)); } catch (_) { /* best-effort */ }
@@ -9180,10 +9180,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
 
     // Copy only the hook files that Codex actually registers via its hook configuration (#2153).
-    // Codex primarily needs gsd-check-update.js for the SessionStart update-check hook.
-    // We deliberately do *not* copy gsd-graphify-update.sh or hooks/lib/ for Codex
+    // Codex primarily needs fvgsd/check-update.js for the SessionStart update-check hook.
+    // We deliberately do *not* copy fvgsd/graphify-update.sh or hooks/fvgsd/lib/ for Codex
     // in this change (graphify auto-update support for Codex is out of scope for #3579).
-    const CODEX_HOOKS_TO_COPY = ['gsd-check-update.js'];
+    const CODEX_HOOKS_TO_COPY = ['fvgsd/check-update.js'];
     const codexHooksSrc = path.join(src, 'hooks', 'dist');
     if (fs.existsSync(codexHooksSrc)) {
       const codexHooksDest = path.join(targetDir, 'hooks');
@@ -9199,18 +9199,18 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           content = content.replace(/'\.claude'/g, configDirReplacement);
           content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
           content = content.replace(/\.claude\//g, `${getDirName(runtime)}/`);
-          content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+          content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
         } else if (entry.endsWith('.sh')) {
-          // #2136: any .sh hook reaching this loop must have {{GSD_VERSION}}
+          // #2136: any .sh hook reaching this loop must have {{FVGSD_VERSION}}
           // stamped so installed scripts carry a concrete version header and
           // stale-hook detection keeps working across upgrades. The current
           // CODEX_HOOKS_TO_COPY allowlist excludes .sh files, so this branch
           // is defensive — it preserves the invariant if the allowlist is
-          // extended later (e.g. to ship gsd-graphify-update.sh for Codex).
+          // extended later (e.g. to ship fvgsd/graphify-update.sh for Codex).
           let content = fs.readFileSync(srcFile, 'utf8');
-          content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+          content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
         }
@@ -9297,9 +9297,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         throw wrapped;
       }
       if (hasEnabledCodexHooksFeature(configContent)) {
-        const checkUpdateFile = path.join(targetDir, 'hooks', 'gsd-check-update.js');
+        const checkUpdateFile = path.join(targetDir, 'hooks', 'fvgsd/check-update.js');
         if (!fs.existsSync(checkUpdateFile)) {
-          console.warn(`  ${yellow}⚠${reset}  Skipped Codex SessionStart hook registration — gsd-check-update.js not found at target`);
+          console.warn(`  ${yellow}⚠${reset}  Skipped Codex SessionStart hook registration — fvgsd/check-update.js not found at target`);
         } else if (!codexNodeRunner) {
           console.warn(`  ${yellow}⚠${reset}  Skipping Codex SessionStart hook registration — Node executable path unavailable (process.execPath is empty). See #2979 / #3002 / #3017.`);
         } else {
@@ -9383,9 +9383,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       '# GSD — Get Shit Done',
       '',
       '- GSD workflows live in `get-shit-done/workflows/`. Load the relevant workflow when',
-      '  the user runs a `/vgsd-*` command.',
+      '  the user runs a `/fvgsd-*` command.',
       '- GSD agents live in `agents/`. Use the matching agent when spawning subagents.',
-      '- GSD tools are at `get-shit-done/bin/gsd-tools.cjs`. Run with `node`.',
+      '- GSD tools are at `get-shit-done/bin/fvgsd-tools.cjs`. Run with `node`.',
       '- Planning artifacts live in `.planning/`. Never edit them outside a GSD workflow.',
       '- Do not apply GSD workflows unless the user explicitly asks for them.',
       '- When a GSD command triggers a deliverable (feature, fix, docs), offer the next',
@@ -9448,23 +9448,23 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       platform: process.platform,
     });
   const statuslineCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-statusline.js', hookOpts)
-    : localCmd('gsd-statusline.js');
+    ? buildHookCommand(targetDir, 'fvgsd/statusline.js', hookOpts)
+    : localCmd('fvgsd/statusline.js');
   const updateCheckCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-check-update.js', hookOpts)
-    : localCmd('gsd-check-update.js');
+    ? buildHookCommand(targetDir, 'fvgsd/check-update.js', hookOpts)
+    : localCmd('fvgsd/check-update.js');
   const contextMonitorCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-context-monitor.js', hookOpts)
-    : localCmd('gsd-context-monitor.js');
+    ? buildHookCommand(targetDir, 'fvgsd/context-monitor.js', hookOpts)
+    : localCmd('fvgsd/context-monitor.js');
   const promptGuardCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-prompt-guard.js', hookOpts)
-    : localCmd('gsd-prompt-guard.js');
+    ? buildHookCommand(targetDir, 'fvgsd/prompt-guard.js', hookOpts)
+    : localCmd('fvgsd/prompt-guard.js');
   const readGuardCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-read-guard.js', hookOpts)
-    : localCmd('gsd-read-guard.js');
+    ? buildHookCommand(targetDir, 'fvgsd/read-guard.js', hookOpts)
+    : localCmd('fvgsd/read-guard.js');
   const readInjectionScannerCommand = isGlobal
-    ? buildHookCommand(targetDir, 'gsd-read-injection-scanner.js', hookOpts)
-    : localCmd('gsd-read-injection-scanner.js');
+    ? buildHookCommand(targetDir, 'fvgsd/read-injection-scanner.js', hookOpts)
+    : localCmd('fvgsd/read-injection-scanner.js');
 
   // #3002 CR: when resolveNodeRunner() returns null, every dependent JS-hook
   // command is null too. Emit one warning here so the operator sees the cause
@@ -9502,14 +9502,14 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
 
     const hasGsdUpdateHook = settings.hooks.SessionStart.some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-check-update'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/check-update'))
     );
 
     // Guard: only register if the hook file was actually installed (#1754).
     // When hooks/dist/ is missing from the npm package (as in v1.32.0), the
     // copy step produces no files but the registration step ran unconditionally,
     // causing "hook error" on every tool invocation.
-    const checkUpdateFile = path.join(targetDir, 'hooks', 'gsd-check-update.js');
+    const checkUpdateFile = path.join(targetDir, 'hooks', 'fvgsd/check-update.js');
     if (!hasGsdUpdateHook && fs.existsSync(checkUpdateFile) && updateCheckCommand) {
       settings.hooks.SessionStart.push({
         hooks: [
@@ -9521,7 +9521,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured update check hook`);
     } else if (!hasGsdUpdateHook && !fs.existsSync(checkUpdateFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped update check hook — gsd-check-update.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped update check hook — fvgsd/check-update.js not found at target`);
     }
 
     // Configure post-tool hook for context window monitoring
@@ -9530,10 +9530,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
 
     const hasContextMonitorHook = settings.hooks[postToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-context-monitor'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/context-monitor'))
     );
 
-    const contextMonitorFile = path.join(targetDir, 'hooks', 'gsd-context-monitor.js');
+    const contextMonitorFile = path.join(targetDir, 'hooks', 'fvgsd/context-monitor.js');
     if (!hasContextMonitorHook && fs.existsSync(contextMonitorFile) && contextMonitorCommand) {
       settings.hooks[postToolEvent].push({
         matcher: 'Bash|Edit|Write|MultiEdit|Agent|Task',
@@ -9547,18 +9547,18 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured context window monitor hook`);
     } else if (!hasContextMonitorHook && !fs.existsSync(contextMonitorFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped context monitor hook — gsd-context-monitor.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped context monitor hook — fvgsd/context-monitor.js not found at target`);
     } else {
       // Migrate existing context monitor hooks: add matcher and timeout if missing
       for (const entry of settings.hooks[postToolEvent]) {
-        if (entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-context-monitor'))) {
+        if (entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/context-monitor'))) {
           let migrated = false;
           if (!entry.matcher) {
             entry.matcher = 'Bash|Edit|Write|MultiEdit|Agent|Task';
             migrated = true;
           }
           for (const h of entry.hooks) {
-            if (h.command && h.command.includes('gsd-context-monitor') && !h.timeout) {
+            if (h.command && h.command.includes('fvgsd/context-monitor') && !h.timeout) {
               h.timeout = 10;
               migrated = true;
             }
@@ -9578,10 +9578,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     }
 
     const hasPromptGuardHook = settings.hooks[preToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-prompt-guard'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/prompt-guard'))
     );
 
-    const promptGuardFile = path.join(targetDir, 'hooks', 'gsd-prompt-guard.js');
+    const promptGuardFile = path.join(targetDir, 'hooks', 'fvgsd/prompt-guard.js');
     if (!hasPromptGuardHook && fs.existsSync(promptGuardFile) && promptGuardCommand) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
@@ -9595,17 +9595,17 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured prompt injection guard hook`);
     } else if (!hasPromptGuardHook && !fs.existsSync(promptGuardFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped prompt guard hook — gsd-prompt-guard.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped prompt guard hook — fvgsd/prompt-guard.js not found at target`);
     }
 
     // Configure PreToolUse hook for read-before-edit guidance (#1628)
     // Prevents infinite retry loops when non-Claude models attempt to edit
     // files without reading them first. Advisory-only — does not block.
     const hasReadGuardHook = settings.hooks[preToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-read-guard'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/read-guard'))
     );
 
-    const readGuardFile = path.join(targetDir, 'hooks', 'gsd-read-guard.js');
+    const readGuardFile = path.join(targetDir, 'hooks', 'fvgsd/read-guard.js');
     if (!hasReadGuardHook && fs.existsSync(readGuardFile) && readGuardCommand) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
@@ -9619,17 +9619,17 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured read-before-edit guard hook`);
     } else if (!hasReadGuardHook && !fs.existsSync(readGuardFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped read guard hook — gsd-read-guard.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped read guard hook — fvgsd/read-guard.js not found at target`);
     }
 
     // Configure PostToolUse hook for read-time prompt injection scanning (#2201)
     // Scans content returned by the Read tool for injection patterns, including
     // summarisation-specific patterns that survive context compression.
     const hasReadInjectionScannerHook = settings.hooks[postToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-read-injection-scanner'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/read-injection-scanner'))
     );
 
-    const readInjectionScannerFile = path.join(targetDir, 'hooks', 'gsd-read-injection-scanner.js');
+    const readInjectionScannerFile = path.join(targetDir, 'hooks', 'fvgsd/read-injection-scanner.js');
     if (!hasReadInjectionScannerHook && fs.existsSync(readInjectionScannerFile) && readInjectionScannerCommand) {
       settings.hooks[postToolEvent].push({
         matcher: 'Read',
@@ -9643,7 +9643,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured read injection scanner hook`);
     } else if (!hasReadInjectionScannerHook && !fs.existsSync(readInjectionScannerFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped read injection scanner hook — gsd-read-injection-scanner.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped read injection scanner hook — fvgsd/read-injection-scanner.js not found at target`);
     }
 
     // Community hooks — registered on install but opt-in at runtime.
@@ -9655,13 +9655,13 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // Detects file edits outside GSD workflow context and advises using
     // /gsd-quick or /gsd-fast for state-tracked changes. Advisory only.
     const workflowGuardCommand = isGlobal
-      ? buildHookCommand(targetDir, 'gsd-workflow-guard.js', hookOpts)
-      : localCmd('gsd-workflow-guard.js');
+      ? buildHookCommand(targetDir, 'fvgsd/workflow-guard.js', hookOpts)
+      : localCmd('fvgsd/workflow-guard.js');
     const hasWorkflowGuardHook = settings.hooks[preToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-workflow-guard'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/workflow-guard'))
     );
 
-    const workflowGuardFile = path.join(targetDir, 'hooks', 'gsd-workflow-guard.js');
+    const workflowGuardFile = path.join(targetDir, 'hooks', 'fvgsd/workflow-guard.js');
     if (!hasWorkflowGuardHook && fs.existsSync(workflowGuardFile) && workflowGuardCommand) {
       settings.hooks[preToolEvent].push({
         matcher: 'Write|Edit',
@@ -9675,20 +9675,20 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured workflow guard hook (opt-in via hooks.workflow_guard)`);
     } else if (!hasWorkflowGuardHook && !fs.existsSync(workflowGuardFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped workflow guard hook — gsd-workflow-guard.js not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped workflow guard hook — fvgsd/workflow-guard.js not found at target`);
     }
 
     // Configure commit validation hook (Conventional Commits enforcement, opt-in)
     const validateCommitCommand = isGlobal
-      ? buildHookCommand(targetDir, 'gsd-validate-commit.sh', hookOpts)
-      : localShellCmd('gsd-validate-commit.sh');
+      ? buildHookCommand(targetDir, 'fvgsd/validate-commit.sh', hookOpts)
+      : localShellCmd('fvgsd/validate-commit.sh');
     const hasValidateCommitHook = settings.hooks[preToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-validate-commit'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/validate-commit'))
     );
     // Guard: only register if the .sh file was actually installed. If the npm package
     // omitted the file (as happened in v1.32.0, bug #1817), registering a missing hook
     // causes a hook error on every Bash tool invocation.
-    const validateCommitFile = path.join(targetDir, 'hooks', 'gsd-validate-commit.sh');
+    const validateCommitFile = path.join(targetDir, 'hooks', 'fvgsd/validate-commit.sh');
     if (!hasValidateCommitHook && fs.existsSync(validateCommitFile) && validateCommitCommand) {
       settings.hooks[preToolEvent].push({
         matcher: 'Bash',
@@ -9702,7 +9702,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured commit validation hook (opt-in via config)`);
     } else if (!hasValidateCommitHook && !fs.existsSync(validateCommitFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped commit validation hook — gsd-validate-commit.sh not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped commit validation hook — fvgsd/validate-commit.sh not found at target`);
     } else if (!hasValidateCommitHook && !validateCommitCommand) {
       console.warn(`  ${yellow}⚠${reset}  Skipped commit validation hook — Bash executable path unavailable (#3393)`);
     }
@@ -9712,12 +9712,12 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // on the default branch, dispatches `graphify update .` in a detached subprocess. No-op unless
     // .planning/config.json has BOTH graphify.enabled=true AND graphify.auto_update=true.
     const graphifyUpdateCommand = isGlobal
-      ? buildHookCommand(targetDir, 'gsd-graphify-update.sh', hookOpts)
-      : localShellCmd('gsd-graphify-update.sh');
+      ? buildHookCommand(targetDir, 'fvgsd/graphify-update.sh', hookOpts)
+      : localShellCmd('fvgsd/graphify-update.sh');
     const hasGraphifyUpdateHook = settings.hooks[postToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-graphify-update'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/graphify-update'))
     );
-    const graphifyUpdateFile = path.join(targetDir, 'hooks', 'gsd-graphify-update.sh');
+    const graphifyUpdateFile = path.join(targetDir, 'hooks', 'fvgsd/graphify-update.sh');
     if (!hasGraphifyUpdateHook && fs.existsSync(graphifyUpdateFile) && graphifyUpdateCommand) {
       settings.hooks[postToolEvent].push({
         matcher: 'Bash',
@@ -9731,19 +9731,19 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured graphify auto-update hook (opt-in via graphify.auto_update)`);
     } else if (!hasGraphifyUpdateHook && !fs.existsSync(graphifyUpdateFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped graphify auto-update hook — gsd-graphify-update.sh not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped graphify auto-update hook — fvgsd/graphify-update.sh not found at target`);
     } else if (!hasGraphifyUpdateHook && !graphifyUpdateCommand) {
       console.warn(`  ${yellow}⚠${reset}  Skipped graphify auto-update hook — Bash executable path unavailable (#3393)`);
     }
 
     // Configure session state orientation hook (opt-in)
     const sessionStateCommand = isGlobal
-      ? buildHookCommand(targetDir, 'gsd-session-state.sh', hookOpts)
-      : localShellCmd('gsd-session-state.sh');
+      ? buildHookCommand(targetDir, 'fvgsd/session-state.sh', hookOpts)
+      : localShellCmd('fvgsd/session-state.sh');
     const hasSessionStateHook = settings.hooks.SessionStart.some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-session-state'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/session-state'))
     );
-    const sessionStateFile = path.join(targetDir, 'hooks', 'gsd-session-state.sh');
+    const sessionStateFile = path.join(targetDir, 'hooks', 'fvgsd/session-state.sh');
     if (!hasSessionStateHook && fs.existsSync(sessionStateFile) && sessionStateCommand) {
       settings.hooks.SessionStart.push({
         hooks: [
@@ -9755,19 +9755,19 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured session state orientation hook (opt-in via config)`);
     } else if (!hasSessionStateHook && !fs.existsSync(sessionStateFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped session state hook — gsd-session-state.sh not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped session state hook — fvgsd/session-state.sh not found at target`);
     } else if (!hasSessionStateHook && !sessionStateCommand) {
       console.warn(`  ${yellow}⚠${reset}  Skipped session state hook — Bash executable path unavailable (#3393)`);
     }
 
     // Configure phase boundary detection hook (opt-in)
     const phaseBoundaryCommand = isGlobal
-      ? buildHookCommand(targetDir, 'gsd-phase-boundary.sh', hookOpts)
-      : localShellCmd('gsd-phase-boundary.sh');
+      ? buildHookCommand(targetDir, 'fvgsd/phase-boundary.sh', hookOpts)
+      : localShellCmd('fvgsd/phase-boundary.sh');
     const hasPhaseBoundaryHook = settings.hooks[postToolEvent].some(entry =>
-      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('gsd-phase-boundary'))
+      entry.hooks && entry.hooks.some(h => h.command && h.command.includes('fvgsd/phase-boundary'))
     );
-    const phaseBoundaryFile = path.join(targetDir, 'hooks', 'gsd-phase-boundary.sh');
+    const phaseBoundaryFile = path.join(targetDir, 'hooks', 'fvgsd/phase-boundary.sh');
     if (!hasPhaseBoundaryHook && fs.existsSync(phaseBoundaryFile) && phaseBoundaryCommand) {
       settings.hooks[postToolEvent].push({
         matcher: 'Write|Edit',
@@ -9781,7 +9781,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       });
       console.log(`  ${green}✓${reset} Configured phase boundary detection hook (opt-in via config)`);
     } else if (!hasPhaseBoundaryHook && !fs.existsSync(phaseBoundaryFile)) {
-      console.warn(`  ${yellow}⚠${reset}  Skipped phase boundary hook — gsd-phase-boundary.sh not found at target`);
+      console.warn(`  ${yellow}⚠${reset}  Skipped phase boundary hook — fvgsd/phase-boundary.sh not found at target`);
     } else if (!hasPhaseBoundaryHook && !phaseBoundaryCommand) {
       console.warn(`  ${yellow}⚠${reset}  Skipped phase boundary hook — Bash executable path unavailable (#3393)`);
     }
@@ -9794,8 +9794,8 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   const updateBannerCommand = isOpencode || isKilo
     ? null
     : (isGlobal
-      ? buildHookCommand(targetDir, 'gsd-update-banner.js', hookOpts)
-      : localCmd('gsd-update-banner.js'));
+      ? buildHookCommand(targetDir, 'fvgsd/update-banner.js', hookOpts)
+      : localCmd('fvgsd/update-banner.js'));
 
   persistActiveProfileMarker();
   return {
@@ -9855,14 +9855,14 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
       if (!settings.hooks) settings.hooks = {};
       if (!settings.hooks.SessionStart) settings.hooks.SessionStart = [];
       const alreadyRegistered = settings.hooks.SessionStart.some(entry =>
-        entry && entry.hooks && entry.hooks.some(h => h && h.command && h.command.includes('gsd-update-banner'))
+        entry && entry.hooks && entry.hooks.some(h => h && h.command && h.command.includes('fvgsd/update-banner'))
       );
-      const bannerHookFile = configDir ? path.join(configDir, 'hooks', 'gsd-update-banner.js') : null;
+      const bannerHookFile = configDir ? path.join(configDir, 'hooks', 'fvgsd/update-banner.js') : null;
       const bannerInstalled = bannerHookFile ? fs.existsSync(bannerHookFile) : false;
       if (alreadyRegistered) {
         // Idempotent re-install: don't double-register.
       } else if (!bannerInstalled) {
-        console.warn(`  ${yellow}⚠${reset}  Skipped update banner — gsd-update-banner.js not found at target`);
+        console.warn(`  ${yellow}⚠${reset}  Skipped update banner — fvgsd/update-banner.js not found at target`);
       } else {
         const entry = buildUpdateBannerHookEntry(bannerCommand);
         if (entry) {
@@ -9930,10 +9930,10 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   if (runtime === 'qwen') program = 'Qwen Code';
   if (runtime === 'hermes') program = 'Hermes Agent';
 
-  let command = '/vgsd-new-project';
-  if (runtime === 'gemini') command = '/vgsd:new-project';
-  if (runtime === 'codex') command = '$vgsd-new-project';
-  if (runtime === 'cursor') command = 'vgsd-new-project (mention the skill name)';
+  let command = '/fvgsd-new-project';
+  if (runtime === 'gemini') command = '/fvgsd:new-project';
+  if (runtime === 'codex') command = '$fvgsd-new-project';
+  if (runtime === 'cursor') command = 'fvgsd-new-project (mention the skill name)';
 
   // Claude Code global installs use the skills/ format (CC 2.1.88+).
   // Restart is required for CC to pick up newly-installed skills, and the
@@ -9941,7 +9941,7 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   // cover both invocation paths to avoid #2957-style "no commands appear".
   if (runtime === 'claude' && isGlobal) {
     console.log(`
-  ${green}Done!${reset} Restart ${program}, then in any directory either type ${cyan}${command}${reset} or ask Claude to run the ${cyan}vgsd-new-project${reset} skill.
+  ${green}Done!${reset} Restart ${program}, then in any directory either type ${cyan}${command}${reset} or ask Claude to run the ${cyan}fvgsd-new-project${reset} skill.
 
   ${cyan}Join the community:${reset} https://discord.gg/mYgfVNfA2r
 `);
@@ -10370,7 +10370,7 @@ function maybeSuggestPathExport(globalBin, homeDir) {
   if (onPath) return;
 
   if (homePathCoveredByRc(globalBin, homeDir)) {
-    console.log(`  ${yellow}⚠${reset} ${bold}gsd-sdk${reset}'s directory is already on your PATH via an rc file entry — try reopening your shell (or ${cyan}source ~/.zshrc${reset}).`);
+    console.log(`  ${yellow}⚠${reset} ${bold}fvgsd-sdk${reset}'s directory is already on your PATH via an rc file entry — try reopening your shell (or ${cyan}source ~/.zshrc${reset}).`);
     return;
   }
 
@@ -10389,11 +10389,11 @@ function maybeSuggestPathExport(globalBin, homeDir) {
 }
 
 /**
- * Verify the prebuilt SDK dist is present and the gsd-sdk shim is wired up.
+ * Verify the prebuilt SDK dist is present and the fvgsd-sdk shim is wired up.
  *
  * As of fix/2441-sdk-decouple, sdk/dist/ is shipped prebuilt inside the
- * get-shit-done-cc npm tarball. The parent package declares a bin entry
- * "gsd-sdk": "bin/gsd-sdk.js" so npm chmods the shim correctly when
+ * fvgsd npm tarball. The parent package declares a bin entry
+ * "fvgsd-sdk": "bin/fvgsd-sdk.js" so npm chmods the shim correctly when
  * installing from a packed tarball — eliminating the mode-644 failure
  * (issue #2453) and the build-from-source failure modes (#2439, #2441).
  *
@@ -10411,15 +10411,15 @@ function maybeSuggestPathExport(globalBin, homeDir) {
  * `sdk/dist/` is missing:
  *
  *   - `tarball` + `npxCache: true`
- *       User ran `npx get-shit-done-cc@latest`. sdk/ lives under
- *       `<npm-cache>/_npx/<hash>/node_modules/get-shit-done-cc/sdk` which
+ *       User ran `npx fvgsd@latest`. sdk/ lives under
+ *       `<npm-cache>/_npx/<hash>/node_modules/fvgsd/sdk` which
  *       is treated as read-only by npm/npx on Windows (#2649). We MUST
  *       NOT attempt a nested `npm install` there — it will fail with
  *       EACCES/EPERM and produce the misleading "Failed to npm install
  *       in sdk/" error the user reported. Point at the global upgrade.
  *
  *   - `tarball` + `npxCache: false`
- *       User ran a global install (`npm i -g get-shit-done-cc`). sdk/dist
+ *       User ran a global install (`npm i -g fvgsd`). sdk/dist
  *       ships in the published tarball; if it's missing, the published
  *       artifact itself is broken (see #2647). Same user-facing fix:
  *       upgrade to latest.
@@ -10482,7 +10482,7 @@ function classifySdkInstall(sdkDir) {
  *     context: 'npx-cache' | 'tarball' | 'dev-clone',
  *     missing_path: '<path>/sdk/dist/cli.js',
  *     missing_artifact: 'sdk/dist',
- *     fix_command: 'npm install -g get-shit-done-cc@latest' | 'npm run build:sdk',
+ *     fix_command: 'npm install -g fvgsd@latest' | 'npm run build:sdk',
  *     attempted_nested_install: false,         // contract: never true
  *   }
  */
@@ -10491,7 +10491,7 @@ function buildSdkFailFastReport(sdkDir, sdkCliPath) {
   let context, fix_command;
   if (ctx.mode === 'tarball') {
     context = ctx.npxCache ? 'npx-cache' : 'tarball';
-    fix_command = 'npm install -g get-shit-done-cc@latest';
+    fix_command = 'npm install -g fvgsd@latest';
   } else {
     context = 'dev-clone';
     fix_command = 'npm run build:sdk';
@@ -10517,7 +10517,7 @@ function renderSdkFailFastReport(ir) {
   const redBold = `${red}${bold}`;
   console.error('');
   console.error(`${redBold}${bar}${reset}`);
-  console.error(`${redBold}  ✗ GSD SDK dist not found — /vgsd-* commands will not work${reset}`);
+  console.error(`${redBold}  ✗ GSD SDK dist not found — /fvgsd-* commands will not work${reset}`);
   console.error(`${redBold}${bar}${reset}`);
   console.error(`  ${red}Reason:${reset} ${ir.missing_artifact}/cli.js not found at ${ir.missing_path}`);
   console.error('');
@@ -10528,7 +10528,7 @@ function renderSdkFailFastReport(ir) {
     console.error(`  Fix: install a version that ships sdk/dist/ globally:`);
     console.error(`    ${cyan}${ir.fix_command}${reset}`);
     console.error(`  Or, if you prefer a one-shot run, clear the npx cache first:`);
-    console.error(`    ${cyan}npx --yes get-shit-done-cc@latest${reset}`);
+    console.error(`    ${cyan}npx --yes fvgsd@latest${reset}`);
     console.error(`  Or build from source (git clone):`);
     console.error(`    ${cyan}git clone https://github.com/gsd-build/get-shit-done && cd get-shit-done/sdk && npm install && npm run build${reset}`);
   } else if (ir.context === 'tarball') {
@@ -10562,10 +10562,10 @@ function installSdkIfNeeded(opts) {
 
   // #2678 / #2829: local installs do not write to global node_modules, so we
   // cannot fall through to the global-install error path. But the parent
-  // package (which carries bin/gsd-sdk.js and sdk/dist/cli.js) IS available
+  // package (which carries bin/fvgsd-sdk.js and sdk/dist/cli.js) IS available
   // wherever the installer is running from — npx cache, npm-global, or git
   // clone. The shim resolves sdk/dist/cli.js relative to its own __dirname,
-  // so a self-link into a user-writable PATH dir makes `gsd-sdk` callable
+  // so a self-link into a user-writable PATH dir makes `fvgsd-sdk` callable
   // from local-mode installs too. Only when the dist is genuinely missing
   // do we bail out with a non-fatal warning.
   //
@@ -10583,7 +10583,7 @@ function installSdkIfNeeded(opts) {
     renderSdkFailFastReport(ir);
     if (opts.throwOnFailure) {
       const error = new Error(`GSD SDK prebuilt artifact missing: ${sdkCliPath}`);
-      error.code = 'GSD_SDK_MISSING_DIST';
+      error.code = 'FVGSD_SDK_MISSING_DIST';
       error.exitCode = 1;
       throw error;
     }
@@ -10600,22 +10600,22 @@ function installSdkIfNeeded(opts) {
     }
   } catch {
     // Non-fatal: if chmod fails (e.g. read-only fs) the shim still works via
-    // `node sdkCliPath` invocation in bin/gsd-sdk.js.
+    // `node sdkCliPath` invocation in bin/fvgsd-sdk.js.
   }
 
-  // #2775: do not assert "GSD SDK ready" until `gsd-sdk` actually resolves on
-  // PATH. `npx get-shit-done-cc` only links the package's primary bin; the
-  // secondary `gsd-sdk` shim is left dangling under the npx cache and is NOT
+  // #2775: do not assert "GSD SDK ready" until `fvgsd-sdk` actually resolves on
+  // PATH. `npx fvgsd` only links the package's primary bin; the
+  // secondary `fvgsd-sdk` shim is left dangling under the npx cache and is NOT
   // callable as a bare command. The previous file-presence-only check was a
   // strictly weaker invariant than the one workflows depend on
-  // (`command -v gsd-sdk` resolving), and led to a false ✓ in npx-cache
+  // (`command -v fvgsd-sdk` resolving), and led to a false ✓ in npx-cache
   // installs (issue #2775).
   //
   // #3231: strip transient npx-injected PATH segments before checking. The
   // installer subprocess PATH includes `~/.npm/_npx/<hash>/node_modules/.bin`
   // which is ephemeral — it is NOT reachable from the user's interactive
-  // shell. A gsd-sdk found there must NOT count as "on PATH".
-  const shimSrc = path.resolve(__dirname, 'gsd-sdk.js');
+  // shell. A fvgsd-sdk found there must NOT count as "on PATH".
+  const shimSrc = path.resolve(__dirname, 'fvgsd-sdk.js');
   const persistentPath = filterNpxFromPath(process.env.PATH || '');
   let resolvedSdkPath = findGsdSdkOnPath(persistentPath);
   let onPath = !!resolvedSdkPath;
@@ -10638,7 +10638,7 @@ function installSdkIfNeeded(opts) {
       resolvedSdkPath = findGsdSdkOnPath(persistentPath);
       onPath = !!resolvedSdkPath;
       if (onPath) {
-        console.log(`  ${dim}↪ linked gsd-sdk → ${linked}${reset}`);
+        console.log(`  ${dim}↪ linked fvgsd-sdk → ${linked}${reset}`);
       }
     }
   }
@@ -10698,8 +10698,8 @@ function installSdkIfNeeded(opts) {
       runDir: __dirname,
     });
     console.log('');
-    console.log(`  ${yellow}⚠${reset} GSD SDK files are present but ${bold}gsd-sdk${reset} is not on your PATH.`);
-    console.log(`    Workflows that call ${cyan}gsd-sdk query …${reset} will fail with "command not found".`);
+    console.log(`  ${yellow}⚠${reset} GSD SDK files are present but ${bold}fvgsd-sdk${reset} is not on your PATH.`);
+    console.log(`    Workflows that call ${cyan}fvgsd-sdk query …${reset} will fail with "command not found".`);
     if (ir.shimLocationLine) console.log(`    ${ir.shimLocationLine}`);
     for (const line of ir.actionLines) console.log(`    ${line}`);
     if (ir.npxNoteLines.length > 0) {
@@ -10725,25 +10725,25 @@ function installSdkIfNeeded(opts) {
 }
 
 /**
- * #3406 helper: detect a stale globally-installed `@gsd-build/sdk` package
- * shadowing the `gsd-sdk` shim that `get-shit-done-cc` installs.
+ * #3406 helper: detect a stale globally-installed `@fvgsd/sdk` package
+ * shadowing the `fvgsd-sdk` shim that `fvgsd` installs.
  *
- * Background: `@gsd-build/sdk@0.1.0` was published once and never updated
- * (the SDK now ships embedded in `get-shit-done-cc`). When a user has the
- * 0.1.0 standalone package installed globally, its `gsd-sdk` bin shadows
- * the one `get-shit-done-cc` provides — and the 0.1.0 binary only knows
- * `run | auto | init` (no `query`), so every `gsd-sdk query <command>`
+ * Background: `@fvgsd/sdk@0.1.0` was published once and never updated
+ * (the SDK now ships embedded in `fvgsd`). When a user has the
+ * 0.1.0 standalone package installed globally, its `fvgsd-sdk` bin shadows
+ * the one `fvgsd` provides — and the 0.1.0 binary only knows
+ * `run | auto | init` (no `query`), so every `fvgsd-sdk query <command>`
  * call from skills/hooks fails until the user runs
- * `npm uninstall -g @gsd-build/sdk`.
+ * `npm uninstall -g @fvgsd/sdk`.
  *
  * Pure function: takes an injected `runNpmLs` executor that returns
- * `npm ls -g @gsd-build/sdk --json --depth=0` stdout. Returns:
+ * `npm ls -g @fvgsd/sdk --json --depth=0` stdout. Returns:
  *   `{ stale: true, version }` when the package is present.
  *   `{ stale: false }` for every other input — including:
  *     - executor throws (npm missing / EACCES / network),
  *     - executor returns null/undefined/non-string,
  *     - stdout is not parseable JSON,
- *     - the JSON has no `.dependencies['@gsd-build/sdk']` field.
+ *     - the JSON has no `.dependencies['@fvgsd/sdk']` field.
  *
  * Fail-closed conservative: we'd rather miss a detection than fire a
  * false-positive warning that confuses users who have a fine install.
@@ -10765,11 +10765,11 @@ function detectStaleStandaloneSdk(runNpmLs) {
   }
   const deps = parsed && typeof parsed === 'object' ? parsed.dependencies : null;
   if (!deps || typeof deps !== 'object') return { stale: false };
-  const entry = deps['@gsd-build/sdk'];
+  const entry = deps['@fvgsd/sdk'];
   if (!entry || typeof entry !== 'object') return { stale: false };
   const version = typeof entry.version === 'string' ? entry.version : '(unknown)';
   // #3406 CR: scope stale detection to the known-bad version (0.1.0). Any
-  // newer @gsd-build/sdk version is an intentional install (or a future
+  // newer @fvgsd/sdk version is an intentional install (or a future
   // republish) and should not be flagged as a shim shadow. Without this
   // narrowing, a maintainer's local-link or a legitimate future publish
   // would trigger a misleading "stale shadow" warning on every install.
@@ -10785,25 +10785,25 @@ function detectStaleStandaloneSdk(runNpmLs) {
 function formatStaleStandaloneSdkWarning(info) {
   const version = info && info.version ? info.version : '(unknown)';
   return [
-    '⚠  A stale globally-installed @gsd-build/sdk@' + version + ' is shadowing the',
-    '   `gsd-sdk` shim that get-shit-done-cc provides. The standalone package',
-    '   only knows `run | auto | init` — every `gsd-sdk query <cmd>` call from',
+    '⚠  A stale globally-installed @fvgsd/sdk@' + version + ' is shadowing the',
+    '   `fvgsd-sdk` shim that fvgsd provides. The standalone package',
+    '   only knows `run | auto | init` — every `fvgsd-sdk query <cmd>` call from',
     '   skills and hooks will fail until you remove it.',
     '',
     '   Remediation:',
-    '     npm uninstall -g @gsd-build/sdk',
-    '     npx -y get-shit-done-cc@latest --<runtime> --global',
+    '     npm uninstall -g @fvgsd/sdk',
+    '     npx -y fvgsd@latest --<runtime> --global',
     '',
     '   Tracking: #3406 — https://github.com/gsd-build/get-shit-done/issues/3406',
   ].join('\n');
 }
 
 /**
- * #3231 helper: detect whether a `gsd-sdk` binary is the legacy deprecated
- * shim pointing at `gsd-tools.cjs`.
+ * #3231 helper: detect whether a `fvgsd-sdk` binary is the legacy deprecated
+ * shim pointing at `fvgsd-tools.cjs`.
  *
  * Reads the first 512 bytes of the file and looks for the `@deprecated`
- * marker alongside a `gsd-tools.cjs` reference — the fingerprint that
+ * marker alongside a `fvgsd-tools.cjs` reference — the fingerprint that
  * distinguishes the old binary from the modern SDK. Treats any I/O error
  * (missing file, EACCES) as "not legacy" so callers do not need to guard.
  *
@@ -10826,9 +10826,9 @@ function isLegacyGsdSdkShim(filePath) {
     } finally {
       try { fs.closeSync(fd); } catch {}
     }
-    // The legacy binary contains "@deprecated" AND "gsd-tools.cjs" within
+    // The legacy binary contains "@deprecated" AND "fvgsd-tools.cjs" within
     // its first 512 bytes.
-    return header.includes('@deprecated') && header.includes('gsd-tools.cjs');
+    return header.includes('@deprecated') && header.includes('fvgsd-tools.cjs');
   } catch {
     return false;
   }
@@ -10840,7 +10840,7 @@ function isLegacyGsdSdkShim(filePath) {
  * npm/npx injects `~/.npm/_npx/<hash>/node_modules/.bin` (and equivalents)
  * into the installer subprocess PATH. Those directories are ephemeral — they
  * exist only for the duration of the `npx` run — and MUST NOT be treated as
- * evidence that `gsd-sdk` is durably reachable.
+ * evidence that `fvgsd-sdk` is durably reachable.
  *
  * Strips any segment whose absolute form contains `/_npx/` or `\\_npx\\`
  * as a proper path-component boundary.  A user-named directory that merely
@@ -10867,10 +10867,10 @@ function filterNpxFromPath(pathString) {
 }
 
 /**
- * #2775 helper: find a callable `gsd-sdk` on a PATH.
+ * #2775 helper: find a callable `fvgsd-sdk` on a PATH.
  *
  * Pure PATH walk (no spawn) — we look for a regular file or symlink named
- * `gsd-sdk` (or `gsd-sdk.cmd`/`.exe` on Windows) in any directory on PATH and
+ * `fvgsd-sdk` (or `fvgsd-sdk.cmd`/`.exe` on Windows) in any directory on PATH and
  * verify it carries the execute bit on POSIX. Avoids paying spawn cost and
  * avoids the chicken-and-egg of needing to run the not-yet-installed binary.
  *
@@ -10882,7 +10882,7 @@ function filterNpxFromPath(pathString) {
  * install context. Zero-arg form preserves existing behavior.
  *
  * #3231: a candidate that passes the file/exec check is further tested via
- * isLegacyGsdSdkShim — a symlink pointing at the deprecated gsd-tools.cjs
+ * isLegacyGsdSdkShim — a symlink pointing at the deprecated fvgsd-tools.cjs
  * binary must NOT be treated as "on PATH" even if it is executable.
  */
 function findGsdSdkOnPath(pathString) {
@@ -10896,7 +10896,7 @@ function findGsdSdkOnPath(pathString) {
   for (const seg of pathEnv.split(path.delimiter)) {
     if (!seg) continue;
     for (const ext of exts) {
-      const candidate = path.join(seg, `gsd-sdk${ext}`);
+      const candidate = path.join(seg, `fvgsd-sdk${ext}`);
       try {
         const st = fs.statSync(candidate);
         if (st.isFile()) {
@@ -10955,17 +10955,17 @@ function buildGsdSdkVersionMismatchReport(sdkPath, expectedVersion) {
     sdk_path: sdkPath,
     actual_version: actualVersion,
     expected_version: expectedVersion,
-    fix_command: 'npm install -g get-shit-done-cc@latest',
+    fix_command: 'npm install -g fvgsd@latest',
   };
 }
 
 function renderGsdSdkVersionMismatchReport(ir) {
   console.log('');
-  console.log(`  ${yellow}⚠${reset} ${bold}gsd-sdk version mismatch${reset} — PATH resolves a stale SDK.`);
-  console.log(`    Resolved gsd-sdk: ${ir.sdk_path}`);
+  console.log(`  ${yellow}⚠${reset} ${bold}fvgsd-sdk version mismatch${reset} — PATH resolves a stale SDK.`);
+  console.log(`    Resolved fvgsd-sdk: ${ir.sdk_path}`);
   console.log(`    Resolved version: ${ir.actual_version}`);
   console.log(`    Installer version: ${ir.expected_version}`);
-  console.log(`    Workflows that call ${cyan}gsd-sdk query …${reset} will use the stale executable first.`);
+  console.log(`    Workflows that call ${cyan}fvgsd-sdk query …${reset} will use the stale executable first.`);
   console.log(`    Fix: ${cyan}${ir.fix_command}${reset}`);
   console.log(`    Or remove the stale global install / adjust PATH so the current shim is first.`);
   console.log('');
@@ -10978,9 +10978,9 @@ function renderGsdSdkVersionMismatchReport(ir) {
  * The install subprocess inherits process.env.PATH from npm/npx, which
  * may include directories the user's interactive shells do not (e.g.
  * ~/.local/bin auto-injected by npm-prefix tooling, or nvm-shimmed
- * paths). Asserting `gsd-sdk` is on the install-subprocess PATH is a
+ * paths). Asserting `fvgsd-sdk` is on the install-subprocess PATH is a
  * weaker invariant than the runtime contract — workflows shell out via
- * `bash -c "gsd-sdk …"`, and that bash inherits PATH from the user's
+ * `bash -c "fvgsd-sdk …"`, and that bash inherits PATH from the user's
  * login shell.
  *
  * Uses `$SHELL -lc 'printf %s "$PATH"'` on POSIX. Returns null on Windows
@@ -11032,7 +11032,7 @@ function getUserShellPath() {
  * registry Path, while the install-subprocess process.env.PATH is polluted
  * with transient npx entries and may not include directories added by the
  * user post-install. Reading only User-level Path would produce a false
- * warning when gsd-sdk is in a machine-level bin dir (e.g. C:\Program Files\nodejs).
+ * warning when fvgsd-sdk is in a machine-level bin dir (e.g. C:\Program Files\nodejs).
  *
  * Returns the filtered persistent Path string (npx segments stripped) or null
  * on any failure (non-Windows, PowerShell not available, spawn timeout, empty
@@ -11052,7 +11052,7 @@ function getUserShellWindowsPersistentPath() {
     // Read Machine + User Path and merge them — the effective PATH that
     // PowerShell, cmd.exe, and Git Bash inherit is Machine;User (machine
     // entries first). Reading only User-level Path would produce a false
-    // warning when gsd-sdk is installed in a machine-level bin dir
+    // warning when fvgsd-sdk is installed in a machine-level bin dir
     // (e.g. C:\Program Files\nodejs).
     const out = execFile(
       'powershell.exe',
@@ -11085,7 +11085,7 @@ function getUserShellWindowsPersistentPath() {
 }
 
 /**
- * #2775 helper: attempt to materialize the `gsd-sdk` shim at a user-writable
+ * #2775 helper: attempt to materialize the `fvgsd-sdk` shim at a user-writable
  * PATH location. Returns the absolute path created on success, or null if no
  * suitable location was usable.
  *
@@ -11124,7 +11124,7 @@ function trySelfLinkGsdSdk(shimSrc) {
   for (const dir of candidates) {
     try {
       fs.mkdirSync(dir, { recursive: true });
-      const target = path.join(dir, 'gsd-sdk');
+      const target = path.join(dir, 'fvgsd-sdk');
       // Replace any existing entry — it may be stale (prior install of an
       // older version pointing at a now-absent shim).
       try { fs.unlinkSync(target); } catch {}
@@ -11133,7 +11133,7 @@ function trySelfLinkGsdSdk(shimSrc) {
       } catch {
         // Filesystems that don't support symlinks (some FUSE mounts): write a
         // tiny wrapper that `require()`s the real shim by absolute path. We
-        // cannot copyFileSync(shimSrc, target) — bin/gsd-sdk.js resolves the
+        // cannot copyFileSync(shimSrc, target) — bin/fvgsd-sdk.js resolves the
         // CLI via `path.resolve(__dirname, '..', 'sdk', 'dist', 'cli.js')`,
         // and after a copy `__dirname` would be the link directory (e.g.
         // ~/.local/bin), causing the resolved CLI path to be broken
@@ -11158,13 +11158,13 @@ function trySelfLinkGsdSdk(shimSrc) {
  * #2962: Windows counterpart to trySelfLinkGsdSdk. Prior to this, the function
  * unconditionally returned null on Windows ("we don't try to fabricate a .cmd
  * shim there"), which left `--sdk --global` installs without a callable
- * `gsd-sdk` on PATH despite the installer reporting success.
+ * `fvgsd-sdk` on PATH despite the installer reporting success.
  *
  * Strategy: discover npm's global bin directory via `npm prefix -g` (which on
  * Windows IS the bin dir, no `bin/` suffix — see line 8721) and write the same
- * three-file shim set npm itself emits: `gsd-sdk.cmd` (cmd.exe), `gsd-sdk.ps1`
- * (PowerShell), and a Bash wrapper named `gsd-sdk` (for Cygwin/MSYS/Git-Bash).
- * Each shim invokes `node "<absolute path to bin/gsd-sdk.js>"` with passed
+ * three-file shim set npm itself emits: `fvgsd-sdk.cmd` (cmd.exe), `fvgsd-sdk.ps1`
+ * (PowerShell), and a Bash wrapper named `fvgsd-sdk` (for Cygwin/MSYS/Git-Bash).
+ * Each shim invokes `node "<absolute path to bin/fvgsd-sdk.js>"` with passed
  * args so the shim location is decoupled from the SDK location — same logical
  * structure as the POSIX wrapper-via-require() fallback above.
  *
@@ -11309,8 +11309,8 @@ function installAllRuntimes(runtimes, isGlobal, isInteractive) {
   const finalize = (shouldInstallStatusline, shouldInstallBanner) => {
     try {
       // Verify sdk/dist/cli.js is present and executable. The dist is shipped
-      // prebuilt in the tarball (fix/2441-sdk-decouple); gsd-sdk reaches users via
-      // the parent package's bin/gsd-sdk.js shim, so no sub-install is needed.
+      // prebuilt in the tarball (fix/2441-sdk-decouple); fvgsd-sdk reaches users via
+      // the parent package's bin/fvgsd-sdk.js shim, so no sub-install is needed.
       // Skip with --no-sdk. Skip with isLocal (#2678 — local installs don't own global npm).
       // #3033: pass forceSdk so --sdk overrides the local-install skip.
       installSdkIfNeeded({ isLocal: !isGlobal, forceSdk: hasSdk, throwOnFailure: true });
@@ -11389,7 +11389,7 @@ function installAllRuntimes(runtimes, isGlobal, isInteractive) {
 
 // Always export so runtime-artifact-layout.cjs's lazy loader can access
 // converter functions when called from within the CLI path (circular require).
-// The main() block below is gated on !GSD_TEST_MODE, as before.
+// The main() block below is gated on !FVGSD_TEST_MODE, as before.
 module.exports = {
     // #3677 — hyphen-namespace normalization seam for agent bodies
     shouldNormalizeHyphenNamespaceInAgentBody,
@@ -11431,7 +11431,7 @@ module.exports = {
     convertClaudeToKiloFrontmatter,
     configureOpencodePermissions,
     neutralizeAgentReferences,
-    GSD_CODEX_MARKER,
+    FVGSD_CODEX_MARKER,
     CODEX_AGENT_SANDBOX,
     getDirName,
     getGlobalDir,
@@ -11443,8 +11443,8 @@ module.exports = {
     convertClaudeToCopilotContent,
     convertClaudeCommandToCopilotSkill,
     convertClaudeAgentToCopilotAgent,
-    GSD_COPILOT_INSTRUCTIONS_MARKER,
-    GSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER,
+    FVGSD_COPILOT_INSTRUCTIONS_MARKER,
+    FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER,
     mergeCopilotInstructions,
     stripGsdFromCopilotInstructions,
     convertClaudeToAntigravityContent,
@@ -11508,9 +11508,9 @@ module.exports = {
   };
 
 // Main logic — only run when not loaded as a module for testing
-if (!process.env.GSD_TEST_MODE) {
+if (!process.env.FVGSD_TEST_MODE) {
   if (hasSkillsRoot) {
-    // Print the skills root directory for a given runtime (used by /vgsd-sync-skills).
+    // Print the skills root directory for a given runtime (used by /fvgsd-sync-skills).
     // Usage: node install.js --skills-root <runtime>
     const runtimeArg = args[args.indexOf('--skills-root') + 1];
     if (!runtimeArg || runtimeArg.startsWith('--')) {
@@ -11518,10 +11518,10 @@ if (!process.env.GSD_TEST_MODE) {
       process.exit(1);
     }
     const globalDir = getGlobalDir(runtimeArg, null);
-    // Hermes nests GSD skills under skills/vgsd/ as a single category (#2841).
+    // Hermes nests GSD skills under skills/fvgsd/ as a single category (#2841).
     // Other runtimes use a flat skills/ root.
     const skillsRoot = runtimeArg === 'hermes'
-      ? path.join(globalDir, 'skills', 'vgsd')
+      ? path.join(globalDir, 'skills', 'fvgsd')
       : path.join(globalDir, 'skills');
     console.log(skillsRoot);
   } else if (hasGlobal && hasLocal) {
@@ -11560,4 +11560,4 @@ if (!process.env.GSD_TEST_MODE) {
     }
   }
 
-} // end of !GSD_TEST_MODE main logic block
+} // end of !FVGSD_TEST_MODE main logic block

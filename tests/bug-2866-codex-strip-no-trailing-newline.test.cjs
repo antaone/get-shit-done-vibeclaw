@@ -6,7 +6,7 @@
  * via `\r?\n` at the end. When a stale block sat at end-of-file without
  * a trailing newline (very common — many editors strip them, and the
  * legacy installer never wrote one), no shape stripped, the installer
- * saw `gsd-check-update` already present, skipped writing the new
+ * saw `fvgsd/check-update` already present, skipped writing the new
  * Nested-AoT block, and Codex 0.125+ refused to load with
  *   "invalid type: map, expected a sequence in `hooks`"
  *
@@ -22,7 +22,7 @@
  */
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -31,7 +31,7 @@ const fs = require('node:fs');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf-8'));
-const installPath = path.resolve(REPO_ROOT, pkg.bin['get-shit-done-cc']);
+const installPath = path.resolve(REPO_ROOT, pkg.bin['fvgsd']);
 const { stripStaleGsdHookBlocks } = require(installPath);
 
 /**
@@ -70,16 +70,16 @@ const SHAPES = {
     'event = "SessionStart"',
     'command = "node /Users/USER/.codex/hooks/gsd-update-check.js"',
   ].join('\n'),
-  'Shape 2 (flat [[hooks]] + gsd-check-update)': [
+  'Shape 2 (flat [[hooks]] + fvgsd/check-update)': [
     '# GSD Hooks',
     '[[hooks]]',
     'event = "SessionStart"',
-    'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+    'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
   ].join('\n'),
   'Shape 3 ([[hooks.SessionStart]] without nested .hooks)': [
     '# GSD Hooks',
     '[[hooks.SessionStart]]',
-    'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+    'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
   ].join('\n'),
   'Shape 4 (nested [[hooks.SessionStart]] + [[hooks.SessionStart.hooks]])': [
     '# GSD Hooks',
@@ -87,7 +87,7 @@ const SHAPES = {
     '',
     '[[hooks.SessionStart.hooks]]',
     'type = "command"',
-    'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+    'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
   ].join('\n'),
 };
 
@@ -147,25 +147,25 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
       '',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+      'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
     ].join('\n'),
     'keys reordered (command before event in Shape 2)': [
       '# GSD Hooks',
       '[[hooks]]',
-      'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+      'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
       'event = "SessionStart"',
     ].join('\n'),
     'extra key alongside command (Shape 3 + timeout)': [
       '# GSD Hooks',
       '[[hooks.SessionStart]]',
-      'command = "node /Users/USER/.codex/hooks/gsd-check-update.js"',
+      'command = "node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
       'timeout = 5000',
     ].join('\n'),
     'tight whitespace (no spaces around `=`)': [
       '# GSD Hooks',
       '[[hooks]]',
       'event="SessionStart"',
-      'command="node /Users/USER/.codex/hooks/gsd-check-update.js"',
+      'command="node /Users/USER/.codex/hooks/fvgsd/check-update.js"',
     ].join('\n'),
   };
 
@@ -182,7 +182,7 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
 
   test('user-authored [[hooks.UserPromptSubmit]] is preserved', () => {
     // The structural strip must not touch hook tables that don't carry a
-    // GSD-managed `gsd-(check-update|update-check).js` command.
+    // GSD-managed `fvgsd-(check-update|update-check).js` command.
     const input = [
       '[history]',
       'persistence = "save-all"',

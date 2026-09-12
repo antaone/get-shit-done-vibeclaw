@@ -1,6 +1,6 @@
 # Add Backlog Item Workflow
 
-Invoked by `/vgsd:capture --backlog` (`commands/gsd/capture.md`).
+Invoked by `/fvgsd:capture --backlog` (`commands/gsd/capture.md`).
 
 Adds an idea to the ROADMAP.md backlog parking lot using 999.x numbering. Backlog items
 are unsequenced ideas that aren't ready for active planning — they live outside the normal
@@ -19,7 +19,7 @@ cat .planning/ROADMAP.md
 ## Step 2: Find next backlog number
 
 ```bash
-NEXT=$(gsd-sdk query phase.next-decimal 999 --raw)
+NEXT=$(fvgsd-sdk query phase.next-decimal 999 --raw)
 ```
 
 If no 999.x phases exist yet, `phase.next-decimal` returns `999.1`. Sparse numbering
@@ -44,7 +44,7 @@ of ROADMAP.md:
 **Plans:** 0 plans
 
 Plans:
-- [ ] TBD (promote with /vgsd:review-backlog when ready)
+- [ ] TBD (promote with /fvgsd:review-backlog when ready)
 ```
 
 ## Step 4: Create the phase directory
@@ -52,8 +52,8 @@ Plans:
 Apply the `project_code` prefix (if set in `.planning/config.json`) so the backlog directory name is consistent with all other phase-creation paths:
 
 ```bash
-SLUG=$(gsd-sdk query generate-slug "$ARGUMENTS" --raw)
-PROJECT_CODE=$(gsd-sdk query config-get project_code --raw 2>/dev/null || echo "")
+SLUG=$(fvgsd-sdk query generate-slug "$ARGUMENTS" --raw)
+PROJECT_CODE=$(fvgsd-sdk query config-get project_code --raw 2>/dev/null || echo "")
 PREFIX=$([ -n "$PROJECT_CODE" ] && echo "${PROJECT_CODE}-" || echo "")
 PHASE_DIR=".planning/phases/${PREFIX}${NEXT}-${SLUG}"
 mkdir -p "${PHASE_DIR}"
@@ -63,7 +63,7 @@ touch "${PHASE_DIR}/.gitkeep"
 ## Step 5: Commit
 
 ```bash
-gsd-sdk query commit "docs: add backlog item ${NEXT} — ${ARGUMENTS}" --files .planning/ROADMAP.md "${PHASE_DIR}/.gitkeep"
+fvgsd-sdk query commit "docs: add backlog item ${NEXT} — ${ARGUMENTS}" --files .planning/ROADMAP.md "${PHASE_DIR}/.gitkeep"
 ```
 
 ## Step 6: Report
@@ -75,16 +75,16 @@ Phase {NEXT}: {description}
 Directory: {PHASE_DIR}/
 
 This item lives in the backlog parking lot.
-Use /vgsd:discuss-phase {NEXT} to explore it further.
-Use /vgsd:review-backlog to promote items to active milestone.
+Use /fvgsd:discuss-phase {NEXT} to explore it further.
+Use /fvgsd:review-backlog to promote items to active milestone.
 ```
 
 </process>
 
 <notes>
 - 999.x numbering keeps backlog items out of the active phase sequence
-- Phase directories are created immediately so /vgsd:discuss-phase and /vgsd:plan-phase work on them
+- Phase directories are created immediately so /fvgsd:discuss-phase and /fvgsd:plan-phase work on them
 - No `Depends on:` field — backlog items are unsequenced by definition
 - Sparse numbering is fine (999.1, 999.3) — always uses next-decimal
-- Promote backlog items to the active milestone with /vgsd:review-backlog
+- Promote backlog items to the active milestone with /fvgsd:review-backlog
 </notes>

@@ -38,8 +38,8 @@ describe('autonomous workflow ui-phase and ui-review integration (#1375)', () =>
         'should invoke shell-free Node gate for cross-platform portability (#3718)'
       );
       assert.ok(
-        content.includes('GSD_REPO_ROOT'),
-        'should anchor gate path to GSD_REPO_ROOT to avoid CWD-sensitive failure'
+        content.includes('FVGSD_REPO_ROOT'),
+        'should anchor gate path to FVGSD_REPO_ROOT to avoid CWD-sensitive failure'
       );
     });
 
@@ -59,7 +59,7 @@ describe('autonomous workflow ui-phase and ui-review integration (#1375)', () =>
 
     test('UI design contract step invokes gsd:ui-phase skill', () => {
       assert.ok(
-        content.includes('skill="gsd-ui-phase"'),
+        content.includes('skill="fvgsd-ui-phase"'),
         'should invoke gsd-ui-phase via Skill()'
       );
     });
@@ -100,7 +100,7 @@ describe('autonomous workflow ui-phase and ui-review integration (#1375)', () =>
 
     test('UI review step invokes gsd:ui-review skill', () => {
       assert.ok(
-        content.includes('skill="gsd-ui-review"'),
+        content.includes('skill="fvgsd-ui-review"'),
         'should invoke gsd-ui-review via Skill()'
       );
     });

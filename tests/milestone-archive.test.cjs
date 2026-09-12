@@ -10,7 +10,7 @@
  *   - bug #3600: getMilestonePhaseFilter with project-code-prefixed directories
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');

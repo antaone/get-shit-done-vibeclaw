@@ -107,13 +107,13 @@ const COMPLEXITY_SCOPE_PATTERNS = [
  */
 const ALLOWLIST = {
   // Plan-checker scans FOR these patterns — it's a detection list, not usage
-  'gsd-plan-checker.md': ['complexity_scope', 'time_sizing'],
+  'fvgsd-plan-checker.md': ['complexity_scope', 'time_sizing'],
   // Planner defines the prohibition and the authority limits — uses terms to explain what NOT to do
-  'gsd-planner.md': ['complexity_scope'],
+  'fvgsd-planner.md': ['complexity_scope'],
   // Debugger uses "30+ minutes" as anti-pattern detection, not task sizing
-  'gsd-debugger.md': ['time_sizing'],
+  'fvgsd-debugger.md': ['time_sizing'],
   // Doc-writer uses "15 minutes" in API rate limit example, "2 minutes" for doc quality
-  'gsd-doc-writer.md': ['time_sizing'],
+  'fvgsd-doc-writer.md': ['time_sizing'],
   // Discovery-phase uses time for level descriptions (operational, not scope)
   'discovery-phase.md': ['time_sizing'],
   // Explore uses "~30 seconds" as operational estimate
@@ -182,19 +182,19 @@ describe('Planner language regression — complexity-as-scope-justification (#20
   }
 });
 
-describe('gsd-planner.md — required structural sections (#2091, #2092)', () => {
+describe('fvgsd-planner.md — required structural sections (#2091, #2092)', () => {
   let plannerContent;
 
   test('planner file exists and is readable', () => {
-    const plannerPath = path.join(AGENTS_DIR, 'gsd-planner.md');
-    assert.ok(fs.existsSync(plannerPath), 'agents/gsd-planner.md must exist');
+    const plannerPath = path.join(AGENTS_DIR, 'fvgsd-planner.md');
+    assert.ok(fs.existsSync(plannerPath), 'agents/fvgsd-planner.md must exist');
     plannerContent = fs.readFileSync(plannerPath, 'utf-8');
   });
 
   test('contains <planner_authority_limits> section', () => {
     assert.ok(
       plannerContent.includes('<planner_authority_limits>'),
-      'gsd-planner.md must contain a <planner_authority_limits> section defining what the planner cannot decide'
+      'fvgsd-planner.md must contain a <planner_authority_limits> section defining what the planner cannot decide'
     );
   });
 
@@ -235,7 +235,7 @@ describe('gsd-planner.md — required structural sections (#2091, #2092)', () =>
     assert.ok(
       plannerContent.includes('Multi-Source Coverage Audit') ||
       plannerContent.includes('multi-source coverage audit'),
-      'gsd-planner.md must contain a multi-source coverage audit, not just D-XX decision matrix'
+      'fvgsd-planner.md must contain a multi-source coverage audit, not just D-XX decision matrix'
     );
   });
 
@@ -313,12 +313,12 @@ describe('plan-phase.md — source audit orchestration (#2091)', () => {
   });
 });
 
-describe('gsd-plan-checker.md — scope reduction detection includes time/complexity (#2092)', () => {
+describe('fvgsd-plan-checker.md — scope reduction detection includes time/complexity (#2092)', () => {
   let checkerContent;
 
   test('plan-checker exists and is readable', () => {
-    const checkerPath = path.join(AGENTS_DIR, 'gsd-plan-checker.md');
-    assert.ok(fs.existsSync(checkerPath), 'agents/gsd-plan-checker.md must exist');
+    const checkerPath = path.join(AGENTS_DIR, 'fvgsd-plan-checker.md');
+    assert.ok(fs.existsSync(checkerPath), 'agents/fvgsd-plan-checker.md must exist');
     checkerContent = fs.readFileSync(checkerPath, 'utf-8');
   });
 

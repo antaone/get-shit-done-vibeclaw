@@ -7,7 +7,7 @@
  * Regression tests for bug #1991
  *
  * Cline is listed in GSD documentation as a supported runtime but was
- * completely absent from bin/install.js. Running `npx get-shit-done-cc`
+ * completely absent from bin/install.js. Running `npx fvgsd`
  * did not show Cline as an option in the interactive menu.
  *
  * Fixed: Cline is now a first-class runtime that:
@@ -19,7 +19,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -108,7 +108,7 @@ describe('Cline markdown conversion', () => {
   });
 
   test('replaces .claude/ paths with .cline/', () => {
-    const result = convertClaudeToCliineMarkdown('See ~/.claude/get-shit-done/');
+    const result = convertClaudeToCliineMarkdown('See ~/.claude/fvgsd/');
     assert.ok(!result.includes('.claude/'), `Expected no .claude/ in: ${result}`);
     assert.ok(result.includes('.cline/'));
   });
@@ -120,7 +120,7 @@ describe('Cline markdown conversion', () => {
   });
 
   test('replaces .claude/skills/ with .cline/skills/', () => {
-    const result = convertClaudeToCliineMarkdown('skills at .claude/skills/gsd-executor');
+    const result = convertClaudeToCliineMarkdown('skills at .claude/skills/fvgsd-executor');
     assert.ok(!result.includes('.claude/skills/'));
     assert.ok(result.includes('.cline/skills/'));
   });
@@ -131,7 +131,7 @@ describe('Cline install (local)', () => {
   let previousCwd;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-cline-test-');
+    tmpDir = createTempDir('fvgsd-cline-test-');
     previousCwd = process.cwd();
     process.chdir(tmpDir);
   });

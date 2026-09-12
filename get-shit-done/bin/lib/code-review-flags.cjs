@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Typed flag parser for the /vgsd:code-review command.
+ * Typed flag parser for the /fvgsd:code-review command.
  *
  * This is the canonical IR for code-review argument parsing. The workflow
  * (code-review.md) delegates flag dispatch logic to this module so that:
@@ -20,7 +20,7 @@
  * Parse code-review flags from an argv array.
  *
  * The first positional argument (phase number) is ignored by this function —
- * phase validation is handled by `gsd-sdk query init.phase-op`.
+ * phase validation is handled by `fvgsd-sdk query init.phase-op`.
  *
  * @param {string[]} argv - Array of argument strings, e.g. ['2', '--fix', '--all']
  * @returns {CodeReviewFlags}

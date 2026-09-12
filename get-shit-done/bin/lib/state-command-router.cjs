@@ -58,7 +58,7 @@ function dispatchViaSdk(registryCommand, registryArgs, legacyArgs, cwd, raw, err
     // GSDTransport no longer forces subprocess for workstream-scoped requests —
     // the worker's dispatchNative closure correctly passes workstream to
     // registry.dispatch() (Phase 5.1 fix), enabling native workstream dispatch.
-    workstream: process.env.GSD_WORKSTREAM || undefined,
+    workstream: process.env.FVGSD_WORKSTREAM || undefined,
   });
 
   if (!result.ok) {
@@ -101,12 +101,12 @@ function dispatchViaSdk(registryCommand, registryArgs, legacyArgs, cwd, raw, err
 
 /**
  * Manifest-backed state subcommand router.
- * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving existing command semantics.
  *
  * Phase 5.1: handlers that have SDK equivalents are dispatched via
  * executeForCjs (the sync bridge). CJS fallback is retained for:
  * - complete-phase: no SDK counterpart.
- * - Any command when GSD_WORKSTREAM is active (GSDTransport forces subprocess
+ * - Any command when FVGSD_WORKSTREAM is active (GSDTransport forces subprocess
  *   for workstream requests; subprocess is disabled in the sync bridge worker).
  * - Any command when the SDK is not available (build not present).
  */
@@ -143,7 +143,7 @@ function routeStateCommand({ state, args, cwd, raw, parseNamedArgs, error }) {
     subcommands: ['load', 'complete-phase', ...STATE_SUBCOMMANDS.filter((s) => s !== 'load')],
     defaultSubcommand: 'load',
     unsupported: {
-      'add-roadmap-evolution': 'state add-roadmap-evolution is SDK-only. Use: gsd-sdk query state.add-roadmap-evolution ...',
+      'add-roadmap-evolution': 'state add-roadmap-evolution is SDK-only. Use: fvgsd-sdk query state.add-roadmap-evolution ...',
     },
     error,
     unknownMessage: (subcommand, available) => `Unknown state subcommand: "${subcommand}". Available: ${available.join(', ')}`,

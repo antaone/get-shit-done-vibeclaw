@@ -61,7 +61,7 @@ describe('plan-review-convergence command source (#2306)', () => {
 
   test('command references the workflow file via execution_context', () => {
     assert.ok(
-      command.includes('@$HOME/.claude/get-shit-done/workflows/plan-review-convergence.md'),
+      command.includes('@$HOME/.claude/fvgsd/workflows/plan-review-convergence.md'),
       'execution_context must reference the workflow file'
     );
   });
@@ -118,10 +118,10 @@ describe('plan-review-convergence command source (#2306)', () => {
 describe('plan-review-convergence workflow: initialization (#2306)', () => {
   const workflow = fs.readFileSync(WORKFLOW_PATH, 'utf8');
 
-  test('workflow calls gsd-tools.cjs init plan-phase for initialization', () => {
+  test('workflow calls fvgsd-tools.cjs init plan-phase for initialization', () => {
     assert.ok(
-      workflow.includes('gsd-tools.cjs') && workflow.includes('init') && workflow.includes('plan-phase'),
-      'workflow must initialize via gsd-tools.cjs init plan-phase'
+      workflow.includes('fvgsd-tools.cjs') && workflow.includes('init') && workflow.includes('plan-phase'),
+      'workflow must initialize via fvgsd-tools.cjs init plan-phase'
     );
   });
 
@@ -189,7 +189,7 @@ describe('plan-review-convergence workflow: initial planning gate (#2306)', () =
 
   test('workflow spawns isolated planning agent when no plans exist', () => {
     assert.ok(
-      workflow.includes('gsd-plan-phase'),
+      workflow.includes('fvgsd-plan-phase'),
       'workflow must spawn Agent → gsd-plan-phase when no plans exist'
     );
   });
@@ -209,7 +209,7 @@ describe('plan-review-convergence workflow: convergence loop (#2306)', () => {
 
   test('workflow spawns isolated review agent each cycle', () => {
     assert.ok(
-      workflow.includes('gsd-review'),
+      workflow.includes('fvgsd-review'),
       'workflow must spawn Agent → gsd-review each cycle'
     );
   });
@@ -246,15 +246,15 @@ describe('plan-review-convergence workflow: convergence loop (#2306)', () => {
     );
   });
 
-  test('review agent spawn forwards --ws via GSD_WS (symmetric with replan agent)', () => {
-    // Critical correctness bug: if GSD_WS is not forwarded to the review agent,
+  test('review agent spawn forwards --ws via FVGSD_WS (symmetric with replan agent)', () => {
+    // Critical correctness bug: if FVGSD_WS is not forwarded to the review agent,
     // the review reads from the wrong workspace while replanning reads from the correct one.
-    const reviewAgentBlock = workflow.match(/gsd-review['"`,\s][\s\S]{0,300}?GSD_WS/);
+    const reviewAgentBlock = workflow.match(/gsd-review['"`,\s][\s\S]{0,300}?FVGSD_WS/);
     assert.ok(
       reviewAgentBlock ||
-      (workflow.includes("'gsd-review'") && workflow.includes('{GSD_WS}') &&
-       workflow.indexOf('{GSD_WS}') < workflow.indexOf("'gsd-plan-phase'")),
-      'review agent spawn must forward {GSD_WS} — workspace flag must reach the reviewer (#2306-v2 --ws fix)'
+      (workflow.includes("'fvgsd-review'") && workflow.includes('{FVGSD_WS}') &&
+       workflow.indexOf('{FVGSD_WS}') < workflow.indexOf("'fvgsd-plan-phase'")),
+      'review agent spawn must forward {FVGSD_WS} — workspace flag must reach the reviewer (#2306-v2 --ws fix)'
     );
   });
 
@@ -270,7 +270,7 @@ describe('plan-review-convergence workflow: convergence loop (#2306)', () => {
   test('workflow updates STATE.md on convergence', () => {
     assert.ok(
       workflow.includes('planned-phase') || workflow.includes('state'),
-      'workflow must update STATE.md via gsd-tools.cjs when converged'
+      'workflow must update STATE.md via fvgsd-tools.cjs when converged'
     );
   });
 

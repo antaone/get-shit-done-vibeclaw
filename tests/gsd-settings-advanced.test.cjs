@@ -74,7 +74,7 @@ const ALL_SPEC_KEYS = Object.values(SPEC_FIELDS).flat().map((f) => f.key);
 
 // ─── File existence + frontmatter ─────────────────────────────────────────────
 
-describe('gsd-settings-advanced — file scaffolding', () => {
+describe('fvgsd-settings-advanced — file scaffolding', () => {
   test('consolidated config.md command exists (#2790: settings-advanced absorbed)', () => {
     assert.ok(fs.existsSync(COMMAND_PATH), `missing ${COMMAND_PATH}`);
   });
@@ -104,7 +104,7 @@ describe('gsd-settings-advanced — file scaffolding', () => {
 
 // ─── Workflow content — sections and fields ───────────────────────────────────
 
-describe('gsd-settings-advanced — workflow structure', () => {
+describe('fvgsd-settings-advanced — workflow structure', () => {
   let workflow;
   try {
     workflow = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
@@ -192,7 +192,7 @@ describe('gsd-settings-advanced — workflow structure', () => {
 
 // ─── VALID_CONFIG_KEYS membership ─────────────────────────────────────────────
 
-describe('gsd-settings-advanced — VALID_CONFIG_KEYS coverage', () => {
+describe('fvgsd-settings-advanced — VALID_CONFIG_KEYS coverage', () => {
   for (const key of ALL_SPEC_KEYS) {
     test(`VALID_CONFIG_KEYS contains "${key}"`, () => {
       assert.ok(
@@ -213,7 +213,7 @@ describe('/gsd-settings advertises /gsd-settings-advanced', () => {
       'get-shit-done/workflows/settings.md must mention /gsd:config --advanced'
     );
     assert.ok(
-      !text.includes('gsd-settings-advanced') && !text.includes('gsd:settings-advanced'),
+      !text.includes('fvgsd-settings-advanced') && !text.includes('gsd:settings-advanced'),
       'get-shit-done/workflows/settings.md must not mention legacy /gsd-settings-advanced variants'
     );
   });
@@ -221,7 +221,7 @@ describe('/gsd-settings advertises /gsd-settings-advanced', () => {
 
 // ─── Sibling-preservation via config-set ──────────────────────────────────────
 
-describe('gsd-settings-advanced — config merge preserves unrelated keys', () => {
+describe('fvgsd-settings-advanced — config merge preserves unrelated keys', () => {
   test('setting workflow.plan_bounce_passes does not clobber model_profile or git.branching_strategy', (t) => {
     const tmpDir = createTempProject();
     t.after(() => cleanup(tmpDir));
@@ -289,7 +289,7 @@ describe('gsd-settings-advanced — config merge preserves unrelated keys', () =
 
 // ─── Negative: non-numeric for numeric field / unknown key rejected ───────────
 
-describe('gsd-settings-advanced — negative scenarios', () => {
+describe('fvgsd-settings-advanced — negative scenarios', () => {
   test('config-set rejects an unknown key with a helpful error', (t) => {
     const tmpDir = createTempProject();
     t.after(() => cleanup(tmpDir));

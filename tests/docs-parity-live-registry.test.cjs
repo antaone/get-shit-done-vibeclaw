@@ -72,17 +72,17 @@ const INTERNAL_COMPONENT_SLUGS = new Set([
   'command-name',
   'command',
 
-  // gsd-tools.cjs — the legacy Node CLI binary (bin/gsd-tools.cjs).
+  // fvgsd-tools.cjs — the legacy Node CLI binary (bin/fvgsd-tools.cjs).
   // Docs reference it as a path component in shell examples, not as a slash command.
-  // Example: node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state validate
+  // Example: node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" state validate
   'tools',
 
   // Hook scripts — internal runtime hooks, not user-invocable slash commands.
-  //   hooks/gsd-statusline.js       — session statusline hook
-  //   hooks/gsd-context-monitor.js  — context-window monitor hook
-  //   hooks/gsd-update-banner.js    — update-available banner hook
-  //   hooks/gsd-graphify-update.sh  — knowledge-graph auto-update PostToolUse hook (#3347)
-  // These appear in docs as file-path references (e.g. "gsd-statusline.js reads
+  //   hooks/fvgsd/statusline.js       — session statusline hook
+  //   hooks/fvgsd/context-monitor.js  — context-window monitor hook
+  //   hooks/fvgsd/update-banner.js    — update-available banner hook
+  //   hooks/fvgsd/graphify-update.sh  — knowledge-graph auto-update PostToolUse hook (#3347)
+  // These appear in docs as file-path references (e.g. "fvgsd/statusline.js reads
   // the cache"), not as command invocations.
   'statusline',
   'context-monitor',
@@ -95,12 +95,12 @@ const INTERNAL_COMPONENT_SLUGS = new Set([
   'update-check',
 
   // Internal agent names referenced in ARCHITECTURE.md tables of agents.
-  // These are spawned agents (gsd-planner, etc.), not user-typable slash commands.
+  // These are spawned agents (fvgsd-planner, etc.), not user-typable slash commands.
   'planner',
 
   // Malformed token from SDK init reference: "/gsd-init-" appears as a truncated
-  // prefix in CLI-TOOLS.md describing the gsd-sdk init command family
-  // (e.g., "gsd-sdk query init.phase-op 12"). The regex captures "/gsd-init-"
+  // prefix in CLI-TOOLS.md describing the fvgsd-sdk init command family
+  // (e.g., "fvgsd-sdk query init.phase-op 12"). The regex captures "/gsd-init-"
   // without a following slug — this is a documentation formatting artifact, not
   // a real command token.
   'init-',
@@ -145,7 +145,7 @@ const INTERNAL_COMPONENT_SLUGS = new Set([
   // slash command (no commands/gsd/sync-skills.md). Docs reference it as a
   // filesystem path component, e.g. "~/.agents/skills/gsd-sync-skills/" in
   // docs/discussions/grok-build-support-2026-05.md. The regex captures
-  // "/gsd-sync-skills" from the path. Invoked via Skill(skill="gsd-sync-skills").
+  // "/gsd-sync-skills" from the path. Invoked via Skill(skill="fvgsd-sync-skills").
   'sync-skills',
 ]);
 
@@ -175,8 +175,8 @@ function extractCommandTokens(content) {
   const stripped = stripHtmlComments(content);
 
   function isInternal(token) {
-    // Strip the /vgsd- or /vgsd: or $vgsd- prefix to get the slug
-    const slug = token.replace(/^(?:\/vgsd[:-]|\$vgsd-)/, '');
+    // Strip the /fvgsd- or /fvgsd: or $fvgsd- prefix to get the slug
+    const slug = token.replace(/^(?:\/fvgsd[:-]|\$fvgsd-)/, '');
     // Exact match OR prefix match for 'init-' (which ends with a dash)
     if (INTERNAL_COMPONENT_SLUGS.has(slug)) return true;
     for (const s of INTERNAL_COMPONENT_SLUGS) {
@@ -185,9 +185,9 @@ function extractCommandTokens(content) {
     return false;
   }
 
-  const allSlash = (stripped.match(/\/vgsd-[a-z0-9][a-z0-9-]*/g) || []);
-  const allColon = (stripped.match(/\/vgsd:[a-z0-9][a-z0-9-]*/g) || []);
-  const allDollar = (stripped.match(/\$vgsd-[a-z0-9][a-z0-9-]*/g) || []);
+  const allSlash = (stripped.match(/\/fvgsd-[a-z0-9][a-z0-9-]*/g) || []);
+  const allColon = (stripped.match(/\/fvgsd:[a-z0-9][a-z0-9-]*/g) || []);
+  const allDollar = (stripped.match(/\$fvgsd-[a-z0-9][a-z0-9-]*/g) || []);
 
   const slash = new Set(allSlash.filter(t => !isInternal(t)));
   const colon = new Set(allColon.filter(t => !isInternal(t)));
@@ -252,43 +252,43 @@ describe('getLiveCommandTokens() — helper contract', () => {
     assert.ok(result.size > 0, 'live registry must contain at least one token');
   });
 
-  test('contains /vgsd-help (from commands/gsd/help.md name: vgsd:help)', () => {
+  test('contains /fvgsd-help (from commands/gsd/help.md name: fvgsd:help)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/vgsd-help'), 'registry must contain /vgsd-help');
+    assert.ok(result.has('/fvgsd-help'), 'registry must contain /fvgsd-help');
   });
 
-  test('contains /vgsd:help (Gemini form)', () => {
+  test('contains /fvgsd:help (Gemini form)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/vgsd:help'), 'registry must contain /vgsd:help');
+    assert.ok(result.has('/fvgsd:help'), 'registry must contain /fvgsd:help');
   });
 
-  test('contains $vgsd-help (Codex form)', () => {
+  test('contains $fvgsd-help (Codex form)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('$vgsd-help'), 'registry must contain $vgsd-help');
+    assert.ok(result.has('$fvgsd-help'), 'registry must contain $fvgsd-help');
   });
 
-  test('contains /vgsd-plan-phase (from commands/gsd/plan-phase.md)', () => {
+  test('contains /fvgsd-plan-phase (from commands/gsd/plan-phase.md)', () => {
     const result = getLiveCommandTokens();
-    assert.ok(result.has('/vgsd-plan-phase'), 'registry must contain /vgsd-plan-phase');
+    assert.ok(result.has('/fvgsd-plan-phase'), 'registry must contain /fvgsd-plan-phase');
   });
 
   test('contains exactly 3 tokens per slug (slash, colon, dollar)', () => {
     const result = getLiveCommandTokens();
-    // Every /vgsd-slug should have a matching /vgsd:slug and $vgsd-slug
+    // Every /fvgsd-slug should have a matching /fvgsd:slug and $fvgsd-slug
     let tokenCount = 0;
     for (const token of result) {
-      if (token.startsWith('/vgsd-')) tokenCount++;
+      if (token.startsWith('/fvgsd-')) tokenCount++;
     }
-    const slashTokens = [...result].filter(t => t.startsWith('/vgsd-'));
+    const slashTokens = [...result].filter(t => t.startsWith('/fvgsd-'));
     for (const slash of slashTokens) {
-      const slug = slash.slice('/vgsd-'.length);
+      const slug = slash.slice('/fvgsd-'.length);
       assert.ok(
-        result.has(`/vgsd:${slug}`),
-        `registry must contain Gemini form /vgsd:${slug} for slash form ${slash}`
+        result.has(`/fvgsd:${slug}`),
+        `registry must contain Gemini form /fvgsd:${slug} for slash form ${slash}`
       );
       assert.ok(
-        result.has(`$vgsd-${slug}`),
-        `registry must contain Codex form $vgsd-${slug} for slash form ${slash}`
+        result.has(`$fvgsd-${slug}`),
+        `registry must contain Codex form $fvgsd-${slug} for slash form ${slash}`
       );
     }
   });
@@ -318,26 +318,26 @@ describe('getLiveCommandTokens() — helper contract', () => {
 // ─── Fixture-based helper tests ───────────────────────────────────────────────
 
 describe('getLiveCommandTokens() — fixture contract', () => {
-  test('parses vgsd:foo frontmatter and emits 3 canonical tokens', () => {
+  test('parses fvgsd:foo frontmatter and emits 3 canonical tokens', () => {
     // This test validates the parsing logic against a known-good fixture
-    // by inspecting the live registry for commands/gsd/help.md (name: vgsd:help).
+    // by inspecting the live registry for commands/gsd/help.md (name: fvgsd:help).
     // Fixture file tests are done inline since the helper reads commands/gsd/ only.
     // The canonical token contract:
-    //   name: vgsd:foo → /vgsd-foo, /vgsd:foo, $vgsd-foo
+    //   name: fvgsd:foo → /fvgsd-foo, /fvgsd:foo, $fvgsd-foo
     const registry = getLiveCommandTokens();
-    // We know help.md has name: vgsd:help
+    // We know help.md has name: fvgsd:help
     const slug = 'help';
-    assert.ok(registry.has(`/vgsd-${slug}`), `must have /vgsd-${slug}`);
-    assert.ok(registry.has(`/vgsd:${slug}`), `must have /vgsd:${slug}`);
-    assert.ok(registry.has(`$vgsd-${slug}`), `must have $vgsd-${slug}`);
+    assert.ok(registry.has(`/fvgsd-${slug}`), `must have /fvgsd-${slug}`);
+    assert.ok(registry.has(`/fvgsd:${slug}`), `must have /fvgsd:${slug}`);
+    assert.ok(registry.has(`$fvgsd-${slug}`), `must have $fvgsd-${slug}`);
   });
 
-  test('parses vgsd-slug frontmatter (ns-* commands) and emits 3 tokens', () => {
-    // ns-context.md has name: vgsd-context (dash-style, no colon)
+  test('parses fvgsd-slug frontmatter (ns-* commands) and emits 3 tokens', () => {
+    // ns-context.md has name: fvgsd-context (dash-style, no colon)
     const registry = getLiveCommandTokens();
-    assert.ok(registry.has('/vgsd-context'), 'must have /vgsd-context (from ns-context.md)');
-    assert.ok(registry.has('/vgsd:context'), 'must have /vgsd:context (Gemini form)');
-    assert.ok(registry.has('$vgsd-context'), 'must have $vgsd-context (Codex form)');
+    assert.ok(registry.has('/fvgsd-context'), 'must have /fvgsd-context (from ns-context.md)');
+    assert.ok(registry.has('/fvgsd:context'), 'must have /fvgsd:context (Gemini form)');
+    assert.ok(registry.has('$fvgsd-context'), 'must have $fvgsd-context (Codex form)');
   });
 });
 
@@ -440,15 +440,15 @@ for (const locale of LOCALES) {
 
 describe('adversarial: polarity inversion catches drift deny-list misses', () => {
   test('renaming a live command without updating docs would fail this test (demonstrated via token absence)', () => {
-    // If /vgsd-progress were renamed to /vgsd-status-new, the old /vgsd-progress
+    // If /fvgsd-progress were renamed to /fvgsd-status-new, the old /fvgsd-progress
     // token would not appear in the live registry, and any doc referencing
-    // /vgsd-progress would fail. The deny-list shape would have passed silently
+    // /fvgsd-progress would fail. The deny-list shape would have passed silently
     // (it only checks for specific known-bad tokens).
     // We can't simulate an actual rename in a live test, but we can assert
     // that the registry correctly contains the live name (progress, not status):
     const registry = getLiveCommandTokens();
-    assert.ok(registry.has('/vgsd-progress'), '/vgsd-progress must be live (not renamed to /vgsd-status)');
-    assert.ok(!registry.has('/vgsd-status'), '/vgsd-status must be absent (was deleted, replaced by /vgsd-progress)');
+    assert.ok(registry.has('/fvgsd-progress'), '/fvgsd-progress must be live (not renamed to /fvgsd-status)');
+    assert.ok(!registry.has('/fvgsd-status'), '/fvgsd-status must be absent (was deleted, replaced by /fvgsd-progress)');
   });
 
   test('freshly-deleted command /gsd-check-todos is absent from registry', () => {

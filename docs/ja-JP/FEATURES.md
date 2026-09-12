@@ -111,7 +111,7 @@
 
 ### 1. プロジェクト初期化
 
-**コマンド:** `/vgsd-new-project [--auto @file.md]`
+**コマンド:** `/fvgsd-new-project [--auto @file.md]`
 
 **目的:** ユーザーのアイデアを、リサーチ、スコープ化された要件、フェーズ分けされたロードマップを持つ完全に構造化されたプロジェクトに変換します。
 
@@ -150,13 +150,13 @@
 - リサーチエージェントは最新のエコシステム情報を取得するための Web 検索機能を持つ
 - 粒度設定によりフェーズ数を制御: `coarse`（3-5）、`standard`（5-8）、`fine`（8-12）
 - `--auto` モードではインタラクティブな質問なしで提供されたドキュメントからすべての情報を抽出
-- 既存のコードベースコンテキスト（`/vgsd-map-codebase` から取得）がある場合は読み込む
+- 既存のコードベースコンテキスト（`/fvgsd-map-codebase` から取得）がある場合は読み込む
 
 ---
 
 ### 2. フェーズディスカッション
 
-**コマンド:** `/vgsd-discuss-phase [N] [--auto] [--batch]`
+**コマンド:** `/fvgsd-discuss-phase [N] [--auto] [--batch]`
 
 **目的:** リサーチとプランニング開始前に、ユーザーの実装に関する要望や決定事項を収集します。AI が推測する原因となるグレーゾーンを排除します。
 
@@ -183,7 +183,7 @@
 
 ### 3. UI デザインコントラクト
 
-**コマンド:** `/vgsd-ui-phase [N]`
+**コマンド:** `/fvgsd-ui-phase [N]`
 
 **目的:** プランニング前にデザインの決定事項を確定し、フェーズ内のすべてのコンポーネントが一貫したビジュアル基準を共有できるようにします。
 
@@ -215,7 +215,7 @@
 
 ### 4. フェーズプランニング
 
-**コマンド:** `/vgsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
+**コマンド:** `/fvgsd-plan-phase [N] [--auto] [--skip-research] [--skip-verify]`
 
 **目的:** 実装ドメインをリサーチし、検証済みのアトミックな実行プランを作成します。
 
@@ -226,7 +226,7 @@
 - REQ-PLAN-04: システムはすべてのプランに `read_first` と `acceptance_criteria` セクションを含めなければならない
 - REQ-PLAN-05: `--skip-verify` が設定されていない限り、システムはプランチェッカー検証ループ（最大3回の反復）を実行しなければならない
 - REQ-PLAN-06: システムはリサーチフェーズをバイパスする `--skip-research` フラグをサポートしなければならない
-- REQ-PLAN-07: フロントエンドフェーズが検出され UI-SPEC.md が存在しない場合、システムはユーザーに `/vgsd-ui-phase` の実行を促さなければならない（UI セーフティゲート）
+- REQ-PLAN-07: フロントエンドフェーズが検出され UI-SPEC.md が存在しない場合、システムはユーザーに `/fvgsd-ui-phase` の実行を促さなければならない（UI セーフティゲート）
 - REQ-PLAN-08: `workflow.nyquist_validation` が有効な場合、システムは Nyquist バリデーションマッピングを含めなければならない
 - REQ-PLAN-09: プランニング完了前に、すべてのフェーズ要件が少なくとも1つのプランでカバーされていることをシステムは検証しなければならない（要件カバレッジゲート）
 
@@ -265,7 +265,7 @@
 
 ### 5. フェーズ実行
 
-**コマンド:** `/vgsd-execute-phase <N>`
+**コマンド:** `/fvgsd-execute-phase <N>`
 
 **目的:** ウェーブベースの並列化を使用して、フェーズ内のすべてのプランを実行します。各エグゼキューターにはフレッシュなコンテキストウィンドウが割り当てられます。
 
@@ -309,7 +309,7 @@
 
 ### 6. 作業検証
 
-**コマンド:** `/vgsd-verify-work [N]`
+**コマンド:** `/fvgsd-verify-work [N]`
 
 **目的:** ユーザー受け入れテスト — 各成果物のテストをユーザーに順に案内し、失敗を自動診断します。
 
@@ -327,7 +327,7 @@
 
 ### 6.5. Ship
 
-**コマンド:** `/vgsd-ship [N] [--draft]`
+**コマンド:** `/fvgsd-ship [N] [--draft]`
 
 **目的:** ローカル完了からマージ済み PR への橋渡し。検証通過後、ブランチをプッシュし、プランニング成果物から自動生成された本文で PR を作成します。オプションでレビューをトリガーし、STATE.md で追跡します。
 
@@ -346,7 +346,7 @@
 
 ### 7. UI レビュー
 
-**コマンド:** `/vgsd-ui-review [N]`
+**コマンド:** `/fvgsd-ui-review [N]`
 
 **目的:** 実装済みフロントエンドコードに対する遡及的な6本柱のビジュアル監査。任意のプロジェクトでスタンドアロンで動作します。
 
@@ -371,7 +371,7 @@
 
 ### 8. マイルストーン管理
 
-**コマンド:** `/vgsd-audit-milestone`、`/vgsd-complete-milestone`、`/vgsd-new-milestone [name]`
+**コマンド:** `/fvgsd-audit-milestone`、`/fvgsd-complete-milestone`、`/fvgsd-new-milestone [name]`
 
 **目的:** マイルストーンの完了を検証し、アーカイブし、リリースにタグを付け、次の開発サイクルを開始します。
 
@@ -393,7 +393,7 @@
 
 ### 9. フェーズ管理
 
-**コマンド:** `/vgsd-phase`、`/vgsd-phase --insert [N]`、`/vgsd-phase --remove [N]`
+**コマンド:** `/fvgsd-phase`、`/fvgsd-phase --insert [N]`、`/fvgsd-phase --remove [N]`
 
 **目的:** 開発中のロードマップの動的な変更。
 
@@ -408,7 +408,7 @@
 
 ### 10. Quick モード
 
-**コマンド:** `/vgsd-quick [--full] [--discuss] [--research]`
+**コマンド:** `/fvgsd-quick [--full] [--discuss] [--research]`
 
 **目的:** GSD の保証を維持しながら、より高速なパスでアドホックなタスクを実行します。
 
@@ -427,7 +427,7 @@
 
 ### 11. 自律モード
 
-**コマンド:** `/vgsd-autonomous [--from N]`
+**コマンド:** `/fvgsd-autonomous [--from N]`
 
 **目的:** 残りのすべてのフェーズを自律的に実行します — フェーズごとにディスカッション → プラン → 実行を行います。
 
@@ -442,7 +442,7 @@
 
 ### 12. フリーフォームルーティング
 
-**コマンド:** `/vgsd-fast`
+**コマンド:** `/fvgsd-fast`
 
 **目的:** 自由形式のテキストを分析し、適切な GSD コマンドにルーティングします。
 
@@ -456,7 +456,7 @@
 
 ### 13. ノートキャプチャ
 
-**コマンド:** `/vgsd-capture`
+**コマンド:** `/fvgsd-capture`
 
 **目的:** ワークフローを中断することなくアイデアを記録する、摩擦ゼロのメモ機能。タイムスタンプ付きメモの追加、全メモの一覧表示、または構造化された Todo へのプロモーションが可能です。
 
@@ -471,7 +471,7 @@
 
 ### 14. 自動進行（Next）
 
-**コマンド:** `/vgsd-progress --next`
+**コマンド:** `/fvgsd-progress --next`
 
 **目的:** 現在のプロジェクト状態を自動検出し、次の論理的なワークフローステップに進めます。どのフェーズ/ステップにいるかを覚えておく必要がなくなります。
 
@@ -479,18 +479,18 @@
 - REQ-NEXT-01: システムは STATE.md、ROADMAP.md、フェーズディレクトリを読み取り、現在のポジションを判定しなければならない
 - REQ-NEXT-02: システムはディスカッション、プラン、実行、検証のいずれが必要かを検出しなければならない
 - REQ-NEXT-03: システムは適切なコマンドを自動的に呼び出さなければならない
-- REQ-NEXT-04: プロジェクトが存在しない場合、システムは `/vgsd-new-project` を提案しなければならない
-- REQ-NEXT-05: すべてのフェーズが完了している場合、システムは `/vgsd-complete-milestone` を提案しなければならない
+- REQ-NEXT-04: プロジェクトが存在しない場合、システムは `/fvgsd-new-project` を提案しなければならない
+- REQ-NEXT-05: すべてのフェーズが完了している場合、システムは `/fvgsd-complete-milestone` を提案しなければならない
 
 **状態検出ロジック:**
 | 状態 | アクション |
 |------|----------|
-| `.planning/` ディレクトリなし | `/vgsd-new-project` を提案 |
-| フェーズに CONTEXT.md がない | `/vgsd-discuss-phase` を実行 |
-| フェーズに PLAN.md ファイルがない | `/vgsd-plan-phase` を実行 |
-| プランはあるが SUMMARY.md がない | `/vgsd-execute-phase` を実行 |
-| 実行済みだが VERIFICATION.md がない | `/vgsd-verify-work` を実行 |
-| すべてのフェーズが完了 | `/vgsd-complete-milestone` を提案 |
+| `.planning/` ディレクトリなし | `/fvgsd-new-project` を提案 |
+| フェーズに CONTEXT.md がない | `/fvgsd-discuss-phase` を実行 |
+| フェーズに PLAN.md ファイルがない | `/fvgsd-plan-phase` を実行 |
+| プランはあるが SUMMARY.md がない | `/fvgsd-execute-phase` を実行 |
+| 実行済みだが VERIFICATION.md がない | `/fvgsd-verify-work` を実行 |
+| すべてのフェーズが完了 | `/fvgsd-complete-milestone` を提案 |
 
 ---
 
@@ -505,12 +505,12 @@
 - REQ-NYQ-02: システムは各要件を特定のテストコマンドにマッピングしなければならない
 - REQ-NYQ-03: システムはウェーブ 0 タスク（実装前に必要なテストスキャフォールディング）を特定しなければならない
 - REQ-NYQ-04: プランチェッカーは Nyquist 準拠を8番目の検証次元として適用しなければならない
-- REQ-NYQ-05: システムは `/vgsd-validate-phase` による遡及的バリデーションをサポートしなければならない
+- REQ-NYQ-05: システムは `/fvgsd-validate-phase` による遡及的バリデーションをサポートしなければならない
 - REQ-NYQ-06: システムは `workflow.nyquist_validation: false` で無効化可能でなければならない
 
 **生成物:** `{phase}-VALIDATION.md` — テストカバレッジコントラクト
 
-**遡及的バリデーション（`/vgsd-validate-phase [N]`）:**
+**遡及的バリデーション（`/fvgsd-validate-phase [N]`）:**
 - 実装をスキャンし、要件をテストにマッピング
 - 自動検証がない要件のギャップを特定
 - テストを生成するオーディターを起動（最大3回試行）
@@ -538,7 +538,7 @@
 **要件:**
 - REQ-POSTVER-01: システムはタスク完了だけでなく、フェーズ目標に対してチェックしなければならない
 - REQ-POSTVER-02: システムは合否分析を含む VERIFICATION.md を生成しなければならない
-- REQ-POSTVER-03: システムは `/vgsd-verify-work` が対処すべき問題をログに記録しなければならない
+- REQ-POSTVER-03: システムは `/fvgsd-verify-work` が対処すべき問題をログに記録しなければならない
 - REQ-POSTVER-04: システムは `workflow.verifier: false` で無効化可能でなければならない
 
 ---
@@ -559,7 +559,7 @@
 
 ### 19. ヘルスバリデーション
 
-**コマンド:** `/vgsd-health [--repair]`
+**コマンド:** `/fvgsd-health [--repair]`
 
 **目的:** `.planning/` ディレクトリの整合性を検証し、問題を自動修復します。
 
@@ -582,7 +582,7 @@
 - REQ-REGR-03: 回帰は実行後検証の前に表面化されなければならない
 - REQ-REGR-04: システムはどの過去フェーズのテストが壊れたかを特定しなければならない
 
-**実行タイミング:** `/vgsd-execute-phase` の検証ステップの前に自動実行されます。
+**実行タイミング:** `/fvgsd-execute-phase` の検証ステップの前に自動実行されます。
 
 ---
 
@@ -596,7 +596,7 @@
 - REQ-COVGATE-03: カバーされていない要件はプランニング完了をブロックしなければならない
 - REQ-COVGATE-04: システムはどの特定の要件にプランカバレッジがないかを報告しなければならない
 
-**実行タイミング:** `/vgsd-plan-phase` の末尾、プランチェッカーループの後に自動実行されます。
+**実行タイミング:** `/fvgsd-plan-phase` の末尾、プランチェッカーループの後に自動実行されます。
 
 ---
 
@@ -624,7 +624,7 @@
 
 ### 23. セッション管理
 
-**コマンド:** `/vgsd-pause-work`、`/vgsd-resume-work`、`/vgsd-progress`
+**コマンド:** `/fvgsd-pause-work`、`/fvgsd-resume-work`、`/fvgsd-progress`
 
 **目的:** コンテキストリセットやセッション間でのプロジェクトの継続性を維持します。
 
@@ -641,7 +641,7 @@
 
 ### 24. セッションレポート
 
-**コマンド:** `/vgsd-pause-work --report`
+**コマンド:** `/fvgsd-pause-work --report`
 
 **目的:** 実施した作業、達成した成果、推定リソース使用量をキャプチャした、構造化されたセッション後のサマリードキュメントを生成します。
 
@@ -680,7 +680,7 @@
 
 ### 26. モデルプロファイル
 
-**コマンド:** `/vgsd-config --profile <quality|balanced|budget|inherit>`
+**コマンド:** `/fvgsd-config --profile <quality|balanced|budget|inherit>`
 
 **目的:** 各エージェントが使用する AI モデルを制御し、品質とコストのバランスを取ります。
 
@@ -697,18 +697,18 @@
 
 | エージェント | `quality` | `balanced` | `budget` | `inherit` |
 |-------------|-----------|------------|----------|-----------|
-| gsd-planner | Opus | Opus | Sonnet | Inherit |
-| gsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
-| gsd-executor | Opus | Sonnet | Sonnet | Inherit |
-| gsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-debugger | Opus | Sonnet | Sonnet | Inherit |
-| gsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
-| gsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-planner | Opus | Opus | Sonnet | Inherit |
+| fvgsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-executor | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
+| fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-debugger | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
+| fvgsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
 
 ---
 
@@ -716,7 +716,7 @@
 
 ### 27. コードベースマッピング
 
-**コマンド:** `/vgsd-map-codebase [area]`
+**コマンド:** `/fvgsd-map-codebase [area]`
 
 **目的:** 新しいプロジェクトを開始する前に既存のコードベースを分析し、GSD が既存の構成を理解できるようにします。
 
@@ -724,7 +724,7 @@
 - REQ-MAP-01: システムは各分析領域に対して並列マッパーエージェントを起動しなければならない
 - REQ-MAP-02: システムは `.planning/codebase/` に構造化されたドキュメントを生成しなければならない
 - REQ-MAP-03: システムは技術スタック、アーキテクチャパターン、コーディング規約、懸念事項を検出しなければならない
-- REQ-MAP-04: 後続の `/vgsd-new-project` はコードベースマッピングを読み込み、追加する内容に焦点を当てた質問を行わなければならない
+- REQ-MAP-04: 後続の `/fvgsd-new-project` はコードベースマッピングを読み込み、追加する内容に焦点を当てた質問を行わなければならない
 - REQ-MAP-05: オプションの `[area]` 引数はマッピングを特定の領域にスコープしなければならない
 
 **生成物:**
@@ -744,7 +744,7 @@
 
 ### 28. デバッグシステム
 
-**コマンド:** `/vgsd-debug [description]`
+**コマンド:** `/fvgsd-debug [description]`
 
 **目的:** コンテキストリセットを超えて持続する状態を持つ、体系的なデバッグ。
 
@@ -762,7 +762,7 @@
 
 ### 29. Todo 管理
 
-**コマンド:** `/vgsd-capture [desc]`、`/vgsd-capture --list`
+**コマンド:** `/fvgsd-capture [desc]`、`/fvgsd-capture --list`
 
 **目的:** セッション中にアイデアやタスクをキャプチャし、後で作業できるようにします。
 
@@ -776,7 +776,7 @@
 
 ### 30. 統計ダッシュボード
 
-**コマンド:** `/vgsd-stats`
+**コマンド:** `/fvgsd-stats`
 
 **目的:** プロジェクトメトリクスを表示します — フェーズ、プラン、要件、git 履歴、タイムライン。
 
@@ -790,7 +790,7 @@
 
 ### 31. アップデートシステム
 
-**コマンド:** `/vgsd-update`
+**コマンド:** `/fvgsd-update`
 
 **目的:** GSD を最新バージョンに更新し、チェンジログのプレビューを表示します。
 
@@ -798,14 +798,14 @@
 - REQ-UPDATE-01: システムは npm 経由で新しいバージョンをチェックしなければならない
 - REQ-UPDATE-02: システムは更新前に新しいバージョンのチェンジログを表示しなければならない
 - REQ-UPDATE-03: システムはランタイムを認識し、正しいディレクトリを対象としなければならない
-- REQ-UPDATE-04: システムはローカルで変更されたファイルを `gsd-local-patches/` にバックアップしなければならない
-- REQ-UPDATE-05: `/vgsd-update --reapply` は更新後にローカルの変更を復元しなければならない
+- REQ-UPDATE-04: システムはローカルで変更されたファイルを `fvgsd-local-patches/` にバックアップしなければならない
+- REQ-UPDATE-05: `/fvgsd-update --reapply` は更新後にローカルの変更を復元しなければならない
 
 ---
 
 ### 32. 設定管理
 
-**コマンド:** `/vgsd-settings`
+**コマンド:** `/fvgsd-settings`
 
 **目的:** ワークフロートグルとモデルプロファイルのインタラクティブな設定。
 
@@ -838,7 +838,7 @@
 
 ### 33. テスト生成
 
-**コマンド:** `/vgsd-add-tests [N]`
+**コマンド:** `/fvgsd-add-tests [N]`
 
 **目的:** 完了したフェーズに対して、UAT 基準と実装に基づいてテストを生成します。
 
@@ -930,14 +930,14 @@ fix(03-01): correct auth token expiry
 
 **ステータスライン表示:**
 ```
-[⬆ /vgsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
+[⬆ /fvgsd-update │] model │ [current task │] directory [█████░░░░░ 50%]
 ```
 
 カラーコーディング: 50% 未満は緑、65% 未満は黄、80% 未満はオレンジ、80% 以上はドクロ絵文字付き赤
 
 ### 38. 開発者プロファイリング
 
-**コマンド:** `/vgsd-profile-user [--questionnaire] [--refresh]`
+**コマンド:** `/fvgsd-profile-user [--questionnaire] [--refresh]`
 
 **目的:** Claude Code のセッション履歴を分析し、8つの次元にわたる行動プロファイルを構築します。開発者のスタイルに合わせて Claude のレスポンスをパーソナライズするための成果物を生成します。
 
@@ -962,7 +962,7 @@ fix(03-01): correct auth token expiry
 **パイプラインモジュール:**
 - `profile-pipeline.cjs` — セッションスキャン、メッセージ抽出、サンプリング
 - `profile-output.cjs` — プロファイルレンダリング、アンケート、成果物生成
-- `gsd-user-profiler` エージェント — セッションデータからの行動分析
+- `fvgsd-user-profiler` エージェント — セッションデータからの行動分析
 
 **要件:**
 - REQ-PROF-01: セッション分析は少なくとも8つの行動次元をカバーしなければならない
@@ -994,14 +994,14 @@ fix(03-01): correct auth token expiry
 
 ### 40. 検証デット追跡
 
-**コマンド:** `/vgsd-audit-uat`
+**コマンド:** `/fvgsd-audit-uat`
 
 **目的:** 未解決のテストを持つフェーズを通過した際の UAT/検証項目のサイレントな喪失を防止します。すべての過去フェーズの検証デットを表面化し、項目が忘れられないようにします。
 
 **コンポーネント:**
 
 **1. クロスフェーズヘルスチェック**（progress.md ステップ 1.6）
-すべての `/vgsd-progress` 呼び出しで、現在のマイルストーンのすべてのフェーズの未解決項目（pending、skipped、blocked、human_needed）をスキャンします。アクション可能なリンク付きのノンブロッキング警告セクションを表示します。
+すべての `/fvgsd-progress` 呼び出しで、現在のマイルストーンのすべてのフェーズの未解決項目（pending、skipped、blocked、human_needed）をスキャンします。アクション可能なリンク付きのノンブロッキング警告セクションを表示します。
 
 **2. `status: partial`**（verify-work.md、UAT.md）
 「セッション終了」と「すべてのテスト解決済み」を区別する新しい UAT ステータス。テストがまだ pending、blocked、または理由なく skipped の場合に `status: complete` を防止します。
@@ -1016,12 +1016,12 @@ fix(03-01): correct auth token expiry
 `phase complete` CLI は JSON 出力に検証デット警告を返します。トランジションワークフローは確認前に未解決項目を表面化します。
 
 **要件:**
-- REQ-DEBT-01: システムは `/vgsd-progress` ですべての過去フェーズの未解決 UAT/検証項目を表面化しなければならない
+- REQ-DEBT-01: システムは `/fvgsd-progress` ですべての過去フェーズの未解決 UAT/検証項目を表面化しなければならない
 - REQ-DEBT-02: システムは不完全なテスト（partial）と完了したテスト（complete）を区別しなければならない
 - REQ-DEBT-03: システムはブロックされたテストを `blocked_by` タグでカテゴリ分けしなければならない
 - REQ-DEBT-04: システムは human_needed の検証項目を追跡可能な UAT ファイルとして永続化しなければならない
 - REQ-DEBT-05: システムは検証デットが存在する場合、フェーズ完了とトランジション時に警告（ノンブロッキング）しなければならない
-- REQ-DEBT-06: `/vgsd-audit-uat` はすべてのフェーズをスキャンし、項目をテスト可能性別にカテゴリ分けし、人的テストプランを生成しなければならない
+- REQ-DEBT-06: `/fvgsd-audit-uat` はすべてのフェーズをスキャンし、項目をテスト可能性別にカテゴリ分けし、人的テストプランを生成しなければならない
 
 ---
 
@@ -1029,7 +1029,7 @@ fix(03-01): correct auth token expiry
 
 ### 41. Fast モード
 
-**コマンド:** `/vgsd-fast [task description]`
+**コマンド:** `/fvgsd-fast [task description]`
 
 **目的:** サブエージェントの起動や PLAN.md ファイルの生成なしに、些細なタスクをインラインで実行します。プランニングのオーバーヘッドを正当化できないほど小さなタスク向け: タイポ修正、設定変更、小規模なリファクタリング、コミット忘れ、簡単な追加。
 
@@ -1039,15 +1039,15 @@ fix(03-01): correct auth token expiry
 - REQ-FAST-03: システムは状態の一貫性のためにタスクを `.planning/quick/` で追跡しなければならない
 - REQ-FAST-04: リサーチ、マルチステッププランニング、または検証が必要なタスクにシステムを使用してはならない
 
-**`/vgsd-quick` との使い分け:**
-- `/vgsd-fast` — 2分以内に実行可能な一文のタスク（タイポ修正、設定変更、小規模な追加）
-- `/vgsd-quick` — リサーチ、マルチステッププランニング、または検証が必要なもの
+**`/fvgsd-quick` との使い分け:**
+- `/fvgsd-fast` — 2分以内に実行可能な一文のタスク（タイポ修正、設定変更、小規模な追加）
+- `/fvgsd-quick` — リサーチ、マルチステッププランニング、または検証が必要なもの
 
 ---
 
 ### 42. クロス AI ピアレビュー
 
-**コマンド:** `/vgsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--all]`
+**コマンド:** `/fvgsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--all]`
 
 **目的:** 外部の AI CLI（Gemini、Claude、Codex、CodeRabbit、OpenCode、Qwen Code、Cursor）を呼び出して、フェーズプランを独立してレビューします。レビュアーごとのフィードバックを含む構造化された REVIEWS.md を生成します。
 
@@ -1056,7 +1056,7 @@ fix(03-01): correct auth token expiry
 - REQ-REVIEW-02: システムはフェーズプランから構造化されたレビュープロンプトを構築しなければならない
 - REQ-REVIEW-03: システムは選択された各 CLI を独立して呼び出さなければならない
 - REQ-REVIEW-04: システムはレスポンスを収集して `REVIEWS.md` を生成しなければならない
-- REQ-REVIEW-05: レビューは `/vgsd-plan-phase --reviews` で使用可能でなければならない
+- REQ-REVIEW-05: レビューは `/fvgsd-plan-phase --reviews` で使用可能でなければならない
 
 **生成物:** `{phase}-REVIEWS.md` — レビュアーごとの構造化されたフィードバック
 
@@ -1064,17 +1064,17 @@ fix(03-01): correct auth token expiry
 
 ### 43. バックログパーキングロット
 
-**コマンド:** `/vgsd-capture --backlog <description>`、`/vgsd-review-backlog`、`/vgsd-capture --seed <idea>`
+**コマンド:** `/fvgsd-capture --backlog <description>`、`/fvgsd-review-backlog`、`/fvgsd-capture --seed <idea>`
 
 **目的:** アクティブなプランニングの準備ができていないアイデアをキャプチャします。バックログ項目は 999.x の番号付けを使用して、アクティブなフェーズシーケンスの外に留まります。シードは、適切なマイルストーンで自動的に表面化するトリガー条件を持つ、将来を見据えたアイデアです。
 
 **要件:**
 - REQ-BACKLOG-01: バックログ項目はアクティブなフェーズシーケンスの外に留まるために 999.x の番号付けを使用しなければならない
-- REQ-BACKLOG-02: `/vgsd-discuss-phase` と `/vgsd-plan-phase` が動作するよう、フェーズディレクトリは即座に作成されなければならない
-- REQ-BACKLOG-03: `/vgsd-review-backlog` は項目ごとにプロモート、維持、削除のアクションをサポートしなければならない
+- REQ-BACKLOG-02: `/fvgsd-discuss-phase` と `/fvgsd-plan-phase` が動作するよう、フェーズディレクトリは即座に作成されなければならない
+- REQ-BACKLOG-03: `/fvgsd-review-backlog` は項目ごとにプロモート、維持、削除のアクションをサポートしなければならない
 - REQ-BACKLOG-04: プロモートされた項目はアクティブなマイルストーンシーケンスに再番号付けされなければならない
 - REQ-SEED-01: シードは完全な WHY と表面化条件の WHEN をキャプチャしなければならない
-- REQ-SEED-02: `/vgsd-new-milestone` はシードをスキャンして一致するものを提示しなければならない
+- REQ-SEED-02: `/fvgsd-new-milestone` はシードをスキャンして一致するものを提示しなければならない
 
 **生成物:**
 | 成果物 | 説明 |
@@ -1086,9 +1086,9 @@ fix(03-01): correct auth token expiry
 
 ### 44. 永続コンテキストスレッド
 
-**コマンド:** `/vgsd-thread [name | description]`
+**コマンド:** `/fvgsd-thread [name | description]`
 
-**目的:** 複数セッションにまたがるが特定のフェーズには属さない作業のための、軽量なクロスセッションナレッジストア。`/vgsd-pause-work` よりも軽量 — フェーズ状態やプランコンテキストは不要です。
+**目的:** 複数セッションにまたがるが特定のフェーズには属さない作業のための、軽量なクロスセッションナレッジストア。`/fvgsd-pause-work` よりも軽量 — フェーズ状態やプランコンテキストは不要です。
 
 **要件:**
 - REQ-THREAD-01: システムは作成、一覧、再開モードをサポートしなければならない
@@ -1103,7 +1103,7 @@ fix(03-01): correct auth token expiry
 
 ### 45. PR ブランチフィルタリング
 
-**コマンド:** `/vgsd-pr-branch [target branch]`
+**コマンド:** `/fvgsd-pr-branch [target branch]`
 
 **目的:** `.planning/` のコミットを除外して、プルリクエストに適したクリーンなブランチを作成します。レビュアーにはコード変更のみが表示され、GSD プランニング成果物は表示されません。
 
@@ -1127,11 +1127,11 @@ fix(03-01): correct auth token expiry
 - フィールド名バリデーション — 設定フィールド名を通じたインジェクションを防止
 - シェル引数バリデーション — シェル補間前にユーザーテキストをサニタイズ
 
-**2. プロンプトインジェクションガードフック**（`gsd-prompt-guard.js`）
+**2. プロンプトインジェクションガードフック**（`fvgsd/prompt-guard.js`）
 `.planning/` を対象とする Write/Edit 呼び出しをインジェクションパターンでスキャンする PreToolUse フック。アドバイザリーのみ — 正当な操作をブロックせず、検出を認識のためにログ記録します。
 
-**3. ワークフローガードフック**（`gsd-workflow-guard.js`）
-Claude が GSD ワークフローコンテキスト外でファイル編集を試行した際に検出する PreToolUse フック。直接編集の代わりに `/vgsd-quick` や `/vgsd-fast` の使用をアドバイスします。`hooks.workflow_guard`（デフォルト: false）で設定可能です。
+**3. ワークフローガードフック**（`fvgsd/workflow-guard.js`）
+Claude が GSD ワークフローコンテキスト外でファイル編集を試行した際に検出する PreToolUse フック。直接編集の代わりに `/fvgsd-quick` や `/fvgsd-fast` の使用をアドバイスします。`hooks.workflow_guard`（デフォルト: false）で設定可能です。
 
 **4. CI 対応インジェクションスキャナー**（`prompt-injection-scan.test.cjs`）
 すべてのエージェント、ワークフロー、コマンドファイルに埋め込まれたインジェクションベクターをスキャンするテストスイート。
@@ -1158,7 +1158,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 48. ディスカッション監査証跡
 
-**目的:** `/vgsd-discuss-phase` 中に `DISCUSSION-LOG.md` を自動生成し、ディスカッション中の決定事項の完全な監査証跡を残します。
+**目的:** `/fvgsd-discuss-phase` 中に `DISCUSSION-LOG.md` を自動生成し、ディスカッション中の決定事項の完全な監査証跡を残します。
 
 **要件:**
 - REQ-DISCLOG-01: システムは discuss-phase 中に DISCUSSION-LOG.md を自動生成しなければならない
@@ -1171,7 +1171,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 49. フォレンジクス
 
-**コマンド:** `/vgsd-forensics [description]`
+**コマンド:** `/fvgsd-forensics [description]`
 
 **目的:** 失敗または停滞した GSD ワークフローのポストモーテム調査。
 
@@ -1197,7 +1197,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 50. マイルストーンサマリー
 
-**コマンド:** `/vgsd-milestone-summary [version]`
+**コマンド:** `/fvgsd-milestone-summary [version]`
 
 **目的:** チームオンボーディングのためにマイルストーン成果物から包括的なプロジェクトサマリーを生成します。
 
@@ -1220,7 +1220,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 51. ワークストリームネームスペーシング
 
-**コマンド:** `/vgsd-workstreams`
+**コマンド:** `/fvgsd-workstreams`
 
 **目的:** 異なるマイルストーン領域での同時作業のための並列ワークストリーム。
 
@@ -1243,7 +1243,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 52. マネージャーダッシュボード
 
-**コマンド:** `/vgsd-manager`
+**コマンド:** `/fvgsd-manager`
 
 **目的:** 1つのターミナルから複数のフェーズを管理するためのインタラクティブなコマンドセンター。
 
@@ -1263,7 +1263,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 53. Assumptions ディスカッションモード
 
-**コマンド:** `/vgsd-discuss-phase`（`workflow.discuss_mode: 'assumptions'` 設定時）
+**コマンド:** `/fvgsd-discuss-phase`（`workflow.discuss_mode: 'assumptions'` 設定時）
 
 **目的:** インタビュー形式の質問をコードベースファーストの仮定分析に置き換えます。
 
@@ -1289,26 +1289,26 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 54. UI フェーズ自動検出
 
-**対象:** `/vgsd-new-project` および `/vgsd-progress`
+**対象:** `/fvgsd-new-project` および `/fvgsd-progress`
 
-**目的:** UI 重視のプロジェクトを自動検出し、`/vgsd-ui-phase` の推奨を表面化します。
+**目的:** UI 重視のプロジェクトを自動検出し、`/fvgsd-ui-phase` の推奨を表面化します。
 
 **要件:**
 - REQ-UI-DETECT-01: システムはプロジェクト説明の UI シグナル（キーワード、フレームワーク参照）を検出しなければならない
 - REQ-UI-DETECT-02: システムは該当する場合に ROADMAP.md のフェーズに `ui_hint` をアノテーションしなければならない
-- REQ-UI-DETECT-03: システムは UI 重視フェーズのネクストステップに `/vgsd-ui-phase` を提案しなければならない
-- REQ-UI-DETECT-04: システムは `/vgsd-ui-phase` を必須にしてはならない
+- REQ-UI-DETECT-03: システムは UI 重視フェーズのネクストステップに `/fvgsd-ui-phase` を提案しなければならない
+- REQ-UI-DETECT-04: システムは `/fvgsd-ui-phase` を必須にしてはならない
 
 **プロセス:**
 1. **検出** — プロジェクト説明と技術スタックの UI シグナル（キーワード、フレームワーク参照）をスキャン
 2. **アノテーション** — ROADMAP.md の該当フェーズに `ui_hint` マーカーを追加
-3. **表面化** — UI 重視フェーズのネクストステップに `/vgsd-ui-phase` の推奨を含める
+3. **表面化** — UI 重視フェーズのネクストステップに `/fvgsd-ui-phase` の推奨を含める
 
 ---
 
 ### 55. マルチランタイムインストーラー選択
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx fvgsd`
 
 **目的:** 1回のインタラクティブなインストールセッションで複数のランタイムを選択します。
 
@@ -1327,7 +1327,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 56. Windsurf ランタイムサポート
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx fvgsd`
 
 **目的:** Windsurf AI IDE のサポートを追加します。
 
@@ -1382,7 +1382,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 59. スキーマドリフト検出
 
-**コマンド:** `/vgsd-execute-phase` 実行時に自動
+**コマンド:** `/fvgsd-execute-phase` 実行時に自動
 
 **目的:** ORM スキーマファイルが対応するマイグレーションまたは push コマンドなしに変更された場合を検出し、誤検知の検証を防止します。
 
@@ -1390,7 +1390,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 - REQ-SCHEMA-01: システムは ORM スキーマファイル（Prisma、Drizzle、Payload、Sanity、Mongoose）の変更を検出しなければならない
 - REQ-SCHEMA-02: スキーマ変更が検出された場合、対応するマイグレーション/push コマンドの存在を確認しなければならない
 - REQ-SCHEMA-03: 二層防御を実装しなければならない: 計画時注入と実行時ゲート
-- REQ-SCHEMA-04: 検出をオーバーライドする `GSD_SKIP_SCHEMA_CHECK` 環境変数をサポートしなければならない
+- REQ-SCHEMA-04: 検出をオーバーライドする `FVGSD_SKIP_SCHEMA_CHECK` 環境変数をサポートしなければならない
 - REQ-SCHEMA-05: マイグレーションなしのスキーマ変更時に誤検知の検証を防止しなければならない
 
 **プロセス:**
@@ -1399,13 +1399,13 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 3. **ゲート** — マイグレーションなしのスキーマドリフトが検出された場合、実行をブロック（実行時ゲート）
 4. **注入** — 計画生成中にマイグレーションリマインダーを追加（計画時注入）
 
-**設定:** `GSD_SKIP_SCHEMA_CHECK` 環境変数で検出をバイパス。
+**設定:** `FVGSD_SKIP_SCHEMA_CHECK` 環境変数で検出をバイパス。
 
 ---
 
 ### 60. セキュリティエンフォースメント
 
-**コマンド:** `/vgsd-secure-phase <N>`
+**コマンド:** `/fvgsd-secure-phase <N>`
 
 **目的:** フェーズ実装に対する脅威モデルアンカードのセキュリティ検証。
 
@@ -1413,7 +1413,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 - REQ-SEC-01: システムは脅威モデルアンカードの検証（ブラインドスキャンではない）を実行しなければならない
 - REQ-SEC-02: 設定可能な OWASP ASVS 検証レベル（1-3）をサポートしなければならない
 - REQ-SEC-03: 設定可能な重大度しきい値に基づいてフェーズ進行をブロックしなければならない
-- REQ-SEC-04: 分析のために `gsd-security-auditor` エージェントを起動しなければならない
+- REQ-SEC-04: 分析のために `fvgsd-security-auditor` エージェントを起動しなければならない
 
 **生成物:**
 | 成果物 | 説明 |
@@ -1422,7 +1422,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 **プロセス:**
 1. **モデル** — フェーズ実装コンテキストから脅威モデルを構築
-2. **監査** — `gsd-security-auditor` を起動して脅威モデルに対して検証
+2. **監査** — `fvgsd-security-auditor` を起動して脅威モデルに対して検証
 3. **ゲート** — 発見事項が `security_block_on` 重大度以上の場合、フェーズ進行をブロック
 
 **設定:**
@@ -1436,13 +1436,13 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 61. ドキュメント生成
 
-**コマンド:** `/vgsd-docs-update`
+**コマンド:** `/fvgsd-docs-update`
 
 **目的:** 正確性チェック付きのプロジェクトドキュメントを生成・検証します。
 
 **要件:**
-- REQ-DOCS-01: システムはドキュメント生成のために `gsd-doc-writer` エージェントを起動しなければならない
-- REQ-DOCS-02: システムは正確性チェックのために `gsd-doc-verifier` エージェントを起動しなければならない
+- REQ-DOCS-01: システムはドキュメント生成のために `fvgsd-doc-writer` エージェントを起動しなければならない
+- REQ-DOCS-02: システムは正確性チェックのために `fvgsd-doc-verifier` エージェントを起動しなければならない
 - REQ-DOCS-03: システムは生成されたドキュメントを実際の実装に対して検証しなければならない
 
 **生成物:**
@@ -1451,15 +1451,15 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 | 更新されたプロジェクトドキュメント | 生成および検証されたドキュメントファイル |
 
 **プロセス:**
-1. **生成** — `gsd-doc-writer` を起動して実装からドキュメントを作成・更新
-2. **検証** — `gsd-doc-verifier` を起動してコードベースに対するドキュメント正確性をチェック
+1. **生成** — `fvgsd-doc-writer` を起動して実装からドキュメントを作成・更新
+2. **検証** — `fvgsd-doc-verifier` を起動してコードベースに対するドキュメント正確性をチェック
 3. **出力** — 正確性アノテーション付きの検証済みドキュメントを生成
 
 ---
 
 ### 62. ディスカスチェーンモード
 
-**フラグ:** `/vgsd-discuss-phase <N> --chain`
+**フラグ:** `/fvgsd-discuss-phase <N> --chain`
 
 **目的:** 手動のコマンド連続実行を削減するため、discuss、plan、execute フェーズを1つのフローで自動チェーンします。
 
@@ -1477,7 +1477,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 63. 単一フェーズ自律モード
 
-**フラグ:** `/vgsd-autonomous --only N`
+**フラグ:** `/fvgsd-autonomous --only N`
 
 **目的:** 全残りフェーズではなく、1つのフェーズだけを自律的に実行します。
 
@@ -1495,7 +1495,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 64. スコープ削減検出
 
-**対象:** `/vgsd-plan-phase`
+**対象:** `/fvgsd-plan-phase`
 
 **目的:** 三層防御により、計画生成中のサイレントな要件削除を防止します。
 
@@ -1514,7 +1514,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 65. クレーム出所タグ付け
 
-**対象:** `/vgsd-plan-phase --research-phase`
+**対象:** `/fvgsd-plan-phase --research-phase`
 
 **目的:** リサーチのクレームにソースエビデンスのタグを付け、仮定を別途記録します。
 
@@ -1568,18 +1568,18 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 68. Claude Code スキルマイグレーション
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx fvgsd`
 
 **目的:** GSD コマンドを Claude Code 2.1.88+ のスキル形式に後方互換性を維持してマイグレーションします。
 
 **要件:**
-- REQ-SKILLS-01: インストーラーは Claude Code 2.1.88+ 向けに `skills/vgsd-*/SKILL.md` を書き込まなければならない
+- REQ-SKILLS-01: インストーラーは Claude Code 2.1.88+ 向けに `skills/fvgsd-*/SKILL.md` を書き込まなければならない
 - REQ-SKILLS-02: インストーラーはレガシー `commands/gsd/` ディレクトリを自動クリーンしなければならない
 - REQ-SKILLS-03: Gemini パスを通じて古い Claude Code バージョンとの後方互換性を維持しなければならない
 
 **プロセス:**
 1. **検出** — Claude Code のバージョンをチェックしてスキルサポートを判定
-2. **マイグレーション** — 各 GSD コマンドに対して `skills/vgsd-*/SKILL.md` ファイルを書き込み
+2. **マイグレーション** — 各 GSD コマンドに対して `skills/fvgsd-*/SKILL.md` ファイルを書き込み
 3. **クリーン** — スキルがインストールされた場合、レガシー `commands/gsd/` ディレクトリを削除
 4. **フォールバック** — 古い Claude Code バージョンのために Gemini パス互換性を維持
 
@@ -1613,7 +1613,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 70. 自律モード `--to N` フラグ
 
-**フラグ:** `/vgsd-autonomous --to N`
+**フラグ:** `/fvgsd-autonomous --to N`
 
 **目的:** 特定のフェーズ完了後に自律実行を停止し、部分的な自律実行を可能にします。
 
@@ -1631,7 +1631,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 71. リサーチゲート
 
-**対象:** `/vgsd-plan-phase`
+**対象:** `/fvgsd-plan-phase`
 
 **目的:** RESEARCH.md に未解決のオープンクエスチョンがある場合にプランニングをブロックし、不完全な情報に基づく計画を防止します。
 
@@ -1649,7 +1649,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 72. ベリファイヤーマイルストーンスコープフィルタリング
 
-**対象:** `/vgsd-execute-phase`（ベリファイヤーステップ）
+**対象:** `/fvgsd-execute-phase`（ベリファイヤーステップ）
 
 **目的:** 真のギャップと後続フェーズに延期された項目を区別し、検証の偽陰性を削減します。
 
@@ -1698,7 +1698,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 75. ディスカスフェーズ `--power` フラグ
 
-**フラグ:** `/vgsd-discuss-phase --power`
+**フラグ:** `/fvgsd-discuss-phase --power`
 
 **目的:** ディスカスフェーズのファイルベースの一括質問回答で、準備済み回答ファイルからのバッチ入力を可能にします。
 
@@ -1711,7 +1711,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 76. デバッグ `--diagnose` フラグ
 
-**フラグ:** `/vgsd-debug --diagnose`
+**フラグ:** `/fvgsd-debug --diagnose`
 
 **目的:** 修正を試みず調査のみを行う診断専用モード。
 
@@ -1724,9 +1724,9 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 77. フェーズ依存関係分析
 
-**コマンド:** `/vgsd-manager --analyze-deps`
+**コマンド:** `/fvgsd-manager --analyze-deps`
 
-**目的:** フェーズ依存関係を検出し、`/vgsd-manager` 実行前に ROADMAP.md への `Depends on` エントリを提案します。
+**目的:** フェーズ依存関係を検出し、`/fvgsd-manager` 実行前に ROADMAP.md への `Depends on` エントリを提案します。
 
 **要件:**
 - REQ-DEP-01: システムはフェーズ間のファイルオーバーラップを検出しなければならない
@@ -1740,7 +1740,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 78. アンチパターン重大度レベル
 
-**対象:** `/vgsd-resume-work`
+**対象:** `/fvgsd-resume-work`
 
 **目的:** 重大度ベースのアンチパターン強制によるリジューム時の必須理解チェック。
 
@@ -1765,7 +1765,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 80. プランナー到達可能性チェック
 
-**対象:** `/vgsd-plan-phase`
+**対象:** `/fvgsd-plan-phase`
 
 **目的:** 実行にコミットする前にプランステップが達成可能であることを検証します。
 
@@ -1777,7 +1777,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 81. Playwright-MCP UI 検証
 
-**対象:** `/vgsd-verify-work`（オプション）
+**対象:** `/fvgsd-verify-work`（オプション）
 
 **目的:** ベリファイフェーズ中の Playwright-MCP を使用した自動ビジュアル検証。
 
@@ -1790,7 +1790,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 82. Pause-Work 拡張
 
-**対象:** `/vgsd-pause-work`
+**対象:** `/fvgsd-pause-work`
 
 **目的:** よりリッチなハンドオフデータで非フェーズコンテキストをサポートし、pause-work の適用範囲を拡大します。
 
@@ -1831,7 +1831,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 85. 新規ランタイムサポート (Trae, Cline, Augment Code)
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx fvgsd`
 
 **目的:** Trae IDE、Cline、Augment Code ランタイムへの GSD インストールを拡張します。
 

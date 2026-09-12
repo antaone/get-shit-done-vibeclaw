@@ -4,13 +4,13 @@
 // reclassify some entries as source-text-is-the-product during migration.
 
 /**
- * Tests for modular decomposition of agents/gsd-planner.md
+ * Tests for modular decomposition of agents/fvgsd-planner.md
  *
  * Verifies that:
- *   1. gsd-planner.md stays under the 100K agent file threshold
- *   2. gsd-planner.md is under 45K chars (proving the three mode sections were extracted)
+ *   1. fvgsd-planner.md stays under the 100K agent file threshold
+ *   2. fvgsd-planner.md is under 45K chars (proving the three mode sections were extracted)
  *   3. The three reference files exist
- *   4. gsd-planner.md contains reference pointers to each extracted file
+ *   4. fvgsd-planner.md contains reference pointers to each extracted file
  *   5. Each reference file contains key content from the original mode section
  */
 'use strict';
@@ -29,14 +29,14 @@ const PLANNER_EXTRACTED_LIMIT = 48 * 1024;  // 48K — proves extraction happene
 
 // ─── File paths ──────────────────────────────────────────────────────────────
 
-const PLANNER_PATH = path.join(PROJECT_ROOT, 'agents', 'gsd-planner.md');
+const PLANNER_PATH = path.join(PROJECT_ROOT, 'agents', 'fvgsd-planner.md');
 const GAP_CLOSURE_REF = path.join(PROJECT_ROOT, 'get-shit-done', 'references', 'planner-gap-closure.md');
 const REVISION_REF = path.join(PROJECT_ROOT, 'get-shit-done', 'references', 'planner-revision.md');
 const REVIEWS_REF = path.join(PROJECT_ROOT, 'get-shit-done', 'references', 'planner-reviews.md');
 
-// ─── gsd-planner.md size ─────────────────────────────────────────────────────
+// ─── fvgsd-planner.md size ─────────────────────────────────────────────────────
 
-describe('gsd-planner.md size constraints', () => {
+describe('fvgsd-planner.md size constraints', () => {
   test('planner file exists', () => {
     assert.ok(fs.existsSync(PLANNER_PATH), `Missing: ${PLANNER_PATH}`);
   });
@@ -47,7 +47,7 @@ describe('gsd-planner.md size constraints', () => {
     const content = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     assert.ok(
       content.length < AGENT_FILE_SIZE_LIMIT,
-      `gsd-planner.md is ${content.length} chars, exceeds 100K agent threshold`
+      `fvgsd-planner.md is ${content.length} chars, exceeds 100K agent threshold`
     );
   });
 
@@ -57,7 +57,7 @@ describe('gsd-planner.md size constraints', () => {
     const content = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     assert.ok(
       content.length < PLANNER_EXTRACTED_LIMIT,
-      `gsd-planner.md is ${content.length} chars, expected < 45K after extracting mode sections`
+      `fvgsd-planner.md is ${content.length} chars, expected < 45K after extracting mode sections`
     );
   });
 });
@@ -78,16 +78,16 @@ describe('extracted reference files exist', () => {
   });
 });
 
-// ─── gsd-planner.md contains reference pointers ──────────────────────────────
+// ─── fvgsd-planner.md contains reference pointers ──────────────────────────────
 
-describe('gsd-planner.md contains reference pointers to extracted files', () => {
+describe('fvgsd-planner.md contains reference pointers to extracted files', () => {
   let plannerContent;
 
   test('planner references planner-gap-closure.md', () => {
     plannerContent = plannerContent || fs.readFileSync(PLANNER_PATH, 'utf-8');
     assert.ok(
       plannerContent.includes('planner-gap-closure.md'),
-      'gsd-planner.md must reference planner-gap-closure.md'
+      'fvgsd-planner.md must reference planner-gap-closure.md'
     );
   });
 
@@ -95,7 +95,7 @@ describe('gsd-planner.md contains reference pointers to extracted files', () => 
     plannerContent = plannerContent || fs.readFileSync(PLANNER_PATH, 'utf-8');
     assert.ok(
       plannerContent.includes('planner-revision.md'),
-      'gsd-planner.md must reference planner-revision.md'
+      'fvgsd-planner.md must reference planner-revision.md'
     );
   });
 
@@ -103,7 +103,7 @@ describe('gsd-planner.md contains reference pointers to extracted files', () => 
     plannerContent = plannerContent || fs.readFileSync(PLANNER_PATH, 'utf-8');
     assert.ok(
       plannerContent.includes('planner-reviews.md'),
-      'gsd-planner.md must reference planner-reviews.md'
+      'fvgsd-planner.md must reference planner-reviews.md'
     );
   });
 });

@@ -1,14 +1,14 @@
-# `review.default_reviewers` config key scopes the no-flag `/vgsd-review` fan-out
+# `review.default_reviewers` config key scopes the no-flag `/fvgsd-review` fan-out
 
 - **Status:** Proposed
 - **Date:** 2026-05-13
 
-We propose adding a `review.default_reviewers` key to `.planning/config.json` that scopes the no-flag default of `/vgsd-review` to a user-chosen subset of detected CLI reviewers. Today the no-flag branch of `workflows/review.md` (line 52) invokes **all available** CLIs, which for multi-CLI users plus local model servers (ollama, lm-studio, llama.cpp) means probing up to ~10 backends per review, paying timeout costs on servers that aren't running and burning tokens on reviewers the user doesn't want for routine work (`#3079`). The only workaround today is patching `workflows/review.md` in place; that patch is wiped on every `/vgsd-update` and requires `/vgsd-update --reapply` to restore, with no machine-readable record of intent. The proposed key sits inside the existing `review.*` namespace (alongside `review.models.<cli>` and `review.*_host`), follows GSD's **absent = enabled** config philosophy, and is implementable as a one-line config read plus an intersection on the detected reviewer set.
+We propose adding a `review.default_reviewers` key to `.planning/config.json` that scopes the no-flag default of `/fvgsd-review` to a user-chosen subset of detected CLI reviewers. Today the no-flag branch of `workflows/review.md` (line 52) invokes **all available** CLIs, which for multi-CLI users plus local model servers (ollama, lm-studio, llama.cpp) means probing up to ~10 backends per review, paying timeout costs on servers that aren't running and burning tokens on reviewers the user doesn't want for routine work (`#3079`). The only workaround today is patching `workflows/review.md` in place; that patch is wiped on every `/fvgsd-update` and requires `/fvgsd-update --reapply` to restore, with no machine-readable record of intent. The proposed key sits inside the existing `review.*` namespace (alongside `review.models.<cli>` and `review.*_host`), follows GSD's **absent = enabled** config philosophy, and is implementable as a one-line config read plus an intersection on the detected reviewer set.
 
 ## Decision
 
 - Add **`review.default_reviewers`** to the `config.json` schema as `string[]`, validated against the existing CLI slug pattern `^[a-zA-Z0-9_-]+$` (the same pattern used for `review.models.<cli>` slugs).
-- When the key is **present**, the no-flag branch of `/vgsd-review` invokes only the reviewers listed in the key, intersected with the host's `detect_clis` result.
+- When the key is **present**, the no-flag branch of `/fvgsd-review` invokes only the reviewers listed in the key, intersected with the host's `detect_clis` result.
 - When the key is **absent**, today's behavior is preserved: every detected reviewer runs. This matches the **absent = enabled** pattern documented in `docs/CONFIGURATION.md`.
 - **`--all`** continues to mean "every detected reviewer" and ignores the config key.
 - **Individual reviewer flags** (`--gemini`, `--codex`, `--cursor`, `--claude`, `--opencode`, …) continue to win over both config and `--all`.
@@ -43,7 +43,7 @@ It should **not** in the first pass:
 - Add per-phase or per-file-type reviewer profiles (`review.profiles.*`). The namespace is left open for this as a future ADR (see "Open questions" Q-3).
 - Add reviewer "groups" or aliases (`review.groups.cheap = [...]`). Same — namespace deliberately left open.
 - Auto-suggest defaults from usage history. Different design philosophy (silent behavior drift); explicitly out of scope.
-- Extend `/vgsd-config --integrations` to set the key interactively. Track as a fast follow (see "Open questions" Q-4).
+- Extend `/fvgsd-config --integrations` to set the key interactively. Track as a fast follow (see "Open questions" Q-4).
 - Change `--all` semantics or the individual flag set.
 
 ## Migration Inventory
@@ -80,7 +80,7 @@ It should **not** in the first pass:
   - `--all` + key set → every detected reviewer invoked, key ignored
   - `--gemini` + key set to `["codex"]` → only Gemini invoked
   - no flags + key absent → every detected reviewer invoked (back-compat)
-- Extend existing `/vgsd-review` integration tests to cover the new selection-source log line.
+- Extend existing `/fvgsd-review` integration tests to cover the new selection-source log line.
 
 ### Schema doc cross-reference
 
@@ -96,7 +96,7 @@ It should **not** in the first pass:
 }
 ```
 
-With this set, `/vgsd-review` (no flags) invokes only Gemini and Codex. `/vgsd-review --all` invokes every detected reviewer. `/vgsd-review --cursor` invokes only Cursor. Today's behavior is preserved by simply omitting the key.
+With this set, `/fvgsd-review` (no flags) invokes only Gemini and Codex. `/fvgsd-review --all` invokes every detected reviewer. `/fvgsd-review --cursor` invokes only Cursor. Today's behavior is preserved by simply omitting the key.
 
 ## Resolution pseudocode
 
@@ -120,9 +120,9 @@ log_selection_source(selected, source)
 
 ## Consequences
 
-- Multi-CLI users can stop patching `workflows/review.md`; the patch class that `/vgsd-update` wipes goes away for this case.
+- Multi-CLI users can stop patching `workflows/review.md`; the patch class that `/fvgsd-update` wipes goes away for this case.
 - Teams can commit `.planning/config.json` and share a default reviewer set across machines and contributors, without forking the workflow file.
-- `/vgsd-review` wall-clock time drops on machines where detection probes idle local model servers — the timeout cost on stopped daemons is no longer paid on every routine review.
+- `/fvgsd-review` wall-clock time drops on machines where detection probes idle local model servers — the timeout cost on stopped daemons is no longer paid on every routine review.
 - Schema surface grows by one optional key; doc maintenance and the test matrix grow by a small fixed amount.
 - The `review.*` namespace stays internally consistent. Future `review.profiles.*` or `review.groups.*` can coexist with `review.default_reviewers` without renaming.
 - Cross-runtime impact is minimal: the change operates on the detection layer in `detect_clis`, not on any per-runtime adapter. The existing `resolve_model_ids: "omit"` path used by non-Claude runtimes (Codex, OpenCode, Gemini CLI, Kilo) is unaffected.
@@ -134,7 +134,7 @@ log_selection_source(selected, source)
 - **Q-1.** Should `review.default_reviewers: []` be a schema error, or should it fall back to "all detected"? *Proposal: schema error.* Rationale: users who want "all detected" can simply omit the key (more readable); `[]` looks like a typo or programmatic mistake; surfacing the ambiguity is more helpful than silently swallowing it. **Blocking** — affects schema validation and tests.
 - **Q-2.** Is a new `--no-default` flag warranted, or is it equivalent to `--all` for this use case? *Proposal: drop unless a concrete difference surfaces during implementation.* Non-blocking.
 - **Q-3.** Do we want to commit now to leaving `review.profiles.*` open as a future namespace, or is that premature? *Proposal: leave open; document the intent in `docs/CONFIGURATION.md` so the next contributor doesn't pick a conflicting key.* Non-blocking.
-- **Q-4.** Should `/vgsd-config --integrations` learn the new key in this pass, or as a fast follow once the schema + resolution land? *Proposal: fast follow.* Non-blocking; depends on contributor bandwidth.
+- **Q-4.** Should `/fvgsd-config --integrations` learn the new key in this pass, or as a fast follow once the schema + resolution land? *Proposal: fast follow.* Non-blocking; depends on contributor bandwidth.
 - **Q-5.** Should the verbose-mode "selection source" line ship in the first pass, or only behind `--verbose`? *Proposal: behind `--verbose`.* Non-blocking.
 - **Q-6.** Slug normalization: lowercase-on-read (proposed) vs. exact-match enforcement at the schema layer. *Proposal: normalize.* Non-blocking; document either way.
 

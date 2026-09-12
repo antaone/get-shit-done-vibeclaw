@@ -17,9 +17,9 @@ const fs = require('fs');
 const path = require('path');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 
-const GSD_ROOT = path.join(__dirname, '..', 'get-shit-done');
-const CONFIG_TEMPLATE_PATH = path.join(GSD_ROOT, 'templates', 'config.json');
-const PLAN_PHASE_PATH = path.join(GSD_ROOT, 'workflows', 'plan-phase.md');
+const FVGSD_ROOT = path.join(__dirname, '..', 'get-shit-done');
+const CONFIG_TEMPLATE_PATH = path.join(FVGSD_ROOT, 'templates', 'config.json');
+const PLAN_PHASE_PATH = path.join(FVGSD_ROOT, 'workflows', 'plan-phase.md');
 
 describe('Plan Bounce: config keys', () => {
   test('config-set accepts workflow.plan_bounce', () => {

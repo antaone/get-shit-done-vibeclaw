@@ -4,13 +4,13 @@
  * The GSD context monitor hook over-reports usage by ~13 percentage points
  * compared to Claude Code's native /context command. The root cause:
  *
- * gsd-statusline.js writes two values to the bridge file:
+ * fvgsd/statusline.js writes two values to the bridge file:
  *   - remaining_percentage: raw remaining from CC (e.g. 35%)
  *   - used_pct: normalized "usable" percentage (e.g. 78%) — accounts for
  *     the 16.5% autocompact buffer by scaling: (100 - remaining - buffer) /
  *     (100 - buffer) * 100
  *
- * gsd-context-monitor.js displays used_pct (78%) in warning messages.
+ * fvgsd/context-monitor.js displays used_pct (78%) in warning messages.
  * But CC's native /context shows raw used = 100 - remaining = 65%.
  * The 13-point gap is exactly the buffer normalization overhead.
  *
@@ -29,8 +29,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 
-const HOOK_PATH = path.join(__dirname, '..', 'hooks', 'gsd-statusline.js');
-const MONITOR_PATH = path.join(__dirname, '..', 'hooks', 'gsd-context-monitor.js');
+const HOOK_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/statusline.js');
+const MONITOR_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/context-monitor.js');
 
 /**
  * Run the statusline hook with a synthetic payload and return the full

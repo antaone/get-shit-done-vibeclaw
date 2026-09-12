@@ -1,6 +1,6 @@
 /**
  * Workspace-aware state resolution — scopes .planning/ paths to a
- * GSD_WORKSTREAM or GSD_PROJECT environment context.
+ * FVGSD_WORKSTREAM or FVGSD_PROJECT environment context.
  *
  * Port of planningDir() workspace logic from get-shit-done/bin/lib/core.cjs
  * (line 669+). Provides WorkspaceContext reading and validated path scoping.
@@ -42,9 +42,9 @@ function toPosixPath(p: string): string {
  * Resolved workspace context from environment variables.
  */
 export interface WorkspaceContext {
-  /** Active workstream name (from GSD_WORKSTREAM env var), or null */
+  /** Active workstream name (from FVGSD_WORKSTREAM env var), or null */
   workstream: string | null;
-  /** Active project name (from GSD_PROJECT env var), or null */
+  /** Active project name (from FVGSD_PROJECT env var), or null */
   project: string | null;
 }
 
@@ -86,7 +86,7 @@ function validateWorkspaceName(name: string, kind: string): void {
 // ─── resolveWorkspaceContext ───────────────────────────────────────────────
 
 /**
- * Read GSD_WORKSTREAM and GSD_PROJECT environment variables.
+ * Read FVGSD_WORKSTREAM and FVGSD_PROJECT environment variables.
  *
  * Returns a WorkspaceContext with null values when the env vars are not set.
  *
@@ -94,8 +94,8 @@ function validateWorkspaceName(name: string, kind: string): void {
  */
 export function resolveWorkspaceContext(): WorkspaceContext {
   return {
-    workstream: process.env['GSD_WORKSTREAM'] || null,
-    project: process.env['GSD_PROJECT'] || null,
+    workstream: process.env['FVGSD_WORKSTREAM'] || null,
+    project: process.env['FVGSD_PROJECT'] || null,
   };
 }
 

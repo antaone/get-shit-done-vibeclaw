@@ -141,7 +141,7 @@ Contributor requirements (summary):
 
 ```bash
 npm run changeset -- --type Fixed --pr <YOUR_PR_NUMBER> \
-  --body "**\`/vgsd-foo\` no longer drops trailing slashes** — explain the user-visible change."
+  --body "**\`/fvgsd-foo\` no longer drops trailing slashes** — explain the user-visible change."
 ```
 
 This writes `.changeset/<adjective>-<noun>-<noun>.md`. Three random words → concurrent PRs never collide. Allowed `type:` values follow [Keep a Changelog](https://keepachangelog.com/): `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
@@ -266,7 +266,7 @@ const { createTempProject, createTempGitProject, createTempDir, cleanup, runGsdT
 | `createTempGitProject(prefix?)` | Same + git init + initial commit | Testing git-dependent features |
 | `createTempDir(prefix?)` | Bare temp directory | Testing features that don't need `.planning/` |
 | `cleanup(tmpDir)` | Removes directory recursively | Always use in `afterEach` |
-| `runGsdTools(args, cwd, env?)` | Executes gsd-tools.cjs | Testing CLI commands |
+| `runGsdTools(args, cwd, env?)` | Executes fvgsd-tools.cjs | Testing CLI commands |
 
 ### Test Structure
 
@@ -351,7 +351,7 @@ You do not need all twelve cases for every PR. You do need to cover the cases th
 
 #### CLI and command routing
 
-Changes to CLI parsing, command dispatch, query dispatch, command routers, `gsd-tools`, or `gsd-sdk` must include a negative input matrix for the affected command family.
+Changes to CLI parsing, command dispatch, query dispatch, command routers, `fvgsd-tools`, or `fvgsd-sdk` must include a negative input matrix for the affected command family.
 
 Required cases where relevant:
 
@@ -458,7 +458,7 @@ Generator tests should run in temp fixtures and assert atomic output behavior. D
 ```javascript
 // BAD — source-grep theater
 const configSrc = fs.readFileSync(
-  path.join(GSD_ROOT, 'bin', 'lib', 'config-schema.cjs'), 'utf-8'
+  path.join(FVGSD_ROOT, 'bin', 'lib', 'config-schema.cjs'), 'utf-8'
 );
 assert.ok(
   configSrc.includes("'workflow.plan_bounce'"),
@@ -527,7 +527,7 @@ The following are all violations of the same rule:
 
 ```javascript
 // BAD — substring match on text written by the code under test
-const cmdContent = fs.readFileSync(path.join(tmpDir, 'gsd-sdk.cmd'), 'utf8');
+const cmdContent = fs.readFileSync(path.join(tmpDir, 'fvgsd-sdk.cmd'), 'utf8');
 assert.ok(cmdContent.includes(`@node ${jsonQuoted} %*`), '.cmd embeds shim path');
 
 // BAD — regex match on a child process's human-readable stdout formatter
@@ -664,14 +664,14 @@ Optional local pre-push hook to block a private author-email pattern:
 
 ```bash
 # set locally in your shell profile (example)
-export GSD_BLOCKED_AUTHOR_REGEX='@example-corp\\.com$'
+export FVGSD_BLOCKED_AUTHOR_REGEX='@example-corp\\.com$'
 
 cat > .githooks/pre-push <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 zero_sha='0000000000000000000000000000000000000000'
-blocked_regex="${GSD_BLOCKED_AUTHOR_REGEX:-}"
+blocked_regex="${FVGSD_BLOCKED_AUTHOR_REGEX:-}"
 [[ -z "$blocked_regex" ]] && exit 0
 violations=()
 
@@ -744,7 +744,7 @@ Reviewers do not rely solely on CI to verify correctness. Before approving a PR,
 ## Code Style
 
 - **CommonJS** (`.cjs`) — the project uses `require()`, not ESM `import`
-- **No external dependencies in core** — `gsd-tools.cjs` and all lib files use only Node.js built-ins
+- **No external dependencies in core** — `fvgsd-tools.cjs` and all lib files use only Node.js built-ins
 - **Conventional commits** — `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `ci:`
 
 ## File Structure
@@ -780,7 +780,7 @@ Only `agents/` at the repo root is tracked by git. The following directories may
 |------|-----------|------------|
 | `.claude/agents/` | Yes (`.gitignore:9`) | Local Claude Code runtime sync |
 | `.cursor/agents/` | Yes (`.gitignore:12`) | Local Cursor IDE bundle |
-| `.github/agents/vgsd-*` | Yes (`.gitignore:37`) | Local CI-surface bundle |
+| `.github/agents/fvgsd-*` | Yes (`.gitignore:37`) | Local CI-surface bundle |
 
 If you find that `.claude/agents/` has drifted from `agents/` (e.g., after a branch change), re-run `bin/install.js` to re-sync from the canonical source. Always edit `agents/` — never the derivative directories.
 

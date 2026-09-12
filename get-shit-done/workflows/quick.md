@@ -1,5 +1,5 @@
 <purpose>
-Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking). Quick mode spawns gsd-planner (quick mode) + gsd-executor(s), tracks tasks in `.planning/quick/`, and updates STATE.md's "Quick Tasks Completed" table.
+Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking). Quick mode spawns fvgsd-planner (quick mode) + fvgsd-executor(s), tracks tasks in `.planning/quick/`, and updates STATE.md's "Quick Tasks Completed" table.
 
 With `--full` flag: enables the complete quality pipeline — discussion + research + plan-checking + verification. One flag for everything.
 
@@ -18,12 +18,12 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-phase-researcher — Researches technical approaches for a phase
-- gsd-planner — Creates detailed plans from phase scope
-- gsd-plan-checker — Reviews plan quality before execution
-- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
-- gsd-verifier — Verifies phase completion, checks quality gates
-- gsd-code-reviewer — Reviews source files for bugs, security issues, and code quality
+- fvgsd-phase-researcher — Researches technical approaches for a phase
+- fvgsd-planner — Creates detailed plans from phase scope
+- fvgsd-plan-checker — Reviews plan quality before execution
+- fvgsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- fvgsd-verifier — Verifies phase completion, checks quality gates
+- fvgsd-code-reviewer — Reviews source files for bugs, security issues, and code quality
 </available_agent_types>
 
 <process>
@@ -125,38 +125,38 @@ If `$VALIDATE_MODE` only:
 **Step 2: Initialize**
 
 ```bash
-if ! command -v gsd-sdk &>/dev/null; then
-  echo "⚠ gsd-sdk not found in PATH — /vgsd:quick requires it."
+if ! command -v fvgsd-sdk &>/dev/null; then
+  echo "⚠ fvgsd-sdk not found in PATH — /fvgsd:quick requires it."
   echo ""
   echo "Install the query-capable GSD SDK CLI:"
-  echo "  npm install -g get-shit-done-cc"
+  echo "  npm install -g fvgsd"
   echo ""
   echo "Or update GSD to get the latest packages:"
-  echo "  /vgsd:update"
+  echo "  /fvgsd:update"
   exit 1
 fi
 ```
 
 ```bash
-INIT=$(gsd-sdk query init.quick "$DESCRIPTION")
+INIT=$(fvgsd-sdk query init.quick "$DESCRIPTION")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_PLANNER=$(gsd-sdk query agent-skills gsd-planner)
-AGENT_SKILLS_EXECUTOR=$(gsd-sdk query agent-skills gsd-executor)
-AGENT_SKILLS_CHECKER=$(gsd-sdk query agent-skills gsd-plan-checker)
-AGENT_SKILLS_VERIFIER=$(gsd-sdk query agent-skills gsd-verifier)
+AGENT_SKILLS_PLANNER=$(fvgsd-sdk query agent-skills fvgsd-planner)
+AGENT_SKILLS_EXECUTOR=$(fvgsd-sdk query agent-skills fvgsd-executor)
+AGENT_SKILLS_CHECKER=$(fvgsd-sdk query agent-skills fvgsd-plan-checker)
+AGENT_SKILLS_VERIFIER=$(fvgsd-sdk query agent-skills fvgsd-verifier)
 ```
 
 Parse JSON for: `planner_model`, `executor_model`, `checker_model`, `verifier_model`, `commit_docs`, `branch_name`, `quick_id`, `slug`, `date`, `timestamp`, `quick_dir`, `task_dir`, `roadmap_exists`, `planning_exists`.
 
 ```bash
-USE_WORKTREES=$(gsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
+USE_WORKTREES=$(fvgsd-sdk query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
 If `USE_WORKTREES` is not `"false"`, run a startup orphan sweep before spawning any executors. This reaps locked worktrees whose lock-owner process is dead, whose branch is merged into the default branch, and whose lock file mtime is older than 5 minutes. Running it at startup prevents accumulation of orphaned worktrees from prior sessions that exited without cleanup (#3707).
 
 ```bash
 if [ "$USE_WORKTREES" != "false" ]; then
-  gsd-sdk query worktree.reap-orphans 2>/dev/null || true
+  fvgsd-sdk query worktree.reap-orphans 2>/dev/null || true
 fi
 ```
 
@@ -178,7 +178,7 @@ fi
 
 Quick mode does not have a pre-declared `files_modified` list (the task is freeform), so use a fail-loud guard at commit time: when the executor stages files for the quick-task commit, if any staged path falls inside a `SUBMODULE_PATHS` entry, abort with a clear error explaining that worktree-isolated commits cannot safely span submodule boundaries — the user can re-run with `workflow.use_worktrees=false` to fall back to sequential execution on the main tree. If `SUBMODULE_PATHS` is empty (no `.gitmodules` in the repo), worktree isolation proceeds normally.
 
-**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/vgsd:new-project` first.
+**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/fvgsd:new-project` first.
 
 Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not phase status.
 
@@ -445,7 +445,7 @@ Use standard research format but keep it lean — skip sections that don't apply
 Return: ## RESEARCH COMPLETE with file path
 </output>
 ",
-  subagent_type="gsd-phase-researcher",
+  subagent_type="fvgsd-phase-researcher",
   model="{planner_model}",
   description="Research: ${DESCRIPTION}"
 )
@@ -503,7 +503,7 @@ Write plan to: ${QUICK_DIR}/${quick_id}-PLAN.md
 Return: ## PLANNING COMPLETE with plan path
 </output>
 ",
-  subagent_type="gsd-planner",
+  subagent_type="fvgsd-planner",
   model="{planner_model}",
   description="Quick plan: ${DESCRIPTION}"
 )
@@ -569,7 +569,7 @@ ${DISCUSS_MODE ? '- Context compliance: Does the plan honor locked decisions fro
 ```
 Agent(
   prompt=checker_prompt,
-  subagent_type="gsd-plan-checker",
+  subagent_type="fvgsd-plan-checker",
   model="{checker_model}",
   description="Check quick plan: ${DESCRIPTION}"
 )
@@ -616,7 +616,7 @@ Return what changed.
 ```
 Agent(
   prompt=revision_prompt,
-  subagent_type="gsd-planner",
+  subagent_type="fvgsd-planner",
   model="{planner_model}",
   description="Revise quick plan: ${DESCRIPTION}"
 )
@@ -642,7 +642,7 @@ Skip this step entirely if `USE_WORKTREES === "false"` (non-worktree mode: PLAN.
 
 ```bash
 if [ "${USE_WORKTREES}" != "false" ]; then
-  COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+  COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
   if [ "$COMMIT_DOCS" != "false" ]; then
     git add "${QUICK_DIR}/${quick_id}-PLAN.md"
     # No-op skip if nothing actually staged (idempotent re-runs).
@@ -651,7 +651,7 @@ if [ "${USE_WORKTREES}" != "false" ]; then
     else
       # Run hooks normally (#2924). If a project opts out via
       # workflow.worktree_skip_hooks=true, honor that opt-in only.
-      SKIP_HOOKS=$(gsd-sdk query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
+      SKIP_HOOKS=$(fvgsd-sdk query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
       if [ "$SKIP_HOOKS" = "true" ]; then
         git commit --no-verify -m "docs(${quick_id}): pre-dispatch plan for ${DESCRIPTION}" -- "${QUICK_DIR}/${quick_id}-PLAN.md" \
           || { echo "ERROR: pre-dispatch PLAN.md commit failed (--no-verify path). Aborting before executor dispatch." >&2; exit 1; }
@@ -672,13 +672,13 @@ Capture current HEAD before spawning (used for worktree branch check):
 ```bash
 EXPECTED_BASE=$(git rev-parse HEAD)
 if [ "${USE_WORKTREES:-true}" != "false" ]; then
-  QUICK_WORKTREE_MANIFEST=$(mktemp "${TMPDIR:-/tmp}/vgsd-quick-worktree-XXXXXX.json")
+  QUICK_WORKTREE_MANIFEST=$(mktemp "${TMPDIR:-/tmp}/fvgsd-quick-worktree-XXXXXX.json")
   printf '{"worktrees":[]}\n' > "$QUICK_WORKTREE_MANIFEST"
   export QUICK_WORKTREE_MANIFEST
 fi
 ```
 
-Spawn gsd-executor with plan reference:
+Spawn fvgsd-executor with plan reference:
 
 ```
 Agent(
@@ -767,7 +767,7 @@ SUMMARY.md and stop — the user must rerun with worktrees disabled.
 - Do NOT update ROADMAP.md (quick tasks are separate from planned phases)
 </constraints>
 ",
-  subagent_type="gsd-executor",
+  subagent_type="fvgsd-executor",
   model="{executor_model}",
   ${USE_WORKTREES !== "false" ? 'isolation="worktree",' : ''}
   description="Execute: ${DESCRIPTION}"
@@ -790,10 +790,10 @@ After executor returns:
    # Prefer the bounded cleanup helper. It verifies branch identity, expected
    # base, deletion diffs, merge result, and worktree removal before branch
    # deletion. If it blocks, resolve the reported manifest entry and rerun.
-   if command -v gsd-sdk >/dev/null 2>&1; then
-     gsd-sdk query worktree.cleanup-wave --manifest "$QUICK_WORKTREE_MANIFEST" || exit 1
+   if command -v fvgsd-sdk >/dev/null 2>&1; then
+     fvgsd-sdk query worktree.cleanup-wave --manifest "$QUICK_WORKTREE_MANIFEST" || exit 1
    else
-     echo "WARN: gsd-sdk unavailable; using manifest-scoped shell fallback (#3384)." >&2
+     echo "WARN: fvgsd-sdk unavailable; using manifest-scoped shell fallback (#3384)." >&2
 
    # Find worktrees recorded by the executor manifest only.
    # Inclusion-based filter (#2774): match ONLY agent-spawned worktrees under
@@ -803,7 +803,7 @@ After executor returns:
    # setups, and the cross-drive Windows case where `git worktree list` reports the
    # registry path on a different drive than `$(pwd)`).
    # Read line-by-line so worktree paths containing whitespace are preserved (#2774).
-   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/vgsd-worktree-paths-XXXXXX")
+   WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/fvgsd-worktree-paths-XXXXXX")
    node -e 'const fs=require("fs");const p=process.env.QUICK_WORKTREE_MANIFEST||process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("QUICK_WORKTREE_MANIFEST is unset");if(!fs.existsSync(p))throw new Error("manifest does not exist");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest is empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read worktree manifest ${p||"(unset)"}: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read QUICK_WORKTREE_MANIFEST; refusing cleanup (#3384)." >&2; exit 1; }
    while IFS= read -r WT; do
      [ -z "$WT" ] && continue
@@ -868,7 +868,7 @@ After executor returns:
 
        if ! git diff --quiet .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || \
           [ -n "$DELETED_FILES" ]; then
-         COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+         COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
          if [ "$COMMIT_DOCS" != "false" ]; then
            git add .planning/STATE.md .planning/ROADMAP.md 2>/dev/null || true
            git commit --amend --no-edit 2>/dev/null || true
@@ -938,7 +938,7 @@ Skip this step entirely if `$FULL_MODE` is false.
 
 **Config gate:**
 ```bash
-CODE_REVIEW_ENABLED=$(gsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(fvgsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 If `"false"`, skip with message "Code review skipped (workflow.code_review=false)".
 
@@ -972,7 +972,7 @@ Agent(
   Files: ${CHANGED_FILES}
   Output: ${QUICK_DIR}/${quick_id}-REVIEW.md
   Depth: quick",
-  subagent_type="gsd-code-reviewer",
+  subagent_type="fvgsd-code-reviewer",
   model="{executor_model}"
 )
 ```
@@ -1009,7 +1009,7 @@ Task goal: ${DESCRIPTION}
 ${AGENT_SKILLS_VERIFIER}
 
 Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}/${quick_id}-VERIFICATION.md.",
-  subagent_type="gsd-verifier",
+  subagent_type="fvgsd-verifier",
   model="{verifier_model}",
   description="Verify: ${DESCRIPTION}"
 )
@@ -1089,7 +1089,7 @@ Use Edit tool to make these changes atomically
 
 **Step 8: Final commit and completion**
 
-Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `gsd-sdk query commit` command (or legacy `gsd-tools.cjs` commit) handles already-committed files gracefully.
+Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `fvgsd-sdk query commit` command (or legacy `fvgsd-tools.cjs` commit) handles already-committed files gracefully.
 
 Build file list:
 - `${QUICK_DIR}/${quick_id}-PLAN.md`
@@ -1104,14 +1104,14 @@ Build file list:
 # Explicitly stage all artifacts before commit — PLAN.md may be untracked
 # if the executor ran without worktree isolation and committed docs early
 # Filter .planning/ files from staging if commit_docs is disabled (#1783)
-COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 if [ "$COMMIT_DOCS" = "false" ]; then
   file_list_filtered=$(echo "${file_list}" | tr ' ' '\n' | grep -v '^\.planning/' | tr '\n' ' ')
   git add ${file_list_filtered} 2>/dev/null
 else
   git add ${file_list} 2>/dev/null
 fi
-gsd-sdk query commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
+fvgsd-sdk query commit "docs(quick-${quick_id}): ${DESCRIPTION}" --files ${file_list}
 ```
 
 Get final commit hash:
@@ -1136,7 +1136,7 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /vgsd:quick ${GSD_WS}
+Ready for next task: /fvgsd:quick ${FVGSD_WS}
 ```
 
 **If NOT `$VALIDATE_MODE`:**
@@ -1153,7 +1153,7 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /vgsd:quick ${GSD_WS}
+Ready for next task: /fvgsd:quick ${FVGSD_WS}
 ```
 
 </process>

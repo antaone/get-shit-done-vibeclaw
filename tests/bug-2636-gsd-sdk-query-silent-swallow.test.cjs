@@ -1,10 +1,10 @@
 /**
- * Regression guard for #2636 — `gsd-sdk query agent-skills <slug>` calls in
+ * Regression guard for #2636 — `fvgsd-sdk query agent-skills <slug>` calls in
  * workflows must NOT silently swallow failures via a bare `2>/dev/null`.
  *
- * Root cause of #2636: when the installed npm `@gsd-build/sdk` was stale and
+ * Root cause of #2636: when the installed npm `@fvgsd/sdk` was stale and
  * the `agent-skills` handler was missing, every workflow line of the form
- *   AGENT_SKILLS_X=$(gsd-sdk query agent-skills <slug> 2>/dev/null)
+ *   AGENT_SKILLS_X=$(fvgsd-sdk query agent-skills <slug> 2>/dev/null)
  * resolved to empty string, and the `agent_skills.<slug>` config was never
  * injected into spawn prompts. No error ever surfaced.
  *
@@ -12,8 +12,8 @@
  * (stale binary, unregistered handler, runtime error) prints to the
  * workflow's stderr and is visible to the user.
  *
- * Test scope: ONLY `gsd-sdk query agent-skills …` (the exact noun implicated
- * in #2636). Other `gsd-sdk query config-get …` patterns commonly use
+ * Test scope: ONLY `fvgsd-sdk query agent-skills …` (the exact noun implicated
+ * in #2636). Other `fvgsd-sdk query config-get …` patterns commonly use
  * `2>/dev/null || echo "default"` which IS exit-code aware (the `||` branch
  * only runs on non-zero exit) and is a documented fallback pattern.
  *
@@ -44,14 +44,14 @@ function walk(dir, out) {
 }
 
 describe('bug #2636 — agent-skills query must not silently swallow failures', () => {
-  test('no `gsd-sdk query agent-skills ... 2>/dev/null` in workflows', () => {
+  test('no `fvgsd-sdk query agent-skills ... 2>/dev/null` in workflows', () => {
     const files = [];
     for (const root of SCAN_ROOTS) walk(root, files);
     assert.ok(files.length > 0, 'expected to scan some workflow/command files');
 
-    // Match `gsd-sdk query agent-skills <slug>` followed (on the same line)
+    // Match `fvgsd-sdk query agent-skills <slug>` followed (on the same line)
     // by `2>/dev/null` — the silent-swallow anti-pattern.
-    const ANTI = /gsd-sdk\s+query\s+agent-skills\b[^\n]*2>\/dev\/null/;
+    const ANTI = /fvgsd-sdk\s+query\s+agent-skills\b[^\n]*2>\/dev\/null/;
 
     const offenders = [];
     for (const file of files) {
@@ -65,7 +65,7 @@ describe('bug #2636 — agent-skills query must not silently swallow failures', 
 
     assert.strictEqual(
       offenders.length, 0,
-      'Found `gsd-sdk query agent-skills ... 2>/dev/null` (silent swallow — ' +
+      'Found `fvgsd-sdk query agent-skills ... 2>/dev/null` (silent swallow — ' +
       'root cause of #2636). Remove `2>/dev/null` so SDK failures surface.\n\n' +
       offenders.join('\n'),
     );

@@ -1,5 +1,5 @@
 /**
- * Read-only subprocess golden rows: SDK `registry.dispatch` vs `gsd-tools.cjs` JSON on stdout.
+ * Read-only subprocess golden rows: SDK `registry.dispatch` vs `fvgsd-tools.cjs` JSON on stdout.
  * Imported by `read-only-parity.integration.test.ts` and `golden-policy.ts` coverage accounting.
  */
 
@@ -15,10 +15,10 @@ export const GOLDEN_PLAN = '.planning/phases/09-foundation-and-test-infrastructu
 
 /**
  * Strict `toEqual` JSON parity rows verified on this repository.
- * (Expand as more handlers are aligned with `gsd-tools.cjs`.)
+ * (Expand as more handlers are aligned with `fvgsd-tools.cjs`.)
  */
 export const READ_ONLY_JSON_PARITY_ROWS: JsonParityRow[] = [
-  { canonical: 'resolve-model', sdkArgs: ['gsd-planner'], cjs: 'resolve-model', cjsArgs: ['gsd-planner'] },
+  { canonical: 'resolve-model', sdkArgs: ['fvgsd-planner'], cjs: 'resolve-model', cjsArgs: ['fvgsd-planner'] },
   { canonical: 'phase-plan-index', sdkArgs: ['9'], cjs: 'phase-plan-index', cjsArgs: ['9'] },
   { canonical: 'roadmap.get-phase', sdkArgs: ['9'], cjs: 'roadmap', cjsArgs: ['get-phase', '9'] },
   { canonical: 'list.todos', sdkArgs: [], cjs: 'list-todos', cjsArgs: [] },

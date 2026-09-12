@@ -53,7 +53,7 @@ let tmpDir: string;
 beforeAll(async () => {
   tmpDir = join(
     tmpdir(),
-    `gsd-projectdir-regression-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `fvgsd-projectdir-regression-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   await mkdir(join(tmpDir, '.planning'), { recursive: true });
   await writeFile(join(tmpDir, '.planning', 'STATE.md'), FIXTURE_STATE, 'utf-8');

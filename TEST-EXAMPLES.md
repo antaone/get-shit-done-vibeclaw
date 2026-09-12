@@ -51,13 +51,13 @@ const cases = [
 ];
 
 for (const scenario of cases) {
-  test(`gsd-tools rejects ${scenario.name}`, (t) => {
+  test(`fvgsd-tools rejects ${scenario.name}`, (t) => {
     const projectDir = createTempProject('cli-negative-');
     t.after(() => cleanup(projectDir));
 
     const result = spawnSync(
       process.execPath,
-      [path.join(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs'), ...scenario.args, '--json'],
+      [path.join(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'), ...scenario.args, '--json'],
       { cwd: projectDir, encoding: 'utf8' },
     );
 
@@ -186,7 +186,7 @@ test('installer refuses symlink escape outside target root', (t) => {
 
   assert.equal(result.ok, false);
   assert.equal(result.reason, 'symlink_escape');
-  assert.equal(fs.existsSync(path.join(outside, 'gsd-prompt-guard.js')), false);
+  assert.equal(fs.existsSync(path.join(outside, 'fvgsd/prompt-guard.js')), false);
 });
 ```
 

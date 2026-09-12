@@ -37,7 +37,7 @@ const WORKFLOW_PATH = path.join(ROOT, 'get-shit-done', 'workflows', 'code-review
 const { parseCodeReviewFlags, resolveCodeReviewWorkflow } = require(FLAGS_LIB);
 
 describe('#3727 — parseCodeReviewFlags: typed IR for code-review argv', () => {
-  test('code-review workflow parses --fix flag and dispatches gsd-code-fixer', () => {
+  test('code-review workflow parses --fix flag and dispatches fvgsd-code-fixer', () => {
     // This is the invariant being violated: --fix must be captured into the IR
     // and must route to the fixer workflow, not be silently dropped.
     const flags = parseCodeReviewFlags(['2', '--fix']);
@@ -150,15 +150,15 @@ describe('#3727 — code-review.md structural dispatch contract', () => {
     );
   });
 
-  test('dispatch_fix step references gsd-code-fixer agent (via code-review-fix.md chain)', () => {
+  test('dispatch_fix step references fvgsd-code-fixer agent (via code-review-fix.md chain)', () => {
     // The dispatch step must show that fixing will occur, either directly or
-    // by loading code-review-fix.md (which in turn spawns gsd-code-fixer).
+    // by loading code-review-fix.md (which in turn spawns fvgsd-code-fixer).
     const stepStart = src.indexOf('<step name="dispatch_fix">');
     const stepEnd = src.indexOf('</step>', stepStart);
     const stepSection = src.slice(stepStart, stepEnd);
     assert.ok(
-      stepSection.includes('gsd-code-fixer') || stepSection.includes('code-review-fix.md'),
-      'dispatch_fix step must reference gsd-code-fixer agent or code-review-fix.md workflow'
+      stepSection.includes('fvgsd-code-fixer') || stepSection.includes('code-review-fix.md'),
+      'dispatch_fix step must reference fvgsd-code-fixer agent or code-review-fix.md workflow'
     );
   });
 });

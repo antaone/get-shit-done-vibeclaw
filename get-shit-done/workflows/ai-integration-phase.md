@@ -1,5 +1,5 @@
 <purpose>
-Generate an AI design contract (AI-SPEC.md) for phases that involve building AI systems. Orchestrates gsd-framework-selector → gsd-ai-researcher → gsd-domain-researcher → gsd-eval-planner with a validation gate. Inserts between discuss-phase and plan-phase in the GSD lifecycle.
+Generate an AI design contract (AI-SPEC.md) for phases that involve building AI systems. Orchestrates fvgsd-framework-selector → fvgsd-ai-researcher → fvgsd-domain-researcher → fvgsd-eval-planner with a validation gate. Inserts between discuss-phase and plan-phase in the GSD lifecycle.
 
 AI-SPEC.md locks four things before the planner creates tasks:
 1. Framework selection (with rationale and alternatives)
@@ -11,8 +11,8 @@ This prevents the two most common AI development failures: choosing the wrong fr
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/ai-frameworks.md
-@~/.claude/get-shit-done/references/ai-evals.md
+@~/.claude/fvgsd/references/ai-frameworks.md
+@~/.claude/fvgsd/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -20,7 +20,7 @@ This prevents the two most common AI development failures: choosing the wrong fr
 ## 1. Initialize
 
 ```bash
-INIT=$(gsd-sdk query init.plan-phase "$PHASE")
+INIT=$(fvgsd-sdk query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -30,31 +30,31 @@ Parse JSON for: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded
 
 Resolve agent models:
 ```bash
-SELECTOR_MODEL=$(gsd-sdk query resolve-model gsd-framework-selector 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-RESEARCHER_MODEL=$(gsd-sdk query resolve-model gsd-ai-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-DOMAIN_MODEL=$(gsd-sdk query resolve-model gsd-domain-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-PLANNER_MODEL=$(gsd-sdk query resolve-model gsd-eval-planner 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+SELECTOR_MODEL=$(fvgsd-sdk query resolve-model fvgsd-framework-selector 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+RESEARCHER_MODEL=$(fvgsd-sdk query resolve-model fvgsd-ai-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+DOMAIN_MODEL=$(fvgsd-sdk query resolve-model fvgsd-domain-researcher 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+PLANNER_MODEL=$(fvgsd-sdk query resolve-model fvgsd-eval-planner 2>/dev/null | jq -r '.model' 2>/dev/null || true)
 ```
 
 Check config:
 ```bash
-AI_PHASE_ENABLED=$(gsd-sdk query config-get workflow.ai_integration_phase 2>/dev/null || echo "true")
+AI_PHASE_ENABLED=$(fvgsd-sdk query config-get workflow.ai_integration_phase 2>/dev/null || echo "true")
 ```
 
 **If `AI_PHASE_ENABLED` is `false`:**
 ```
-AI phase is disabled in config. Enable via /vgsd:settings.
+AI phase is disabled in config. Enable via /fvgsd:settings.
 ```
 Exit workflow.
 
-**If `planning_exists` is false:** Error — run `/vgsd:new-project` first.
+**If `planning_exists` is false:** Error — run `/fvgsd:new-project` first.
 
 ## 2. Parse and Validate Phase
 
 Extract phase number from $ARGUMENTS. If not provided, detect next unplanned phase.
 
 ```bash
-PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${PHASE}")
+PHASE_INFO=$(fvgsd-sdk query roadmap.get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases.
@@ -64,7 +64,7 @@ PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${PHASE}")
 **If `has_context` is false:**
 ```
 No CONTEXT.md found for Phase {N}.
-Recommended: run /vgsd:discuss-phase {N} first to capture framework preferences.
+Recommended: run /fvgsd:discuss-phase {N} first to capture framework preferences.
 Continuing without user decisions — framework selector will ask all questions.
 ```
 Continue (non-blocking).
@@ -89,7 +89,7 @@ If "View": display file contents, exit.
 If "Skip": exit.
 If "Update": continue to step 5.
 
-## 5. Spawn gsd-framework-selector
+## 5. Spawn fvgsd-framework-selector
 
 Display:
 ```
@@ -100,9 +100,9 @@ Display:
 ◆ Step 1/4 — Framework Selection...
 ```
 
-Spawn `gsd-framework-selector` with:
+Spawn `fvgsd-framework-selector` with:
 ```markdown
-Read ~/.claude/agents/gsd-framework-selector.md for instructions.
+Read ~/.claude/agents/fvgsd-framework-selector.md for instructions.
 
 <objective>
 Select the right AI framework for Phase {phase_number}: {phase_name}
@@ -122,13 +122,13 @@ Goal: {phase_goal}
 
 Parse selector output for: `primary_framework`, `system_type`, `model_provider`, `eval_concerns`, `alternative_framework`.
 
-**If selector fails or returns empty:** Exit with error — "Framework selection failed. Re-run /vgsd:ai-integration-phase {N} or answer the framework question in /vgsd:discuss-phase {N} first."
+**If selector fails or returns empty:** Exit with error — "Framework selection failed. Re-run /fvgsd:ai-integration-phase {N} or answer the framework question in /fvgsd:discuss-phase {N} first."
 
 ## 6. Initialize AI-SPEC.md
 
 Copy template:
 ```bash
-cp "$HOME/.claude/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
+cp "$HOME/.claude/fvgsd/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
 ```
 
 Fill in header fields:
@@ -137,7 +137,7 @@ Fill in header fields:
 - Selected framework (from selector)
 - Alternative considered (from selector)
 
-## 7. Spawn gsd-ai-researcher
+## 7. Spawn fvgsd-ai-researcher
 
 > **Ordering note (prevents tool-level last-writer-wins race):** Steps 7 and 8 write disjoint sections of AI-SPEC.md but MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use the `Edit` tool exclusively (never `Write`) when modifying AI-SPEC.md. A `Write` on a shared file replaces the entire file, silently overwriting the other agent's work; `Edit` targets only the relevant lines. See #3096 for a confirmed 40%-incidence race on parallel dispatch.
 
@@ -146,9 +146,9 @@ Display:
 ◆ Step 2/4 — Researching {primary_framework} docs + AI systems best practices...
 ```
 
-Spawn `gsd-ai-researcher` with:
+Spawn `fvgsd-ai-researcher` with:
 ```markdown
-Read ~/.claude/agents/gsd-ai-researcher.md for instructions.
+Read ~/.claude/agents/fvgsd-ai-researcher.md for instructions.
 
 **Tool discipline (mandatory):**
 Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
@@ -172,7 +172,7 @@ phase_context: Phase {phase_number}: {phase_name} — {phase_goal}
 </input>
 ```
 
-## 8. Spawn gsd-domain-researcher
+## 8. Spawn fvgsd-domain-researcher
 
 > **Wait for Step 7 to complete before spawning this step** (see ordering note in Step 7).
 
@@ -181,9 +181,9 @@ Display:
 ◆ Step 3/4 — Researching domain context and expert evaluation criteria...
 ```
 
-Spawn `gsd-domain-researcher` with:
+Spawn `fvgsd-domain-researcher` with:
 ```markdown
-Read ~/.claude/agents/gsd-domain-researcher.md for instructions.
+Read ~/.claude/agents/fvgsd-domain-researcher.md for instructions.
 
 **Tool discipline (mandatory):**
 Use the Edit tool exclusively when modifying AI-SPEC.md — NEVER use Write on this file.
@@ -207,16 +207,16 @@ ai_spec_path: {ai_spec_path}
 </input>
 ```
 
-## 9. Spawn gsd-eval-planner
+## 9. Spawn fvgsd-eval-planner
 
 Display:
 ```
 ◆ Step 4/4 — Designing evaluation strategy from domain + technical context...
 ```
 
-Spawn `gsd-eval-planner` with:
+Spawn `fvgsd-eval-planner` with:
 ```markdown
-Read ~/.claude/agents/gsd-eval-planner.md for instructions.
+Read ~/.claude/agents/fvgsd-eval-planner.md for instructions.
 
 <objective>
 Design evaluation strategy for Phase {phase_number}: {phase_name}
@@ -276,7 +276,7 @@ git commit -m "docs({phase_slug}): generate AI-SPEC.md — {primary_framework} +
 ◆ Output: {ai_spec_path}
 
 Next step:
-  /vgsd:plan-phase {N}   — planner will consume AI-SPEC.md
+  /fvgsd:plan-phase {N}   — planner will consume AI-SPEC.md
 ```
 
 </process>

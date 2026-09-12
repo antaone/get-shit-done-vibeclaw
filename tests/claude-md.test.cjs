@@ -168,7 +168,7 @@ describe('generate-claude-md skills section', () => {
       '---\nname: automation\ndescription: Project Codex skill.\n---\n\n# Automation\n'
     );
 
-    const homeDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-claude-skills-home-'));
+    const homeDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fvgsd-claude-skills-home-'));
     fs.mkdirSync(path.join(homeDir, '.claude', 'get-shit-done', 'skills', 'import-only'), { recursive: true });
     fs.writeFileSync(
       path.join(homeDir, '.claude', 'get-shit-done', 'skills', 'import-only', 'SKILL.md'),
@@ -193,7 +193,7 @@ describe('generate-claude-md skills section', () => {
   });
 
   test('skips gsd- prefixed skill directories', () => {
-    const gsdSkillDir = path.join(tmpDir, '.claude', 'skills', 'gsd-plan-phase');
+    const gsdSkillDir = path.join(tmpDir, '.claude', 'skills', 'fvgsd-plan-phase');
     const userSkillDir = path.join(tmpDir, '.claude', 'skills', 'my-feature');
     fs.mkdirSync(gsdSkillDir, { recursive: true });
     fs.mkdirSync(userSkillDir, { recursive: true });
@@ -210,7 +210,7 @@ describe('generate-claude-md skills section', () => {
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const content = fs.readFileSync(path.join(tmpDir, 'CLAUDE.md'), 'utf-8');
-    assert.ok(!content.includes('gsd-plan-phase'));
+    assert.ok(!content.includes('fvgsd-plan-phase'));
     assert.ok(content.includes('my-feature'));
     assert.ok(content.includes('Custom project skill'));
   });

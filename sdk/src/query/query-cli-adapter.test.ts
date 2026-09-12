@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const dispatchSpy = vi.hoisted(() => vi.fn());
 const runQueryDispatchSpy = vi.hoisted(() => vi.fn());
-const resolveGsdToolsPathSeamSpy = vi.hoisted(() => vi.fn(() => '/mock/gsd-tools.cjs'));
+const resolveGsdToolsPathSeamSpy = vi.hoisted(() => vi.fn(() => '/mock/fvgsd-tools.cjs'));
 
 vi.mock('./helpers.js', () => ({
   findProjectRoot: (projectDir: string) => projectDir,
@@ -27,7 +27,7 @@ describe('query-cli-adapter', () => {
     dispatchSpy.mockReset();
     runQueryDispatchSpy.mockReset();
     resolveGsdToolsPathSeamSpy.mockReset();
-    resolveGsdToolsPathSeamSpy.mockReturnValue('/mock/gsd-tools.cjs');
+    resolveGsdToolsPathSeamSpy.mockReturnValue('/mock/fvgsd-tools.cjs');
   });
 
   it('returns validation failure for missing query command', async () => {
@@ -66,7 +66,7 @@ describe('query-cli-adapter', () => {
   it('wires resolveGsdToolsPath from the query seam module', async () => {
     runQueryDispatchSpy.mockImplementationOnce(async (input: any) => {
       expect(typeof input.resolveGsdToolsPath).toBe('function');
-      expect(input.resolveGsdToolsPath('/tmp/project')).toBe('/mock/gsd-tools.cjs');
+      expect(input.resolveGsdToolsPath('/tmp/project')).toBe('/mock/fvgsd-tools.cjs');
       expect(resolveGsdToolsPathSeamSpy).toHaveBeenCalledWith('/tmp/project');
       return { ok: true, exit_code: 0, stdout: '', stderr: [] };
     });

@@ -22,11 +22,11 @@ const path = require('path');
 const INSTALL_SRC = path.join(__dirname, '..', 'bin', 'install.js');
 
 const JS_HOOKS = [
-  { name: 'gsd-check-update.js',      registrationAnchor: 'hasGsdUpdateHook' },
-  { name: 'gsd-context-monitor.js',   registrationAnchor: 'hasContextMonitorHook' },
-  { name: 'gsd-prompt-guard.js',      registrationAnchor: 'hasPromptGuardHook' },
-  { name: 'gsd-read-guard.js',        registrationAnchor: 'hasReadGuardHook' },
-  { name: 'gsd-workflow-guard.js',    registrationAnchor: 'hasWorkflowGuardHook' },
+  { name: 'fvgsd/check-update.js',      registrationAnchor: 'hasGsdUpdateHook' },
+  { name: 'fvgsd/context-monitor.js',   registrationAnchor: 'hasContextMonitorHook' },
+  { name: 'fvgsd/prompt-guard.js',      registrationAnchor: 'hasPromptGuardHook' },
+  { name: 'fvgsd/read-guard.js',        registrationAnchor: 'hasReadGuardHook' },
+  { name: 'fvgsd/workflow-guard.js',    registrationAnchor: 'hasWorkflowGuardHook' },
 ];
 
 describe('bug #1754: .js hook registration guards', () => {
@@ -84,7 +84,7 @@ describe('bug #1754: .js hook registration guards', () => {
       src.indexOf('return { settingsPath, settings, statuslineCommand')
     );
 
-    // Count unique hook file existence checks (pattern: path.join(targetDir, 'hooks', 'gsd-*.js'))
+    // Count unique hook file existence checks (pattern: path.join(targetDir, 'hooks', 'fvgsd-*.js'))
     const jsGuards = (registrationSection.match(/gsd-[\w-]+\.js.*not found at target/g) || []);
     const shGuards = (registrationSection.match(/gsd-[\w-]+\.sh.*not found at target/g) || []);
 

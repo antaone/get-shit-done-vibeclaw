@@ -6,7 +6,7 @@ error here MUST fall through and continue to `verify_phase_goal`. The phase
 is never failed by this gate.
 
 ```bash
-DRIFT=$(gsd-tools verify codebase-drift 2>/dev/null || echo '{"skipped":true,"reason":"sdk-failed"}')
+DRIFT=$(fvgsd-tools verify codebase-drift 2>/dev/null || echo '{"skipped":true,"reason":"sdk-failed"}')
 ```
 
 Parse JSON for: `skipped`, `reason`, `action_required`, `directive`,
@@ -34,7 +34,7 @@ New migrations:
 New route modules:
   - {path}
 
-Run /vgsd:map-codebase --paths {affected_paths} to refresh planning context.
+Run /fvgsd:map-codebase --paths {affected_paths} to refresh planning context.
 ```
 
 Then continue to `verify_phase_goal`. Do NOT block. Do NOT spawn anything.
@@ -42,17 +42,17 @@ Then continue to `verify_phase_goal`. Do NOT block. Do NOT spawn anything.
 **If `action_required` is true AND `directive` is `auto-remap`:**
 
 First load the mapper agent's skill bundle (the executor's `AGENT_SKILLS`
-from step `init_context` is for `gsd-executor`, not the mapper):
+from step `init_context` is for `fvgsd-executor`, not the mapper):
 
 ```bash
-AGENT_SKILLS_MAPPER=$(gsd-sdk query agent-skills gsd-codebase-mapper)
+AGENT_SKILLS_MAPPER=$(fvgsd-sdk query agent-skills fvgsd-codebase-mapper)
 ```
 
-Then spawn `gsd-codebase-mapper` agents with the `--paths` hint:
+Then spawn `fvgsd-codebase-mapper` agents with the `--paths` hint:
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="fvgsd-codebase-mapper",
   description="Incremental codebase remap (drift)",
   prompt="Focus: arch
 Today's date: {date}

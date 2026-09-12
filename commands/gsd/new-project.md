@@ -1,5 +1,5 @@
 ---
-name: vgsd:new-project
+name: fvgsd:new-project
 description: Initialize a new project with deep context gathering and PROJECT.md
 argument-hint: "[--auto]"
 allowed-tools:
@@ -12,12 +12,12 @@ requires: [config, phase, plan-phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "new-project" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "new-project" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -42,15 +42,15 @@ Initialize a new project through unified flow: questioning → research (optiona
 - `.planning/ROADMAP.md` — phase structure
 - `.planning/STATE.md` — project memory
 
-**After this command:** Run `/vgsd:plan-phase 1` to start execution.
+**After this command:** Run `/fvgsd:plan-phase 1` to start execution.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/new-project.md
-@~/.claude/get-shit-done/references/questioning.md
-@~/.claude/get-shit-done/references/ui-brand.md
-@~/.claude/get-shit-done/templates/project.md
-@~/.claude/get-shit-done/templates/requirements.md
+@~/.claude/fvgsd/workflows/new-project.md
+@~/.claude/fvgsd/references/questioning.md
+@~/.claude/fvgsd/references/ui-brand.md
+@~/.claude/fvgsd/templates/project.md
+@~/.claude/fvgsd/templates/requirements.md
 </execution_context>
 
 <process>

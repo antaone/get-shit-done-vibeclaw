@@ -16,7 +16,7 @@ import { uatRenderCheckpoint, auditUat } from './uat.js';
 // intel.* handlers intentionally NOT imported — intel (bin/lib/intel.cjs) is
 // out-of-seam (CJS-only) per ADR/PRD docs/adr/3524-cjs-sdk-hard-seam.md §3
 // and docs/prd/3524-cjs-sdk-hard-seam.md L160. Dispatch is handled directly
-// by the `case 'intel':` branch in get-shit-done/bin/gsd-tools.cjs which
+// by the `case 'intel':` branch in get-shit-done/bin/fvgsd-tools.cjs which
 // requires('./lib/intel.cjs') and calls the CJS functions in-process.
 import { writeProfile, generateClaudeProfile, generateDevPreferences, generateClaudeMd } from './profile-output.js';
 import { phaseMvpMode, taskIsBehaviorAdding, userStoryValidate } from './mvp.js';
@@ -92,7 +92,7 @@ export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler
   ['uat.render-checkpoint', uatRenderCheckpoint],
   ['uat render-checkpoint', uatRenderCheckpoint],
   // intel.* entries removed — see import-section comment above. Intel verbs
-  // dispatch via bin/gsd-tools.cjs `case 'intel':` direct to bin/lib/intel.cjs.
+  // dispatch via bin/fvgsd-tools.cjs `case 'intel':` direct to bin/lib/intel.cjs.
   ['generate-claude-profile', generateClaudeProfile],
   ['generate-dev-preferences', generateDevPreferences],
   ['write-profile', writeProfile],

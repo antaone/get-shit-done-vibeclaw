@@ -12,12 +12,12 @@
  *     (returns `RuntimeBridgeSyncResult`, a discriminated union with a
  *     fixed `SyncErrorKind` taxonomy)
  *   • The 7 family routers (`init|phase|phases|roadmap|state|validate|
- *     verify-command-router.cjs`) + top-level `gsd-tools.cjs` dispatch —
+ *     verify-command-router.cjs`) + top-level `fvgsd-tools.cjs` dispatch —
  *     each must route a canonical registry command through the bridge
  *     and emit a JSON-shaped result on stdout.
  *   • Workstream-scoped commands — Phase 6 made these native; the
  *     bridge must accept a `workstream` field and the CLI must still
- *     fall back to CJS when `GSD_WORKSTREAM` is set (the gate the
+ *     fall back to CJS when `FVGSD_WORKSTREAM` is set (the gate the
  *     routers use to defer to per-side CJS handlers).
  *
  * Test rules in force (from `CONTRIBUTING.md` § Testing Standards and
@@ -376,13 +376,13 @@ describe('phase 6: mode:"json" never double-stringifies the data', () => {
 // ─── 6. Workstream-scoped CJS fallback gate ────────────────────────────────────
 //
 // Phase 6 made workstream-scoped commands native in the SDK transport, BUT the
-// CJS routers still force CJS fallback when `GSD_WORKSTREAM` is set in the
+// CJS routers still force CJS fallback when `FVGSD_WORKSTREAM` is set in the
 // environment, so workstream-aware tests and inspections can target a
 // specific workstream's `.planning/` slice without round-tripping through
 // the synckit worker.  Both modes must work and must produce the same JSON
 // shape for the same input fixture.
 
-describe('phase 6: GSD_WORKSTREAM gate routes through CJS fallback consistently', () => {
+describe('phase 6: FVGSD_WORKSTREAM gate routes through CJS fallback consistently', () => {
   let tmpDir;
 
   beforeEach(() => {
@@ -397,15 +397,15 @@ describe('phase 6: GSD_WORKSTREAM gate routes through CJS fallback consistently'
     cleanup(tmpDir);
   });
 
-  test('roadmap get-phase produces identical structured output with and without GSD_WORKSTREAM unset', () => {
+  test('roadmap get-phase produces identical structured output with and without FVGSD_WORKSTREAM unset', () => {
     const sdkPath = runGsdTools(['roadmap', 'get-phase', '1'], tmpDir);
     assert.ok(sdkPath.success, `SDK dispatch failed: ${sdkPath.error}`);
     const sdkPayload = JSON.parse(sdkPath.output);
 
-    // When GSD_WORKSTREAM is set, the router falls through to CJS.  For the
+    // When FVGSD_WORKSTREAM is set, the router falls through to CJS.  For the
     // primary planning slice (no workstream subdir yet), passing the env var
     // should still parse the same ROADMAP.md and emit the same fields.
-    const cjsPath = runGsdTools(['roadmap', 'get-phase', '1'], tmpDir, { GSD_WORKSTREAM: '' });
+    const cjsPath = runGsdTools(['roadmap', 'get-phase', '1'], tmpDir, { FVGSD_WORKSTREAM: '' });
     assert.ok(cjsPath.success, `CJS fallback dispatch failed: ${cjsPath.error}`);
     const cjsPayload = JSON.parse(cjsPath.output);
 

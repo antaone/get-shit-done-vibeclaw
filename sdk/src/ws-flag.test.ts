@@ -130,7 +130,7 @@ describe('GSDTools workstream injection', () => {
   let fixtureDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-ws-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `fvgsd-ws-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fixtureDir = join(tmpDir, 'fixtures');
     await mkdir(fixtureDir, { recursive: true });
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
@@ -146,8 +146,8 @@ describe('GSDTools workstream injection', () => {
     return scriptPath;
   }
 
-  it('passes --ws flag to gsd-tools.cjs when workstream is set', async () => {
-    const { GSDTools } = await import('./gsd-tools.js');
+  it('passes --ws flag to fvgsd-tools.cjs when workstream is set', async () => {
+    const { GSDTools } = await import('./fvgsd-tools.js');
 
     // Script echoes its arguments as JSON
     const scriptPath = await createScript(
@@ -169,7 +169,7 @@ describe('GSDTools workstream injection', () => {
   });
 
   it('does not pass --ws when workstream is undefined', async () => {
-    const { GSDTools } = await import('./gsd-tools.js');
+    const { GSDTools } = await import('./fvgsd-tools.js');
 
     const scriptPath = await createScript(
       'echo-args-no-ws.cjs',
@@ -195,7 +195,7 @@ describe('loadConfig with workstream', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-config-ws-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `fvgsd-config-ws-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(tmpDir, { recursive: true });
   });
 
@@ -248,7 +248,7 @@ describe('ContextEngine with workstream', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-ctx-ws-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `fvgsd-ctx-ws-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(tmpDir, { recursive: true });
   });
 

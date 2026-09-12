@@ -1,5 +1,5 @@
 /**
- * Tests for gsd-check-update-worker.js — Windows npm resolution platform gate.
+ * Tests for fvgsd/check-update-worker.js — Windows npm resolution platform gate.
  *
  * Background (issue #3103, PR #3102):
  *   On Windows, `npm` ships as `npm.cmd`. Node's execFileSync does not apply
@@ -34,9 +34,9 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const WORKER_PATH = path.join(__dirname, '..', 'hooks', 'gsd-check-update-worker.js');
+const WORKER_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/check-update-worker.js');
 
-describe('gsd-check-update-worker: Windows npm spawn platform gate', () => {
+describe('fvgsd/check-update-worker: Windows npm spawn platform gate', () => {
   test('worker file exists', () => {
     assert.ok(fs.existsSync(WORKER_PATH), `worker not found at ${WORKER_PATH}`);
   });

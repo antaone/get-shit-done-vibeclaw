@@ -40,7 +40,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -61,7 +61,7 @@ const {
 const { isValidConfigKey } = require('../get-shit-done/bin/lib/config-schema.cjs');
 
 const { createTempDir } = require('./helpers.cjs');
-const makeTmp = (prefix) => createTempDir(`gsd-3024-${prefix}-`);
+const makeTmp = (prefix) => createTempDir(`fvgsd-3024-${prefix}-`);
 function writeConfig(dir, config) {
   const planningDir = path.join(dir, '.planning');
   fs.mkdirSync(planningDir, { recursive: true });
@@ -129,8 +129,8 @@ describe('#3024 resolveModelForTier: disabled mode is a no-op (acceptance criter
   test('with no dynamic_routing block, falls back to resolveModelInternal', () => {
     writeConfig(projectDir, { model_profile: 'balanced' });
     // resolveModelForTier with attempt=0 must match resolveModelInternal.
-    const baseline = resolveModelInternal(projectDir, 'gsd-phase-researcher');
-    assert.equal(resolveModelForTier(projectDir, 'gsd-phase-researcher', 0), baseline);
+    const baseline = resolveModelInternal(projectDir, 'fvgsd-phase-researcher');
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-phase-researcher', 0), baseline);
   });
 
   test('with dynamic_routing.enabled=false, attempt argument is ignored — same as resolveModelInternal', () => {
@@ -141,10 +141,10 @@ describe('#3024 resolveModelForTier: disabled mode is a no-op (acceptance criter
         tier_models: { light: 'haiku', standard: 'sonnet', heavy: 'opus' },
       },
     });
-    const baseline = resolveModelInternal(projectDir, 'gsd-phase-researcher');
+    const baseline = resolveModelInternal(projectDir, 'fvgsd-phase-researcher');
     // attempt=0 and attempt=1 both ignored when disabled
-    assert.equal(resolveModelForTier(projectDir, 'gsd-phase-researcher', 0), baseline);
-    assert.equal(resolveModelForTier(projectDir, 'gsd-phase-researcher', 1), baseline);
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-phase-researcher', 0), baseline);
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-phase-researcher', 1), baseline);
   });
 });
 
@@ -163,16 +163,16 @@ describe('#3024 resolveModelForTier: enabled mode picks tier_models[default_tier
         tier_models: { light: 'haiku', standard: 'sonnet', heavy: 'opus' },
       },
     });
-    // gsd-codebase-mapper has light default tier per AGENT_DEFAULT_TIERS.
+    // fvgsd-codebase-mapper has light default tier per AGENT_DEFAULT_TIERS.
     // CR nitpick (#3031): assert preconditions explicitly so a tier
     // re-mapping in AGENT_DEFAULT_TIERS surfaces as a test failure
     // instead of a silent skip.
-    assert.equal(AGENT_DEFAULT_TIERS['gsd-codebase-mapper'], 'light',
-      'gsd-codebase-mapper expected to be light tier');
-    assert.equal(resolveModelForTier(projectDir, 'gsd-codebase-mapper', 0), 'haiku');
-    assert.equal(AGENT_DEFAULT_TIERS['gsd-planner'], 'heavy',
-      'gsd-planner expected to be heavy tier');
-    assert.equal(resolveModelForTier(projectDir, 'gsd-planner', 0), 'opus');
+    assert.equal(AGENT_DEFAULT_TIERS['fvgsd-codebase-mapper'], 'light',
+      'fvgsd-codebase-mapper expected to be light tier');
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-codebase-mapper', 0), 'haiku');
+    assert.equal(AGENT_DEFAULT_TIERS['fvgsd-planner'], 'heavy',
+      'fvgsd-planner expected to be heavy tier');
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-planner', 0), 'opus');
   });
 
   test('attempt=1 escalates to next tier up (acceptance criterion 3)', () => {
@@ -303,15 +303,15 @@ describe('#3024 precedence: per-agent override > dynamic_routing > models > prof
   test('per-agent model_overrides beats dynamic_routing (acceptance criterion: override wins)', () => {
     writeConfig(projectDir, {
       model_profile: 'balanced',
-      model_overrides: { 'gsd-codebase-mapper': 'openai/gpt-5' },
+      model_overrides: { 'fvgsd-codebase-mapper': 'openai/gpt-5' },
       dynamic_routing: {
         enabled: true,
         tier_models: { light: 'haiku', standard: 'sonnet', heavy: 'opus' },
       },
     });
     // Per-agent override always wins, even at escalated attempt.
-    assert.equal(resolveModelForTier(projectDir, 'gsd-codebase-mapper', 0), 'openai/gpt-5');
-    assert.equal(resolveModelForTier(projectDir, 'gsd-codebase-mapper', 1), 'openai/gpt-5');
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-codebase-mapper', 0), 'openai/gpt-5');
+    assert.equal(resolveModelForTier(projectDir, 'fvgsd-codebase-mapper', 1), 'openai/gpt-5');
   });
 
   test('dynamic_routing beats phase-type models (#3023)', () => {
@@ -323,10 +323,10 @@ describe('#3024 precedence: per-agent override > dynamic_routing > models > prof
         tier_models: { light: 'haiku', standard: 'sonnet', heavy: 'opus' },
       },
     });
-    // gsd-codebase-mapper is research phase-type; phase-type would give 'opus',
+    // fvgsd-codebase-mapper is research phase-type; phase-type would give 'opus',
     // but dynamic routing (light default → haiku) wins.
-    if (AGENT_DEFAULT_TIERS['gsd-codebase-mapper'] === 'light') {
-      assert.equal(resolveModelForTier(projectDir, 'gsd-codebase-mapper', 0), 'haiku');
+    if (AGENT_DEFAULT_TIERS['fvgsd-codebase-mapper'] === 'light') {
+      assert.equal(resolveModelForTier(projectDir, 'fvgsd-codebase-mapper', 0), 'haiku');
     }
   });
 });

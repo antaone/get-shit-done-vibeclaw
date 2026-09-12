@@ -28,13 +28,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ## エージェント詳細
 
-### gsd-project-researcher
+### fvgsd-project-researcher
 
 **役割:** ロードマップ作成前にドメインエコシステムを調査する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-new-project`, `/vgsd-new-milestone` |
+| **スポーン元** | `/fvgsd-new-project`, `/fvgsd-new-milestone` |
 | **並列数** | 4インスタンス（stack, features, architecture, pitfalls） |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -47,13 +47,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-phase-researcher
+### fvgsd-phase-researcher
 
 **役割:** 計画策定前に、特定フェーズの実装方法を調査する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-plan-phase` |
+| **スポーン元** | `/fvgsd-plan-phase` |
 | **並列数** | 4インスタンス（project-researcher と同じフォーカスエリア） |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -66,13 +66,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-ui-researcher
+### fvgsd-ui-researcher
 
 **役割:** フロントエンドフェーズ向けのUIデザインコントラクトを作成する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-ui-phase` |
+| **スポーン元** | `/fvgsd-ui-phase` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob, WebSearch, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Sonnet |
@@ -87,7 +87,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-assumptions-analyzer
+### fvgsd-assumptions-analyzer
 
 **役割:** フェーズに対してコードベースを深く分析し、エビデンス・信頼度・誤った場合の影響を含む構造化された前提条件を返す。
 
@@ -110,7 +110,7 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-advisor-researcher
+### fvgsd-advisor-researcher
 
 **役割:** discuss-phase のアドバイザーモードにおいて、単一のグレーエリアの決定事項を調査し、構造化された比較表を返す。
 
@@ -132,13 +132,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-research-synthesizer
+### fvgsd-research-synthesizer
 
 **役割:** 並列リサーチャーの出力を統合サマリーにまとめる。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-new-project`（4つのリサーチャー完了後） |
+| **スポーン元** | `/fvgsd-new-project`（4つのリサーチャー完了後） |
 | **並列数** | 単一インスタンス（リサーチャー後に順次実行） |
 | **ツール** | Read, Write, Bash |
 | **モデル (balanced)** | Sonnet |
@@ -147,13 +147,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-planner
+### fvgsd-planner
 
 **役割:** タスク分解、依存関係分析、ゴール逆算検証を含む実行可能なフェーズ計画を作成する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-plan-phase`, `/vgsd-quick` |
+| **スポーン元** | `/fvgsd-plan-phase`, `/fvgsd-quick` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Glob, Grep, WebFetch, mcp (context7) |
 | **モデル (balanced)** | Opus |
@@ -169,13 +169,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-roadmapper
+### fvgsd-roadmapper
 
 **役割:** フェーズ分解と要件マッピングを含むプロジェクトロードマップを作成する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-new-project` |
+| **スポーン元** | `/fvgsd-new-project` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -190,13 +190,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-executor
+### fvgsd-executor
 
 **役割:** アトミックコミット、逸脱処理、チェックポイントプロトコルを使用して GSD 計画を実行する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-execute-phase`, `/vgsd-quick` |
+| **スポーン元** | `/fvgsd-execute-phase`, `/fvgsd-quick` |
 | **並列数** | 複数（ウェーブ内は並列、ウェーブ間は順次） |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -213,13 +213,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-plan-checker
+### fvgsd-plan-checker
 
 **役割:** 実行前に計画がフェーズ目標を達成できるかを検証する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-plan-phase`（検証ループ、最大3回の反復） |
+| **スポーン元** | `/fvgsd-plan-phase`（検証ループ、最大3回の反復） |
 | **並列数** | 単一インスタンス（反復型） |
 | **ツール** | Read, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -238,13 +238,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-integration-checker
+### fvgsd-integration-checker
 
 **役割:** フェーズ間の統合とエンドツーエンドフローを検証する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-audit-milestone` |
+| **スポーン元** | `/fvgsd-audit-milestone` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -253,13 +253,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-ui-checker
+### fvgsd-ui-checker
 
 **役割:** UI-SPEC.md のデザインコントラクトを品質ディメンションに対して検証する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-ui-phase`（検証ループ、最大2回の反復） |
+| **スポーン元** | `/fvgsd-ui-phase`（検証ループ、最大2回の反復） |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Bash, Glob, Grep |
 | **モデル (balanced)** | Sonnet |
@@ -268,13 +268,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-verifier
+### fvgsd-verifier
 
 **役割:** ゴール逆算分析によりフェーズ目標の達成を検証する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-execute-phase`（すべてのエグゼキューター完了後） |
+| **スポーン元** | `/fvgsd-execute-phase`（すべてのエグゼキューター完了後） |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -284,17 +284,17 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 **主な動作:**
 - タスク完了だけでなく、フェーズ目標に対してコードベースを検証
 - 具体的なエビデンス付きの PASS/FAIL 判定
-- `/vgsd-verify-work` で対処すべき問題をログに記録
+- `/fvgsd-verify-work` で対処すべき問題をログに記録
 
 ---
 
-### gsd-nyquist-auditor
+### fvgsd-nyquist-auditor
 
 **役割:** テストを生成して Nyquist バリデーションのギャップを埋める。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-validate-phase` |
+| **スポーン元** | `/fvgsd-validate-phase` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -307,13 +307,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-ui-auditor
+### fvgsd-ui-auditor
 
 **役割:** 実装済みフロントエンドコードの事後的な6ピラービジュアル監査を行う。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-ui-review` |
+| **スポーン元** | `/fvgsd-ui-review` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read, Write, Bash, Grep, Glob |
 | **モデル (balanced)** | Sonnet |
@@ -330,13 +330,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-codebase-mapper
+### fvgsd-codebase-mapper
 
 **役割:** コードベースを探索し、構造化された分析ドキュメントを作成する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-map-codebase` |
+| **スポーン元** | `/fvgsd-map-codebase` |
 | **並列数** | 4インスタンス（tech, architecture, quality, concerns） |
 | **ツール** | Read, Bash, Grep, Glob, Write |
 | **モデル (balanced)** | Haiku |
@@ -350,13 +350,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-debugger
+### fvgsd-debugger
 
 **役割:** 永続的な状態を持つ科学的手法でバグを調査する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-debug`, `/vgsd-verify-work`（失敗時） |
+| **スポーン元** | `/fvgsd-debug`, `/fvgsd-verify-work`（失敗時） |
 | **並列数** | 単一インスタンス（インタラクティブ） |
 | **ツール** | Read, Write, Edit, Bash, Grep, Glob, WebSearch |
 | **モデル (balanced)** | Sonnet |
@@ -375,13 +375,13 @@ GSD はマルチエージェントアーキテクチャを採用しており、�
 
 ---
 
-### gsd-user-profiler
+### fvgsd-user-profiler
 
 **役割:** 8つの行動ディメンションにわたってセッションメッセージを分析し、スコア付きの開発者プロファイルを作成する。
 
 | プロパティ | 値 |
 |------------|-----|
-| **スポーン元** | `/vgsd-profile-user` |
+| **スポーン元** | `/fvgsd-profile-user` |
 | **並列数** | 単一インスタンス |
 | **ツール** | Read |
 | **モデル (balanced)** | Sonnet |

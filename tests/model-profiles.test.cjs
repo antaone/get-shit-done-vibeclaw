@@ -20,7 +20,7 @@ const {
 
 function agentFilesOnDisk() {
   return fs.readdirSync(path.join(__dirname, '..', 'agents'))
-    .filter((f) => /^gsd-.*\.md$/.test(f))
+    .filter((f) => /^fvgsd-.*\.md$/.test(f))
     .map((f) => f.replace(/\.md$/, ''))
     .sort();
 }
@@ -73,7 +73,7 @@ describe('VALID_PROFILES', () => {
   });
 
   test('includes all MODEL_PROFILES keys plus inherit', () => {
-    const fromData = Object.keys(MODEL_PROFILES['gsd-planner']);
+    const fromData = Object.keys(MODEL_PROFILES['fvgsd-planner']);
     for (const profile of fromData) {
       assert.ok(VALID_PROFILES.includes(profile), `VALID_PROFILES should include ${profile}`);
     }
@@ -86,37 +86,37 @@ describe('VALID_PROFILES', () => {
 describe('getAgentToModelMapForProfile', () => {
   test('returns correct models for balanced profile', () => {
     const map = getAgentToModelMapForProfile('balanced');
-    assert.strictEqual(map['gsd-planner'], 'opus');
-    assert.strictEqual(map['gsd-codebase-mapper'], 'haiku');
-    assert.strictEqual(map['gsd-verifier'], 'sonnet');
+    assert.strictEqual(map['fvgsd-planner'], 'opus');
+    assert.strictEqual(map['fvgsd-codebase-mapper'], 'haiku');
+    assert.strictEqual(map['fvgsd-verifier'], 'sonnet');
   });
 
   test('returns correct models for budget profile', () => {
     const map = getAgentToModelMapForProfile('budget');
-    assert.strictEqual(map['gsd-planner'], 'sonnet');
-    assert.strictEqual(map['gsd-phase-researcher'], 'haiku');
+    assert.strictEqual(map['fvgsd-planner'], 'sonnet');
+    assert.strictEqual(map['fvgsd-phase-researcher'], 'haiku');
   });
 
   test('returns correct models for quality profile', () => {
     const map = getAgentToModelMapForProfile('quality');
-    assert.strictEqual(map['gsd-planner'], 'opus');
-    assert.strictEqual(map['gsd-executor'], 'opus');
+    assert.strictEqual(map['fvgsd-planner'], 'opus');
+    assert.strictEqual(map['fvgsd-executor'], 'opus');
   });
 
   test('returns correct models for adaptive profile', () => {
     const map = getAgentToModelMapForProfile('adaptive');
-    assert.strictEqual(map['gsd-planner'], 'opus', 'planner should use opus in adaptive');
-    assert.strictEqual(map['gsd-debugger'], 'opus', 'debugger should use opus in adaptive');
-    assert.strictEqual(map['gsd-executor'], 'sonnet', 'executor should use sonnet in adaptive');
-    assert.strictEqual(map['gsd-codebase-mapper'], 'haiku', 'mapper should use haiku in adaptive');
-    assert.strictEqual(map['gsd-plan-checker'], 'haiku', 'checker should use haiku in adaptive');
+    assert.strictEqual(map['fvgsd-planner'], 'opus', 'planner should use opus in adaptive');
+    assert.strictEqual(map['fvgsd-debugger'], 'opus', 'debugger should use opus in adaptive');
+    assert.strictEqual(map['fvgsd-executor'], 'sonnet', 'executor should use sonnet in adaptive');
+    assert.strictEqual(map['fvgsd-codebase-mapper'], 'haiku', 'mapper should use haiku in adaptive');
+    assert.strictEqual(map['fvgsd-plan-checker'], 'haiku', 'checker should use haiku in adaptive');
   });
 
   test('resolution order: override > profile > default', () => {
     // This tests the conceptual resolution — actual runtime test is in resolveModelInternal
     const map = getAgentToModelMapForProfile('adaptive');
     // Profile gives planner opus
-    assert.strictEqual(map['gsd-planner'], 'opus');
+    assert.strictEqual(map['fvgsd-planner'], 'opus');
     // An override would take precedence (tested via resolveModelInternal in model-alias-map tests)
     // Default fallback is 'sonnet' (core.cjs line 1320)
   });
@@ -132,12 +132,12 @@ describe('getAgentToModelMapForProfile', () => {
 
 describe('formatAgentToModelMapAsTable', () => {
   test('produces a table with header and separator', () => {
-    const map = { 'gsd-planner': 'opus', 'gsd-executor': 'sonnet' };
+    const map = { 'fvgsd-planner': 'opus', 'fvgsd-executor': 'sonnet' };
     const table = formatAgentToModelMapAsTable(map);
     assert.ok(table.includes('Agent'), 'should have Agent header');
     assert.ok(table.includes('Model'), 'should have Model header');
     assert.ok(table.includes('─'), 'should have separator line');
-    assert.ok(table.includes('gsd-planner'), 'should list agent');
+    assert.ok(table.includes('fvgsd-planner'), 'should list agent');
     assert.ok(table.includes('opus'), 'should list model');
   });
 

@@ -16,8 +16,8 @@ const ROOT = path.resolve(__dirname, '..');
 const MANIFEST_PATH = path.join(ROOT, 'docs', 'INVENTORY-MANIFEST.json');
 
 const FAMILIES = [
-  { name: 'agents',      dir: path.join(ROOT, 'agents'),                           filter: (f) => /^gsd-.*\.md$/.test(f),  toName: (f) => f.replace(/\.md$/, '') },
-  { name: 'commands',    dir: path.join(ROOT, 'commands', 'gsd'),                  filter: (f) => f.endsWith('.md'),        toName: (f) => '/vgsd-' + f.replace(/\.md$/, '') },
+  { name: 'agents',      dir: path.join(ROOT, 'agents'),                           filter: (f) => /^fvgsd-.*\.md$/.test(f),  toName: (f) => f.replace(/\.md$/, '') },
+  { name: 'commands',    dir: path.join(ROOT, 'commands', 'gsd'),                  filter: (f) => f.endsWith('.md'),        toName: (f) => '/fvgsd-' + f.replace(/\.md$/, '') },
   { name: 'workflows',   dir: path.join(ROOT, 'get-shit-done', 'workflows'),        filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'references',  dir: path.join(ROOT, 'get-shit-done', 'references'),       filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'cli_modules', dir: path.join(ROOT, 'get-shit-done', 'bin', 'lib'),       filter: (f) => f.endsWith('.cjs'),       toName: (f) => f },

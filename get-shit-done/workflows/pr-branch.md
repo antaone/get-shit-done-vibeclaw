@@ -142,7 +142,7 @@ Next steps:
   git push origin {PR_BRANCH}
   gh pr create --base {TARGET} --head {PR_BRANCH}
 
-Or use /vgsd:ship to create the PR automatically.
+Or use /fvgsd:ship to create the PR automatically.
 ```
 </step>
 

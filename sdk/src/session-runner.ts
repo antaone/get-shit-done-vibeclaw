@@ -40,7 +40,7 @@ function resolveModel(options?: SessionOptions, config?: GSDConfig): string | un
   }
 
   // Profile -> Claude id map. Applies only on the Claude runtime.
-  // Use `detectRuntime` so `GSD_RUNTIME` env precedence is honored — a Codex
+  // Use `detectRuntime` so `FVGSD_RUNTIME` env precedence is honored — a Codex
   // run with a Claude-shaped config must NOT be silently routed to Claude.
   const runtime = detectRuntime({
     runtime: (config as Record<string, unknown> | undefined)?.runtime,

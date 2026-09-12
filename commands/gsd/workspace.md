@@ -1,5 +1,5 @@
 ---
-name: vgsd:workspace
+name: fvgsd:workspace
 description: Manage GSD workspaces — create, list, or remove isolated workspace environments
 argument-hint: "[--new | --list | --remove] [name]"
 allowed-tools:
@@ -10,12 +10,12 @@ allowed-tools:
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "workspace" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "workspace" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -34,16 +34,16 @@ Mode routing:
 | Flag | Action | Workflow |
 |------|--------|----------|
 | --new | Create workspace with worktree/clone strategy | new-workspace |
-| --list | Scan ~/vgsd-workspaces/, show summary table | list-workspaces |
+| --list | Scan ~/fvgsd-workspaces/, show summary table | list-workspaces |
 | --remove | Confirm and remove workspace directory | remove-workspace |
 
 </routing>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/new-workspace.md
-@~/.claude/get-shit-done/workflows/list-workspaces.md
-@~/.claude/get-shit-done/workflows/remove-workspace.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/workflows/new-workspace.md
+@~/.claude/fvgsd/workflows/list-workspaces.md
+@~/.claude/fvgsd/workflows/remove-workspace.md
+@~/.claude/fvgsd/references/ui-brand.md
 </execution_context>
 
 <context>

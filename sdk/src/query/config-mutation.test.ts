@@ -16,7 +16,7 @@ import { GSDError } from '../errors.js';
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-cfgmut-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-cfgmut-'));
   await mkdir(join(tmpDir, '.planning'), { recursive: true });
 });
 
@@ -43,7 +43,7 @@ describe('isValidConfigKey', () => {
 
   it('accepts wildcard agent_skills.* patterns', async () => {
     const { isValidConfigKey } = await import('./config-mutation.js');
-    expect(isValidConfigKey('agent_skills.gsd-planner').valid).toBe(true);
+    expect(isValidConfigKey('agent_skills.fvgsd-planner').valid).toBe(true);
     expect(isValidConfigKey('agent_skills.custom_agent').valid).toBe(true);
   });
 
@@ -105,7 +105,7 @@ describe('isValidConfigKey', () => {
   it('#2653 — accepts sample dynamic keys from every DYNAMIC_KEY_PATTERN', async () => {
     const { isValidConfigKey } = await import('./config-mutation.js');
     const samples = [
-      'agent_skills.gsd-planner',
+      'agent_skills.fvgsd-planner',
       'review.models.claude',
       'features.some_feature',
       'claude_md_assembly.blocks.intro',
@@ -252,7 +252,7 @@ describe('configNewProject nested globalDefaults merging (fix #2673)', () => {
   let originalHome: string | undefined;
 
   beforeEach(async () => {
-    fakeHome = await mkdtemp(join(tmpdir(), 'gsd-fakehome-'));
+    fakeHome = await mkdtemp(join(tmpdir(), 'fvgsd-fakehome-'));
     await mkdir(join(fakeHome, '.gsd'), { recursive: true });
     originalHome = process.env.HOME;
     process.env.HOME = fakeHome;

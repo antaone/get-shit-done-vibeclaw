@@ -15,7 +15,7 @@
  * workflows (discuss-phase, plan-phase, etc.) would create the configured
  * phase/milestone branch before their first commit. That fix only landed in
  * the CJS path; sdk/src/query/commit.ts — the live production path for
- * `gsd-sdk query commit` — has zero branching logic.
+ * `fvgsd-sdk query commit` — has zero branching logic.
  *
  * Post codex adversarial review (findings 1-4), this test file has been
  * upgraded from structural source-includes assertions ("grep theater") to

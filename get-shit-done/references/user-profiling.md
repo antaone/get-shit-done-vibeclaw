@@ -1,10 +1,10 @@
 # User Profiling: Detection Heuristics Reference
 
-This reference document defines detection heuristics for behavioral profiling across 8 dimensions. The gsd-user-profiler agent applies these rules when analyzing extracted session messages. Do not invent dimensions or scoring rules beyond what is defined here.
+This reference document defines detection heuristics for behavioral profiling across 8 dimensions. The fvgsd-user-profiler agent applies these rules when analyzing extracted session messages. Do not invent dimensions or scoring rules beyond what is defined here.
 
 ## How to Use This Document
 
-1. The gsd-user-profiler agent reads this document before analyzing any messages
+1. The fvgsd-user-profiler agent reads this document before analyzing any messages
 2. For each dimension, the agent scans messages for the signal patterns defined below
 3. The agent applies the detection heuristics to classify the developer's pattern
 4. Confidence is scored using the thresholds defined per dimension
@@ -665,7 +665,7 @@ For each dimension, assess whether the observed pattern is consistent across the
 
 When `cross_project_consistent` is false, the summary must describe the split:
 
-- "Context-dependent: terse-direct for CLI/backend projects (gsd-tools, api-server), detailed-structured for frontend projects (dashboard, landing-page)."
+- "Context-dependent: terse-direct for CLI/backend projects (fvgsd-tools, api-server), detailed-structured for frontend projects (dashboard, landing-page)."
 - "Context-dependent: fast-intuitive for familiar tech (React, Node), research-first for new domains (Rust, ML)."
 
 The rating field should reflect the **dominant** pattern (most evidence). The summary describes the nuance.

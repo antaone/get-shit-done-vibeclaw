@@ -5,11 +5,11 @@
  * misses bare ~/.claude (without trailing slash), leaving unreplaced references
  * that cause the installer to warn about leaked paths.
  *
- * Files affected: agents/gsd-debugger.md (configDir = ~/.claude) and
+ * Files affected: agents/fvgsd-debugger.md (configDir = ~/.claude) and
  * get-shit-done/workflows/update.md (comment with e.g. ~/.claude).
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -54,7 +54,7 @@ describe('convertClaudeToAntigravityContent bare path replacement (#2418)', () =
     });
 
     test('still replaces ~/.claude/ (with trailing slash) correctly', () => {
-      const input = 'See ~/.claude/get-shit-done/workflows/';
+      const input = 'See ~/.claude/fvgsd/workflows/';
       const result = convertClaudeToAntigravityContent(input, true);
       assert.ok(
         result.includes('~/.gemini/antigravity/get-shit-done/workflows/'),
@@ -64,7 +64,7 @@ describe('convertClaudeToAntigravityContent bare path replacement (#2418)', () =
     });
 
     test('does not double-replace ~/.claude/ paths', () => {
-      const input = 'See ~/.claude/get-shit-done/';
+      const input = 'See ~/.claude/fvgsd/';
       const result = convertClaudeToAntigravityContent(input, true);
       // Result should contain exactly one occurrence of the replacement path
       const count = (result.match(/~\/.gemini\/antigravity\//g) || []).length;
@@ -100,7 +100,7 @@ describe('convertClaudeToAntigravityContent bare path replacement (#2418)', () =
     });
 
     test('does not double-replace ~/.claude/ paths', () => {
-      const input = 'See ~/.claude/get-shit-done/';
+      const input = 'See ~/.claude/fvgsd/';
       const result = convertClaudeToAntigravityContent(input, false);
       // .agent/ should appear exactly once
       const count = (result.match(/\.agent\//g) || []).length;
@@ -121,14 +121,14 @@ describe('convertClaudeToAntigravityContent bare path replacement (#2418)', () =
       return convertClaudeToAntigravityContent(content, isGlobal);
     }
 
-    test('gsd-debugger.md has no leaked ~/.claude after global Antigravity conversion', () => {
-      const debuggerPath = path.join(repoRoot, 'agents', 'gsd-debugger.md');
+    test('fvgsd-debugger.md has no leaked ~/.claude after global Antigravity conversion', () => {
+      const debuggerPath = path.join(repoRoot, 'agents', 'fvgsd-debugger.md');
       if (!fs.existsSync(debuggerPath)) return; // skip if file doesn't exist
       const converted = convertFile(debuggerPath, true);
       const matches = converted.match(leakedPathRegex);
       assert.strictEqual(
         matches, null,
-        `gsd-debugger.md still contains leaked .claude paths after Antigravity conversion: ${matches}`
+        `fvgsd-debugger.md still contains leaked .claude paths after Antigravity conversion: ${matches}`
       );
     });
 

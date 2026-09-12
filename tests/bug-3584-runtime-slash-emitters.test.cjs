@@ -93,7 +93,7 @@ describe('bug-3584: init manager recommendedActions emit hyphen form', () => {
     fs.mkdirSync(phaseDir, { recursive: true });
     fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan\n');
 
-    const result = runGsdTools('init manager', tmpDir, { GSD_RUNTIME: 'claude' });
+    const result = runGsdTools('init manager', tmpDir, { FVGSD_RUNTIME: 'claude' });
     assert.ok(result.success, `init manager failed: ${result.error || result.output}`);
 
     const payload = JSON.parse(result.output);
@@ -118,7 +118,7 @@ describe('bug-3584: init manager recommendedActions emit hyphen form', () => {
     fs.mkdirSync(phaseDir, { recursive: true });
     fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan\n');
 
-    const result = runGsdTools('init manager', tmpDir, { GSD_RUNTIME: 'codex' });
+    const result = runGsdTools('init manager', tmpDir, { FVGSD_RUNTIME: 'codex' });
     assert.ok(result.success, `init manager (codex) failed: ${result.error || result.output}`);
 
     const payload = JSON.parse(result.output);
@@ -156,7 +156,7 @@ describe('bug-3584: phase add persists hyphen form into ROADMAP.md', () => {
     const addResult = runGsdTools(
       ['phase', 'add', 'Test new feature'],
       tmpDir,
-      { GSD_RUNTIME: 'claude' },
+      { FVGSD_RUNTIME: 'claude' },
     );
     assert.ok(addResult.success, `phase add failed: ${addResult.error || addResult.output}`);
     const addPayload = JSON.parse(addResult.output);
@@ -168,7 +168,7 @@ describe('bug-3584: phase add persists hyphen form into ROADMAP.md', () => {
     const getResult = runGsdTools(
       ['roadmap', 'get-phase', String(addPayload.phase_number)],
       tmpDir,
-      { GSD_RUNTIME: 'claude' },
+      { FVGSD_RUNTIME: 'claude' },
     );
     assert.ok(getResult.success, `roadmap get-phase failed: ${getResult.error || getResult.output}`);
     const getPayload = JSON.parse(getResult.output);
@@ -197,7 +197,7 @@ describe('bug-3584: validate health emits hyphen form in fix hints', () => {
     const result = runGsdTools(
       ['validate', 'health'],
       tmpDir,
-      { GSD_RUNTIME: 'claude' },
+      { FVGSD_RUNTIME: 'claude' },
     );
     // validate health exits non-zero on broken projects but still emits JSON to stdout.
     const stdout = result.output;
@@ -242,7 +242,7 @@ describe('bug-3584: validate context recommendation uses hyphen form', () => {
     const result = runGsdTools(
       ['validate', 'context', '--tokens-used', '75000', '--context-window', '100000', '--json'],
       tmpDir,
-      { GSD_RUNTIME: 'claude' },
+      { FVGSD_RUNTIME: 'claude' },
     );
     assert.ok(result.success, `validate context failed: ${result.error || result.output}`);
 
@@ -267,7 +267,7 @@ describe('bug-3584: validate health uses formatter for codex runtime too', () =>
     const result = runGsdTools(
       ['validate', 'health'],
       tmpDir,
-      { GSD_RUNTIME: 'codex' },
+      { FVGSD_RUNTIME: 'codex' },
     );
     let payload;
     try {

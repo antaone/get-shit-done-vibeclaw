@@ -38,7 +38,7 @@ import type {
 import { PhaseStepType, PhaseType, GSDEventType } from './types.js';
 import type { GSDConfig } from './config.js';
 import { CONFIG_DEFAULTS } from './config.js';
-import { GSDTools, GSDToolsError } from './gsd-tools.js';
+import { GSDTools, GSDToolsError } from './fvgsd-tools.js';
 import { PromptFactory, extractBlock, extractSteps, PHASE_WORKFLOW_MAP } from './phase-prompt.js';
 
 // ─── Mock modules ────────────────────────────────────────────────────────────
@@ -236,7 +236,7 @@ describe('PhaseRunner', () => {
 
   beforeEach(async () => {
     tempProjectDirs = [];
-    defaultProjectDir = await mkdtemp(join(tmpdir(), 'gsd-phase-runner-default-'));
+    defaultProjectDir = await mkdtemp(join(tmpdir(), 'fvgsd-phase-runner-default-'));
     tempProjectDirs.push(defaultProjectDir);
     await mkdir(join(defaultProjectDir, defaultPhaseDir), { recursive: true });
     await writeFile(join(defaultProjectDir, defaultPhaseDir, '01-PLAN.md'), '---\nfiles_modified: []\n---\n', 'utf-8');
@@ -508,7 +508,7 @@ describe('PhaseRunner', () => {
     let tempPhaseDir: string;
 
     beforeEach(async () => {
-      tempPhaseDir = await mkdtemp(join(tmpdir(), 'gsd-research-gate-'));
+      tempPhaseDir = await mkdtemp(join(tmpdir(), 'fvgsd-research-gate-'));
     });
 
     afterEach(async () => {
@@ -790,7 +790,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('keeps phase pending when changed phase files contain unresolved TBD/FIXME/XXX markers', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-architectural-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-architectural-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -818,7 +818,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('allows changed-file debt markers when they reference tracked follow-up work', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-tracked-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-tracked-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -842,7 +842,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('allows changed-file entries for files deleted by the phase', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-deleted-file-debt-scan-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-deleted-file-debt-scan-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       await mkdir(phaseDir, { recursive: true });
@@ -863,7 +863,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('allows dotted lowercase xxx placeholder text when scanning debt markers', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-lowercase-placeholder-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-lowercase-placeholder-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -887,7 +887,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('keeps phase pending when changed files contain lowercase debt markers', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-lowercase-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-lowercase-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -912,7 +912,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('keeps phase pending when debt markers are followed by punctuation', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-punctuated-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-punctuated-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -937,7 +937,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('allows bare hash issue references when they read as references', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-bare-hash-ref-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-bare-hash-ref-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -961,7 +961,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('does not treat quoted numeric fragments as debt references', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-hex-fragment-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-hex-fragment-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -986,7 +986,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('does not allow unrelated earlier issue text to satisfy a later debt marker', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-unrelated-debt-ref-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-unrelated-debt-ref-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -1011,7 +1011,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('reports one unresolved debt finding per line', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-duplicate-debt-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-duplicate-debt-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const sourceDir = join(projectDir, 'scripts', 'upstream');
@@ -1042,8 +1042,8 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('keeps phase pending when a declared file resolves through a symlink outside the project', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-symlink-project-'));
-      const externalDir = await mkdtemp(join(tmpdir(), 'gsd-symlink-external-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-symlink-project-'));
+      const externalDir = await mkdtemp(join(tmpdir(), 'fvgsd-symlink-external-'));
       tempProjectDirs.push(projectDir, externalDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       await mkdir(phaseDir, { recursive: true });
@@ -1091,7 +1091,7 @@ Use TypeScript.`, 'utf-8');
     });
 
     it('keeps phase pending when plan files cannot be listed for the debt scan', async () => {
-      const projectDir = await mkdtemp(join(tmpdir(), 'gsd-debt-missing-plans-'));
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-debt-missing-plans-'));
       tempProjectDirs.push(projectDir);
       const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
       const logger = { warn: vi.fn(), info: vi.fn(), debug: vi.fn() } as any;
@@ -1558,7 +1558,7 @@ Use TypeScript.`, 'utf-8');
     it('throws PhaseRunnerError when initPhaseOp fails', async () => {
       const deps = makeDeps();
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('gsd-tools crashed'),
+        new Error('fvgsd-tools crashed'),
       );
 
       const runner = new PhaseRunner(deps);
@@ -1666,7 +1666,7 @@ Use TypeScript.`, 'utf-8');
       const deps = makeDeps({ config });
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
       (deps.tools.phaseComplete as ReturnType<typeof vi.fn>).mockRejectedValue(
-        new Error('gsd-tools commit failed'),
+        new Error('fvgsd-tools commit failed'),
       );
 
       const runner = new PhaseRunner(deps);
@@ -3002,7 +3002,7 @@ describe('GSDTools typed methods', () => {
   let fixtureDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(tmpdir(), `gsd-tools-phase-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tmpDir = join(tmpdir(), `fvgsd-tools-phase-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fixtureDir = join(tmpDir, 'fixtures');
     await mkdir(fixtureDir, { recursive: true });
     await mkdir(join(tmpDir, '.planning'), { recursive: true });
@@ -3019,7 +3019,7 @@ describe('GSDTools typed methods', () => {
   }
 
   describe('initPhaseOp()', () => {
-    it('returns typed PhaseOpInfo from gsd-tools output', async () => {
+    it('returns typed PhaseOpInfo from fvgsd-tools output', async () => {
       const mockOutput: PhaseOpInfo = {
         phase_found: true,
         phase_dir: '.planning/phases/05-Skill-Scaffolding',
@@ -3085,7 +3085,7 @@ describe('GSDTools typed methods', () => {
   });
 
   describe('configGet()', () => {
-    it('returns string value from gsd-tools config', async () => {
+    it('returns string value from fvgsd-tools config', async () => {
       const scriptPath = await createScript(
         'config-get.cjs',
         `
@@ -3155,7 +3155,7 @@ describe('GSDTools typed methods', () => {
 // ─── Prompt helpers ───────────────────────────────────────────────────────────
 
 async function createPromptTempDir(): Promise<string> {
-  return mkdtemp(join(tmpdir(), 'gsd-prompt-'));
+  return mkdtemp(join(tmpdir(), 'fvgsd-prompt-'));
 }
 
 function makeWorkflowContent(purpose: string, steps: string[]): string {
@@ -3276,8 +3276,8 @@ describe('PromptFactory', () => {
         makeWorkflowContent('Research the phase.', ['Gather info', 'Analyze findings']),
       );
       await writeFile(
-        join(agentsDir, 'gsd-phase-researcher.md'),
-        makeAgentDef('gsd-phase-researcher', 'Read, Grep, Bash', 'You are a researcher.'),
+        join(agentsDir, 'fvgsd-phase-researcher.md'),
+        makeAgentDef('fvgsd-phase-researcher', 'Read, Grep, Bash', 'You are a researcher.'),
       );
 
       const factory = makeFactory();
@@ -3309,8 +3309,8 @@ describe('PromptFactory', () => {
         makeWorkflowContent('Plan the implementation.', ['Break down tasks']),
       );
       await writeFile(
-        join(agentsDir, 'gsd-planner.md'),
-        makeAgentDef('gsd-planner', 'Read, Write, Bash', 'You are a planner.'),
+        join(agentsDir, 'fvgsd-planner.md'),
+        makeAgentDef('fvgsd-planner', 'Read, Write, Bash', 'You are a planner.'),
       );
 
       const factory = makeFactory();
@@ -3333,8 +3333,8 @@ describe('PromptFactory', () => {
 
     it('delegates execute phase with plan to buildExecutorPrompt', async () => {
       await writeFile(
-        join(agentsDir, 'gsd-executor.md'),
-        makeAgentDef('gsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.'),
+        join(agentsDir, 'fvgsd-executor.md'),
+        makeAgentDef('fvgsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.'),
       );
 
       const factory = makeFactory();
@@ -3355,8 +3355,8 @@ describe('PromptFactory', () => {
         makeWorkflowContent('Execute the plan.', ['Run tasks']),
       );
       await writeFile(
-        join(agentsDir, 'gsd-executor.md'),
-        makeAgentDef('gsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.'),
+        join(agentsDir, 'fvgsd-executor.md'),
+        makeAgentDef('fvgsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.'),
       );
 
       const factory = makeFactory();
@@ -3376,8 +3376,8 @@ describe('PromptFactory', () => {
         makeWorkflowContent('Verify phase goals.', ['Check artifacts', 'Run tests']),
       );
       await writeFile(
-        join(agentsDir, 'gsd-verifier.md'),
-        makeAgentDef('gsd-verifier', 'Read, Bash, Grep', 'You are a verifier.'),
+        join(agentsDir, 'fvgsd-verifier.md'),
+        makeAgentDef('fvgsd-verifier', 'Read, Bash, Grep', 'You are a verifier.'),
       );
 
       const factory = makeFactory();
@@ -3411,8 +3411,8 @@ describe('PromptFactory', () => {
 
     it('handles missing workflow file gracefully', async () => {
       await writeFile(
-        join(agentsDir, 'gsd-phase-researcher.md'),
-        makeAgentDef('gsd-phase-researcher', 'Read, Bash', 'You are a researcher.'),
+        join(agentsDir, 'fvgsd-phase-researcher.md'),
+        makeAgentDef('fvgsd-phase-researcher', 'Read, Bash', 'You are a researcher.'),
       );
 
       const factory = makeFactory();
@@ -3478,7 +3478,7 @@ describe('PromptFactory', () => {
   describe('loadAgentDef', () => {
     it('loads agent def from agents dir', async () => {
       await writeFile(
-        join(agentsDir, 'gsd-executor.md'),
+        join(agentsDir, 'fvgsd-executor.md'),
         'agent content',
       );
 
@@ -3497,7 +3497,7 @@ describe('PromptFactory', () => {
       const projectAgentsDir = join(tempDir, 'project-agents');
       await mkdir(projectAgentsDir, { recursive: true });
       await writeFile(
-        join(projectAgentsDir, 'gsd-executor.md'),
+        join(projectAgentsDir, 'fvgsd-executor.md'),
         'project agent content',
       );
 
@@ -3515,8 +3515,8 @@ describe('PromptFactory', () => {
     it('prefers user agents dir over project agents dir', async () => {
       const projectAgentsDir = join(tempDir, 'project-agents');
       await mkdir(projectAgentsDir, { recursive: true });
-      await writeFile(join(agentsDir, 'gsd-executor.md'), 'user agent');
-      await writeFile(join(projectAgentsDir, 'gsd-executor.md'), 'project agent');
+      await writeFile(join(agentsDir, 'fvgsd-executor.md'), 'user agent');
+      await writeFile(join(projectAgentsDir, 'fvgsd-executor.md'), 'project agent');
 
       const factory = new PromptFactory({
         gsdInstallDir: tempDir,
@@ -3570,8 +3570,8 @@ describe('PromptFactory', () => {
       const sdkDir = join(tempDir, 'sdk-prompts');
       await mkdir(join(sdkDir, 'agents'), { recursive: true });
 
-      await writeFile(join(agentsDir, 'gsd-executor.md'), 'user agent');
-      await writeFile(join(sdkDir, 'agents', 'gsd-executor.md'), 'SDK bundled agent');
+      await writeFile(join(agentsDir, 'fvgsd-executor.md'), 'user agent');
+      await writeFile(join(sdkDir, 'agents', 'fvgsd-executor.md'), 'SDK bundled agent');
 
       const factory = new PromptFactory({
         gsdInstallDir: tempDir,
@@ -3587,7 +3587,7 @@ describe('PromptFactory', () => {
       const sdkDir = join(tempDir, 'sdk-prompts');
       await mkdir(join(sdkDir, 'agents'), { recursive: true });
 
-      await writeFile(join(agentsDir, 'gsd-executor.md'), 'user agent');
+      await writeFile(join(agentsDir, 'fvgsd-executor.md'), 'user agent');
 
       const factory = new PromptFactory({
         gsdInstallDir: tempDir,
@@ -3608,8 +3608,8 @@ describe('PromptFactory', () => {
         ]),
       );
       await writeFile(
-        join(agentsDir, 'gsd-phase-researcher.md'),
-        makeAgentDef('gsd-phase-researcher', 'Read, Bash', 'You are a researcher.\nSTOP and wait for user input.\nBe thorough.'),
+        join(agentsDir, 'fvgsd-phase-researcher.md'),
+        makeAgentDef('fvgsd-phase-researcher', 'Read, Bash', 'You are a researcher.\nSTOP and wait for user input.\nBe thorough.'),
       );
 
       const factory = makeFactory();
@@ -3629,8 +3629,8 @@ describe('PromptFactory', () => {
 
     it('buildPrompt with execute+plan sanitizes output from buildExecutorPrompt', async () => {
       await writeFile(
-        join(agentsDir, 'gsd-executor.md'),
-        makeAgentDef('gsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.\nSTOP and wait for user.\nExecute thoroughly.'),
+        join(agentsDir, 'fvgsd-executor.md'),
+        makeAgentDef('fvgsd-executor', 'Read, Write, Edit, Bash', 'You are an executor.\nSTOP and wait for user.\nExecute thoroughly.'),
       );
 
       const factory = makeFactory();

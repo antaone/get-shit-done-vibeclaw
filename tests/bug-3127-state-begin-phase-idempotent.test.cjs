@@ -32,7 +32,7 @@ function requireStateCjs() {
 }
 
 function makeTempPlanning(stateContent) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3127-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3127-'));
   const planningDir = path.join(dir, '.planning');
   fs.mkdirSync(planningDir, { recursive: true });
   fs.writeFileSync(path.join(planningDir, 'STATE.md'), stateContent, 'utf8');

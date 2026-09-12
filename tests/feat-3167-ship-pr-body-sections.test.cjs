@@ -19,7 +19,7 @@ function readRepoFile(relativePath) {
 }
 
 function makeProject() {
-  const tmpDir = createTempProject('gsd-3167-');
+  const tmpDir = createTempProject('fvgsd-3167-');
   tmpDirs.push(tmpDir);
   return tmpDir;
 }

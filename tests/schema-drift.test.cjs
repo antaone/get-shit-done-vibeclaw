@@ -221,7 +221,7 @@ describe('checkSchemaDrift', () => {
     assert.strictEqual(result.blocking, false);
   });
 
-  test('respects GSD_SKIP_SCHEMA_CHECK override', () => {
+  test('respects FVGSD_SKIP_SCHEMA_CHECK override', () => {
     const changedFiles = ['src/collections/Posts.ts'];
     const executionLog = 'npm run build';
     const result = checkSchemaDrift(changedFiles, executionLog, { skipCheck: true });
@@ -255,7 +255,7 @@ describe('verify schema-drift CLI command', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempGitProject('gsd-schema-drift-');
+    tmpDir = createTempGitProject('fvgsd-schema-drift-');
   });
 
   afterEach(() => {

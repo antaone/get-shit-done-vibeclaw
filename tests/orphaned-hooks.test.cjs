@@ -5,7 +5,7 @@
 
 /**
  * Regression test for #1750: orphaned hook files from removed features
- * (e.g., gsd-intel-*.js) should NOT be flagged as stale by gsd-check-update.js.
+ * (e.g., gsd-intel-*.js) should NOT be flagged as stale by fvgsd/check-update.js.
  *
  * The stale hooks scanner should only check hooks that are part of the current
  * distribution, not every gsd-*.js file in the hooks directory.
@@ -18,35 +18,35 @@ const path = require('path');
 
 // MANAGED_HOOKS lives in the worker file (extracted from inline -e code to eliminate
 // template-literal regex-escaping concerns). Tests read the worker directly.
-const CHECK_UPDATE_PATH = path.join(__dirname, '..', 'hooks', 'gsd-check-update.js');
-const WORKER_PATH = path.join(__dirname, '..', 'hooks', 'gsd-check-update-worker.js');
+const CHECK_UPDATE_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/check-update.js');
+const WORKER_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/check-update-worker.js');
 const BUILD_HOOKS_PATH = path.join(__dirname, '..', 'scripts', 'build-hooks.js');
 
 describe('orphaned hooks stale detection (#1750)', () => {
   test('stale hook scanner uses an allowlist of managed hooks, not a wildcard', () => {
     const content = fs.readFileSync(WORKER_PATH, 'utf8');
 
-    // The scanner MUST NOT use a broad `startsWith('gsd-')` filter that catches
+    // The scanner MUST NOT use a broad `startsWith('fvgsd-')` filter that catches
     // orphaned files from removed features (gsd-intel-index.js, gsd-intel-prune.js, etc.)
     // Instead, it should reference a known set of managed hook filenames.
-    const hasBroadFilter = /readdirSync\([^)]+\)\.filter\([^)]*startsWith\('gsd-'\)\s*&&[^)]*endsWith\('\.js'\)/s.test(content);
+    const hasBroadFilter = /readdirSync\([^)]+\)\.filter\([^)]*startsWith\('fvgsd-'\)\s*&&[^)]*endsWith\('\.js'\)/s.test(content);
     assert.ok(!hasBroadFilter,
-      'scanner must NOT use broad startsWith("gsd-") && endsWith(".js") filter — ' +
+      'scanner must NOT use broad startsWith("fvgsd-") && endsWith(".js") filter — ' +
       'this catches orphaned hooks from removed features (e.g., gsd-intel-index.js). ' +
       'Use a MANAGED_HOOKS allowlist instead.');
   });
 
-  test('gsd-check-update.js spawns the worker by file path (not inline -e code)', () => {
+  test('fvgsd/check-update.js spawns the worker by file path (not inline -e code)', () => {
     // After the worker extraction, the main hook must spawn the worker file
     // rather than embedding all logic in a template literal.
     const content = fs.readFileSync(CHECK_UPDATE_PATH, 'utf8');
     assert.ok(
-      content.includes('gsd-check-update-worker.js'),
-      'gsd-check-update.js must reference gsd-check-update-worker.js as the spawn target'
+      content.includes('fvgsd/check-update-worker.js'),
+      'fvgsd/check-update.js must reference fvgsd/check-update-worker.js as the spawn target'
     );
     assert.ok(
       !content.includes("'-e'"),
-      'gsd-check-update.js must not use node -e inline code (logic moved to worker file)'
+      'fvgsd/check-update.js must not use node -e inline code (logic moved to worker file)'
     );
   });
 
@@ -78,9 +78,9 @@ describe('orphaned hooks stale detection (#1750)', () => {
 
     // These are real orphaned hooks from the removed intel feature
     const orphanedHooks = [
-      'gsd-intel-index.js',
-      'gsd-intel-prune.js',
-      'gsd-intel-session.js',
+      'fvgsd-intel-index.js',
+      'fvgsd-intel-prune.js',
+      'fvgsd-intel-session.js',
     ];
 
     for (const orphan of orphanedHooks) {

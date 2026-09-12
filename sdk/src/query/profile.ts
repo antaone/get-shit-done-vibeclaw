@@ -13,7 +13,7 @@
  * // { data: { projects: [...], project_count: 5, session_count: 42 } }
  *
  * await profileQuestionnaire([], '/project');
- * // { data: { mode: 'interactive', questions: [...] } } — same shape as gsd-tools.cjs
+ * // { data: { mode: 'interactive', questions: [...] } } — same shape as fvgsd-tools.cjs
  * ```
  */
 
@@ -84,7 +84,7 @@ export const learningsListHandler: QueryHandler = async () => {
  * Query learnings from the global knowledge store, optionally filtered by tag.
  *
  * Port of `cmdLearningsQuery` from learnings.cjs lines 316-323.
- * Called by gsd-planner agent to inject prior learnings into plan generation.
+ * Called by fvgsd-planner agent to inject prior learnings into plan generation.
  *
  * Args: --tag <tag> [--limit N]
  */
@@ -198,7 +198,7 @@ export const learningsDelete: QueryHandler = async (args) => {
 /**
  * Extract user messages from Claude Code session files for a given project.
  *
- * Port of `cmdExtractMessages` from profile-pipeline.cjs — JSON matches `gsd-tools extract-messages`
+ * Port of `cmdExtractMessages` from profile-pipeline.cjs — JSON matches `fvgsd-tools extract-messages`
  * (`output_file` JSONL + metadata). Uses `--session` (CJS); `--session-id` is accepted as an alias.
  *
  * @param args - args[0]: project name/keyword (required), `--session <id>`, `--limit N`, `--path <dir>`
@@ -214,7 +214,7 @@ export const extractMessages: QueryHandler = async (args) => {
   const projectArg = args[0];
   if (!projectArg || projectArg.startsWith('--')) {
     throw new GSDError(
-      'Usage: gsd-tools extract-messages <project> [--session <id>] [--limit N] [--path <dir>]\nRun scan-sessions first to see available projects.',
+      'Usage: fvgsd-tools extract-messages <project> [--session <id>] [--limit N] [--path <dir>]\nRun scan-sessions first to see available projects.',
       ErrorClassification.Validation,
     );
   }
@@ -243,7 +243,7 @@ export const scanSessions: QueryHandler = async (args) => {
 
 /**
  * Multi-project session sampling for profiling — port of `cmdProfileSample` (`profile-pipeline.cjs`).
- * JSON matches `gsd-tools profile-sample` (`output_file` JSONL + metadata).
+ * JSON matches `fvgsd-tools profile-sample` (`output_file` JSONL + metadata).
  */
 export const profileSample: QueryHandler = async (args) => {
   const pathIdx = args.indexOf('--path');

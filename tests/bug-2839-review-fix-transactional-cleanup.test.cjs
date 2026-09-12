@@ -21,7 +21,7 @@
 'use strict';
 
 // allow-test-rule: source-text-is-the-product
-// The gsd-code-fixer agent's working instructions ARE the product — Claude
+// The fvgsd-code-fixer agent's working instructions ARE the product — Claude
 // follows them at runtime. Structural assertions over the markdown source
 // test the deployed contract. See bug-2686 for the same pattern.
 
@@ -46,8 +46,8 @@ describe('bug-2839: /gsd-code-review-fix cleanup is transactional', () => {
   let frontmatter;
 
   before(() => {
-    agentPath = path.join(__dirname, '..', 'agents', 'gsd-code-fixer.md');
-    assert.ok(fs.existsSync(agentPath), 'agents/gsd-code-fixer.md must exist');
+    agentPath = path.join(__dirname, '..', 'agents', 'fvgsd-code-fixer.md');
+    assert.ok(fs.existsSync(agentPath), 'agents/fvgsd-code-fixer.md must exist');
     agentContent = fs.readFileSync(agentPath, 'utf-8');
     frontmatter = parseFrontmatter(agentContent);
     assert.ok(frontmatter, 'agent must have YAML frontmatter');
@@ -56,7 +56,7 @@ describe('bug-2839: /gsd-code-review-fix cleanup is transactional', () => {
   test('agent declares a recovery sentinel filename', () => {
     assert.ok(
       agentContent.includes(SENTINEL_NAME),
-      `gsd-code-fixer.md must reference the recovery sentinel ${SENTINEL_NAME} so an interrupted cleanup tail is discoverable (#2839)`
+      `fvgsd-code-fixer.md must reference the recovery sentinel ${SENTINEL_NAME} so an interrupted cleanup tail is discoverable (#2839)`
     );
   });
 

@@ -6,7 +6,7 @@
  * literal parts of skill/subagent names.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -29,31 +29,31 @@ Test body
 </objective>
 `;
 
-    const result = convertClaudeCommandToAugmentSkill(input, 'vgsd-quick');
+    const result = convertClaudeCommandToAugmentSkill(input, 'fvgsd-quick');
     const nameMatch = result.match(/^name:\s*(.+)$/m);
 
     assert.ok(nameMatch, 'frontmatter contains name field');
-    assert.strictEqual(nameMatch[1], 'vgsd-quick', 'skill name is plain scalar');
-    assert.ok(!result.includes('name: "vgsd-quick"'), 'quoted skill name is not emitted');
+    assert.strictEqual(nameMatch[1], 'fvgsd-quick', 'skill name is plain scalar');
+    assert.ok(!result.includes('name: "fvgsd-quick"'), 'quoted skill name is not emitted');
   });
 
   test('preserves slash for slash commands in markdown body', () => {
     const input = `---
-name: vgsd:plan-phase
+name: fvgsd:plan-phase
 description: Plan a phase
 ---
 
 Next:
-/vgsd:execute-phase 17
-/vgsd-help
-vgsd:progress
+/fvgsd:execute-phase 17
+/fvgsd-help
+fvgsd:progress
 `;
 
-    const result = convertClaudeCommandToAugmentSkill(input, 'vgsd-plan-phase');
-    // Slash commands: /vgsd:execute-phase -> /vgsd-execute-phase
-    assert.ok(result.includes('/vgsd-execute-phase 17'), 'slash command gsd: -> gsd-');
-    assert.ok(result.includes('/vgsd-help'), '/vgsd-help preserved');
-    assert.ok(result.includes('vgsd-progress'), 'bare gsd: -> gsd-');
+    const result = convertClaudeCommandToAugmentSkill(input, 'fvgsd-plan-phase');
+    // Slash commands: /fvgsd:execute-phase -> /fvgsd-execute-phase
+    assert.ok(result.includes('/fvgsd-execute-phase 17'), 'slash command gsd: -> gsd-');
+    assert.ok(result.includes('/fvgsd-help'), '/fvgsd-help preserved');
+    assert.ok(result.includes('fvgsd-progress'), 'bare gsd: -> gsd-');
   });
 
   test('includes augment_skill_adapter block', () => {
@@ -65,7 +65,7 @@ description: A test skill
 Body content.
 `;
 
-    const result = convertClaudeCommandToAugmentSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToAugmentSkill(input, 'fvgsd-test');
     assert.ok(result.includes('<augment_skill_adapter>'), 'adapter header present');
     assert.ok(result.includes('</augment_skill_adapter>'), 'adapter footer present');
     assert.ok(result.includes('launch-process'), 'launch-process tool mentioned');
@@ -83,7 +83,7 @@ Use Edit() to modify files.
 Use Read() to view files.
 `;
 
-    const result = convertClaudeCommandToAugmentSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToAugmentSkill(input, 'fvgsd-test');
     assert.ok(result.includes('launch-process('), 'Bash converted to launch-process');
     assert.ok(result.includes('str-replace-editor('), 'Edit converted to str-replace-editor');
     assert.ok(result.includes('view('), 'Read converted to view');
@@ -108,8 +108,8 @@ You are a bug fixer.
     const nameMatch = result.match(/^name:\s*(.+)$/m);
 
     assert.ok(nameMatch, 'frontmatter contains name field');
-    assert.strictEqual(nameMatch[1], 'gsd-bugfix', 'agent name is plain scalar');
-    assert.ok(!result.includes('name: "gsd-bugfix"'), 'quoted agent name is not emitted');
+    assert.strictEqual(nameMatch[1], 'fvgsd-bugfix', 'agent name is plain scalar');
+    assert.ok(!result.includes('name: "fvgsd-bugfix"'), 'quoted agent name is not emitted');
   });
 
   test('removes color and skills from frontmatter', () => {
@@ -164,8 +164,8 @@ describe('convertClaudeToAugmentMarkdown', () => {
   });
 
   test('normalizes gsd: to gsd-', () => {
-    const input = 'Run /vgsd:new-project for new projects.';
+    const input = 'Run /fvgsd:new-project for new projects.';
     const result = convertClaudeToAugmentMarkdown(input);
-    assert.strictEqual(result, 'Run /vgsd-new-project for new projects.');
+    assert.strictEqual(result, 'Run /fvgsd-new-project for new projects.');
   });
 });

@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * Keep the execution-branch preflight embedded in every public vgsd command.
+ * Keep the execution-branch preflight embedded in every public fvgsd command.
  *
  * Commands are the only portable interception point shared by Claude Code,
  * Gemini CLI, Codex, and the other installer targets. The installer already
@@ -25,12 +25,12 @@ function guard(command, newline) {
   return [
     '<execution_branch_guard>',
     'Before reading execution context, invoking another skill, or changing project state, run:',
-    `\`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ${action} "${command}" --runtime __VGSD_RUNTIME__\``,
+    `\`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ${action} "${command}" --runtime __FVGSD_RUNTIME__\``,
     '',
     'Parse the JSON response:',
     '- Continue only when `allowed` is `true`.',
     '- If `allowed` is `false`, stop and show its `message` and `hint`.',
-    '- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.',
+    '- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.',
     '- If `action` is `created` or `adopted`, tell the user which `branch` is active once.',
     '- For `reused` or `inspected`, continue silently.',
     '</execution_branch_guard>',
@@ -91,10 +91,10 @@ if (problems.length > 0) {
   process.stderr.write(`${problems.join('\n')}\n`);
   process.exitCode = 1;
 } else if (checkOnly && changed > 0) {
-  process.stderr.write(`${changed} vgsd command guard(s) are out of date. Run node scripts/sync-execution-branch-guards.cjs.\n`);
+  process.stderr.write(`${changed} fvgsd command guard(s) are out of date. Run node scripts/sync-execution-branch-guards.cjs.\n`);
   process.exitCode = 1;
 } else {
   process.stdout.write(checkOnly
-    ? 'All vgsd execution-branch guards are synchronized.\n'
-    : `Synchronized ${changed} vgsd execution-branch guard(s).\n`);
+    ? 'All fvgsd execution-branch guards are synchronized.\n'
+    : `Synchronized ${changed} fvgsd execution-branch guard(s).\n`);
 }

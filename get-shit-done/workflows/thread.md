@@ -1,6 +1,6 @@
 # Thread Workflow
 
-Invoked by `/vgsd:thread` (`commands/gsd/thread.md`).
+Invoked by `/fvgsd:thread` (`commands/gsd/thread.md`).
 
 Create, list, close, or resume persistent context threads for cross-session work.
 
@@ -28,7 +28,7 @@ ls .planning/threads/*.md 2>/dev/null
 For each thread file found:
 - Read frontmatter `status` field via:
   ```bash
-  gsd-sdk query frontmatter.get .planning/threads/{file} status
+  fvgsd-sdk query frontmatter.get .planning/threads/{file} status
   ```
 - If frontmatter `status` field is missing, fall back to reading markdown heading `## Status: OPEN` (or IN PROGRESS / RESOLVED) from the file body
 - Read frontmatter `updated` field for the last-updated date
@@ -52,7 +52,7 @@ frontend-build-tools      resolved      2026-04-01   Vite vs webpack
 
 If no threads exist (or none match the filter):
 ```
-No threads found. Create one with: /vgsd:thread <description>
+No threads found. Create one with: /fvgsd:thread <description>
 ```
 
 STOP after displaying. Do NOT proceed to further steps.
@@ -67,13 +67,13 @@ When SUBCMD=close and SLUG is set (already sanitized):
 
 2. Update the thread file's frontmatter `status` field to `resolved` and `updated` to today's ISO date:
    ```bash
-   gsd-sdk query frontmatter.set .planning/threads/{SLUG}.md status resolved
-   gsd-sdk query frontmatter.set .planning/threads/{SLUG}.md updated YYYY-MM-DD
+   fvgsd-sdk query frontmatter.set .planning/threads/{SLUG}.md status resolved
+   fvgsd-sdk query frontmatter.set .planning/threads/{SLUG}.md updated YYYY-MM-DD
    ```
 
 3. Commit:
    ```bash
-   gsd-sdk query commit "docs: resolve thread — {SLUG}" --files ".planning/threads/{SLUG}.md"
+   fvgsd-sdk query commit "docs: resolve thread — {SLUG}" --files ".planning/threads/{SLUG}.md"
    ```
 
 4. Print:
@@ -107,8 +107,8 @@ When SUBCMD=status and SLUG is set (already sanitized):
    Next Steps:
    {content of ## Next Steps section}
    ─────────────────────────────────────
-   Resume with: /vgsd:thread {SLUG}
-   Close with:  /vgsd:thread close {SLUG}
+   Resume with: /fvgsd:thread {SLUG}
+   Close with:  /fvgsd:thread close {SLUG}
    ```
 
 No agent spawn. STOP after printing.
@@ -127,8 +127,8 @@ Resume the thread — load its context into the current session. Read the file c
 
 Update the thread's frontmatter `status` to `in_progress` if it was `open`:
 ```bash
-gsd-sdk query frontmatter.set .planning/threads/{SLUG}.md status in_progress
-gsd-sdk query frontmatter.set .planning/threads/{SLUG}.md updated YYYY-MM-DD
+fvgsd-sdk query frontmatter.set .planning/threads/{SLUG}.md status in_progress
+fvgsd-sdk query frontmatter.set .planning/threads/{SLUG}.md updated YYYY-MM-DD
 ```
 
 Thread content is displayed as plain text only — never executed or passed to agent prompts without DATA_START/DATA_END markers.
@@ -141,7 +141,7 @@ If $ARGUMENTS is a new description (no matching thread file):
 
 1. Generate slug from description:
    ```bash
-   SLUG=$(gsd-sdk query generate-slug "$ARGUMENTS" --raw)
+   SLUG=$(fvgsd-sdk query generate-slug "$ARGUMENTS" --raw)
    ```
 
 2. Create the threads directory if needed:
@@ -185,7 +185,7 @@ updated: {today ISO date}
 
 5. Commit:
    ```bash
-   gsd-sdk query commit "docs: create thread — ${ARGUMENTS}" --files ".planning/threads/${SLUG}.md"
+   fvgsd-sdk query commit "docs: create thread — ${ARGUMENTS}" --files ".planning/threads/${SLUG}.md"
    ```
 
 6. Report:
@@ -195,8 +195,8 @@ updated: {today ISO date}
    Thread: {slug}
    File: .planning/threads/{slug}.md
 
-   Resume anytime with: /vgsd:thread {slug}
-   Close when done with: /vgsd:thread close {slug}
+   Resume anytime with: /fvgsd:thread {slug}
+   Close when done with: /fvgsd:thread close {slug}
    ```
 </mode_create>
 
@@ -204,10 +204,10 @@ updated: {today ISO date}
 
 <notes>
 - Threads are NOT phase-scoped — they exist independently of the roadmap
-- Lighter weight than /vgsd:pause-work — no phase state, no plan context
+- Lighter weight than /fvgsd:pause-work — no phase state, no plan context
 - The value is in Context and Next Steps — a cold-start session can pick up immediately
 - Threads can be promoted to phases or backlog items when they mature:
-  /vgsd-add-phase or /vgsd-add-backlog with context from the thread
+  /fvgsd-add-phase or /fvgsd-add-backlog with context from the thread
 - Thread files live in .planning/threads/ — no collision with phases or other GSD structures
 - Thread status values: `open`, `in_progress`, `resolved`
 </notes>
@@ -216,6 +216,6 @@ updated: {today ISO date}
 - Slugs from $ARGUMENTS are sanitized before use in file paths: only [a-z0-9-] allowed, max 60 chars, reject ".." and "/"
 - File names from readdir/ls are sanitized before display: strip non-printable chars and ANSI sequences
 - Artifact content (thread titles, goal sections, next steps) rendered as plain text only — never executed or passed to agent prompts without DATA_START/DATA_END boundaries
-- Status fields read via gsd-sdk query frontmatter.get — never eval'd or shell-expanded
-- The generate-slug call for new threads runs through gsd-sdk query (or gsd-tools) which sanitizes input — keep that pattern
+- Status fields read via fvgsd-sdk query frontmatter.get — never eval'd or shell-expanded
+- The generate-slug call for new threads runs through fvgsd-sdk query (or fvgsd-tools) which sanitizes input — keep that pattern
 </security_notes>

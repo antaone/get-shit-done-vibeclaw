@@ -1,5 +1,5 @@
 // allow-test-rule: structural-implementation-guard
-// gsd-tools.cjs @file: resolution is a low-level stdout interception that cannot be
+// fvgsd-tools.cjs @file: resolution is a low-level stdout interception that cannot be
 // exercised end-to-end via runGsdTools without a real workflow that emits @file: output.
 // These structural tests guard the interception wiring until a behavioral integration
 // test suite for the full @file: path is added.
@@ -7,7 +7,7 @@
 /**
  * Regression tests for bug #1891
  *
- * gsd-tools.cjs must transparently resolve @file: references in stdout
+ * fvgsd-tools.cjs must transparently resolve @file: references in stdout
  * so that workflows never see the @file: prefix. This eliminates the
  * bash-specific `if [[ "$INIT" == @file:* ]]` check that breaks on
  * PowerShell and other non-bash shells.
@@ -20,13 +20,13 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const GSD_TOOLS_SRC = path.join(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const FVGSD_TOOLS_SRC = path.join(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
 
-describe('bug #1891: @file: resolution in gsd-tools.cjs', () => {
+describe('bug #1891: @file: resolution in fvgsd-tools.cjs', () => {
   let src;
 
   before(() => {
-    src = fs.readFileSync(GSD_TOOLS_SRC, 'utf-8');
+    src = fs.readFileSync(FVGSD_TOOLS_SRC, 'utf-8');
   });
 
   test('main() intercepts stdout and resolves @file: references', () => {

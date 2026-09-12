@@ -69,7 +69,7 @@ vendor/
 .cache/
 tmp/
 .worktrees
-/.vibe/
+/.fvgsd-vibe/
 .envrc
 
 # MemPalace per-project files (issue #185)

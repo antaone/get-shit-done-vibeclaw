@@ -95,7 +95,7 @@ describe('frontmatterSet', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-fm-set-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-fm-set-'));
   });
 
   afterEach(async () => {
@@ -150,7 +150,7 @@ describe('frontmatterMerge', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-fm-merge-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-fm-merge-'));
   });
 
   afterEach(async () => {
@@ -189,7 +189,7 @@ describe('frontmatterValidate', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-fm-validate-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-fm-validate-'));
   });
 
   afterEach(async () => {

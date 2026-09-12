@@ -9,7 +9,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -27,8 +27,8 @@ function parseWorkflowSteps(content) {
       const body = match[2];
       return {
         name: match[1],
-        readsInstalledRuntimeIdentity: body.includes('RUNTIME="${GSD_RUNTIME:-__VGSD_RUNTIME__}"'),
-        keepsSourceCheckoutFallback: body.includes('RUNTIME=$(gsd-sdk query config-get runtime --default claude'),
+        readsInstalledRuntimeIdentity: body.includes('RUNTIME="${FVGSD_RUNTIME:-__FVGSD_RUNTIME__}"'),
+        keepsSourceCheckoutFallback: body.includes('RUNTIME=$(fvgsd-sdk query config-get runtime --default claude'),
         detectsUnsetWorktreeConfig: body.includes('workflow.use_worktrees --default "__unset__"'),
         codexUnsetDefaultsSequential:
           body.includes('if [ "$RUNTIME" = "codex" ]; then') &&
@@ -86,7 +86,7 @@ describe('#3360 — Codex execute-phase handles unsupported worktree isolation',
 
   test('installed Codex and Claude workflows carry their adapter runtime identity', (t) => {
     for (const runtime of ['codex', 'claude']) {
-      const configDir = createTempDir(`vgsd-3360-${runtime}-`);
+      const configDir = createTempDir(`fvgsd-3360-${runtime}-`);
       t.after(() => cleanup(configDir));
       withRuntimeConfigDir(runtime, configDir, () => install(true, runtime));
 
@@ -97,17 +97,17 @@ describe('#3360 — Codex execute-phase handles unsupported worktree isolation',
         'execute-phase.md',
       );
       const content = fs.readFileSync(installedWorkflow, 'utf8');
-      const expectedRuntimeIdentity = `RUNTIME="\${GSD_RUNTIME:-${runtime}}"`;
+      const expectedRuntimeIdentity = `RUNTIME="\${FVGSD_RUNTIME:-${runtime}}"`;
       assert.ok(
         content.includes(expectedRuntimeIdentity),
         `${runtime} workflow did not receive its installed runtime identity`,
       );
-      assert.doesNotMatch(content, /__VGSD_RUNTIME__/);
+      assert.doesNotMatch(content, /__FVGSD_RUNTIME__/);
     }
   });
 
   test('Codex adapter documents that worktree isolation has no direct spawn_agent mapping', () => {
-    const header = getCodexSkillAdapterHeader('gsd-execute-phase');
+    const header = getCodexSkillAdapterHeader('fvgsd-execute-phase');
     assert.match(header, /isolation="worktree"/);
     assert.match(header, /no direct Codex mapping/i);
   });

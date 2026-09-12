@@ -468,7 +468,7 @@ describe('buildStateMd', () => {
 
 // ─── CLI Integration Tests ──────────────────────────────────────────────────
 
-describe('gsd-tools from-gsd2 CLI', () => {
+describe('fvgsd-tools from-gsd2 CLI', () => {
   let tmpDir;
   beforeEach(() => { tmpDir = createTempDir('gsd2-cli-'); });
   afterEach(() => { cleanup(tmpDir); });

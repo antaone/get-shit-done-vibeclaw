@@ -17,15 +17,15 @@ const path = require('node:path');
 const AGENTS_DIR = path.join(__dirname, '../agents');
 
 const AUDIT_AGENTS = [
-  'gsd-plan-checker.md',
-  'gsd-code-reviewer.md',
-  'gsd-security-auditor.md',
-  'gsd-verifier.md',
-  'gsd-eval-auditor.md',
-  'gsd-nyquist-auditor.md',
-  'gsd-ui-auditor.md',
-  'gsd-integration-checker.md',
-  'gsd-doc-verifier.md',
+  'fvgsd-plan-checker.md',
+  'fvgsd-code-reviewer.md',
+  'fvgsd-security-auditor.md',
+  'fvgsd-verifier.md',
+  'fvgsd-eval-auditor.md',
+  'fvgsd-nyquist-auditor.md',
+  'fvgsd-ui-auditor.md',
+  'fvgsd-integration-checker.md',
+  'fvgsd-doc-verifier.md',
 ];
 
 function readAgent(agentsDir, filename) {

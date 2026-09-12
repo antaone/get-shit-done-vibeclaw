@@ -20,7 +20,7 @@ const {
 
 // Cache disk scan results from buildStateFrontmatter per cwd per process (#1967).
 // Avoids re-reading N+1 directories on every state write when the phase structure
-// hasn't changed within the same gsd-tools invocation.
+// hasn't changed within the same fvgsd-tools invocation.
 const _diskScanCache = new Map();
 
 /** Shorthand — every state command needs this path */
@@ -235,7 +235,7 @@ function stateReplaceFieldWithFallback(content, primary, fallback, value) {
   // Neither pattern matched — field may have been reformatted or removed.
   // Log diagnostic so template drift is detected early rather than silently swallowed.
   process.stderr.write(
-    `[gsd-tools] WARNING: STATE.md field "${primary}"${fallback ? ` (fallback: "${fallback}")` : ''} not found — update skipped. ` +
+    `[fvgsd-tools] WARNING: STATE.md field "${primary}"${fallback ? ` (fallback: "${fallback}")` : ''} not found — update skipped. ` +
     `This may indicate STATE.md was externally modified or uses an unexpected format.\n`
   );
   return content;

@@ -8,7 +8,7 @@
  * valid model_profile value meaning "inherit from parent configuration".
  *
  * Root cause: VALID_PROFILES in model-profiles.cjs is derived from
- * Object.keys(MODEL_PROFILES['gsd-planner']), which does not include 'inherit'.
+ * Object.keys(MODEL_PROFILES['fvgsd-planner']), which does not include 'inherit'.
  * cmdConfigSetModelProfile() rejects any value not in VALID_PROFILES.
  */
 

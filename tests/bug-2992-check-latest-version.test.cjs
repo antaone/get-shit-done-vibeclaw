@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -17,8 +17,8 @@ const { checkLatestVersion, CHECK_REASON, PACKAGE_NAME } = require(
 // Tests use a pluggable spawn so no real npm process is invoked.
 
 describe('Bug #2992: deterministic latest-version check', () => {
-  test('PACKAGE_NAME is the constant get-shit-done-cc (no callers can override)', () => {
-    assert.equal(PACKAGE_NAME, 'get-shit-done-cc');
+  test('PACKAGE_NAME is the constant fvgsd (no callers can override)', () => {
+    assert.equal(PACKAGE_NAME, 'fvgsd');
   });
 
   test('CHECK_REASON enum exposes the documented codes', () => {

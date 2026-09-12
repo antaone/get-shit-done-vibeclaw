@@ -2,16 +2,16 @@
 'use strict';
 
 /**
- * Deterministic verifier for the /vgsd-reapply-patches Step 5 "Hunk Verification
+ * Deterministic verifier for the /fvgsd-reapply-patches Step 5 "Hunk Verification
  * Gate". For each backed-up patch file, asserts that the user's added lines
  * (computed from a real diff against the pristine baseline, not from the
  * LLM's prose summary) survive into the merged output.
  *
  * Usage:
  *   node scripts/verify-reapply-patches.cjs \
- *     --patches-dir <path>        \  # gsd-local-patches/
+ *     --patches-dir <path>        \  # fvgsd-local-patches/
  *     --config-dir <path>         \  # ~/.claude (or runtime equivalent)
- *     [--pristine-dir <path>]        # gsd-pristine/; if absent, falls back to
+ *     [--pristine-dir <path>]        # fvgsd-pristine/; if absent, falls back to
  *                                    # treating every significant backup line as
  *                                    # required (over-broad but safe for #2969:
  *                                    # false-positive halts beat silent successes
@@ -139,7 +139,7 @@ function computeUserAddedLines(backupContent, pristineContent) {
 const REASON = Object.freeze({
   OK_NO_USER_LINES_VS_PRISTINE: 'ok_no_user_lines_vs_pristine',
   OK_NO_SIGNIFICANT_BACKUP_LINES: 'ok_no_significant_backup_lines',
-  // Bug #3657: the on-disk gsd-pristine/ file's SHA-256 does not match the
+  // Bug #3657: the on-disk fvgsd-pristine/ file's SHA-256 does not match the
   // hash recorded in backup-meta.json.pristine_hashes.  This means the
   // pristine snapshot was refreshed to a newer GSD version after the backup
   // was captured.  Using the wrong-version pristine as the diff baseline would
@@ -201,7 +201,7 @@ function verifyFile({ relPath, patchesDir, configDir, pristineDir, pristineHashe
         const candidate = fs.readFileSync(pristinePath, 'utf8');
         // Bug #3657: if backup-meta.json recorded a pristine_hash for this
         // file, validate that the on-disk pristine matches it.  A mismatch
-        // means the installer refreshed gsd-pristine/ to a newer GSD version
+        // means the installer refreshed fvgsd-pristine/ to a newer GSD version
         // after the backup was captured.  Using the wrong-version pristine as
         // the diff baseline inverts the delta: upstream removals appear as
         // "user-added lines that must survive", causing FAIL_USER_LINES_MISSING
@@ -220,7 +220,7 @@ function verifyFile({ relPath, patchesDir, configDir, pristineDir, pristineHashe
             // Hash matches: the on-disk pristine is the correct baseline.
             pristineContent = candidate;
           } else {
-            // Hash mismatch: the on-disk gsd-pristine/ was refreshed to a newer
+            // Hash mismatch: the on-disk fvgsd-pristine/ was refreshed to a newer
             // GSD version after the backup was captured.  Using it as the diff
             // baseline would invert the delta and produce false FAIL_USER_LINES_MISSING
             // reports (Bug #3657).  Report the file as ok with a diagnostic code

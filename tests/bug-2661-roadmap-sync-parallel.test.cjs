@@ -91,7 +91,7 @@ describe('bug #2661: execute-plan.md update_roadmap gating', () => {
   test('update_roadmap step exists and invokes roadmap.update-plan-progress', () => {
     assert.ok(stepMatch, 'update_roadmap step must exist');
     assert.ok(
-      /gsd-sdk query roadmap\.update-plan-progress/.test(step),
+      /fvgsd-sdk query roadmap\.update-plan-progress/.test(step),
       'update_roadmap must still invoke roadmap.update-plan-progress'
     );
   });
@@ -99,7 +99,7 @@ describe('bug #2661: execute-plan.md update_roadmap gating', () => {
   test('use_worktrees: false mode — sync call is gated to fire (the #2661 reproducer)', () => {
     // The non-worktree branch must contain the sync call.
     assert.ok(
-      /IS_WORKTREE.*!=.*"true"[\s\S]*?gsd-sdk query roadmap\.update-plan-progress/.test(step),
+      /IS_WORKTREE.*!=.*"true"[\s\S]*?fvgsd-sdk query roadmap\.update-plan-progress/.test(step),
       'sync call must execute on the IS_WORKTREE != "true" branch (use_worktrees: false)'
     );
   });
@@ -118,7 +118,7 @@ describe('bug #2661: execute-plan.md update_roadmap gating', () => {
     );
     // Sync call must appear after the guard check, not before.
     const guardIdx = bash.search(/if \[ "\$IS_WORKTREE" != "true" \]/);
-    const callIdx = bash.search(/gsd-sdk query roadmap\.update-plan-progress/);
+    const callIdx = bash.search(/fvgsd-sdk query roadmap\.update-plan-progress/);
     assert.ok(guardIdx >= 0, 'guard must be present');
     assert.ok(callIdx > guardIdx,
       'sync call must appear inside the use_worktrees: false guard, not before/outside it');
@@ -138,7 +138,7 @@ describe('bug #2661: execute-plan.md update_roadmap gating', () => {
 
 describe('bug #2661: roadmap update-plan-progress handler (use_worktrees: false)', () => {
   let tmpDir;
-  beforeEach(() => { tmpDir = createTempProject('gsd-2661-'); });
+  beforeEach(() => { tmpDir = createTempProject('fvgsd-2661-'); });
   afterEach(() => { cleanup(tmpDir); });
 
   test('three parallel SUMMARY.md files produce three [x] plan checkboxes', () => {

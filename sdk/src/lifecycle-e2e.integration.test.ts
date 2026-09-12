@@ -3,7 +3,7 @@
  * the full phase lifecycle: discuss → research → plan → execute → verify → advance
  * after bootstrapping a real project via InitRunner.
  *
- * This is the capstone proof that `gsd-sdk auto` works end-to-end
+ * This is the capstone proof that `fvgsd-sdk auto` works end-to-end
  * without human intervention. InitRunner bootstraps the project,
  * then GSD.runPhase() drives Phase 1 through the complete lifecycle.
  *
@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 
 import { GSD } from './index.js';
 import { InitRunner } from './init-runner.js';
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { GSDTools, resolveGsdToolsPath } from './fvgsd-tools.js';
 import { GSDEventStream } from './event-stream.js';
 import { GSDEventType, PhaseStepType } from './types.js';
 import type { GSDEvent, PhaseRunnerResult, RoadmapAnalysis } from './types.js';
@@ -38,8 +38,8 @@ try {
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
-const GSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
-const gsdToolsAvailable = existsSync(GSD_TOOLS_PATH);
+const FVGSD_TOOLS_PATH = resolveGsdToolsPath(process.cwd());
+const gsdToolsAvailable = existsSync(FVGSD_TOOLS_PATH);
 
 // ─── Lifecycle step ordering for monotonicity check ──────────────────────────
 
@@ -63,7 +63,7 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E Lifecycle: InitRunner 
 
   // ── Bootstrap: create temp dir, git init, run InitRunner ──────────────
   beforeAll(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-lifecycle-e2e-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-lifecycle-e2e-'));
 
     // Git init (required by InitRunner and phase lifecycle)
     execSync('git init', { cwd: tmpDir, stdio: 'ignore' });
@@ -72,7 +72,7 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E Lifecycle: InitRunner 
 
     tools = new GSDTools({
       projectDir: tmpDir,
-      gsdToolsPath: GSD_TOOLS_PATH,
+      gsdToolsPath: FVGSD_TOOLS_PATH,
       timeoutMs: 30_000,
     });
 

@@ -2,7 +2,7 @@
 /**
  * Skill cluster definitions for the runtime surface module (ADR-0011 Phase 2).
  *
- * Each cluster is a named group of skill stems. Clusters are used by /vgsd:surface
+ * Each cluster is a named group of skill stems. Clusters are used by /fvgsd:surface
  * to enable/disable a cohesive group of skills without reinstall.
  *
  * Cluster membership may overlap (a skill can live in two clusters). The union

@@ -18,7 +18,7 @@ describe('scan-sessions command', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-profile-test-');
+    tmpDir = createTempDir('fvgsd-profile-test-');
   });
 
   afterEach(() => {
@@ -79,7 +79,7 @@ describe('extract-messages command', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-profile-test-');
+    tmpDir = createTempDir('fvgsd-profile-test-');
   });
 
   afterEach(() => {

@@ -317,7 +317,7 @@ function intelUpdate(planningDir) {
 
   return {
     action: 'spawn_agent',
-    message: 'Run gsd-tools intel update or spawn gsd-intel-updater agent for full refresh'
+    message: 'Run fvgsd-tools intel update or spawn fvgsd-intel-updater agent for full refresh'
   };
 }
 

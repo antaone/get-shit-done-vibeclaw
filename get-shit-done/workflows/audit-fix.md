@@ -5,7 +5,7 @@ after each fix, and commits atomically with finding IDs for traceability.
 </purpose>
 
 <available_agent_types>
-- gsd-executor — executes a specific, scoped code change
+- fvgsd-executor — executes a specific, scoped code change
 </available_agent_types>
 
 <process>
@@ -32,7 +32,7 @@ Invoke the source audit command and capture output.
 
 For `audit-uat` source:
 ```bash
-INIT=$(gsd-sdk query audit-uat 2>/dev/null || echo "{}")
+INIT=$(fvgsd-sdk query audit-uat 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -97,7 +97,7 @@ For each **auto-fixable** finding (up to `--max`, ordered by severity desc):
 ```
 Agent(
   prompt="Fix finding {ID}: {description}. Files: {file_refs}. Make the minimal change to resolve this specific finding. Do not refactor surrounding code.",
-  subagent_type="gsd-executor"
+  subagent_type="fvgsd-executor"
 )
 ```
 
@@ -105,7 +105,7 @@ Agent(
 
 **b. Run tests:**
 ```bash
-AUDIT_TEST_CMD=$(gsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
+AUDIT_TEST_CMD=$(fvgsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
 if [ -z "$AUDIT_TEST_CMD" ]; then
   if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
     AUDIT_TEST_CMD="make test"

@@ -20,7 +20,7 @@ function sha256(content) {
 }
 
 function createTempDir() {
-  return fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-patch-test-'));
+  return fs.mkdtempSync(path.join(require('os').tmpdir(), 'fvgsd-patch-test-'));
 }
 
 function cleanup(dir) {
@@ -49,7 +49,7 @@ function simulateManifestAndPatch(configDir, files) {
     manifest.files[relPath] = sha256(content);
   }
   fs.writeFileSync(
-    path.join(configDir, 'gsd-file-manifest.json'),
+    path.join(configDir, 'fvgsd-file-manifest.json'),
     JSON.stringify(manifest, null, 2)
   );
 
@@ -69,8 +69,8 @@ function fileHash(filePath) {
 }
 
 function saveLocalPatches(configDir) {
-  const PATCHES_DIR_NAME = 'gsd-local-patches';
-  const MANIFEST_NAME = 'gsd-file-manifest.json';
+  const PATCHES_DIR_NAME = 'fvgsd-local-patches';
+  const MANIFEST_NAME = 'fvgsd-file-manifest.json';
   const manifestPath = path.join(configDir, MANIFEST_NAME);
   if (!fs.existsSync(manifestPath)) return [];
 
@@ -138,7 +138,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     assert.ok(result.includes('get-shit-done/workflows/execute-phase.md'));
 
     // Verify backup exists
-    const backupPath = path.join(tmpDir, 'gsd-local-patches', 'get-shit-done/workflows/execute-phase.md');
+    const backupPath = path.join(tmpDir, 'fvgsd-local-patches', 'get-shit-done/workflows/execute-phase.md');
     assert.ok(fs.existsSync(backupPath), 'backup file should exist');
 
     const backupContent = fs.readFileSync(backupPath, 'utf8');
@@ -158,7 +158,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
 
     saveLocalPatches(tmpDir);
 
-    const metaPath = path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json');
+    const metaPath = path.join(tmpDir, 'fvgsd-local-patches', 'backup-meta.json');
     assert.ok(fs.existsSync(metaPath), 'backup-meta.json should exist');
 
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
@@ -182,7 +182,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     saveLocalPatches(tmpDir);
 
     const meta = JSON.parse(fs.readFileSync(
-      path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json'), 'utf8'
+      path.join(tmpDir, 'fvgsd-local-patches', 'backup-meta.json'), 'utf8'
     ));
 
     assert.strictEqual(meta.from_version, '1.0.0');
@@ -201,7 +201,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
 
     const result = saveLocalPatches(tmpDir);
     assert.strictEqual(result.length, 0, 'no files should be detected as modified');
-    assert.ok(!fs.existsSync(path.join(tmpDir, 'gsd-local-patches')), 'patches dir should not be created');
+    assert.ok(!fs.existsSync(path.join(tmpDir, 'fvgsd-local-patches')), 'patches dir should not be created');
   });
 
   test('multiple modified files all get pristine hashes', () => {
@@ -221,7 +221,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
     assert.strictEqual(result.length, 2);
 
     const meta = JSON.parse(fs.readFileSync(
-      path.join(tmpDir, 'gsd-local-patches', 'backup-meta.json'), 'utf8'
+      path.join(tmpDir, 'fvgsd-local-patches', 'backup-meta.json'), 'utf8'
     ));
 
     assert.strictEqual(Object.keys(meta.pristine_hashes).length, 2);
@@ -237,7 +237,7 @@ describe('saveLocalPatches — patch backup and pristine hash tracking (#1469)',
   });
 
   test('returns empty array when manifest is malformed', () => {
-    fs.writeFileSync(path.join(tmpDir, 'gsd-file-manifest.json'), 'not json');
+    fs.writeFileSync(path.join(tmpDir, 'fvgsd-file-manifest.json'), 'not json');
     const result = saveLocalPatches(tmpDir);
     assert.strictEqual(result.length, 0);
   });

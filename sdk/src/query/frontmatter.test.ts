@@ -144,7 +144,7 @@ describe('extractFrontmatter', () => {
 // ─── extractFrontmatterLeading ─────────────────────────────────────────────
 
 describe('extractFrontmatterLeading', () => {
-  it('parses only the first leading block (gsd-tools.cjs / frontmatter.cjs parity)', () => {
+  it('parses only the first leading block (fvgsd-tools.cjs / frontmatter.cjs parity)', () => {
     const content = '---\nfirst: 1\n---\n---\nsecond: 2\n---\nbody';
     expect(extractFrontmatterLeading(content)).toEqual({ first: '1' });
   });
@@ -185,7 +185,7 @@ describe('frontmatterGet', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-fm-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-fm-'));
   });
 
   afterEach(async () => {

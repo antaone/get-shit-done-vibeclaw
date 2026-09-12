@@ -230,11 +230,11 @@ describe('generate-dev-preferences command', () => {
     const result = runGsdTools(
       ['generate-dev-preferences', '--analysis', analysisPath, '--raw'],
       tmpDir,
-      { CODEX_HOME: codexHome, GSD_RUNTIME: 'codex' }
+      { CODEX_HOME: codexHome, FVGSD_RUNTIME: 'codex' }
     );
     assert.ok(result.success, `Failed: ${result.error}`);
     const out = JSON.parse(result.output);
-    assert.strictEqual(out.command_path, path.join(codexHome, 'skills', 'gsd-dev-preferences', 'SKILL.md'));
+    assert.strictEqual(out.command_path, path.join(codexHome, 'skills', 'fvgsd-dev-preferences', 'SKILL.md'));
     assert.ok(fs.existsSync(out.command_path), 'runtime-aware output should be written');
   });
 
@@ -251,7 +251,7 @@ describe('generate-dev-preferences command', () => {
     const result = runGsdTools(
       ['generate-dev-preferences', '--analysis', analysisPath, '--raw'],
       tmpDir,
-      { GSD_RUNTIME: 'cline' }
+      { FVGSD_RUNTIME: 'cline' }
     );
     assert.ok(!result.success, 'cline should require explicit --output');
     assert.ok(result.error.includes('does not use a skills directory'), 'should explain unsupported runtime');

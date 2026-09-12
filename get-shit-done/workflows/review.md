@@ -24,15 +24,15 @@ command -v qwen >/dev/null 2>&1 && echo "qwen:available" || echo "qwen:missing"
 command -v cursor >/dev/null 2>&1 && echo "cursor:available" || echo "cursor:missing"
 
 # Check local model servers (OpenAI-compatible HTTP API — no CLI binary required)
-OLLAMA_HOST=$(gsd-sdk query config-get review.ollama_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+OLLAMA_HOST=$(fvgsd-sdk query config-get review.ollama_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$OLLAMA_HOST" ] || [ "$OLLAMA_HOST" = "null" ]; then OLLAMA_HOST="http://localhost:11434"; fi
 curl -s --max-time 2 "${OLLAMA_HOST}/v1/models" >/dev/null 2>&1 && echo "ollama:available" || echo "ollama:missing"
 
-LM_STUDIO_HOST=$(gsd-sdk query config-get review.lm_studio_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LM_STUDIO_HOST=$(fvgsd-sdk query config-get review.lm_studio_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LM_STUDIO_HOST" ] || [ "$LM_STUDIO_HOST" = "null" ]; then LM_STUDIO_HOST="http://localhost:1234"; fi
 curl -s --max-time 2 "${LM_STUDIO_HOST}/v1/models" >/dev/null 2>&1 && echo "lm_studio:available" || echo "lm_studio:missing"
 
-LLAMA_CPP_HOST=$(gsd-sdk query config-get review.llama_cpp_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LLAMA_CPP_HOST=$(fvgsd-sdk query config-get review.llama_cpp_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LLAMA_CPP_HOST" ] || [ "$LLAMA_CPP_HOST" = "null" ]; then LLAMA_CPP_HOST="http://localhost:8080"; fi
 curl -s --max-time 2 "${LLAMA_CPP_HOST}/v1/models" >/dev/null 2>&1 && echo "llama_cpp:available" || echo "llama_cpp:missing"
 ```
@@ -73,7 +73,7 @@ No external AI CLIs found. Install at least one:
 - qwen: https://github.com/nicepkg/qwen-code (Alibaba Qwen models)
 - cursor: https://cursor.com (Cursor IDE agent mode)
 
-Then run /vgsd:review again.
+Then run /fvgsd:review again.
 ```
 Exit.
 
@@ -108,7 +108,7 @@ Rules:
 Collect phase artifacts for the review prompt:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -212,11 +212,11 @@ Note: The variable names above (`INSTRUCTIONS_BLOCK_FILE`, `ROADMAP_SECTION_FILE
 Read model preferences from planning config. Null/missing values fall back to CLI defaults.
 
 ```bash
-# JSON scalars from gsd-sdk query; use jq -r to strip JSON string quotes (install jq if missing)
-GEMINI_MODEL=$(gsd-sdk query config-get review.models.gemini 2>/dev/null | jq -r '.' 2>/dev/null || true)
-CLAUDE_MODEL=$(gsd-sdk query config-get review.models.claude 2>/dev/null | jq -r '.' 2>/dev/null || true)
-CODEX_MODEL=$(gsd-sdk query config-get review.models.codex 2>/dev/null | jq -r '.' 2>/dev/null || true)
-OPENCODE_MODEL=$(gsd-sdk query config-get review.models.opencode 2>/dev/null | jq -r '.' 2>/dev/null || true)
+# JSON scalars from fvgsd-sdk query; use jq -r to strip JSON string quotes (install jq if missing)
+GEMINI_MODEL=$(fvgsd-sdk query config-get review.models.gemini 2>/dev/null | jq -r '.' 2>/dev/null || true)
+CLAUDE_MODEL=$(fvgsd-sdk query config-get review.models.claude 2>/dev/null | jq -r '.' 2>/dev/null || true)
+CODEX_MODEL=$(fvgsd-sdk query config-get review.models.codex 2>/dev/null | jq -r '.' 2>/dev/null || true)
+OPENCODE_MODEL=$(fvgsd-sdk query config-get review.models.opencode 2>/dev/null | jq -r '.' 2>/dev/null || true)
 ```
 
 For each selected CLI, invoke in sequence (not parallel — avoid rate limits):
@@ -313,7 +313,7 @@ prepare_trimmed_prompt_for_reviewer() {
   REQUIREMENTS_ARG=""
   [ -f "/tmp/gsd-review-{phase}-requirements.md" ] && REQUIREMENTS_ARG="--requirements-file /tmp/gsd-review-{phase}-requirements.md"
 
-  gsd-sdk query prompt-budget \
+  fvgsd-sdk query prompt-budget \
     --budget "$REVIEWER_BUDGET" \
     --instructions-file "/tmp/gsd-review-{phase}-instructions.md" \
     --roadmap-file "/tmp/gsd-review-{phase}-roadmap.md" \
@@ -324,9 +324,9 @@ prepare_trimmed_prompt_for_reviewer() {
 }
 
 # Resolve prompt budget for Ollama: per-reviewer override > global default > null
-OLLAMA_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens_per_reviewer.ollama 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+OLLAMA_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens_per_reviewer.ollama 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 if [ -z "$OLLAMA_REVIEWER_BUDGET" ] || [ "$OLLAMA_REVIEWER_BUDGET" = "null" ]; then
-  OLLAMA_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+  OLLAMA_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 fi
 
 # Apply budget trim for Ollama if a budget is configured
@@ -350,9 +350,9 @@ if [ -n "$OLLAMA_REVIEWER_BUDGET" ] && [ "$OLLAMA_REVIEWER_BUDGET" != "null" ] &
 fi
 
 if [ "$OLLAMA_SKIP" != "1" ]; then
-OLLAMA_HOST=$(gsd-sdk query config-get review.ollama_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+OLLAMA_HOST=$(fvgsd-sdk query config-get review.ollama_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$OLLAMA_HOST" ] || [ "$OLLAMA_HOST" = "null" ]; then OLLAMA_HOST="http://localhost:11434"; fi
-OLLAMA_MODEL=$(gsd-sdk query config-get review.models.ollama 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+OLLAMA_MODEL=$(fvgsd-sdk query config-get review.models.ollama 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$OLLAMA_MODEL" ] || [ "$OLLAMA_MODEL" = "null" ]; then
   OLLAMA_MODEL=$(curl -s --max-time 2 "${OLLAMA_HOST}/v1/models" 2>/dev/null | jq -r '.data[0].id // "llama3"' 2>/dev/null || echo "llama3")
 fi
@@ -372,9 +372,9 @@ fi
 **LM Studio (local, OpenAI-compatible):**
 ```bash
 # Resolve prompt budget for LM Studio: per-reviewer override > global default > null
-LM_STUDIO_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens_per_reviewer.lm_studio 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+LM_STUDIO_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens_per_reviewer.lm_studio 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 if [ -z "$LM_STUDIO_REVIEWER_BUDGET" ] || [ "$LM_STUDIO_REVIEWER_BUDGET" = "null" ]; then
-  LM_STUDIO_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+  LM_STUDIO_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 fi
 
 # Apply budget trim for LM Studio if a budget is configured
@@ -398,9 +398,9 @@ if [ -n "$LM_STUDIO_REVIEWER_BUDGET" ] && [ "$LM_STUDIO_REVIEWER_BUDGET" != "nul
 fi
 
 if [ "$LM_STUDIO_SKIP" != "1" ]; then
-LM_STUDIO_HOST=$(gsd-sdk query config-get review.lm_studio_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LM_STUDIO_HOST=$(fvgsd-sdk query config-get review.lm_studio_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LM_STUDIO_HOST" ] || [ "$LM_STUDIO_HOST" = "null" ]; then LM_STUDIO_HOST="http://localhost:1234"; fi
-LM_STUDIO_MODEL=$(gsd-sdk query config-get review.models.lm_studio 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LM_STUDIO_MODEL=$(fvgsd-sdk query config-get review.models.lm_studio 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LM_STUDIO_MODEL" ] || [ "$LM_STUDIO_MODEL" = "null" ]; then
   LM_STUDIO_MODEL=$(curl -s --max-time 2 "${LM_STUDIO_HOST}/v1/models" 2>/dev/null | jq -r '.data[0].id // "local-model"' 2>/dev/null || echo "local-model")
 fi
@@ -425,9 +425,9 @@ fi
 **llama.cpp (local, OpenAI-compatible):**
 ```bash
 # Resolve prompt budget for llama.cpp: per-reviewer override > global default > null
-LLAMA_CPP_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens_per_reviewer.llama_cpp 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+LLAMA_CPP_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens_per_reviewer.llama_cpp 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 if [ -z "$LLAMA_CPP_REVIEWER_BUDGET" ] || [ "$LLAMA_CPP_REVIEWER_BUDGET" = "null" ]; then
-  LLAMA_CPP_REVIEWER_BUDGET=$(gsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
+  LLAMA_CPP_REVIEWER_BUDGET=$(fvgsd-sdk query config-get review.max_prompt_tokens 2>/dev/null | jq -r '.' 2>/dev/null || echo "null")
 fi
 
 # Apply budget trim for llama.cpp if a budget is configured
@@ -451,9 +451,9 @@ if [ -n "$LLAMA_CPP_REVIEWER_BUDGET" ] && [ "$LLAMA_CPP_REVIEWER_BUDGET" != "nul
 fi
 
 if [ "$LLAMA_CPP_SKIP" != "1" ]; then
-LLAMA_CPP_HOST=$(gsd-sdk query config-get review.llama_cpp_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LLAMA_CPP_HOST=$(fvgsd-sdk query config-get review.llama_cpp_host 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LLAMA_CPP_HOST" ] || [ "$LLAMA_CPP_HOST" = "null" ]; then LLAMA_CPP_HOST="http://localhost:8080"; fi
-LLAMA_CPP_MODEL=$(gsd-sdk query config-get review.models.llama_cpp 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+LLAMA_CPP_MODEL=$(fvgsd-sdk query config-get review.models.llama_cpp 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 if [ -z "$LLAMA_CPP_MODEL" ] || [ "$LLAMA_CPP_MODEL" = "null" ]; then
   LLAMA_CPP_MODEL=$(curl -s --max-time 2 "${LLAMA_CPP_HOST}/v1/models" 2>/dev/null | jq -r '.data[0].id // "local-model"' 2>/dev/null || echo "local-model")
 fi
@@ -585,7 +585,7 @@ trimmed_reviewers:        # only present if at least one reviewer was trimmed
 
 Commit:
 ```bash
-gsd-sdk query commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
+fvgsd-sdk query commit "docs: cross-AI review for phase {N}" --files {phase_dir}/{padded_phase}-REVIEWS.md
 ```
 </step>
 
@@ -605,7 +605,7 @@ Consensus concerns:
 Full review: {padded_phase}-REVIEWS.md
 
 To incorporate feedback into planning:
-  /vgsd:plan-phase {N} --reviews
+  /fvgsd:plan-phase {N} --reviews
 ```
 
 Clean up temp files.
@@ -618,5 +618,5 @@ Clean up temp files.
 - [ ] REVIEWS.md written with structured feedback
 - [ ] Consensus summary synthesized from multiple reviewers
 - [ ] Temp files cleaned up
-- [ ] User knows how to use feedback (/vgsd:plan-phase --reviews)
+- [ ] User knows how to use feedback (/fvgsd:plan-phase --reviews)
 </success_criteria>

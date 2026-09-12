@@ -3,8 +3,8 @@ Safe git revert workflow. Rolls back GSD phase or plan commits using the phase m
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/ui-brand.md
-@~/.claude/get-shit-done/references/gate-prompts.md
+@~/.claude/fvgsd/references/ui-brand.md
+@~/.claude/fvgsd/references/gate-prompts.md
 </required_reading>
 
 <process>
@@ -29,7 +29,7 @@ Parse $ARGUMENTS for the undo mode:
 If no valid argument is provided, display usage and exit:
 
 ```
-Usage: /vgsd:undo --last N | --phase NN | --plan NN-MM
+Usage: /fvgsd:undo --last N | --phase NN | --plan NN-MM
 
 Modes:
   --last N      Show last N GSD commits for interactive selection
@@ -37,9 +37,9 @@ Modes:
   --plan NN-MM  Revert all commits for plan NN-MM
 
 Examples:
-  /vgsd:undo --last 5
-  /vgsd:undo --phase 03
-  /vgsd:undo --plan 03-02
+  /fvgsd:undo --last 5
+  /fvgsd:undo --phase 03
+  /fvgsd:undo --plan 03-02
 ```
 </step>
 
@@ -204,7 +204,7 @@ Store the response as REVERT_REASON. Continue to execute_revert.
 
 Run `git status --porcelain`. If the output is non-empty, display the dirty files and abort:
 ```
-Working tree has uncommitted changes. Commit or stash them before running /vgsd:undo.
+Working tree has uncommitted changes. Commit or stash them before running /fvgsd:undo.
 ```
 Exit immediately — do not proceed to any revert operations.
 
@@ -285,13 +285,13 @@ Show next steps:
 
 /clear then:
 
-/vgsd:progress
+/fvgsd:progress
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd:execute-phase ${PHASE}` — re-execute if needed
-- `/vgsd:undo --last 1` — undo the revert itself if something went wrong
+- `/fvgsd:execute-phase ${PHASE}` — re-execute if needed
+- `/fvgsd:undo --last 1` — undo the revert itself if something went wrong
 
 ───────────────────────────────────────────────────────────────
 ```

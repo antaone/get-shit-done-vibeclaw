@@ -4,7 +4,7 @@
 // reclassify some entries as source-text-is-the-product during migration.
 
 /**
- * Regression test for #1860: detectConfigDir in gsd-check-update.js should
+ * Regression test for #1860: detectConfigDir in fvgsd/check-update.js should
  * prioritize .claude over .config/opencode so that Claude Code sessions
  * don't report false "update available" warnings when an older OpenCode
  * install exists alongside a newer Claude Code install.
@@ -19,7 +19,7 @@ const path = require('path');
 const os = require('os');
 const { execFileSync } = require('child_process');
 
-const CHECK_UPDATE_PATH = path.join(__dirname, '..', 'hooks', 'gsd-check-update.js');
+const CHECK_UPDATE_PATH = path.join(__dirname, '..', 'hooks', 'fvgsd/check-update.js');
 
 // ─── Static source-order assertion ──────────────────────────────────────────
 
@@ -56,7 +56,7 @@ describe('detectConfigDir runtime behavior (#1860)', () => {
   let tmpHome;
 
   beforeEach(() => {
-    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-test-home-'));
+    tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-test-home-'));
   });
 
   afterEach(() => {

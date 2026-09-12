@@ -13,9 +13,9 @@ const BASELINE_MIGRATION_ID = '2026-05-11-first-time-baseline-scan';
 // available. Source-limited rows are intentionally conservative: scan generated
 // files GSD materializes, but do not infer ownership of undocumented host config.
 const RUNTIME_SURFACES = {
-  claude: ['get-shit-done', 'commands/vgsd', 'commands/gsd', 'skills', 'agents', 'hooks', 'settings.json'],
+  claude: ['get-shit-done', 'commands/fvgsd', 'commands/gsd', 'skills', 'agents', 'hooks', 'settings.json'],
   codex: ['get-shit-done', 'skills', 'agents', 'hooks', 'config.toml', 'hooks.json'],
-  gemini: ['get-shit-done', 'commands/vgsd', 'commands/gsd', 'hooks'],
+  gemini: ['get-shit-done', 'commands/fvgsd', 'commands/gsd', 'hooks'],
   opencode: ['get-shit-done', 'command', 'skills', 'agents'],
   kilo: ['get-shit-done', 'command', 'skills', 'agents'],
   copilot: ['get-shit-done', 'skills', 'agents'],
@@ -25,24 +25,24 @@ const RUNTIME_SURFACES = {
   augment: ['get-shit-done', 'skills', 'agents'],
   trae: ['get-shit-done', 'skills', 'agents', 'rules'],
   qwen: ['get-shit-done', 'skills', 'agents'],
-  hermes: ['get-shit-done', 'skills/vgsd', 'skills/gsd', 'agents'],
+  hermes: ['get-shit-done', 'skills/fvgsd', 'skills/gsd', 'agents'],
   cline: ['get-shit-done', 'skills', 'agents'],
   codebuddy: ['get-shit-done', 'skills', 'agents'],
 };
 
 const COMMON_SURFACES = ['get-shit-done', 'skills', 'agents', 'hooks'];
 const INTERNAL_TOP_LEVEL_NAMES = new Set([
-  'gsd-file-manifest.json',
-  'gsd-install-state.json',
-  'gsd-migration-backups',
-  'gsd-migration-journal',
+  'fvgsd-file-manifest.json',
+  'fvgsd-install-state.json',
+  'fvgsd-migration-backups',
+  'fvgsd-migration-journal',
 ]);
 const USER_OWNED_PATHS = new Set([
   'get-shit-done/USER-PROFILE.md',
-  'commands/vgsd/dev-preferences.md',
+  'commands/fvgsd/dev-preferences.md',
   'commands/gsd/dev-preferences.md',
-  'skills/vgsd-dev-preferences/SKILL.md',
-  'skills/vgsd-dev-preferences/SKILL.md',
+  'skills/fvgsd-dev-preferences/SKILL.md',
+  'skills/fvgsd-dev-preferences/SKILL.md',
 ]);
 let knownGeneratedAgentNames = null;
 
@@ -90,8 +90,8 @@ function scanBaselineFiles(configDir, runtime) {
 function isUserOwnedBaselinePath(relPath) {
   if (USER_OWNED_PATHS.has(relPath)) return true;
   const parts = relPath.split('/');
-  if (parts[0] === 'skills' && parts[1] && !parts[1].startsWith('gsd-') && !parts[1].startsWith('vgsd-')) return true;
-  if (parts[0] === 'agents' && parts[1] && !parts[1].startsWith('gsd-')) return true;
+  if (parts[0] === 'skills' && parts[1] && !parts[1].startsWith('fvgsd-') && !parts[1].startsWith('fvgsd-')) return true;
+  if (parts[0] === 'agents' && parts[1] && !parts[1].startsWith('fvgsd-')) return true;
   return false;
 }
 
@@ -102,7 +102,7 @@ function listKnownGeneratedAgentNames() {
   const agentsDir = path.resolve(__dirname, '..', '..', '..', '..', 'agents');
   try {
     for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
-      if (entry.isFile() && entry.name.startsWith('gsd-') && entry.name.endsWith('.md')) {
+      if (entry.isFile() && entry.name.startsWith('fvgsd-') && entry.name.endsWith('.md')) {
         knownGeneratedAgentNames.add(entry.name.replace(/\.md$/, ''));
       }
     }
@@ -127,9 +127,9 @@ function isKnownGeneratedAgentPath(relPath, runtime) {
 
 function isStaleGsdLookingPath(relPath) {
   const baseName = path.posix.basename(relPath);
-  if (/^(?:vgsd|gsd)[-_]/.test(baseName)) return true;
+  if (/^(?:fvgsd|gsd)[-_]/.test(baseName)) return true;
   const parts = relPath.split('/');
-  if ((parts[0] === 'skills' || parts[0] === 'agents') && parts[1] && /^(?:vgsd|gsd)-/.test(parts[1])) {
+  if ((parts[0] === 'skills' || parts[0] === 'agents') && parts[1] && /^(?:fvgsd|gsd)-/.test(parts[1])) {
     return true;
   }
   return false;

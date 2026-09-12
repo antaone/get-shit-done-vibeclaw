@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -20,16 +20,16 @@ const {
 
 const projects = [];
 
-describe('vgsd to Vibe entry routing', () => {
+describe('fvgsd to Vibe entry routing', () => {
   afterEach(() => {
     while (projects.length) cleanup(projects.pop());
   });
 
   test('normalizes runtime-native command forms and maps lifecycle workflows', () => {
     assert.equal(normalizeCommand('quick'), 'quick');
-    assert.equal(normalizeCommand('vgsd-quick'), 'quick');
-    assert.equal(normalizeCommand('/vgsd:quick'), 'quick');
-    assert.equal(normalizeCommand('$vgsd-quick'), 'quick');
+    assert.equal(normalizeCommand('fvgsd-quick'), 'quick');
+    assert.equal(normalizeCommand('/fvgsd:quick'), 'quick');
+    assert.equal(normalizeCommand('$fvgsd-quick'), 'quick');
 
     assert.deepEqual(resolveCommandEntry('new-project'), {
       command: 'new-project',
@@ -90,7 +90,7 @@ describe('vgsd to Vibe entry routing', () => {
       'Next: /gsd-plan-phase 3',
       'Then: $gsd-execute-phase 3',
       'Verify: /gsd:verify-work 3',
-      'Internal CLI: /gsd-tools and /gsd-sdk',
+      'Internal CLI: /fvgsd-tools and /fvgsd-sdk',
       'Reference URL: https://example.test/gsd-plan-phase',
       '',
     ].join('\n');
@@ -104,7 +104,7 @@ describe('vgsd to Vibe entry routing', () => {
     assert.equal(inspected.legacy_planning_commands.total_references, 3);
     assert.deepEqual(
       inspected.legacy_planning_commands.affected_files[0].references.map((reference) => reference.replacement),
-      ['$vgsd-plan-phase', '$vgsd-execute-phase', '$vgsd-verify-work'],
+      ['$fvgsd-plan-phase', '$fvgsd-execute-phase', '$fvgsd-verify-work'],
     );
 
     assert.throws(
@@ -121,10 +121,10 @@ describe('vgsd to Vibe entry routing', () => {
     assert.equal(migrated.migrated, true);
     assert.equal(migrated.total_references, 3);
     const updated = fs.readFileSync(statePath, 'utf8');
-    assert.match(updated, /Next: \$vgsd-plan-phase 3/);
-    assert.match(updated, /Then: \$vgsd-execute-phase 3/);
-    assert.match(updated, /Verify: \$vgsd-verify-work 3/);
-    assert.match(updated, /Internal CLI: \/gsd-tools and \/gsd-sdk/);
+    assert.match(updated, /Next: \$fvgsd-plan-phase 3/);
+    assert.match(updated, /Then: \$fvgsd-execute-phase 3/);
+    assert.match(updated, /Verify: \$fvgsd-verify-work 3/);
+    assert.match(updated, /Internal CLI: \/fvgsd-tools and \/fvgsd-sdk/);
     assert.match(updated, /https:\/\/example\.test\/gsd-plan-phase/);
 
     const pendingCommit = inspectVibeEntry({ cwd: project, command: 'plan-phase', runtime: 'codex' });
@@ -140,10 +140,10 @@ describe('vgsd to Vibe entry routing', () => {
       runtime: 'codex',
       id: 'legacy-planning-migrated',
     });
-    assert.equal(prepared.candidates[0].invocation, '$vgsd-plan-phase');
+    assert.equal(prepared.candidates[0].invocation, '$fvgsd-plan-phase');
     assert.match(
       fs.readFileSync(path.join(prepared.candidates[0].worktree, '.planning', 'STATE.md'), 'utf8'),
-      /\$vgsd-plan-phase/,
+      /\$fvgsd-plan-phase/,
     );
   });
 
@@ -194,14 +194,14 @@ describe('vgsd to Vibe entry routing', () => {
     assert.equal(prepared.candidates.length, 2);
     assert.deepEqual(prepared.candidates.map((candidate) => candidate.tool), ['codex', 'claude']);
     assert.notEqual(prepared.candidates[0].branch, prepared.candidates[1].branch);
-    assert.equal(prepared.candidates[0].invocation, '$vgsd-quick');
-    assert.equal(prepared.candidates[1].invocation, '/vgsd-quick');
+    assert.equal(prepared.candidates[0].invocation, '$fvgsd-quick');
+    assert.equal(prepared.candidates[1].invocation, '/fvgsd-quick');
 
-    const workflowPath = path.join(project, '.planning-vibe', 'workflows', 'quick-workflow.yaml');
+    const workflowPath = path.join(project, '.planning-fvgsd-vibe', 'workflows', 'quick-workflow.yaml');
     assert.ok(fs.existsSync(workflowPath));
     const vibe = VibeOrchestrator.discover(project);
     const workflow = vibe.loadWorkflow('quick-workflow');
-    assert.equal(workflow.stages.task.gsd.command, 'vgsd:quick');
+    assert.equal(workflow.stages.task.gsd.command, 'fvgsd:quick');
     assert.equal(workflow.stages.task.mutates_source, true);
     assert.equal(workflow.stages.task.requires_result_commit, false);
 
@@ -246,7 +246,7 @@ describe('vgsd to Vibe entry routing', () => {
     });
     assert.equal(milestone.workflow, 'milestone-bootstrap');
     assert.equal(milestone.stage, 'milestone');
-    assert.equal(milestone.candidates[0].invocation, '$vgsd-new-milestone');
+    assert.equal(milestone.candidates[0].invocation, '$fvgsd-new-milestone');
 
     const featureProject = createTempGitProject('vibe-entry-feature-');
     projects.push(featureProject);
@@ -258,7 +258,7 @@ describe('vgsd to Vibe entry routing', () => {
     });
     assert.equal(execute.workflow, 'feature-development');
     assert.equal(execute.stage, 'execute');
-    assert.equal(execute.candidates[0].invocation, '/vgsd-execute-phase');
+    assert.equal(execute.candidates[0].invocation, '/fvgsd-execute-phase');
     const vibe = VibeOrchestrator.discover(featureProject);
     const executeRun = vibe.loadRun(execute.run.id);
     assert.equal(executeRun.entry_stage, 'execute');

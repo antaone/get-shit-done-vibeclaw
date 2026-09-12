@@ -191,7 +191,7 @@ function parseUatItems(content: string): Record<string, unknown>[] {
 /**
  * Parse frontmatter human_verification: YAML array entries into audit items.
  *
- * Fixes #2788: when gsd-verifier encodes human items in YAML frontmatter
+ * Fixes #2788: when fvgsd-verifier encodes human items in YAML frontmatter
  * rather than the body, parseVerificationItems was returning [] because it
  * only searched the body for a "## Human Verification" heading.
  */
@@ -233,7 +233,7 @@ function parseVerificationItems(content: string, status: string, fm?: Record<str
   const items: Record<string, unknown>[] = [];
   if (status === 'human_needed') {
     // Check frontmatter human_verification: array first (#2788).
-    // gsd-verifier writes items here; body-section fallback is secondary.
+    // fvgsd-verifier writes items here; body-section fallback is secondary.
     if (fm) {
       const fmItems = parseVerificationFrontmatterItems(fm);
       if (fmItems.length > 0) return fmItems;

@@ -22,7 +22,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -41,8 +41,8 @@ describe('bug #3037: Gemini global+local install must not create duplicate comma
   let originalCwd;
 
   beforeEach(() => {
-    tmpHome = createTempDir('gsd-3037-home-');
-    tmpProject = createTempDir('gsd-3037-work-');
+    tmpHome = createTempDir('fvgsd-3037-home-');
+    tmpProject = createTempDir('fvgsd-3037-work-');
     originalHome = process.env.HOME;
     originalUserprofile = process.env.USERPROFILE;
     originalCwd = process.cwd();

@@ -1,5 +1,5 @@
 ---
-name: vgsd:help
+name: fvgsd:help
 description: Show available GSD commands and usage guide
 argument-hint: "[--brief | --full | <topic> | --brief <topic>]"
 allowed-tools:
@@ -8,12 +8,12 @@ allowed-tools:
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch inspect "help" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch inspect "help" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -29,7 +29,7 @@ Output ONLY the reference content of the chosen tier. Do NOT add:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/help.md
+@~/.claude/fvgsd/workflows/help.md
 </execution_context>
 
 <context>
@@ -37,5 +37,5 @@ Arguments: $ARGUMENTS
 </context>
 
 <process>
-Follow ~/.claude/get-shit-done/workflows/help.md with $ARGUMENTS.
+Follow ~/.claude/fvgsd/workflows/help.md with $ARGUMENTS.
 </process>

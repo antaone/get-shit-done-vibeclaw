@@ -44,7 +44,7 @@ describe('install.js --skills-root', () => {
     test(`resolves correct skills root for ${runtime}`, () => {
       const result = spawnSync(process.execPath, [INSTALL_JS, '--skills-root', runtime], {
         encoding: 'utf-8',
-        env: { ...process.env, GSD_TEST_MODE: undefined }, // ensure not in test mode
+        env: { ...process.env, FVGSD_TEST_MODE: undefined }, // ensure not in test mode
       });
       // Strip trailing newline
       const actual = result.stdout.trim();
@@ -106,7 +106,7 @@ describe('sync-skills.md — required behavioral specs', () => {
   test('only gsd-* directories are touched (non-GSD preservation)', () => {
     content = content || readWorkflow();
     assert.ok(
-      content.includes('gsd-*') && (content.includes('non-GSD') || content.includes('Non-GSD') || content.includes('not starting with')),
+      content.includes('fvgsd-*') && (content.includes('non-GSD') || content.includes('Non-GSD') || content.includes('not starting with')),
       'workflow must document that only gsd-* dirs are modified'
     );
   });

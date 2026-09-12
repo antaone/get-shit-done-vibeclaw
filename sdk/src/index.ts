@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import { GSD } from '@gsd-build/sdk';
+ * import { GSD } from '@fvgsd/sdk';
  *
  * const gsd = new GSD({ projectDir: '/path/to/project' });
  * const result = await gsd.executePlan('.planning/phases/01-auth/01-auth-01-PLAN.md');
@@ -27,7 +27,7 @@ import type { GSDOptions, PlanResult, SessionOptions, GSDEvent, TransportHandler
 import { GSDEventType } from './types.js';
 import { parsePlan, parsePlanFile } from './plan-parser.js';
 import { loadConfig } from './config.js';
-import { GSDTools, resolveGsdToolsPath } from './gsd-tools.js';
+import { GSDTools, resolveGsdToolsPath } from './fvgsd-tools.js';
 import { runPlanSession } from './session-runner.js';
 import { buildExecutorPrompt, parseAgentTools } from './prompt-builder.js';
 import { GSDEventStream } from './event-stream.js';
@@ -280,18 +280,18 @@ export class GSD {
   }
 
   /**
-   * Load the gsd-executor agent definition if available.
+   * Load the fvgsd-executor agent definition if available.
    * Falls back gracefully — returns undefined if not found.
    */
   private async loadAgentDefinition(): Promise<string | undefined> {
     const paths = [
       // Repo-local GSD installation
-      join(this.projectDir, '.claude', 'get-shit-done', 'agents', 'gsd-executor.md'),
+      join(this.projectDir, '.claude', 'get-shit-done', 'agents', 'fvgsd-executor.md'),
       // Repo-local agents directory
-      join(this.projectDir, '.claude', 'agents', 'gsd-executor.md'),
+      join(this.projectDir, '.claude', 'agents', 'fvgsd-executor.md'),
       // Global home directory
-      join(homedir(), '.claude', 'agents', 'gsd-executor.md'),
-      join(this.projectDir, 'agents', 'gsd-executor.md'),
+      join(homedir(), '.claude', 'agents', 'fvgsd-executor.md'),
+      join(this.projectDir, 'agents', 'fvgsd-executor.md'),
     ];
 
     for (const p of paths) {
@@ -311,7 +311,7 @@ export class GSD {
 export { parsePlan, parsePlanFile } from './plan-parser.js';
 export { loadConfig } from './config.js';
 export type { GSDConfig } from './config.js';
-export { GSDTools, GSDToolsError, resolveGsdToolsPath } from './gsd-tools.js';
+export { GSDTools, GSDToolsError, resolveGsdToolsPath } from './fvgsd-tools.js';
 export { runPlanSession, runPhaseStepSession } from './session-runner.js';
 export { buildExecutorPrompt, parseAgentTools } from './prompt-builder.js';
 export type { ExecutorPromptOptions } from './prompt-builder.js';
@@ -340,7 +340,7 @@ export { CLITransport } from './cli-transport.js';
 export { WSTransport } from './ws-transport.js';
 export type { WSTransportOptions } from './ws-transport.js';
 
-// Query registry argv normalization (matches `gsd-sdk query` and `GSDTools` hot path)
+// Query registry argv normalization (matches `fvgsd-sdk query` and `GSDTools` hot path)
 export { createRegistry, normalizeQueryCommand } from './query/index.js';
 
 // Workstream utilities

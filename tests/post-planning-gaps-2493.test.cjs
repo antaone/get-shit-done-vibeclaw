@@ -63,7 +63,7 @@ describe('plan-phase.md Step 13e insertion (#2493)', () => {
     assert.match(stepBody, /workflow\.post_planning_gaps/);
   });
 
-  test('Step 13e invokes gap-analysis via gsd-tools', () => {
+  test('Step 13e invokes gap-analysis via fvgsd-tools', () => {
     const content = fs.readFileSync(PLAN_PHASE_PATH, 'utf-8');
     const i13e = content.indexOf('## 13e.');
     const i14 = content.indexOf('## 14.');

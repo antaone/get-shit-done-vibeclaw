@@ -52,7 +52,7 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init ingest-docs)
+INIT=$(node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" init ingest-docs)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -128,7 +128,7 @@ De-duplicate the union (a file matched by multiple patterns is one doc).
 ```
 GSD > Discovered {N} docs, which exceeds the v1 cap of 50.
       Use --manifest to narrow the set to ≤ 50 files, or run
-      /vgsd:ingest-docs again with a narrower <path>.
+      /fvgsd:ingest-docs again with a narrower <path>.
 ```
 
 Exit without proceeding.
@@ -165,14 +165,14 @@ Create staging directory:
 mkdir -p .planning/intel/classifications/
 ```
 
-For each discovered doc, spawn `gsd-doc-classifier` in parallel. In Claude Code, issue all Task calls in a single message with multiple tool uses so the harness runs them concurrently. For Copilot / sequential runtimes, fall back to sequential dispatch.
+For each discovered doc, spawn `fvgsd-doc-classifier` in parallel. In Claude Code, issue all Task calls in a single message with multiple tool uses so the harness runs them concurrently. For Copilot / sequential runtimes, fall back to sequential dispatch.
 
 Per-spawn prompt fields:
 - `FILEPATH` — absolute path to the doc
 - `OUTPUT_DIR` — `.planning/intel/classifications/`
 - `MANIFEST_TYPE` — the type from the manifest if present, else omit
 - `MANIFEST_PRECEDENCE` — the precedence integer from the manifest if present, else omit
-- `<required_reading>` — `agents/gsd-doc-classifier.md` (the agent definition itself)
+- `<required_reading>` — `agents/fvgsd-doc-classifier.md` (the agent definition itself)
 
 Collect the one-line confirmations from each classifier. If any classifier errors out, surface the error and abort without touching `.planning/` further.
 
@@ -180,11 +180,11 @@ Collect the one-line confirmations from each classifier. If any classifier error
 
 <step name="synthesize">
 
-Spawn `gsd-doc-synthesizer` once:
+Spawn `fvgsd-doc-synthesizer` once:
 
 ```
 Agent({
-  subagent_type: "gsd-doc-synthesizer",
+  subagent_type: "fvgsd-doc-synthesizer",
   prompt: "
     CLASSIFICATIONS_DIR: .planning/intel/classifications/
     INTEL_DIR: .planning/intel/
@@ -194,7 +194,7 @@ Agent({
     PRECEDENCE: {array from manifest defaults or default ['ADR','SPEC','PRD','DOC']}
 
     <required_reading>
-    - agents/gsd-doc-synthesizer.md
+    - agents/fvgsd-doc-synthesizer.md
     - get-shit-done/references/doc-conflict-engine.md
     </required_reading>
   "
@@ -245,13 +245,13 @@ Proceed to routing silently, or optionally display `GSD > No conflicts. Auto-res
 
 **Applies only when MODE=new.**
 
-Audit PROJECT.md field requirements that `gsd-roadmapper` expects. For fields derivable from `.planning/intel/SYNTHESIS.md` (project scope, goals/non-goals, constraints, locked decisions), synthesize from the intel. For fields NOT derivable (project name, developer-facing success metric, target runtime), prompt via `AskUserQuestion` one at a time — minimal question set, no interrogation.
+Audit PROJECT.md field requirements that `fvgsd-roadmapper` expects. For fields derivable from `.planning/intel/SYNTHESIS.md` (project scope, goals/non-goals, constraints, locked decisions), synthesize from the intel. For fields NOT derivable (project name, developer-facing success metric, target runtime), prompt via `AskUserQuestion` one at a time — minimal question set, no interrogation.
 
-Delegate to `gsd-roadmapper`:
+Delegate to `fvgsd-roadmapper`:
 
 ```
 Agent({
-  subagent_type: "gsd-roadmapper",
+  subagent_type: "fvgsd-roadmapper",
   prompt: "
     Mode: new-project-from-ingest
     Intel: .planning/intel/SYNTHESIS.md (entry point)
@@ -295,7 +295,7 @@ Preview the merge diff to the user and gate via approve-revise-abort before writ
 Commit the ingest results:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit \
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" commit \
   "docs: ingest {N} docs from {SCAN_PATH} (#2387)" --files \
   .planning/PROJECT.md \
   .planning/REQUIREMENTS.md \
@@ -320,7 +320,7 @@ Show:
 - Docs ingested (count + type breakdown)
 - Decisions locked, requirements created, constraints captured
 - Conflict report path (`.planning/INGEST-CONFLICTS.md`)
-- Next step: `/vgsd:plan-phase 1` (new mode) or `/vgsd:plan-phase N` (merge, pointing at the first newly-added phase)
+- Next step: `/fvgsd:plan-phase 1` (new mode) or `/fvgsd:plan-phase N` (merge, pointing at the first newly-added phase)
 
 </step>
 

@@ -10,12 +10,12 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
 
 /**
  * Manifest-backed validate subcommand router.
- * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving existing command semantics.
  *
  * Phase 6: validate.consistency, validate.health, validate.agents are
  * dispatched via executeForCjs when the SDK is available. CJS fallback
  * retained when:
- * - GSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
+ * - FVGSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
  * - SDK is unavailable (build not present).
  *
  * CJS-only subcommands:
@@ -25,7 +25,7 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
  * SDK-only (unsupported in CJS router): none.
  */
 function routeValidateCommand({ verify, args, cwd, raw, parseNamedArgs, output: outputFn, error }) {
-  const activeWorkstream = process.env.GSD_WORKSTREAM;
+  const activeWorkstream = process.env.FVGSD_WORKSTREAM;
   const sdkAvailable = !activeWorkstream && tryLoadSdk();
 
   function sdkHandler(registryCommand, registryArgs, legacyArgs, cjsFallback) {
@@ -72,7 +72,7 @@ function routeValidateCommand({ verify, args, cwd, raw, parseNamedArgs, output: 
         () => verify.cmdValidateConsistency(cwd, raw),
       ),
       // Keep health on CJS for now so fix hints are rendered via runtime-slash
-      // helpers (codex expects $vgsd-* command shape).
+      // helpers (codex expects $fvgsd-* command shape).
       health: () => {
         const repairFlag = args.includes('--repair');
         const backfillFlag = args.includes('--backfill');

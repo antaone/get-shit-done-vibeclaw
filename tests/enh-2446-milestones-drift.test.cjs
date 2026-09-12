@@ -17,7 +17,7 @@ const os = require('node:os');
 const { cmdValidateHealth } = require('../get-shit-done/bin/lib/verify.cjs');
 
 function makeTempProject(files = {}) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2446-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2446-'));
   fs.mkdirSync(path.join(dir, '.planning', 'milestones'), { recursive: true });
   for (const [rel, content] of Object.entries(files)) {
     const abs = path.join(dir, rel);

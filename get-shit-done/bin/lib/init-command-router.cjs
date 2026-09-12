@@ -9,18 +9,18 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
 
 /**
  * Manifest-backed init subcommand router.
- * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ * Keeps fvgsd-tools.cjs thin while preserving existing command semantics.
  *
  * Phase 6: all init.* subcommands have SDK equivalents and are dispatched
  * via executeForCjs (the sync bridge). CJS fallback retained when:
- * - GSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
+ * - FVGSD_WORKSTREAM is active (workstream-scoped requests fall through to CJS).
  * - SDK is unavailable (build not present).
  *
  * CJS-only subcommands: none.
  * SDK-only (unsupported in CJS router): none.
  */
 function routeInitCommand({ init, args, cwd, raw, parseNamedArgs, error }) {
-  const activeWorkstream = process.env.GSD_WORKSTREAM;
+  const activeWorkstream = process.env.FVGSD_WORKSTREAM;
   const sdkAvailable = !activeWorkstream && tryLoadSdk();
 
   function sdkHandler(registryCommand, registryArgs, legacyArgs, cjsFallback) {
@@ -145,7 +145,7 @@ function routeInitCommand({ init, args, cwd, raw, parseNamedArgs, error }) {
         () => init.cmdInitProgress(cwd, raw),
       ),
       // Keep manager on CJS for now so runtime-specific command rendering
-      // (e.g. $vgsd-* for codex) stays consistent with runtime-slash helpers.
+      // (e.g. $fvgsd-* for codex) stays consistent with runtime-slash helpers.
       manager: () => init.cmdInitManager(cwd, raw),
       'new-workspace': sdkHandler(
         'init.new-workspace',

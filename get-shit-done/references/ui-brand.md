@@ -115,8 +115,8 @@ Always at end of major completions.
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd-alternative-1` — description
-- `/vgsd-alternative-2` — description
+- `/fvgsd-alternative-1` — description
+- `/fvgsd-alternative-2` — description
 
 ───────────────────────────────────────────────────────────────
 ```

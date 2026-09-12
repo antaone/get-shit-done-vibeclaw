@@ -358,7 +358,7 @@ export const stateUpdate: QueryHandler = async (args, projectDir, workstream) =>
  *
  * Replaces multiple fields atomically in one lock cycle.
  *
- * @param args - Either `--field value` pairs (CLI / gsd-tools) or a single JSON object string (SDK).
+ * @param args - Either `--field value` pairs (CLI / fvgsd-tools) or a single JSON object string (SDK).
  * @param projectDir - Project root directory
  * @returns QueryResult with `{ updated, failed }` matching `cmdStatePatch` in `state.cjs`
  */
@@ -644,7 +644,7 @@ export const stateAdvancePlan: QueryHandler = async (_args, projectDir, workstre
  *
  * Appends a row to the Performance Metrics table.
  *
- * @param args - gsd-tools argv: `--phase`, `--plan`, `--duration`, `--tasks`, `--files`
+ * @param args - fvgsd-tools argv: `--phase`, `--plan`, `--duration`, `--tasks`, `--files`
  * @param projectDir - Project root directory
  * @returns QueryResult with { recorded: true/false }
  */
@@ -782,7 +782,7 @@ export const stateUpdateProgress: QueryHandler = async (_args, projectDir, works
  * Query handler for state.add-decision command.
  *
  * Appends a decision to the Decisions section. Removes placeholder text.
- * argv matches `gsd-tools.cjs`: `--phase`, `--summary`, `--rationale`, etc.
+ * argv matches `fvgsd-tools.cjs`: `--phase`, `--summary`, `--rationale`, etc.
  */
 export const stateAddDecision: QueryHandler = async (args, projectDir, workstream) => {
   const parsed = parseNamedArgs(args, ['phase', 'summary', 'summary-file', 'rationale', 'rationale-file']);
@@ -843,7 +843,7 @@ export const stateAddDecision: QueryHandler = async (args, projectDir, workstrea
 
 /**
  * Query handler for state.add-blocker command.
- * argv: `--text`, `--text-file` (see `gsd-tools.cjs`).
+ * argv: `--text`, `--text-file` (see `fvgsd-tools.cjs`).
  */
 export const stateAddBlocker: QueryHandler = async (args, projectDir, workstream) => {
   const parsed = parseNamedArgs(args, ['text', 'text-file']);
@@ -894,7 +894,7 @@ export const stateAddBlocker: QueryHandler = async (args, projectDir, workstream
 
 /**
  * Query handler for state.resolve-blocker command.
- * argv: `--text` (see `gsd-tools.cjs`).
+ * argv: `--text` (see `fvgsd-tools.cjs`).
  */
 export const stateResolveBlocker: QueryHandler = async (args, projectDir, workstream) => {
   const parsed = parseNamedArgs(args, ['text']);
@@ -1204,7 +1204,7 @@ export const statePlannedPhase: QueryHandler = async (args, projectDir, workstre
  * Query handler for `state.milestone-switch` — resets STATE.md for a new
  * milestone cycle (bug #2630 regression guard).
  *
- * The `/vgsd-new-milestone` workflow only rewrote STATE.md's body (Current
+ * The `/fvgsd-new-milestone` workflow only rewrote STATE.md's body (Current
  * Position section). The YAML frontmatter (`milestone`, `milestone_name`,
  * `status`, `progress.*`) was never touched on a mid-flight switch, so queries
  * that read frontmatter (`state.json`, `getMilestoneInfo`, every handler that
@@ -1221,17 +1221,17 @@ export const statePlannedPhase: QueryHandler = async (args, projectDir, workstre
  * - Preserves Accumulated Context (decisions, todos, blockers) — symmetric
  *   with `milestone.complete` which also keeps history.
  *
- * Args (named, matches gsd-tools style):
+ * Args (named, matches fvgsd-tools style):
  * - `--version <vX.Y>` (required)
  * - `--name <milestone name>` (optional; defaults to 'milestone')
  *
  * Sibling CJS parity: `cmdInitNewMilestone` in `init.cjs` is read-only (like
  * the TS `initNewMilestone`). The workflow-level fix is to call
- * `state.milestone-switch` from `/vgsd-new-milestone` Step 5 in place of the
+ * `state.milestone-switch` from `/fvgsd-new-milestone` Step 5 in place of the
  * manual body rewrite.
  */
 export const stateMilestoneSwitch: QueryHandler = async (args, projectDir, workstream) => {
-  // NOTE: the CLI flag is `--milestone` (not `--version`). gsd-tools reserves
+  // NOTE: the CLI flag is `--milestone` (not `--version`). fvgsd-tools reserves
   // `--version` as a globally-invalid help flag, so the workflow invokes this
   // handler with `--milestone vX.Y`. The internal variable is still `version`
   // because the value is a milestone version string.
@@ -1316,7 +1316,7 @@ export const stateMilestoneSwitch: QueryHandler = async (args, projectDir, works
   }
 };
 
-// ─── parseNamedArgs (matches gsd-tools.cjs) ───────────────────────────────
+// ─── parseNamedArgs (matches fvgsd-tools.cjs) ───────────────────────────────
 
 function parseNamedArgs(
   args: string[],

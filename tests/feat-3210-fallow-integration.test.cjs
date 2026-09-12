@@ -51,7 +51,7 @@ describe('feat-3210: fallow integration module', () => {
     const { resolveFallowBinary } = require('../get-shit-done/bin/lib/fallow-runner.cjs');
     // N2: use shared helper
     const baseTmp = getWritableTmp();
-    const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-bin-'));
+    const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-bin-'));
     const binDir = path.join(tmp, 'node_modules', '.bin');
     fs.mkdirSync(binDir, { recursive: true });
     const fallowPath = path.join(binDir, 'fallow');
@@ -72,7 +72,7 @@ describe('feat-3210: fallow integration module', () => {
 
     if (process.platform === 'win32') {
       // H6: Windows — .cmd extension candidate must be preferred over bare extensionless file
-      const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-win-'));
+      const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-win-'));
       try {
         const pathDir = path.join(tmp, 'bin');
         fs.mkdirSync(pathDir, { recursive: true });
@@ -91,7 +91,7 @@ describe('feat-3210: fallow integration module', () => {
       }
     } else {
       // H6: non-Windows — non-executable file in PATH must be ignored
-      const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-nonexec-'));
+      const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-nonexec-'));
       try {
         const pathDir = path.join(tmp, 'bin');
         fs.mkdirSync(pathDir, { recursive: true });
@@ -125,7 +125,7 @@ describe('feat-3210: fallow integration module', () => {
     const { requireFallowBinary } = require('../get-shit-done/bin/lib/fallow-runner.cjs');
     // N2: use shared helper
     const baseTmp = getWritableTmp();
-    const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-missing-'));
+    const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-missing-'));
     assert.throws(
       () => requireFallowBinary({ cwd: tmp, envPath: '' }),
       /install fallow via `npm install -D fallow` or `cargo install fallow`/,
@@ -138,7 +138,7 @@ describe('feat-3210: fallow integration module', () => {
     const { runFallowAudit } = require('../get-shit-done/bin/lib/fallow-runner.cjs');
     // N2: use shared helper
     const baseTmp = getWritableTmp();
-    const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-fail-'));
+    const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-fail-'));
     const shimName = process.platform === 'win32' ? 'fallow.cmd' : 'fallow';
     const shimPath = path.join(tmp, shimName);
 
@@ -248,7 +248,7 @@ describe('feat-3210: M2 - node_modules/.bin resolution order', () => {
     const { resolveFallowBinary } = require('../get-shit-done/bin/lib/fallow-runner.cjs');
     // N2: use shared helper
     const baseTmp = getWritableTmp();
-    const tmp = fs.mkdtempSync(path.join(baseTmp, 'gsd-fallow-order-'));
+    const tmp = fs.mkdtempSync(path.join(baseTmp, 'fvgsd-fallow-order-'));
     try {
       // local node_modules/.bin/fallow
       const binDir = path.join(tmp, 'node_modules', '.bin');
@@ -297,7 +297,7 @@ describe('feat-3210: workflow and config contracts', () => {
     const writableTmp = getWritableTmp(); // N2: use shared helper
     assert.ok(writableTmp, 'no writable tmp directory found'); // L2: explicit fail-loud assertion
     process.env.TMPDIR = writableTmp;
-    const tmpDir = createTempProject('gsd-fallow-config-');
+    const tmpDir = createTempProject('fvgsd-fallow-config-');
     try {
       const cases = [
         ['code_quality.fallow.enabled', 'true'],
@@ -351,14 +351,14 @@ describe('feat-3210: workflow and config contracts', () => {
   // pattern). We confirm the heading exists in the shipped artifact, not in a live agent response.
   // Live agent output is covered by /gsd-code-review e2e runs downstream.
   test('reviewer prompt defines ## Structural Findings (fallow) heading and review context echoes it', () => {
-    const reviewer = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-code-reviewer.md'), 'utf8');
+    const reviewer = fs.readFileSync(path.join(ROOT, 'agents', 'fvgsd-code-reviewer.md'), 'utf8');
     const reviewContext = fs.readFileSync(path.join(ROOT, 'get-shit-done', 'contexts', 'review.md'), 'utf8');
 
     // Doc-parity: section heading must exist in the shipped agent file (the heading is a contract,
     // not prose — renaming it would break every consumer that parses agent output by section)
     assert.ok(
       reviewer.includes('## Structural Findings (fallow)'),
-      'gsd-code-reviewer.md must define ## Structural Findings (fallow) section heading',
+      'fvgsd-code-reviewer.md must define ## Structural Findings (fallow) section heading',
     );
 
     // Doc-parity: review context that agents receive must reference the same section

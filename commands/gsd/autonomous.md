@@ -1,5 +1,5 @@
 ---
-name: vgsd:autonomous
+name: fvgsd:autonomous
 description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
 allowed-tools:
@@ -14,12 +14,12 @@ requires: [cleanup, phase, progress]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "autonomous" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "autonomous" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -38,8 +38,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/autonomous.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/workflows/autonomous.md
+@~/.claude/fvgsd/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -49,7 +49,7 @@ Optional flags:
 - `--only N` — execute only phase N (single-phase mode).
 - `--interactive` — run discuss inline with questions (not auto-answered), then dispatch plan→execute as background agents. Keeps the main context lean while preserving user input on decisions.
 
-Project context, phase list, and state are resolved inside the workflow using init commands (`gsd-sdk query init.milestone-op`, `gsd-sdk query roadmap.analyze`). No upfront context loading needed.
+Project context, phase list, and state are resolved inside the workflow using init commands (`fvgsd-sdk query init.milestone-op`, `fvgsd-sdk query roadmap.analyze`). No upfront context loading needed.
 </context>
 
 <process>

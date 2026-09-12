@@ -28,8 +28,8 @@ export const FIND_PROJECT_ROOT_MAX_DEPTH = 10;
  * Walk up from `startDir` to find the project root that owns `.planning/`.
  *
  * Ported from `get-shit-done/bin/lib/core.cjs:findProjectRoot` so that
- * `gsd-sdk query` resolves the same parent `.planning/` root as the legacy
- * `gsd-tools.cjs` CLI when invoked inside a `sub_repos`-listed child repo.
+ * `fvgsd-sdk query` resolves the same parent `.planning/` root as the legacy
+ * `fvgsd-tools.cjs` CLI when invoked inside a `sub_repos`-listed child repo.
  *
  * Detection strategy (checked in order for each ancestor, up to
  * `FIND_PROJECT_ROOT_MAX_DEPTH` levels):

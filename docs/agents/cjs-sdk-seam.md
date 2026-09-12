@@ -68,7 +68,7 @@ This section captures 15 recurring config-schema drift bugs that motivated the m
 ---
 
 ### #2653 — bug: SDK config-set rejects documented config keys accepted by CJS config-set
-- **Drifted:** SDK's `config-mutation.ts` had a hand-maintained `VALID_CONFIG_KEYS` set that had drifted **28 keys** behind CJS's `config-schema.cjs`, so documented commands like `gsd-sdk query config-set planning.sub_repos` were rejected.
+- **Drifted:** SDK's `config-mutation.ts` had a hand-maintained `VALID_CONFIG_KEYS` set that had drifted **28 keys** behind CJS's `config-schema.cjs`, so documented commands like `fvgsd-sdk query config-set planning.sub_repos` were rejected.
 - **Fix landed:** PR #2670 — extracted shared `sdk/src/query/config-schema.ts` module mirroring CJS exactly; added parity test to fail on future drift.
 - **Would have been blocked by:** **manifest data isolation** — the config schema would live in one place (e.g., `sdk/shared/config.manifest.json`), and both CJS and SDK would read it, eliminating the possibility of independent drift.
 
@@ -209,7 +209,7 @@ Add the new source-of-truth path to `.github/CODEOWNERS` under the Phase 6 block
 
 ## Guide: Adding a new canonical command
 
-Use this when adding a new `gsd-sdk query <family>.<subcommand>` that should be handled natively in the SDK (not delegated to CJS). Phase 5.1's `state.update` migration (PR [#3574](https://github.com/gsd-build/get-shit-done/pull/3574)) is the worked example.
+Use this when adding a new `fvgsd-sdk query <family>.<subcommand>` that should be handled natively in the SDK (not delegated to CJS). Phase 5.1's `state.update` migration (PR [#3574](https://github.com/gsd-build/get-shit-done/pull/3574)) is the worked example.
 
 **Step 1 — Declare in the command manifest**
 

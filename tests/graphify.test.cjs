@@ -102,7 +102,7 @@ describe('status', () => {
     test('returns disabled:true with enable instructions', () => {
       const result = disabledResponse();
       assert.strictEqual(result.disabled, true);
-      assert.ok(result.message.includes('gsd-tools config-set graphify.enabled true'));
+      assert.ok(result.message.includes('fvgsd-tools config-set graphify.enabled true'));
     });
   });
 

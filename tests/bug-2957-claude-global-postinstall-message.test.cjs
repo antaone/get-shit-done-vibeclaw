@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2957: post-install message for `--claude --global` must instruct
@@ -18,7 +18,7 @@ const path = require('node:path');
 const os = require('node:os');
 
 const ROOT = path.join(__dirname, '..');
-const SETTINGS_PATH = path.join(os.tmpdir(), `gsd-test-settings-${process.pid}.json`);
+const SETTINGS_PATH = path.join(os.tmpdir(), `fvgsd-test-settings-${process.pid}.json`);
 const installModule = require(path.join(ROOT, 'bin', 'install.js'));
 
 function captureFinishInstallOutput(runtime, isGlobal) {

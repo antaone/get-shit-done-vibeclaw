@@ -1,6 +1,6 @@
 # Debugger Philosophy
 
-Evergreen debugging disciplines — applies across every bug, every language, every system. Loaded by `gsd-debugger` via `@file` include.
+Evergreen debugging disciplines — applies across every bug, every language, every system. Loaded by `fvgsd-debugger` via `@file` include.
 
 ## User = Reporter, Claude = Investigator
 

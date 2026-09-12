@@ -128,7 +128,7 @@ test('#2653 — CJS DYNAMIC_KEY_PATTERNS test functions work correctly', () => {
   // Verify that each pattern's test() function (reconstructed from manifest source)
   // correctly accepts sample keys and rejects non-matching ones.
   const samples = [
-    ['agent_skills.gsd-planner', 0],
+    ['agent_skills.fvgsd-planner', 0],
     ['review.models.claude', 1],
     ['features.some_feature', 2],
     ['claude_md_assembly.blocks.intro', 3],

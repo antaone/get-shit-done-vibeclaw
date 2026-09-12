@@ -1,5 +1,5 @@
 /**
- * Golden test helpers — run `gsd-tools.cjs` as a subprocess and capture JSON or raw stdout.
+ * Golden test helpers — run `fvgsd-tools.cjs` as a subprocess and capture JSON or raw stdout.
  *
  * Used by `golden.integration.test.ts` and `read-only-parity.integration.test.ts` to assert
  * SDK `createRegistry()` output matches the legacy CJS CLI.
@@ -9,7 +9,7 @@ import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 
-import { resolveGsdToolsPath } from '../gsd-tools.js';
+import { resolveGsdToolsPath } from '../fvgsd-tools.js';
 
 const CAPTURE_TIMEOUT_MS = 120_000;
 const MAX_BUFFER = 10 * 1024 * 1024;
@@ -37,7 +37,7 @@ function execGsdTools(
           const stderrStr = stderr?.toString() ?? '';
           reject(
             new Error(
-              `gsd-tools failed (exit ${code}): ${stderrStr || (err instanceof Error ? err.message : String(err))}`,
+              `fvgsd-tools failed (exit ${code}): ${stderrStr || (err instanceof Error ? err.message : String(err))}`,
             ),
           );
           return;
@@ -63,7 +63,7 @@ async function parseGsdToolsJson(raw: string, projectDir: string): Promise<unkno
       jsonStr = await readFile(filePath, 'utf-8');
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      throw new Error(`Failed to read gsd-tools @file: indirection at "${filePath}": ${reason}`);
+      throw new Error(`Failed to read fvgsd-tools @file: indirection at "${filePath}": ${reason}`);
     }
   }
 
@@ -71,7 +71,7 @@ async function parseGsdToolsJson(raw: string, projectDir: string): Promise<unkno
 }
 
 /**
- * Run `node gsd-tools.cjs <command> [...args]` in `projectDir` and parse stdout as JSON.
+ * Run `node fvgsd-tools.cjs <command> [...args]` in `projectDir` and parse stdout as JSON.
  */
 export async function captureGsdToolsOutput(
   command: string,
@@ -83,7 +83,7 @@ export async function captureGsdToolsOutput(
 }
 
 /**
- * Run `node gsd-tools.cjs <command> [...args]` and return raw stdout (no JSON parse).
+ * Run `node fvgsd-tools.cjs <command> [...args]` and return raw stdout (no JSON parse).
  */
 export async function captureGsdToolsStdout(
   command: string,

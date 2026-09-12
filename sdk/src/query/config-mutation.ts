@@ -261,7 +261,7 @@ function setConfigValue(obj: Record<string, unknown>, dotPath: string, value: un
  *
  * @param args - args[0]=key, args[1]=value
  * @param projectDir - Project root directory
- * @returns QueryResult matching gsd-tools `config-set` JSON: `{ updated, key, value, previousValue }`
+ * @returns QueryResult matching fvgsd-tools `config-set` JSON: `{ updated, key, value, previousValue }`
  * @throws GSDError with Validation if key is invalid or args missing
  */
 export const configSet: QueryHandler = async (args, projectDir, workstream) => {
@@ -440,7 +440,7 @@ export const configSet: QueryHandler = async (args, projectDir, workstream) => {
   }
 
   // Mask plaintext for keys in SECRET_CONFIG_KEYS to match CJS behavior at
-  // config.cjs:362-370 — without this, `gsd-sdk query config-set brave_search XXX`
+  // config.cjs:362-370 — without this, `fvgsd-sdk query config-set brave_search XXX`
   // would echo the plaintext credential into machine-readable output. (#2997)
   // The on-disk value is intentionally NOT masked — only the response.
   const data: Record<string, unknown> = {

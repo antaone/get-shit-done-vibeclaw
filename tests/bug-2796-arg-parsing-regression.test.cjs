@@ -37,7 +37,7 @@ function runSdkQuery(subcommand, args, projectDir) {
     stdout = execFileSync(process.execPath, [SDK_CLI, ...argv], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, GSD_SESSION_KEY: '' },
+      env: { ...process.env, FVGSD_SESSION_KEY: '' },
     });
   } catch (err) {
     exitCode = err.status ?? 1;
@@ -91,7 +91,7 @@ describe('bug-2796: roadmap update-plan-progress accepts --phase flag', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempGitProject('gsd-test-2796-');
+    tmpDir = createTempGitProject('fvgsd-test-2796-');
   });
 
   afterEach(() => {

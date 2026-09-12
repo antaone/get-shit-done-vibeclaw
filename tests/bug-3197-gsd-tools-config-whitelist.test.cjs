@@ -1,10 +1,10 @@
 'use strict';
 
 /**
- * Regression test for #3197 — gsd-tools config-set rejects workflow._auto_chain_active.
+ * Regression test for #3197 — fvgsd-tools config-set rejects workflow._auto_chain_active.
  *
  * Root cause: RUNTIME_STATE_KEYS was added to sdk/src/query/config-schema.ts in #3162
- * but not to get-shit-done/bin/lib/config-schema.cjs, so gsd-tools.cjs users still hit
+ * but not to get-shit-done/bin/lib/config-schema.cjs, so fvgsd-tools.cjs users still hit
  * "Unknown config key" when setting workflow._auto_chain_active.
  */
 
@@ -14,8 +14,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createTempProject, cleanup, runGsdTools } = require('./helpers.cjs');
 
-describe('#3197 — gsd-tools.cjs config-set workflow._auto_chain_active', () => {
-  test('config-set workflow._auto_chain_active true succeeds via gsd-tools.cjs (CJS path)', (t) => {
+describe('#3197 — fvgsd-tools.cjs config-set workflow._auto_chain_active', () => {
+  test('config-set workflow._auto_chain_active true succeeds via fvgsd-tools.cjs (CJS path)', (t) => {
     const tmpDir = createTempProject();
     t.after(() => cleanup(tmpDir));
 

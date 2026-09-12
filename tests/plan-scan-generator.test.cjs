@@ -22,7 +22,7 @@ const crypto = require('crypto');
  * be left over from a prior run. We synthesize a random suffix under
  * `os.tmpdir()` and force-remove the path first.
  */
-function uniqueMissingPath(prefix = 'gsd-missing') {
+function uniqueMissingPath(prefix = 'fvgsd-missing') {
   const suffix = `${prefix}-${process.pid}-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
   const p = path.join(os.tmpdir(), suffix);
   // The probability of collision is negligible, but force-clean anyway to make
@@ -139,7 +139,7 @@ describe('plan-scan-generator parity: scanPhasePlans (non-existent dir)', async 
   const sdk = await import('../sdk/dist/query/plan-scan.js');
 
   test('returns zero counts for non-existent directory', () => {
-    const nonExistent = uniqueMissingPath('gsd-plan-scan-nonexistent');
+    const nonExistent = uniqueMissingPath('fvgsd-plan-scan-nonexistent');
     const sdkResult = sdk.scanPhasePlans(nonExistent);
     const cjsResult = cjs.scanPhasePlans(nonExistent);
     assert.deepStrictEqual(sdkResult, {
@@ -158,7 +158,7 @@ describe('plan-scan-generator parity: scanPhasePlans (flat layout)', async () =>
   const sdk = await import('../sdk/dist/query/plan-scan.js');
 
   test('detects flat plan and summary files', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-plan-scan-test-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-plan-scan-test-'));
     try {
       fs.writeFileSync(path.join(tmpDir, '01-01-PLAN.md'), '# Plan');
       fs.writeFileSync(path.join(tmpDir, '01-01-SUMMARY.md'), '# Summary');
@@ -183,7 +183,7 @@ describe('plan-scan-generator parity: module.exports call style', async () => {
     // CJS callers do: const scanPhasePlans = require('./plan-scan.cjs')
     // then call it directly: scanPhasePlans(phaseDir)
     assert.strictEqual(typeof cjs, 'function', 'default export is a function');
-    const result = cjs(uniqueMissingPath('gsd-plan-scan-cjs-default'));
+    const result = cjs(uniqueMissingPath('fvgsd-plan-scan-cjs-default'));
     assert.deepStrictEqual(result, {
       planCount: 0,
       summaryCount: 0,

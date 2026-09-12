@@ -42,7 +42,7 @@ describe('plan-phase decision-coverage gate (#2492)', () => {
   test('invokes the check.decision-coverage-plan handler', () => {
     assert.ok(
       md.includes('check.decision-coverage-plan'),
-      'plan-phase.md must call gsd-sdk query check.decision-coverage-plan',
+      'plan-phase.md must call fvgsd-sdk query check.decision-coverage-plan',
     );
   });
 
@@ -122,7 +122,7 @@ describe('verify-phase decision-coverage gate (#2492)', () => {
   test('invokes the check.decision-coverage-verify handler', () => {
     assert.ok(
       md.includes('check.decision-coverage-verify'),
-      'verify-phase.md must call gsd-sdk query check.decision-coverage-verify',
+      'verify-phase.md must call fvgsd-sdk query check.decision-coverage-verify',
     );
   });
 

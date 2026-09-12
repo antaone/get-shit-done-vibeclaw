@@ -6,7 +6,7 @@
  * literal parts of skill/subagent names.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -29,31 +29,31 @@ Test body
 </objective>
 `;
 
-    const result = convertClaudeCommandToWindsurfSkill(input, 'vgsd-quick');
+    const result = convertClaudeCommandToWindsurfSkill(input, 'fvgsd-quick');
     const nameMatch = result.match(/^name:\s*(.+)$/m);
 
     assert.ok(nameMatch, 'frontmatter contains name field');
-    assert.strictEqual(nameMatch[1], 'vgsd-quick', 'skill name is plain scalar');
-    assert.ok(!result.includes('name: "vgsd-quick"'), 'quoted skill name is not emitted');
+    assert.strictEqual(nameMatch[1], 'fvgsd-quick', 'skill name is plain scalar');
+    assert.ok(!result.includes('name: "fvgsd-quick"'), 'quoted skill name is not emitted');
   });
 
   test('preserves slash for slash commands in markdown body', () => {
     const input = `---
-name: vgsd:plan-phase
+name: fvgsd:plan-phase
 description: Plan a phase
 ---
 
 Next:
-/vgsd:execute-phase 17
-/vgsd-help
-vgsd:progress
+/fvgsd:execute-phase 17
+/fvgsd-help
+fvgsd:progress
 `;
 
-    const result = convertClaudeCommandToWindsurfSkill(input, 'vgsd-plan-phase');
-    // Slash commands: /vgsd:execute-phase -> /vgsd-execute-phase
-    assert.ok(result.includes('/vgsd-execute-phase 17'), 'slash command gsd: -> gsd-');
-    assert.ok(result.includes('/vgsd-help'), '/vgsd-help preserved');
-    assert.ok(result.includes('vgsd-progress'), 'bare gsd: -> gsd-');
+    const result = convertClaudeCommandToWindsurfSkill(input, 'fvgsd-plan-phase');
+    // Slash commands: /fvgsd:execute-phase -> /fvgsd-execute-phase
+    assert.ok(result.includes('/fvgsd-execute-phase 17'), 'slash command gsd: -> gsd-');
+    assert.ok(result.includes('/fvgsd-help'), '/fvgsd-help preserved');
+    assert.ok(result.includes('fvgsd-progress'), 'bare gsd: -> gsd-');
   });
 
   test('includes windsurf_skill_adapter block', () => {
@@ -65,7 +65,7 @@ description: A test skill
 Body content.
 `;
 
-    const result = convertClaudeCommandToWindsurfSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToWindsurfSkill(input, 'fvgsd-test');
     assert.ok(result.includes('<windsurf_skill_adapter>'), 'adapter header present');
     assert.ok(result.includes('</windsurf_skill_adapter>'), 'adapter footer present');
     assert.ok(result.includes('Shell'), 'Shell tool mentioned');
@@ -90,7 +90,7 @@ Agent body content.
     const result = convertClaudeAgentToWindsurfAgent(input);
     const nameMatch = result.match(/^name:\s*(.+)$/m);
     assert.ok(nameMatch, 'name field present');
-    assert.strictEqual(nameMatch[1], 'gsd-bugfix', 'agent name is plain scalar');
+    assert.strictEqual(nameMatch[1], 'fvgsd-bugfix', 'agent name is plain scalar');
     // Should strip unsupported fields
     assert.ok(!result.includes('color:'), 'color field stripped');
     assert.ok(!result.includes('skills:'), 'skills field stripped');
@@ -125,10 +125,10 @@ describe('convertClaudeToWindsurfMarkdown', () => {
     assert.ok(result.includes('StrReplace('), 'Edit -> StrReplace');
   });
 
-  test('replaces $ARGUMENTS with {{GSD_ARGS}}', () => {
+  test('replaces $ARGUMENTS with {{FVGSD_ARGS}}', () => {
     const input = 'Pass $ARGUMENTS to the command.';
     const result = convertClaudeToWindsurfMarkdown(input);
-    assert.ok(result.includes('{{GSD_ARGS}}'), '$ARGUMENTS replaced');
+    assert.ok(result.includes('{{FVGSD_ARGS}}'), '$ARGUMENTS replaced');
   });
 
   test('removes classifyHandoffIfNeeded workarounds', () => {

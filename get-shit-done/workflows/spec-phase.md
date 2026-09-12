@@ -56,7 +56,7 @@ Rotate through these perspectives — each naturally surfaces different blindspo
 ## Step 1: Initialize
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE}")
+INIT=$(node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" init phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -67,7 +67,7 @@ Parse JSON for: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase
 **If `phase_found` is false:**
 ```
 Phase [X] not found in roadmap.
-Use /vgsd:progress to see available phases.
+Use /fvgsd:progress to see available phases.
 ```
 Exit.
 
@@ -89,7 +89,7 @@ If SPEC.md already exists:
   - "Skip" — Exit (use existing spec as-is)
 
 If "View": Display SPEC.md, then offer Update/Skip.
-If "Skip": Exit with message: "Existing SPEC.md unchanged. Run /vgsd:discuss-phase [X] to continue."
+If "Skip": Exit with message: "Existing SPEC.md unchanged. Run /fvgsd:discuss-phase [X] to continue."
 If "Update": Load existing SPEC.md, continue to Step 3.
 
 ## Step 2: Scout Codebase
@@ -188,7 +188,7 @@ If gate passes (ambiguity ≤ 0.20 AND all minimums met):
 
 ## Step 6: Generate SPEC.md
 
-Use the SPEC.md template from @~/.claude/get-shit-done/templates/spec.md.
+Use the SPEC.md template from @~/.claude/fvgsd/templates/spec.md.
 
 **Requirements for every requirement entry:**
 - One specific, testable statement
@@ -233,7 +233,7 @@ SPEC.md written — {N} requirements locked.
   Phase {X}: {name}
   Ambiguity: {final_score} (gate: ≤ 0.20)
 
-Next: /vgsd:discuss-phase {X}
+Next: /fvgsd:discuss-phase {X}
   discuss-phase will detect SPEC.md and focus on implementation decisions only.
 ```
 
@@ -258,5 +258,5 @@ Next: /vgsd:discuss-phase {X}
 - Boundaries are explicit (in scope / out of scope with reasoning)
 - Acceptance criteria are pass/fail checkboxes
 - SPEC.md committed atomically (when commit_docs is true)
-- User directed to /vgsd:discuss-phase as next step
+- User directed to /fvgsd:discuss-phase as next step
 </success_criteria>

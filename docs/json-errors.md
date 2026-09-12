@@ -1,8 +1,8 @@
-# JSON Error Mode — `gsd-tools` Structured Errors
+# JSON Error Mode — `fvgsd-tools` Structured Errors
 
 ## Overview
 
-`gsd-tools` supports a **JSON error mode** that emits all errors as structured
+`fvgsd-tools` supports a **JSON error mode** that emits all errors as structured
 JSON objects on stderr instead of free-form text.  This is the recommended
 surface for tests and tooling that need to assert on error types without
 grepping raw text (see `CONTRIBUTING.md` — "Prohibited: Raw Text Matching on
@@ -14,10 +14,10 @@ Either flag or env var activates the mode:
 
 ```bash
 # Flag (preferred in test code):
-node gsd-tools.cjs --json-errors <command> [args]
+node fvgsd-tools.cjs --json-errors <command> [args]
 
 # Env var (preferred for shell wrappers and CI):
-GSD_JSON_ERRORS=1 node gsd-tools.cjs <command> [args]
+FVGSD_JSON_ERRORS=1 node fvgsd-tools.cjs <command> [args]
 ```
 
 ## Wire format
@@ -43,13 +43,13 @@ Codes are frozen constants in `get-shit-done/bin/lib/core.cjs` under
 `ERROR_REASON`.  Tests must assert on `reason` values (stable), not `message`
 text (unstable).
 
-### Dispatch errors (gsd-tools routing layer)
+### Dispatch errors (fvgsd-tools routing layer)
 
 | Code | When emitted |
 |------|-------------|
-| `sdk_unknown_command` | Unknown top-level command (`gsd-tools bogus-cmd`) |
-| `sdk_unknown_command` | Unknown dotted command (`gsd-tools foo.bar` where `foo` is not a known command) |
-| `sdk_unknown_command` | Unknown subcommand within a domain (e.g. `gsd-tools intel bogus-sub`) |
+| `sdk_unknown_command` | Unknown top-level command (`fvgsd-tools bogus-cmd`) |
+| `sdk_unknown_command` | Unknown dotted command (`fvgsd-tools foo.bar` where `foo` is not a known command) |
+| `sdk_unknown_command` | Unknown subcommand within a domain (e.g. `fvgsd-tools intel bogus-sub`) |
 | `sdk_missing_arg` | Required argument omitted by an SDK-level guard |
 | `sdk_fail_fast` | SDK fail-fast policy triggered |
 
@@ -58,7 +58,7 @@ text (unstable).
 | Code | When emitted |
 |------|-------------|
 | `usage` | `--pick` flag used without a following value |
-| `usage` | Version flag (`--version`, `-v`) which gsd-tools never accepts |
+| `usage` | Version flag (`--version`, `-v`) which fvgsd-tools never accepts |
 | `usage` | Top-level no-args invocation (usage text) |
 
 ### Config errors (`config-get`, `config-set`, `config-ensure-section`)

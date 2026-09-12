@@ -18,7 +18,7 @@ function readQuickMd() {
 
 // Locate the shell-fallback cleanup loop in quick.md.
 // The loop is the `while IFS= read -r WT; do … done < "$WT_PATHS_FILE"` block
-// inside the `else` branch of the gsd-sdk availability check.
+// inside the `else` branch of the fvgsd-sdk availability check.
 function extractCleanupLoop(content) {
   const loopStart = content.indexOf('while IFS= read -r WT; do');
   assert.ok(loopStart !== -1, 'quick.md must contain the cleanup while-loop');

@@ -14,8 +14,8 @@ Phase number: $ARGUMENTS (required)
 ```
 Error: Phase number required.
 
-Usage: /vgsd-list-phase-assumptions [phase-number]
-Example: /vgsd-list-phase-assumptions 3
+Usage: /fvgsd-list-phase-assumptions [phase-number]
+Example: /fvgsd-list-phase-assumptions 3
 ```
 
 Exit workflow.
@@ -153,8 +153,8 @@ Present next steps:
 
 ```
 What's next?
-1. Discuss context (/vgsd:discuss-phase ${PHASE}) - Let me ask you questions to build comprehensive context
-2. Plan this phase (/vgsd:plan-phase ${PHASE}) - Create detailed execution plans
+1. Discuss context (/fvgsd:discuss-phase ${PHASE}) - Let me ask you questions to build comprehensive context
+2. Plan this phase (/fvgsd:plan-phase ${PHASE}) - Create detailed execution plans
 3. Re-examine assumptions - I'll analyze again with your corrections
 4. Done for now
 ```

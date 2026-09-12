@@ -9,33 +9,33 @@ import { resolveWorkspaceContext, workspacePlanningPaths } from './workspace.js'
 
 describe('resolveWorkspaceContext', () => {
   afterEach(() => {
-    delete process.env['GSD_WORKSTREAM'];
-    delete process.env['GSD_PROJECT'];
+    delete process.env['FVGSD_WORKSTREAM'];
+    delete process.env['FVGSD_PROJECT'];
   });
 
   it('returns null values when env vars not set', () => {
-    delete process.env['GSD_WORKSTREAM'];
-    delete process.env['GSD_PROJECT'];
+    delete process.env['FVGSD_WORKSTREAM'];
+    delete process.env['FVGSD_PROJECT'];
     const ctx = resolveWorkspaceContext();
     expect(ctx.workstream).toBeNull();
     expect(ctx.project).toBeNull();
   });
 
-  it('reads GSD_WORKSTREAM from env', () => {
-    process.env['GSD_WORKSTREAM'] = 'backend';
+  it('reads FVGSD_WORKSTREAM from env', () => {
+    process.env['FVGSD_WORKSTREAM'] = 'backend';
     const ctx = resolveWorkspaceContext();
     expect(ctx.workstream).toBe('backend');
   });
 
-  it('reads GSD_PROJECT from env', () => {
-    process.env['GSD_PROJECT'] = 'api-server';
+  it('reads FVGSD_PROJECT from env', () => {
+    process.env['FVGSD_PROJECT'] = 'api-server';
     const ctx = resolveWorkspaceContext();
     expect(ctx.project).toBe('api-server');
   });
 
   it('reads both vars when both are set', () => {
-    process.env['GSD_WORKSTREAM'] = 'ws1';
-    process.env['GSD_PROJECT'] = 'proj1';
+    process.env['FVGSD_WORKSTREAM'] = 'ws1';
+    process.env['FVGSD_PROJECT'] = 'proj1';
     const ctx = resolveWorkspaceContext();
     expect(ctx.workstream).toBe('ws1');
     expect(ctx.project).toBe('proj1');

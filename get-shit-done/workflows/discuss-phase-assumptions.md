@@ -8,14 +8,14 @@ believe based on evidence, and ask the user only to correct what's wrong.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-assumptions-analyzer — Analyzes codebase to surface implementation assumptions
+- fvgsd-assumptions-analyzer — Analyzes codebase to surface implementation assumptions
 </available_agent_types>
 
 <downstream_awareness>
 **CONTEXT.md feeds into:**
 
-1. **gsd-phase-researcher** — Reads CONTEXT.md to know WHAT to research
-2. **gsd-planner** — Reads CONTEXT.md to know WHAT decisions are locked
+1. **fvgsd-phase-researcher** — Reads CONTEXT.md to know WHAT to research
+2. **fvgsd-planner** — Reads CONTEXT.md to know WHAT decisions are locked
 
 **Your job:** Capture decisions clearly enough that downstream agents can act on them
 without asking the user again. Output is identical to discuss mode — same CONTEXT.md format.
@@ -64,9 +64,9 @@ plain-text numbered list and ask the user to type their choice number.
 Phase number from argument (required).
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ANALYZER=$(gsd-sdk query agent-skills gsd-assumptions-analyzer)
+AGENT_SKILLS_ANALYZER=$(fvgsd-sdk query agent-skills fvgsd-assumptions-analyzer)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`,
@@ -77,7 +77,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /vgsd:progress to see available phases.
+Use /fvgsd:progress to see available phases.
 ```
 Exit workflow.
 
@@ -171,7 +171,7 @@ Structure the extracted information for use in assumption generation.
 Check if any pending todos are relevant to this phase's scope.
 
 ```bash
-TODO_MATCHES=$(gsd-sdk query todo.match-phase "${PHASE_NUMBER}")
+TODO_MATCHES=$(fvgsd-sdk query todo.match-phase "${PHASE_NUMBER}")
 ```
 
 Parse JSON for: `todo_count`, `matches[]`.
@@ -197,7 +197,7 @@ cat .planning/METHODOLOGY.md 2>/dev/null || true
 **If METHODOLOGY.md exists:**
 - Parse each named lens: its diagnoses, recommendations, and triggering conditions
 - Store as internal `<active_lenses>` for use in deep_codebase_analysis and present_assumptions
-- When spawning the gsd-assumptions-analyzer, pass the lens list so it can flag which lenses apply
+- When spawning the fvgsd-assumptions-analyzer, pass the lens list so it can flag which lenses apply
 - When presenting assumptions, append a "Methodology" section showing which lenses were applied
   and what they flagged (if anything)
 
@@ -230,13 +230,13 @@ Identify reusable assets, established patterns, integration points, and creative
 </step>
 
 <step name="deep_codebase_analysis">
-Spawn a `gsd-assumptions-analyzer` agent to deeply analyze the codebase for this phase. This
+Spawn a `fvgsd-assumptions-analyzer` agent to deeply analyze the codebase for this phase. This
 keeps raw file contents out of the main context window, protecting token budget.
 
 **Resolve calibration tier (if USER-PROFILE.md exists):**
 
 ```bash
-PROFILE_PATH="$HOME/.claude/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="$HOME/.claude/fvgsd/USER-PROFILE.md"
 ```
 
 If file exists at PROFILE_PATH:
@@ -254,7 +254,7 @@ If no USER-PROFILE.md: calibration_tier = "standard"
 **Spawn Explore subagent:**
 
 ```
-Agent(subagent_type="gsd-assumptions-analyzer", prompt="""
+Agent(subagent_type="fvgsd-assumptions-analyzer", prompt="""
 Analyze the codebase for Phase {PHASE}: {phase_name}.
 
 Phase goal: {roadmap_description}
@@ -552,7 +552,7 @@ Write file.
 Commit phase context and discussion log:
 
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): capture phase context (assumptions mode)" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
+fvgsd-sdk query commit "docs(${padded_phase}): capture phase context (assumptions mode)" --files "${phase_dir}/${padded_phase}-CONTEXT.md" "${phase_dir}/${padded_phase}-DISCUSSION-LOG.md"
 ```
 
 Confirm: "Committed: docs(${padded_phase}): capture phase context (assumptions mode)"
@@ -562,7 +562,7 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context (assumptions m
 Update STATE.md with session info:
 
 ```bash
-gsd-sdk query state.record-session \
+fvgsd-sdk query state.record-session \
   --stopped-at "Phase ${PHASE} context gathered (assumptions mode)" \
   --resume-file "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
@@ -570,7 +570,7 @@ gsd-sdk query state.record-session \
 Commit STATE.md:
 
 ```bash
-gsd-sdk query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
+fvgsd-sdk query commit "docs(state): record phase ${PHASE} context session" --files .planning/STATE.md
 ```
 </step>
 
@@ -603,13 +603,13 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/vgsd:plan-phase ${PHASE}`
+`/fvgsd:plan-phase ${PHASE}`
 
 ---
 
 **Also available:**
-- `/vgsd:plan-phase ${PHASE} --skip-research` — plan without research
-- `/vgsd:ui-phase ${PHASE}` — generate UI design contract (if frontend work)
+- `/fvgsd:plan-phase ${PHASE} --skip-research` — plan without research
+- `/fvgsd:ui-phase ${PHASE}` — generate UI design contract (if frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -623,17 +623,17 @@ Check for auto-advance trigger:
 2. Sync chain flag:
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]]; then
-     gsd-sdk query config-set workflow._auto_chain_active false || true
+     fvgsd-sdk query config-set workflow._auto_chain_active false || true
    fi
    ```
 3. Read consolidated auto-mode (`active` = chain flag OR user preference):
    ```bash
-   AUTO_MODE=$(gsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
+   AUTO_MODE=$(fvgsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
    ```
 
 **If `--auto` flag present AND `AUTO_MODE` is not true:**
 ```bash
-gsd-sdk query config-set workflow._auto_chain_active true
+fvgsd-sdk query config-set workflow._auto_chain_active true
 ```
 
 **If `--auto` flag present OR `AUTO_MODE` is true:**
@@ -647,7 +647,7 @@ Display banner:
 Context captured (assumptions mode). Launching plan-phase...
 ```
 
-Launch: `Skill(skill="vgsd-plan-phase", args="${PHASE} --auto")`
+Launch: `Skill(skill="fvgsd-plan-phase", args="${PHASE} --auto")`
 
 Handle return: PHASE COMPLETE / PLANNING COMPLETE / INCONCLUSIVE / GAPS FOUND
 (identical handling to discuss-phase.md auto_advance step)

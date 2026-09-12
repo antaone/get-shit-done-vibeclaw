@@ -23,23 +23,23 @@ Referência detalhada de workflows, troubleshooting e configuração. Para setup
 
 Fluxo recomendado por fase:
 
-1. `/vgsd-discuss-phase [N]` — trava preferências de implementação
-2. `/vgsd-ui-phase [N]` — contrato visual para fases frontend
-3. `/vgsd-plan-phase [N]` — pesquisa + plano + validação
-4. `/vgsd-execute-phase [N]` — execução em ondas paralelas
-5. `/vgsd-verify-work [N]` — UAT manual com diagnóstico
-6. `/vgsd-ship [N]` — cria PR (opcional)
+1. `/fvgsd-discuss-phase [N]` — trava preferências de implementação
+2. `/fvgsd-ui-phase [N]` — contrato visual para fases frontend
+3. `/fvgsd-plan-phase [N]` — pesquisa + plano + validação
+4. `/fvgsd-execute-phase [N]` — execução em ondas paralelas
+5. `/fvgsd-verify-work [N]` — UAT manual com diagnóstico
+6. `/fvgsd-ship [N]` — cria PR (opcional)
 
 Para iniciar projeto novo:
 
 ```bash
-/vgsd-new-project
+/fvgsd-new-project
 ```
 
 Para seguir automaticamente o próximo passo:
 
 ```bash
-/vgsd-progress --next
+/fvgsd-progress --next
 ```
 
 ### Nyquist Validation
@@ -68,13 +68,13 @@ Com `workflow.discuss_mode: "assumptions"`, o GSD analisa o código antes de per
 
 | Comando | Descrição |
 |---------|-----------|
-| `/vgsd-ui-phase [N]` | Gera contrato de design `UI-SPEC.md` para a fase |
-| `/vgsd-ui-review [N]` | Auditoria visual retroativa em 6 pilares |
+| `/fvgsd-ui-phase [N]` | Gera contrato de design `UI-SPEC.md` para a fase |
+| `/fvgsd-ui-review [N]` | Auditoria visual retroativa em 6 pilares |
 
 ### Quando usar
 
-- Rode `/vgsd-ui-phase` depois de `/vgsd-discuss-phase` e antes de `/vgsd-plan-phase`.
-- Rode `/vgsd-ui-review` após execução/validação para avaliar qualidade visual e consistência.
+- Rode `/fvgsd-ui-phase` depois de `/fvgsd-discuss-phase` e antes de `/fvgsd-plan-phase`.
+- Rode `/fvgsd-ui-review` após execução/validação para avaliar qualidade visual e consistência.
 
 ### Configurações relacionadas
 
@@ -92,14 +92,14 @@ Com `workflow.discuss_mode: "assumptions"`, o GSD analisa o código antes de per
 Ideias fora da sequência ativa vão para backlog:
 
 ```bash
-/vgsd-capture --backlog "Camada GraphQL"
-/vgsd-capture --backlog "Responsividade mobile"
+/fvgsd-capture --backlog "Camada GraphQL"
+/fvgsd-capture --backlog "Responsividade mobile"
 ```
 
 Promover/revisar:
 
 ```bash
-/vgsd-review-backlog
+/fvgsd-review-backlog
 ```
 
 ### Seeds
@@ -107,7 +107,7 @@ Promover/revisar:
 Seeds guardam ideias futuras com condição de gatilho:
 
 ```bash
-/vgsd-capture --seed "Adicionar colaboração real-time quando infra de WebSocket estiver pronta"
+/fvgsd-capture --seed "Adicionar colaboração real-time quando infra de WebSocket estiver pronta"
 ```
 
 ### Threads persistentes
@@ -115,9 +115,9 @@ Seeds guardam ideias futuras com condição de gatilho:
 Threads são contexto leve entre sessões:
 
 ```bash
-/vgsd-thread
-/vgsd-thread fix-deploy-key-auth
-/vgsd-thread "Investigar timeout TCP"
+/fvgsd-thread
+/fvgsd-thread fix-deploy-key-auth
+/fvgsd-thread "Investigar timeout TCP"
 ```
 
 ---
@@ -128,10 +128,10 @@ Workstreams permitem trabalho paralelo sem colisão de estado de planejamento.
 
 | Comando | Função |
 |---------|--------|
-| `/vgsd-workstreams create <name>` | Cria workstream isolado |
-| `/vgsd-workstreams switch <name>` | Troca workstream ativo |
-| `/vgsd-workstreams list` | Lista workstreams |
-| `/vgsd-workstreams complete <name>` | Finaliza e arquiva workstream |
+| `/fvgsd-workstreams create <name>` | Cria workstream isolado |
+| `/fvgsd-workstreams switch <name>` | Troca workstream ativo |
+| `/fvgsd-workstreams list` | Lista workstreams |
+| `/fvgsd-workstreams complete <name>` | Finaliza e arquiva workstream |
 
 `workstreams` compartilham o mesmo código/git, mas isolam artefatos de `.planning/`.
 
@@ -156,27 +156,27 @@ Para arquivos sensíveis, use deny list no Claude Code.
 
 | Comando | Quando usar |
 |---------|-------------|
-| `/vgsd-new-project` | Início de projeto |
-| `/vgsd-discuss-phase [N]` | Definir preferências antes do plano |
-| `/vgsd-plan-phase [N]` | Criar e validar planos |
-| `/vgsd-execute-phase [N]` | Executar planos em ondas |
-| `/vgsd-verify-work [N]` | UAT manual |
-| `/vgsd-ship [N]` | Gerar PR da fase |
-| `/vgsd-progress --next` | Próximo passo automático |
+| `/fvgsd-new-project` | Início de projeto |
+| `/fvgsd-discuss-phase [N]` | Definir preferências antes do plano |
+| `/fvgsd-plan-phase [N]` | Criar e validar planos |
+| `/fvgsd-execute-phase [N]` | Executar planos em ondas |
+| `/fvgsd-verify-work [N]` | UAT manual |
+| `/fvgsd-ship [N]` | Gerar PR da fase |
+| `/fvgsd-progress --next` | Próximo passo automático |
 
 ### Gestão e utilidades
 
 | Comando | Quando usar |
 |---------|-------------|
-| `/vgsd-progress` | Ver status atual |
-| `/vgsd-resume-work` | Retomar sessão |
-| `/vgsd-pause-work` | Pausar com handoff |
-| `/vgsd-pause-work --report` | Resumo da sessão |
-| `/vgsd-quick` | Tarefa ad-hoc com garantias GSD |
-| `/vgsd-debug [desc]` | Debug sistemático |
-| `/vgsd-forensics` | Diagnóstico de workflow quebrado |
-| `/vgsd-settings` | Ajustar workflow/modelos |
-| `/vgsd-config --profile <profile>` | Troca rápida de perfil |
+| `/fvgsd-progress` | Ver status atual |
+| `/fvgsd-resume-work` | Retomar sessão |
+| `/fvgsd-pause-work` | Pausar com handoff |
+| `/fvgsd-pause-work --report` | Resumo da sessão |
+| `/fvgsd-quick` | Tarefa ad-hoc com garantias GSD |
+| `/fvgsd-debug [desc]` | Debug sistemático |
+| `/fvgsd-forensics` | Diagnóstico de workflow quebrado |
+| `/fvgsd-settings` | Ajustar workflow/modelos |
+| `/fvgsd-config --profile <profile>` | Troca rápida de perfil |
 
 Para lista completa e flags avançadas, consulte [Command Reference](../COMMANDS.md).
 
@@ -224,34 +224,34 @@ Detalhes completos: [Configuration Reference](../CONFIGURATION.md).
 
 ```bash
 claude --dangerously-skip-permissions
-/vgsd-new-project
-/vgsd-discuss-phase 1
-/vgsd-ui-phase 1
-/vgsd-plan-phase 1
-/vgsd-execute-phase 1
-/vgsd-verify-work 1
-/vgsd-ship 1
+/fvgsd-new-project
+/fvgsd-discuss-phase 1
+/fvgsd-ui-phase 1
+/fvgsd-plan-phase 1
+/fvgsd-execute-phase 1
+/fvgsd-verify-work 1
+/fvgsd-ship 1
 ```
 
 ### Código já existente
 
 ```bash
-/vgsd-map-codebase
-/vgsd-new-project
+/fvgsd-map-codebase
+/fvgsd-new-project
 ```
 
 ### Correção rápida
 
 ```bash
-/vgsd-quick
+/fvgsd-quick
 > "Corrigir botão de login no mobile Safari"
 ```
 
 ### Preparação para release
 
 ```bash
-/vgsd-audit-milestone
-/vgsd-complete-milestone
+/fvgsd-audit-milestone
+/fvgsd-complete-milestone
 ```
 
 ---
@@ -264,11 +264,11 @@ claude --dangerously-skip-permissions
 
 ### Sessão longa degradando contexto
 
-Use `/clear` entre etapas grandes e retome com `/vgsd-resume-work` ou `/vgsd-progress`.
+Use `/clear` entre etapas grandes e retome com `/fvgsd-resume-work` ou `/fvgsd-progress`.
 
 ### Plano desalinhado
 
-Rode `/vgsd-discuss-phase [N]` antes do plano e valide suposições com `/vgsd-discuss-phase --assumptions [N]`.
+Rode `/fvgsd-discuss-phase [N]` antes do plano e valide suposições com `/fvgsd-discuss-phase --assumptions [N]`.
 
 ### Execução falhou ou saiu com stubs
 
@@ -279,7 +279,7 @@ Replaneje com escopo menor (tarefas menores por plano).
 Use perfil budget:
 
 ```bash
-/vgsd-config --profile budget
+/fvgsd-config --profile budget
 ```
 
 ### Runtime não-Claude (Codex/OpenCode/Gemini/Kilo)
@@ -292,13 +292,13 @@ Use `resolve_model_ids: "omit"` para deixar o runtime resolver modelos padrão.
 
 | Problema | Solução |
 |---------|---------|
-| Perdeu contexto | `/vgsd-resume-work` ou `/vgsd-progress` |
+| Perdeu contexto | `/fvgsd-resume-work` ou `/fvgsd-progress` |
 | Fase deu errado | `git revert` + replanejar |
-| Precisa alterar escopo | `/vgsd-phase`, `/vgsd-phase --insert`, `/vgsd-phase --remove` |
-| Bug em workflow | `/vgsd-forensics` |
-| Correção pontual | `/vgsd-quick` |
-| Custo alto | `/vgsd-config --profile budget` |
-| Não sabe próximo passo | `/vgsd-progress --next` |
+| Precisa alterar escopo | `/fvgsd-phase`, `/fvgsd-phase --insert`, `/fvgsd-phase --remove` |
+| Bug em workflow | `/fvgsd-forensics` |
+| Correção pontual | `/fvgsd-quick` |
+| Custo alto | `/fvgsd-config --profile budget` |
+| Não sabe próximo passo | `/fvgsd-progress --next` |
 
 ---
 

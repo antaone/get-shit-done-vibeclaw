@@ -13,8 +13,8 @@ Para catálogo completo e detalhamento exaustivo, consulte [FEATURES.md em ingl�
 - **Execução em ondas paralelas** com controle por dependências
 - **Commits atômicos por tarefa** para rastreabilidade e rollback
 - **Verificação pós-execução** com foco em objetivos da fase
-- **UAT guiado** via `/vgsd-verify-work`
-- **Suporte brownfield** com `/vgsd-map-codebase`
+- **UAT guiado** via `/fvgsd-verify-work`
+- **Suporte brownfield** com `/fvgsd-map-codebase`
 - **Workstreams** para trilhas paralelas sem colisão de estado
 - **Backlog, seeds e threads** para memória de médio/longo prazo
 
@@ -28,21 +28,21 @@ Para catálogo completo e detalhamento exaustivo, consulte [FEATURES.md em ingl�
 
 ## UX de frontend
 
-- **`/vgsd-ui-phase`**: contrato visual antes da execução
-- **`/vgsd-ui-review`**: auditoria visual em 6 pilares
+- **`/fvgsd-ui-phase`**: contrato visual antes da execução
+- **`/fvgsd-ui-review`**: auditoria visual em 6 pilares
 - **UI safety gate** para uso de registries de terceiros
 
 ## Operação e manutenção
 
 - **Perfis de modelo** (`quality`, `balanced`, `budget`, `inherit`)
 - **Ajuste por toggles** para custo/qualidade/velocidade
-- **Diagnóstico forense** com `/vgsd-forensics`
-- **Relatório de sessão** com `/vgsd-pause-work --report`
+- **Diagnóstico forense** com `/fvgsd-forensics`
+- **Relatório de sessão** com `/fvgsd-pause-work --report`
 
 ## Novidades v1.31--v1.32
 
 - **Schema drift detection** — detecta alterações em ORM schema sem migração correspondente
-- **Security enforcement** — verificação de segurança ancorada em threat model (`/vgsd-secure-phase`)
+- **Security enforcement** — verificação de segurança ancorada em threat model (`/fvgsd-secure-phase`)
 - **Discuss chain mode** — encadeia discuss → plan → execute com `--chain`
 - **Single-phase autonomous** — executa apenas uma fase com `--only N`
 - **Scope reduction detection** — defesa em 3 camadas contra remoção silenciosa de requisitos
@@ -54,8 +54,8 @@ Para catálogo completo e detalhamento exaustivo, consulte [FEATURES.md em ingl�
 - **Read-before-edit guard** — hook que previne loops infinitos de retry (v1.32)
 - **Context reduction** — truncamento de markdown e ordenação cache-friendly (v1.32)
 - **`--power` flag** — respostas em batch via arquivo para discuss-phase (v1.32)
-- **`--diagnose` flag** — modo diagnóstico sem modificações no `/vgsd-debug` (v1.32)
-- **`/vgsd-manager --analyze-deps`** — detecta dependências entre fases (v1.32)
+- **`--diagnose` flag** — modo diagnóstico sem modificações no `/fvgsd-debug` (v1.32)
+- **`/fvgsd-manager --analyze-deps`** — detecta dependências entre fases (v1.32)
 - **Response language config** — `response_language` para saída consistente em idioma (v1.32)
 - **Novos runtimes** — Trae IDE, Cline, Augment Code (v1.32)
 - **Manual update** — procedimento de atualização sem npm (v1.32)
@@ -66,10 +66,10 @@ Para catálogo completo e detalhamento exaustivo, consulte [FEATURES.md em ingl�
 
 | Cenário | Comandos |
 |--------|----------|
-| Projeto novo | `/vgsd-new-project` -> `/vgsd-discuss-phase` -> `/vgsd-plan-phase` -> `/vgsd-execute-phase` |
-| Correção rápida | `/vgsd-quick` |
-| Código existente | `/vgsd-map-codebase` -> `/vgsd-new-project` |
-| Fechamento de release | `/vgsd-audit-milestone` -> `/vgsd-complete-milestone` |
+| Projeto novo | `/fvgsd-new-project` -> `/fvgsd-discuss-phase` -> `/fvgsd-plan-phase` -> `/fvgsd-execute-phase` |
+| Correção rápida | `/fvgsd-quick` |
+| Código existente | `/fvgsd-map-codebase` -> `/fvgsd-new-project` |
+| Fechamento de release | `/fvgsd-audit-milestone` -> `/fvgsd-complete-milestone` |
 
 ---
 

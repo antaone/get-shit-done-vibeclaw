@@ -5,7 +5,7 @@ describe('SDK Runtime Bridge seam coverage', () => {
   it('exposes bridge as the single runtime seam', () => {
     const runtime = createGSDToolsRuntime({
       projectDir: '/tmp/project',
-      gsdToolsPath: '/tmp/gsd-tools.cjs',
+      gsdToolsPath: '/tmp/fvgsd-tools.cjs',
       timeoutMs: 1_000,
       shouldUseNativeQuery: () => true,
       execJsonFallback: vi.fn(async () => ({})),

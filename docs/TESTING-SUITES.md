@@ -8,7 +8,7 @@ This project's `tests/` directory uses **filename suffix markers** to group test
 
 | Suite | Filename pattern | What goes here |
 |---|---|---|
-| `unit` | `*.test.cjs` (no other marker) | Default fast lane. Pure logic, no network, no external processes beyond `gsd-tools`. Most tests live here. |
+| `unit` | `*.test.cjs` (no other marker) | Default fast lane. Pure logic, no network, no external processes beyond `fvgsd-tools`. Most tests live here. |
 | `integration` | `*.integration.test.cjs` | Cross-module flows: full installer end-to-end, multi-tool orchestration, anything that crosses two or more bin entry points. |
 | `install` | `*.install.test.cjs` | Tests that perform a real install/uninstall against a sandbox project. Slower; PR CI skips these on PRs and runs them on `main` push only. |
 | `security` | `*.security.test.cjs` | Adversarial input, prompt-injection guards, fixture-driven hostile-payload sweeps. |

@@ -3,7 +3,7 @@ Interactive configuration of GSD power-user knobs — plan bounce, node repair, 
 inline plan threshold, cross-AI execution, base branch, branch templates, response language,
 context window, gitignored search, graphify build timeout, and runtime model tier overrides.
 
-This is a companion to `/vgsd:settings` — the common-case prompt there covers model profile,
+This is a companion to `/fvgsd:settings` — the common-case prompt there covers model profile,
 research/plan_check/verifier toggles, branching strategy, UI/AI phase gates, and worktree
 isolation. This advanced command covers everything else that is user-settable, grouped into
 seven sections so each prompt batch stays cognitively scoped. Every answer pre-selects the
@@ -20,24 +20,24 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and resolve the workstream-aware config path (mirrors `settings.md`):
 
 ```bash
-gsd-sdk query config-ensure-section
-if [[ -z "${GSD_CONFIG_PATH:-}" ]]; then
+fvgsd-sdk query config-ensure-section
+if [[ -z "${FVGSD_CONFIG_PATH:-}" ]]; then
   if [[ -f .planning/active-workstream ]]; then
     WS=$(tr -d '\n\r' < .planning/active-workstream)
-    GSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
+    FVGSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
   else
-    GSD_CONFIG_PATH=".planning/config.json"
+    FVGSD_CONFIG_PATH=".planning/config.json"
   fi
 fi
 ```
 
-All subsequent reads and writes go through `$GSD_CONFIG_PATH`. Never hardcode
+All subsequent reads and writes go through `$FVGSD_CONFIG_PATH`. Never hardcode
 `.planning/config.json` — workstream installs must route to their own config file.
 </step>
 
 <step name="read_current">
 ```bash
-cat "$GSD_CONFIG_PATH"
+cat "$FVGSD_CONFIG_PATH"
 ```
 
 Parse the following current values. If a key is absent, fall back to the documented default
@@ -391,7 +391,7 @@ AskUserQuestion([
 
 If "Other" is selected, prompt the user to enter the runtime name as a free-text string.
 If the selected runtime differs from the stored `runtime` key, update `runtime` via
-`gsd-sdk query config-set runtime <value>` before proceeding to Step C.
+`fvgsd-sdk query config-set runtime <value>` before proceeding to Step C.
 
 **Step C — Configure tier overrides for the selected runtime:**
 
@@ -434,12 +434,12 @@ AskUserQuestion([
 
 For each tier where the user chose "Enter model ID":
 ```bash
-gsd-sdk query config-set model_profile_overrides.<runtime>.<tier> "<model-id>"
+fvgsd-sdk query config-set model_profile_overrides.<runtime>.<tier> "<model-id>"
 ```
 
 For each tier where the user chose "Clear override", remove the key by setting it to null:
 ```bash
-gsd-sdk query config-set model_profile_overrides.<runtime>.<tier> null
+fvgsd-sdk query config-set model_profile_overrides.<runtime>.<tier> null
 ```
 
 "Keep current" selections are skipped entirely. Never write a key the user did not explicitly
@@ -448,23 +448,23 @@ change.
 </step>
 
 <step name="update_config">
-Merge the new settings into the existing config at `$GSD_CONFIG_PATH`. This merge is the
+Merge the new settings into the existing config at `$FVGSD_CONFIG_PATH`. This merge is the
 core correctness invariant: **preserve every unrelated key** — do not clobber siblings.
 
-Apply each selected value via `gsd-sdk query config-set <key> <value>` so the central
+Apply each selected value via `fvgsd-sdk query config-set <key> <value>` so the central
 validator (`isValidConfigKey`) accepts the write and the deep-merge preserves unrelated
 keys and sibling sub-objects.
 
 ```bash
 # Example — only write keys the user changed. "Keep current" selections are skipped.
-gsd-sdk query config-set workflow.plan_bounce_passes 5
-gsd-sdk query config-set workflow.subagent_timeout 900
-gsd-sdk query config-set git.base_branch main
-gsd-sdk query config-set context_window 1000000
+fvgsd-sdk query config-set workflow.plan_bounce_passes 5
+fvgsd-sdk query config-set workflow.subagent_timeout 900
+fvgsd-sdk query config-set git.base_branch main
+fvgsd-sdk query config-set context_window 1000000
 # Runtime model tier examples:
-gsd-sdk query config-set runtime gemini
-gsd-sdk query config-set model_profile_overrides.gemini.opus gemini-3-ultra
-gsd-sdk query config-set model_profile_overrides.gemini.haiku null
+fvgsd-sdk query config-set runtime gemini
+fvgsd-sdk query config-set model_profile_overrides.gemini.opus gemini-3-ultra
+fvgsd-sdk query config-set model_profile_overrides.gemini.haiku null
 ```
 
 Conceptual shape after merge (unchanged top-level keys like `model_profile`,
@@ -516,7 +516,7 @@ anything not listed in Sections 1–7 MUST survive the update):
 ```
 
 Never emit a full overwrite of the file that omits keys the user did not touch. Always
-route each write through `gsd-sdk query config-set` so sibling preservation is handled by
+route each write through `fvgsd-sdk query config-set` so sibling preservation is handled by
 the central setter.
 </step>
 
@@ -554,24 +554,24 @@ Display:
 | model_profile_overrides.<runtime>.sonnet   | {model/built-in/null} |
 | model_profile_overrides.<runtime>.haiku    | {model/built-in/null} |
 
-These settings apply to future /vgsd:plan-phase, /vgsd:execute-phase, /vgsd:discuss-phase,
-and /vgsd:ship runs.
+These settings apply to future /fvgsd:plan-phase, /fvgsd:execute-phase, /fvgsd:discuss-phase,
+and /fvgsd:ship runs.
 
 For common-case toggles (model profile, research/plan_check/verifier, branching strategy,
-UI/AI phase gates), use /vgsd:settings.
+UI/AI phase gates), use /fvgsd:settings.
 ```
 </step>
 
 </process>
 
 <success_criteria>
-- [ ] Current config read from resolved `$GSD_CONFIG_PATH`
+- [ ] Current config read from resolved `$FVGSD_CONFIG_PATH`
 - [ ] Seven sections rendered (Planning, Execution, Discussion, Cross-AI, Git, Runtime/Output, Runtime Model Tiers)
 - [ ] Every field pre-selected to its current value (or documented default if absent)
 - [ ] Numeric inputs validated — non-numeric rejected and re-prompted
 - [ ] Branch-template inputs validated — non-default must contain a placeholder
 - [ ] Null-allowed fields accept an empty input as a clear
-- [ ] Writes routed through `gsd-sdk query config-set` so unrelated keys are preserved
+- [ ] Writes routed through `fvgsd-sdk query config-set` so unrelated keys are preserved
 - [ ] Section 7 shows current runtime and built-in tier table
 - [ ] Group B runtimes display "(no built-in default — your runtime handles model selection)"
 - [ ] Override set/clear/keep paths all work correctly for each tier

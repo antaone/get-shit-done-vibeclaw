@@ -2,7 +2,7 @@
 
 External plan ingestion with conflict detection and agent delegation.
 
-- **--from**: Import external plan → conflict detection → write PLAN.md → validate via gsd-plan-checker
+- **--from**: Import external plan → conflict detection → write PLAN.md → validate via fvgsd-plan-checker
 
 Future: `--prd` mode (PRD extraction into PROJECT.md + REQUIREMENTS.md + ROADMAP.md) is planned for a follow-up PR.
 
@@ -32,7 +32,7 @@ Parse `$ARGUMENTS` to determine the execution mode:
 - If neither flag is found: display usage and exit:
 
 ```
-Usage: /vgsd:import --from <path>
+Usage: /fvgsd:import --from <path>
 
   --from <path>   Import an external plan file into GSD format
 ```
@@ -176,7 +176,7 @@ Apply GSD naming convention for the output filename:
 Determine the target directory by querying `init.phase-op` for the phase number extracted in `plan_read_input`. This ensures the `project_code` prefix from `.planning/config.json` is applied:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "{NN}")
+INIT=$(fvgsd-sdk query init.phase-op "{NN}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 expected_phase_dir=$(echo "$INIT" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).expected_phase_dir)")
 ```
@@ -194,11 +194,11 @@ Write the PLAN.md file to the target directory.
 
 <step name="plan_validate">
 
-Delegate validation to gsd-plan-checker:
+Delegate validation to fvgsd-plan-checker:
 
 ```
 Agent({
-  subagent_type: "gsd-plan-checker",
+  subagent_type: "fvgsd-plan-checker",
   prompt: "Validate: .planning/phases/{phase}/{plan}-PLAN.md — check frontmatter completeness, task structure, and GSD conventions. Report any issues."
 })
 ```
@@ -225,7 +225,7 @@ Update `.planning/STATE.md` if appropriate (e.g., increment total plan count).
 
 Commit the imported plan and updated files:
 ```bash
-gsd-sdk query commit "docs({phase}): import plan from {basename FILEPATH}" --files .planning/phases/{phase}/{plan}-PLAN.md .planning/ROADMAP.md
+fvgsd-sdk query commit "docs({phase}): import plan from {basename FILEPATH}" --files .planning/phases/{phase}/{plan}-PLAN.md .planning/ROADMAP.md
 ```
 
 Display completion:
@@ -246,7 +246,7 @@ Show: plan filename written, phase directory, validation result, next steps.
 Do NOT:
 - Violate the shared conflict-engine contract in `references/doc-conflict-engine.md` (no markdown tables, no new severity labels, no bypass of the BLOCKER gate)
 - Write PLAN.md files as `PLAN-01.md` or `plan-01.md` — always use `{NN}-{MM}-PLAN.md`
-- Use `pbr:plan-checker` or `pbr:planner` — use `gsd-plan-checker` and `gsd-planner`
+- Use `pbr:plan-checker` or `pbr:planner` — use `fvgsd-plan-checker` and `fvgsd-planner`
 - Write `.planning/.active-skill` — this is a PBR pattern with no GSD equivalent
 - Reference `pbr-tools`, `pbr:`, or `PLAN-BUILD-RUN` anywhere
 - Write any PLAN.md file when blockers exist — the safety gate must hold

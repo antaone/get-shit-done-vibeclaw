@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -35,7 +35,7 @@ function runRender(args = []) {
   };
 }
 
-before(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-changeset-')); });
+before(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-changeset-')); });
 after(() => { fs.rmSync(tmp, { recursive: true, force: true }); });
 
 describe('changeset cli render: file-I/O wrapper (#2975)', () => {

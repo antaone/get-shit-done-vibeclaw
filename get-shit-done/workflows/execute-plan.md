@@ -6,7 +6,7 @@ Execute a phase prompt (PLAN.md) and create the outcome summary (SUMMARY.md).
 Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
-@~/.claude/get-shit-done/references/git-integration.md
+@~/.claude/fvgsd/references/git-integration.md
 </required_reading>
 
 <atomic_close_out_invariant>
@@ -21,7 +21,7 @@ resume must detect that condition before dispatching another executor.
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- fvgsd-executor — Executes plan tasks, commits, creates SUMMARY.md
 </available_agent_types>
 
 <process>
@@ -30,7 +30,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load execution context (paths only to minimize orchestrator context):
 
 ```bash
-INIT=$(gsd-sdk query init.execute-phase "${PHASE}")
+INIT=$(fvgsd-sdk query init.execute-phase "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -50,7 +50,7 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 
 ```bash
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
-# config settings can be fetched via gsd-sdk query config-get if needed
+# config settings can be fetched via fvgsd-sdk query config-get if needed
 ```
 
 <if mode="yolo">
@@ -73,7 +73,7 @@ PLAN_START_EPOCH=$(date +%s)
 ```bash
 # Count tasks — match <task tag at any indentation level
 TASK_COUNT=$(grep -cE '^\s*<task[[:space:]>]' .planning/phases/XX-name/{phase}-{plan}-PLAN.md 2>/dev/null || echo "0")
-INLINE_THRESHOLD=$(gsd-sdk query config-get workflow.inline_plan_threshold 2>/dev/null || echo "2")
+INLINE_THRESHOLD=$(fvgsd-sdk query config-get workflow.inline_plan_threshold 2>/dev/null || echo "2")
 grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-PLAN.md
 ```
 
@@ -91,7 +91,7 @@ Otherwise: Apply checkpoint-based routing below.
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Agent(subagent_type="gsd-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to: (1) FIRST assert `git symbolic-ref HEAD` resolves to a per-agent branch (NOT a protected ref like `main`/`master`/`develop`/`trunk`/`release/*`) and HALT with a blocker if not — never self-recover via `git update-ref refs/heads/<protected>` (#2924); (2) only after that assertion passes, run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work, then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. The HEAD assertion (Step 1) MUST run before any reset/checkout. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms — #2015) and prevents the destructive HEAD-on-master self-recovery path (#2924).
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Agent(subagent_type="fvgsd-executor", model=executor_model) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to: (1) FIRST assert `git symbolic-ref HEAD` resolves to a per-agent branch (NOT a protected ref like `main`/`master`/`develop`/`trunk`/`release/*`) and HALT with a blocker if not — never self-recover via `git update-ref refs/heads/<protected>` (#2924); (2) only after that assertion passes, run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work, then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. The HEAD assertion (Step 1) MUST run before any reset/checkout. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms — #2015) and prevents the destructive HEAD-on-master self-recovery path (#2924).
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -124,7 +124,7 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
 
 1. Parse segment map: checkpoint locations and types
 2. Per segment:
-   - Subagent route: spawn gsd-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
+   - Subagent route: spawn fvgsd-executor for assigned tasks only. Prompt: task range, plan path, read full plan for context, execute assigned tasks, track deviations, NO SUMMARY/commit. Track via agent protocol.
    - Main route: execute tasks using standard flow (step name="execute")
 3. **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
    emit narrative output between the Write tool call and the commit tool call.
@@ -157,7 +157,7 @@ This IS the execution instructions. Follow exactly. If plan references CONTEXT.m
 
 <step name="previous_phase_check">
 ```bash
-gsd-sdk query phases.list --type summaries --raw
+fvgsd-sdk query phases.list --type summaries --raw
 # Extract the second-to-last summary from the JSON result
 ```
 
@@ -213,7 +213,7 @@ Auth errors during execution are NOT failures — they're expected interaction p
 
 ## Deviation Rules
 
-Apply deviation rules from the gsd-executor agent definition (single source of truth):
+Apply deviation rules from the fvgsd-executor agent definition (single source of truth):
 - **Rules 1-3** (bugs, missing critical, blockers): auto-fix, test, verify, track as deviations
 - **Rule 4** (architectural changes): STOP, present decision to user, await approval
 - **Scope boundary**: do not auto-fix pre-existing issues unrelated to current task
@@ -246,7 +246,7 @@ For `type: tdd` plans — RED-GREEN-REFACTOR:
 
 Errors: RED doesn't fail → investigate test/existing feature. GREEN doesn't pass → debug, iterate. REFACTOR breaks → undo.
 
-See `~/.claude/get-shit-done/references/tdd.md` for structure.
+See `~/.claude/fvgsd/references/tdd.md` for structure.
 </tdd_plan_execution>
 
 <precommit_failure_handling>
@@ -276,7 +276,7 @@ If a commit is BLOCKED by a hook:
 <task_commit>
 ## Task Commit Protocol
 
-Canonical per-task commit rules live in **`agents/gsd-executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
+Canonical per-task commit rules live in **`agents/fvgsd-executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
 
 **Orchestrator note:** After each task, the spawned executor reports commit hashes; this workflow does not re-specify commit semantics beyond pointing at the executor.
 
@@ -295,7 +295,7 @@ Display: `CHECKPOINT: [Type]` box → Progress {X}/{Y} → Task name → type-sp
 
 After response: verify if specified. Pass → continue. Fail → inform, wait. WAIT for user — do NOT hallucinate completion.
 
-See ~/.claude/get-shit-done/references/checkpoints.md for details.
+See ~/.claude/fvgsd/references/checkpoints.md for details.
 </step>
 
 <step name="checkpoint_return_for_orchestrator">
@@ -311,7 +311,7 @@ If verification fails:
 
 **Check if node repair is enabled** (default: on):
 ```bash
-NODE_REPAIR=$(gsd-sdk query config-get workflow.node_repair 2>/dev/null || echo "true")
+NODE_REPAIR=$(fvgsd-sdk query config-get workflow.node_repair 2>/dev/null || echo "true")
 ```
 
 If `NODE_REPAIR` is `true`: invoke `@./.claude/get-shit-done/workflows/node-repair.md` with:
@@ -348,7 +348,7 @@ fi
 grep -A 50 "^user_setup:" .planning/phases/XX-name/{phase}-{plan}-PLAN.md | head -50
 ```
 
-If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/get-shit-done/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
+If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/fvgsd/templates/user-setup.md`. Per service: env vars table, account setup checklist, dashboard config, local dev notes, verification commands. Status "Incomplete". Set `USER_SETUP_CREATED=true`. If empty/missing: skip.
 </step>
 
 <step name="create_summary">
@@ -357,7 +357,7 @@ emit narrative output between the Write tool call and the commit tool call.
 Truncation at this boundary is a known failure mode (see #2070 rescue logic in
 execute-phase.md step 5.5).
 
-Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/get-shit-done/templates/summary.md`.
+Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/fvgsd/templates/summary.md`.
 
 **Frontmatter:** phase, plan, subsystem, tags | requires/provides/affects | tech-stack.added/patterns | key-files.created/modified | key-decisions | requirements-completed (**MUST** copy `requirements` array from PLAN.md frontmatter verbatim) | duration ($DURATION), completed ($PLAN_END_TIME date).
 
@@ -375,7 +375,7 @@ Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready f
 handles STATE.md/ROADMAP.md updates centrally after merging worktrees to avoid
 merge conflicts).
 
-Update STATE.md using gsd-sdk query (or legacy gsd-tools) state mutations:
+Update STATE.md using fvgsd-sdk query (or legacy fvgsd-tools) state mutations:
 
 ```bash
 # Auto-detect parallel mode: .git is a file in worktrees, a directory in main repo
@@ -384,13 +384,13 @@ IS_WORKTREE=$([ -f .git ] && echo "true" || echo "false")
 # Skip in parallel mode — orchestrator handles STATE.md centrally
 if [ "$IS_WORKTREE" != "true" ]; then
   # Advance plan counter (handles last-plan edge case)
-  gsd-sdk query state.advance-plan
+  fvgsd-sdk query state.advance-plan
 
   # Recalculate progress bar from disk state
-  gsd-sdk query state.update-progress
+  fvgsd-sdk query state.update-progress
 
   # Record execution metrics
-  gsd-sdk query state.record-metric \
+  fvgsd-sdk query state.record-metric \
     --phase "${PHASE}" --plan "${PLAN}" --duration "${DURATION}" \
     --tasks "${TASK_COUNT}" --files "${FILE_COUNT}"
 fi
@@ -403,19 +403,19 @@ From SUMMARY: Extract decisions and add to STATE.md:
 ```bash
 # Add each decision from SUMMARY key-decisions
 # Prefer file inputs for shell-safe text (preserves `$`, `*`, etc. exactly)
-gsd-sdk query state.add-decision \
+fvgsd-sdk query state.add-decision \
   --phase "${PHASE}" --summary-file "${DECISION_TEXT_FILE}" --rationale-file "${RATIONALE_FILE}"
 
 # Add blockers if any found
-gsd-sdk query state.add-blocker --text-file "${BLOCKER_TEXT_FILE}"
+fvgsd-sdk query state.add-blocker --text-file "${BLOCKER_TEXT_FILE}"
 ```
 </step>
 
 <step name="update_session_continuity">
-Update session info using gsd-sdk query (or legacy gsd-tools):
+Update session info using fvgsd-sdk query (or legacy fvgsd-tools):
 
 ```bash
-gsd-sdk query state.record-session \
+fvgsd-sdk query state.record-session \
   --stopped-at "Completed ${PHASE}-${PLAN}-PLAN.md" \
   --resume-file "None"
 ```
@@ -441,7 +441,7 @@ IS_WORKTREE=$([ -f .git ] && echo "true" || echo "false")
 
 if [ "$IS_WORKTREE" != "true" ]; then
   # use_worktrees: false → this handler is the sole post-plan sync point (#2661)
-  gsd-sdk query roadmap.update-plan-progress "${PHASE}"
+  fvgsd-sdk query roadmap.update-plan-progress "${PHASE}"
 fi
 ```
 Counts PLAN vs SUMMARY files on disk. Updates progress table row with correct count and status (`In Progress` or `Complete` with date).
@@ -451,7 +451,7 @@ Counts PLAN vs SUMMARY files on disk. Updates progress table row with correct co
 Mark completed requirements from the PLAN.md frontmatter `requirements:` field:
 
 ```bash
-gsd-sdk query requirements.mark-complete ${REQ_IDS}
+fvgsd-sdk query requirements.mark-complete ${REQ_IDS}
 ```
 
 Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-01, AUTH-02]`). If no requirements field, skip.
@@ -471,9 +471,9 @@ IS_WORKTREE=$([ -f .git ] && echo "true" || echo "false")
 
 # In parallel mode: exclude STATE.md and ROADMAP.md (orchestrator commits these)
 if [ "$IS_WORKTREE" = "true" ]; then
-  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/REQUIREMENTS.md
+  fvgsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/REQUIREMENTS.md
 else
-  gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
+  fvgsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 fi
 ```
 </step>
@@ -489,7 +489,7 @@ git diff --name-only ${FIRST_TASK}^..HEAD 2>/dev/null || true
 Update only structural changes: new src/ dir → STRUCTURE.md | deps → STACK.md | file pattern → CONVENTIONS.md | API client → INTEGRATIONS.md | config → STACK.md | renamed → update paths. Skip code-only/bugfix/content changes.
 
 ```bash
-gsd-sdk query commit "" --files .planning/codebase/*.md --amend
+fvgsd-sdk query commit "" --files .planning/codebase/*.md --amend
 ```
 </step>
 
@@ -503,9 +503,9 @@ If `USER_SETUP_CREATED=true`: display `⚠️ USER SETUP REQUIRED` with path + e
 
 | Condition | Route | Action |
 |-----------|-------|--------|
-| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/vgsd:execute-phase {phase}` + `/vgsd:verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/vgsd:plan-phase {Z+1}` + `/vgsd:verify-work {Z}` + `/vgsd:discuss-phase {Z+1}` |
-| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/vgsd:complete-milestone` + `/vgsd:verify-work` + `/vgsd-add-phase` |
+| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/fvgsd:execute-phase {phase}` + `/fvgsd:verify-work`. STOP here. |
+| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/fvgsd:plan-phase {Z+1}` + `/fvgsd:verify-work {Z}` + `/fvgsd:discuss-phase {Z+1}` |
+| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/fvgsd:complete-milestone` + `/fvgsd:verify-work` + `/fvgsd-add-phase` |
 
 All routes: `/clear` first for fresh context.
 </step>

@@ -34,24 +34,24 @@ const LARGE_BUDGET = 1000;
 const DEFAULT_BUDGET = 500;
 
 const XL_AGENTS = new Set([
-  'gsd-debugger',
-  'gsd-planner',
+  'fvgsd-debugger',
+  'fvgsd-planner',
 ]);
 
 const LARGE_AGENTS = new Set([
-  'gsd-phase-researcher',
-  'gsd-verifier',
-  'gsd-doc-writer',
-  'gsd-plan-checker',
-  'gsd-executor',
-  'gsd-code-fixer',
-  'gsd-codebase-mapper',
-  'gsd-project-researcher',
-  'gsd-roadmapper',
+  'fvgsd-phase-researcher',
+  'fvgsd-verifier',
+  'fvgsd-doc-writer',
+  'fvgsd-plan-checker',
+  'fvgsd-executor',
+  'fvgsd-code-fixer',
+  'fvgsd-codebase-mapper',
+  'fvgsd-project-researcher',
+  'fvgsd-roadmapper',
 ]);
 
 const ALL_AGENTS = fs.readdirSync(AGENTS_DIR)
-  .filter(f => f.startsWith('gsd-') && f.endsWith('.md'))
+  .filter(f => f.startsWith('fvgsd-') && f.endsWith('.md'))
   .map(f => f.replace('.md', ''));
 
 function budgetFor(agent) {

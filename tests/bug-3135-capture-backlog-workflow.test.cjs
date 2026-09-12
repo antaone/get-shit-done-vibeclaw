@@ -6,7 +6,7 @@
 
 // Regression tests for bug #3135.
 //
-// PR #2824 consolidated add-backlog into `gsd-capture --backlog` by creating
+// PR #2824 consolidated add-backlog into `fvgsd-capture --backlog` by creating
 // a routing wrapper in commands/gsd/capture.md that delegates to
 // workflows/add-backlog.md via execution_context. The workflow file was never
 // created. Same gap class as reapply-patches.md (found and fixed in the same PR).
@@ -37,11 +37,11 @@ describe('#3135: get-shit-done/workflows/add-backlog.md', () => {
     );
   });
 
-  test('uses gsd-sdk query phase.next-decimal to find next 999.x slot', () => {
+  test('uses fvgsd-sdk query phase.next-decimal to find next 999.x slot', () => {
     const src = fs.readFileSync(WORKFLOW, 'utf8');
     assert.ok(
       src.includes('phase.next-decimal'),
-      'add-backlog.md must use gsd-sdk query phase.next-decimal to find the next 999.x number',
+      'add-backlog.md must use fvgsd-sdk query phase.next-decimal to find the next 999.x number',
     );
   });
 
@@ -62,15 +62,15 @@ describe('#3135: get-shit-done/workflows/add-backlog.md', () => {
     const src = fs.readFileSync(WORKFLOW, 'utf8');
     assert.ok(
       src.includes('generate-slug'),
-      'add-backlog.md must use gsd-sdk query generate-slug to build the phase directory slug',
+      'add-backlog.md must use fvgsd-sdk query generate-slug to build the phase directory slug',
     );
   });
 
-  test('commits via gsd-sdk query commit', () => {
+  test('commits via fvgsd-sdk query commit', () => {
     const src = fs.readFileSync(WORKFLOW, 'utf8');
     assert.ok(
-      src.includes('gsd-sdk query commit') || src.includes('query commit'),
-      'add-backlog.md must commit via gsd-sdk query commit',
+      src.includes('fvgsd-sdk query commit') || src.includes('query commit'),
+      'add-backlog.md must commit via fvgsd-sdk query commit',
     );
   });
 
@@ -97,7 +97,7 @@ describe('#3135: get-shit-done/workflows/add-backlog.md', () => {
   test('documents /gsd-review-backlog for promotion', () => {
     const src = fs.readFileSync(WORKFLOW, 'utf8');
     assert.ok(
-      src.includes('review-backlog') || src.includes('gsd-review-backlog'),
+      src.includes('review-backlog') || src.includes('fvgsd-review-backlog'),
       'add-backlog.md should mention /gsd-review-backlog for promoting items to active milestone',
     );
   });

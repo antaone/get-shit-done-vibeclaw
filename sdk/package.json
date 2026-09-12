@@ -1,5 +1,5 @@
 {
-  "name": "@gsd-build/sdk",
+  "name": "@fvgsd/sdk",
   "version": "1.51.0",
   "description": "GSD SDK — programmatic interface for running GSD plans via the Agent SDK",
   "type": "module",
@@ -12,7 +12,7 @@
     }
   },
   "bin": {
-    "gsd-sdk": "./dist/cli.js"
+    "fvgsd-sdk": "./dist/cli.js"
   },
   "files": [
     "dist",

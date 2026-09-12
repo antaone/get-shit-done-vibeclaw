@@ -1,11 +1,11 @@
 {
-  "name": "get-shit-done-cc",
+  "name": "fvgsd",
   "version": "1.51.0",
   "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, Gemini and Codex by TÂCHES.",
   "bin": {
-    "get-shit-done-cc": "bin/install.js",
-    "gsd-sdk": "bin/gsd-sdk.js",
-    "gsd-tools": "bin/gsd-sdk.js",
+    "fvgsd": "bin/install.js",
+    "fvgsd-sdk": "bin/fvgsd-sdk.js",
+    "fvgsd-tools": "bin/fvgsd-sdk.js",
     "vibe": "bin/vibe.js"
   },
   "files": [

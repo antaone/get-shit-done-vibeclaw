@@ -156,7 +156,7 @@ function parseFrontmatterYamlLines(yaml: string): Record<string, unknown> {
 
 /**
  * First leading frontmatter block only — parity with `get-shit-done/bin/lib/frontmatter.cjs`
- * `extractFrontmatter` (used by `summary-extract` and `history-digest` in gsd-tools.cjs).
+ * `extractFrontmatter` (used by `summary-extract` and `history-digest` in fvgsd-tools.cjs).
  */
 export function extractFrontmatterLeading(content: string): Record<string, unknown> {
   const match = content.match(/^---\r?\n([\s\S]+?)\r?\n---/);

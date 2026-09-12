@@ -15,7 +15,7 @@ const { probeTty, platformWriteSync, platformReadSync, platformEnsureDir } = req
 const { isValidActiveWorkstreamName } = require('./workstream-name-policy.cjs');
 
 const WORKSTREAM_SESSION_ENV_KEYS = [
-  'GSD_SESSION_KEY',
+  'FVGSD_SESSION_KEY',
   'CODEX_THREAD_ID',
   'CLAUDE_SESSION_ID',
   'CLAUDE_CODE_SSE_PORT',
@@ -58,16 +58,16 @@ const PLANNING_LOCK_RETRY_ERRNOS = new Set([
 ]);
 
 function planningDir(cwd, ws, project) {
-  if (project === undefined) project = process.env.GSD_PROJECT || null;
-  if (ws === undefined) ws = process.env.GSD_WORKSTREAM || null;
+  if (project === undefined) project = process.env.FVGSD_PROJECT || null;
+  if (ws === undefined) ws = process.env.FVGSD_WORKSTREAM || null;
 
   // Reject path separators and traversal components in project/workstream names
   const BAD_SEGMENT = /[/\\]|\.\./;
   if (project && BAD_SEGMENT.test(project)) {
-    throw new Error(`GSD_PROJECT contains invalid path characters: ${project}`);
+    throw new Error(`FVGSD_PROJECT contains invalid path characters: ${project}`);
   }
   if (ws && BAD_SEGMENT.test(ws)) {
-    throw new Error(`GSD_WORKSTREAM contains invalid path characters: ${ws}`);
+    throw new Error(`FVGSD_WORKSTREAM contains invalid path characters: ${ws}`);
   }
 
   let base = path.join(cwd, '.planning');
@@ -158,7 +158,7 @@ function getSessionScopedWorkstreamFile(cwd, fixedSessionKey) {
     .digest('hex')
     .slice(0, 16);
 
-  const dirPath = path.join(os.tmpdir(), 'gsd-workstream-sessions', projectId);
+  const dirPath = path.join(os.tmpdir(), 'fvgsd-workstream-sessions', projectId);
   return {
     sessionKey,
     dirPath,
@@ -374,7 +374,7 @@ function setActiveWorkstream(cwd, name) {
 /**
  * Locate the CONTEXT.md file in a phase directory, handling both the bare
  * form (`CONTEXT.md`) and the padded-prefix convention (`NN-CONTEXT.md`,
- * `NN.N-CONTEXT.md`, etc.) used by vgsd-discuss-phase output.
+ * `NN.N-CONTEXT.md`, etc.) used by fvgsd-discuss-phase output.
  *
  * Returns the filename (not the full path) of the first match, or null if
  * no CONTEXT.md exists in the directory.

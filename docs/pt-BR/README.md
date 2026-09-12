@@ -12,7 +12,7 @@ Documentação abrangente do framework Get Shit Done (GSD) — um sistema de met
 | [Referência de configuração](CONFIGURATION.md) | Todos os usuários | Schema completo de configuração, toggles e perfis |
 | [Referência de recursos](FEATURES.md) | Todos os usuários | Recursos e requisitos detalhados |
 | [Referência de agentes](AGENTS.md) | Contribuidores, usuários avançados | Agentes especializados, papéis e padrões de orquestração |
-| [Ferramentas CLI](CLI-TOOLS.md) | Contribuidores, autores de agentes | Superfície CJS `gsd-tools.cjs` + guia **`gsd-sdk query`/SDK** |
+| [Ferramentas CLI](CLI-TOOLS.md) | Contribuidores, autores de agentes | Superfície CJS `fvgsd-tools.cjs` + guia **`fvgsd-sdk query`/SDK** |
 | [Monitor de contexto](context-monitor.md) | Todos os usuários | Arquitetura de monitoramento da janela de contexto |
 | [Discuss Mode](workflow-discuss-mode.md) | Todos os usuários | Modo suposições vs entrevista no `discuss-phase` |
 | [Referências](references/) | Todos os usuários | Guias complementares de decisão, verificação e padrões |
@@ -20,11 +20,11 @@ Documentação abrangente do framework Get Shit Done (GSD) — um sistema de met
 
 ## Novidades v1.39
 
-Perfil de instalação `--minimal` (≥94% de redução no cold-start), `/vgsd-phase --edit`, build & test gate pós-merge, `review.models.<cli>` para escolha de modelo de review por runtime, herança de configuração de workstream, workflow manual de canary release, consolidação de skills (86 → 59).
+Perfil de instalação `--minimal` (≥94% de redução no cold-start), `/fvgsd-phase --edit`, build & test gate pós-merge, `review.models.<cli>` para escolha de modelo de review por runtime, herança de configuração de workstream, workflow manual de canary release, consolidação de skills (86 → 59).
 
 ## Links rápidos
 
-- **Começar rápido:** [README principal](../../README.pt-BR.md) -> instalação -> `/vgsd-new-project`
+- **Começar rápido:** [README principal](../../README.pt-BR.md) -> instalação -> `/fvgsd-new-project`
 - **Fluxo completo:** [Guia do usuário](USER-GUIDE.md)
 - **Comandos:** [Referência de comandos](COMMANDS.md)
 - **Configuração:** [Referência de configuração](CONFIGURATION.md)

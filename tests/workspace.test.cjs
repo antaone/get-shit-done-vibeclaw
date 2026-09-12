@@ -2,7 +2,7 @@
  * GSD Workspace Tests
  *
  * Tests for /gsd-new-workspace, /gsd-list-workspaces, /gsd-remove-workspace
- * init functions and integration with gsd-tools routing.
+ * init functions and integration with fvgsd-tools routing.
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
@@ -20,7 +20,7 @@ describe('detectChildRepos', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ws-test-');
+    tmpDir = createTempDir('fvgsd-ws-test-');
   });
 
   afterEach(() => {
@@ -75,13 +75,13 @@ describe('detectChildRepos', () => {
   });
 });
 
-// ─── cmdInitNewWorkspace via gsd-tools ──────────────────────────────────────
+// ─── cmdInitNewWorkspace via fvgsd-tools ──────────────────────────────────────
 
 describe('init new-workspace', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ws-test-');
+    tmpDir = createTempDir('fvgsd-ws-test-');
   });
 
   afterEach(() => {
@@ -119,13 +119,13 @@ describe('init new-workspace', () => {
   });
 });
 
-// ─── cmdInitListWorkspaces via gsd-tools ────────────────────────────────────
+// ─── cmdInitListWorkspaces via fvgsd-tools ────────────────────────────────────
 
 describe('init list-workspaces', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ws-test-');
+    tmpDir = createTempDir('fvgsd-ws-test-');
   });
 
   afterEach(() => {
@@ -141,7 +141,7 @@ describe('init list-workspaces', () => {
   });
 
   test('finds workspaces with WORKSPACE.md', () => {
-    const wsBase = path.join(tmpDir, 'gsd-workspaces');
+    const wsBase = path.join(tmpDir, 'fvgsd-workspaces');
     const ws1 = path.join(wsBase, 'feature-a');
     fs.mkdirSync(path.join(ws1, '.planning'), { recursive: true });
     fs.writeFileSync(path.join(ws1, 'WORKSPACE.md'), [
@@ -166,13 +166,13 @@ describe('init list-workspaces', () => {
   });
 });
 
-// ─── cmdInitRemoveWorkspace via gsd-tools ───────────────────────────────────
+// ─── cmdInitRemoveWorkspace via fvgsd-tools ───────────────────────────────────
 
 describe('init remove-workspace', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ws-test-');
+    tmpDir = createTempDir('fvgsd-ws-test-');
   });
 
   afterEach(() => {
@@ -192,7 +192,7 @@ describe('init remove-workspace', () => {
   });
 
   test('returns workspace info for existing workspace', () => {
-    const wsBase = path.join(tmpDir, 'gsd-workspaces');
+    const wsBase = path.join(tmpDir, 'fvgsd-workspaces');
     const ws = path.join(wsBase, 'test-ws');
     fs.mkdirSync(ws, { recursive: true });
     fs.writeFileSync(path.join(ws, 'WORKSPACE.md'), [
@@ -224,7 +224,7 @@ describe('workspace worktree integration', () => {
   let sourceRepo;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-ws-integ-');
+    tmpDir = createTempDir('fvgsd-ws-integ-');
     // Create a source git repo with a commit
     sourceRepo = path.join(tmpDir, 'source-repo');
     fs.mkdirSync(sourceRepo);
@@ -350,7 +350,7 @@ describe('workspace command files', () => {
 
   /**
    * Extract `@`-include targets from any of the <execution_context*> blocks.
-   * Each line of the form `@~/.claude/get-shit-done/workflows/foo.md` becomes
+   * Each line of the form `@~/.claude/fvgsd/workflows/foo.md` becomes
    * a relative target like `workflows/foo.md`. Used to assert workflow
    * routing structurally instead of substring-matching prose.
    */
@@ -424,7 +424,7 @@ describe('workspace command files', () => {
     const content = fs.readFileSync(path.join(baseDir, 'get-shit-done/workflows/new-workspace.md'), 'utf8');
     assert.ok(
       content.includes('init new-workspace') || content.includes('init.new-workspace'),
-      'expected init new-workspace (CJS) or gsd-sdk query init.new-workspace'
+      'expected init new-workspace (CJS) or fvgsd-sdk query init.new-workspace'
     );
     assert.ok(content.includes('WORKSPACE.md'));
     assert.ok(content.includes('git worktree add'));
@@ -435,7 +435,7 @@ describe('workspace command files', () => {
     const content = fs.readFileSync(path.join(baseDir, 'get-shit-done/workflows/list-workspaces.md'), 'utf8');
     assert.ok(
       content.includes('init list-workspaces') || content.includes('init.list-workspaces'),
-      'expected init list-workspaces or gsd-sdk query init.list-workspaces'
+      'expected init list-workspaces or fvgsd-sdk query init.list-workspaces'
     );
   });
 
@@ -443,15 +443,15 @@ describe('workspace command files', () => {
     const content = fs.readFileSync(path.join(baseDir, 'get-shit-done/workflows/remove-workspace.md'), 'utf8');
     assert.ok(
       content.includes('init remove-workspace') || content.includes('init.remove-workspace'),
-      'expected init remove-workspace or gsd-sdk query init.remove-workspace'
+      'expected init remove-workspace or fvgsd-sdk query init.remove-workspace'
     );
     assert.ok(content.includes('git worktree remove'));
   });
 });
 
-// ─── Routing in gsd-tools ───────────────────────────────────────────────────
+// ─── Routing in fvgsd-tools ───────────────────────────────────────────────────
 
-describe('workspace routing in gsd-tools', () => {
+describe('workspace routing in fvgsd-tools', () => {
   let tmpDir;
 
   beforeEach(() => { tmpDir = createTempProject(); });

@@ -1,7 +1,7 @@
 <purpose>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Saves artifacts to `.planning/sketches/`.
-Companion to `/vgsd:sketch --wrap-up`.
+Companion to `/fvgsd:sketch --wrap-up`.
 
 Supports two modes:
 - **Idea mode** (default) — user describes a design idea to sketch
@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@~/.claude/get-shit-done/references/sketch-theme-system.md
-@~/.claude/get-shit-done/references/sketch-variant-patterns.md
-@~/.claude/get-shit-done/references/sketch-interactivity.md
-@~/.claude/get-shit-done/references/sketch-tooling.md
+@~/.claude/fvgsd/references/sketch-theme-system.md
+@~/.claude/fvgsd/references/sketch-variant-patterns.md
+@~/.claude/fvgsd/references/sketch-interactivity.md
+@~/.claude/fvgsd/references/sketch-tooling.md
 </required_reading>
 
 <process>
@@ -99,7 +99,7 @@ ls -d .planning/sketches/[0-9][0-9][0-9]-* 2>/dev/null | sort | tail -1
 
 Check `commit_docs` config:
 ```bash
-COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -296,7 +296,7 @@ Iterate until satisfied.
 
 **h.** Commit (if `COMMIT_DOCS` is true):
 ```bash
-gsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" --files .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
+fvgsd-sdk query commit "docs(sketch-NNN): [winning direction] — [key visual insight]" --files .planning/sketches/NNN-descriptive-name/ .planning/sketches/MANIFEST.md
 ```
 
 **i.** Report:
@@ -331,14 +331,14 @@ After all sketches complete:
 
 **Package findings** — wrap design decisions into a reusable skill
 
-`/vgsd:sketch --wrap-up`
+`/fvgsd:sketch --wrap-up`
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd:sketch` — sketch more (or run with no argument for frontier mode)
-- `/vgsd:plan-phase` — start building the real UI
-- `/vgsd:spike` — spike technical feasibility of a design pattern
+- `/fvgsd:sketch` — sketch more (or run with no argument for frontier mode)
+- `/fvgsd:plan-phase` — start building the real UI
+- `/fvgsd:spike` — spike technical feasibility of a design pattern
 
 ───────────────────────────────────────────────────────────────
 </step>

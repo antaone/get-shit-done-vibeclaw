@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #3017: Codex SessionStart hook still emits bare `node` after #3002.
@@ -92,12 +92,12 @@ describe('Bug #3017 / #3440: Codex hook projection seam', () => {
   test('projectCodexHookTomlCommand renders escaped command value from shared projection module', () => {
     const commandValue = projectCodexHookTomlCommand({
       absoluteRunner: '"/usr/local/bin/node"',
-      scriptPath: '/tmp/codex-test/.codex/hooks/gsd-check-update.js',
+      scriptPath: '/tmp/codex-test/.codex/hooks/fvgsd/check-update.js',
       platform: 'linux',
     });
     assert.equal(
       commandValue,
-      '\\"/usr/local/bin/node\\" \\"/tmp/codex-test/.codex/hooks/gsd-check-update.js\\"',
+      '\\"/usr/local/bin/node\\" \\"/tmp/codex-test/.codex/hooks/fvgsd/check-update.js\\"',
     );
   });
 });
@@ -126,7 +126,7 @@ describe('Bug #3017: buildCodexHookBlock emits absolute node runner', () => {
       `parsed runner must equal supplied absolute path: got ${parsed.runner}, want ${expectedRunnerPath}`);
     // On Windows, path.resolve prepends the current drive letter ("D:") to
     // the POSIX-shaped fixture path. Accept either form.
-    const expectedHookSuffix = '/tmp/codex-test/.codex/hooks/gsd-check-update.js';
+    const expectedHookSuffix = '/tmp/codex-test/.codex/hooks/fvgsd/check-update.js';
     assert.ok(
       parsed.hookPath === expectedHookSuffix ||
         parsed.hookPath.replace(/^[A-Za-z]:/, '') === expectedHookSuffix,
@@ -171,7 +171,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
       '',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "node /Users/x/.codex/hooks/gsd-check-update.js"',
+      'command = "node /Users/x/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const expectedRunnerPath = '/usr/local/bin/node';
@@ -185,7 +185,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
     assert.equal(parsed.ok, true);
     assert.equal(unescapeRunner(parsed.runner), expectedRunnerPath,
       `runner must equal supplied absolute path: ${parsed.runner}`);
-    assert.equal(parsed.hookPath, '/Users/x/.codex/hooks/gsd-check-update.js');
+    assert.equal(parsed.hookPath, '/Users/x/.codex/hooks/fvgsd/check-update.js');
     // Non-GSD content (the [model] block) must be preserved verbatim.
     assert.ok(result.content.includes('[model]'));
     assert.ok(result.content.includes('name = "o3"'));
@@ -198,7 +198,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
       '',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "node \\"C:\\\\Users\\\\x\\\\.codex\\\\hooks\\\\gsd-check-update.js\\""',
+      'command = "node \\"C:\\\\Users\\\\x\\\\.codex\\\\hooks\\\\fvgsd/check-update.js\\""',
       '',
     ].join('\n');
     const runner = '"/usr/local/bin/node"';
@@ -208,14 +208,14 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
     assert.equal(parsed.ok, true, 'hook block must parse correctly');
     const expected = projectCodexHookTomlCommand({
       absoluteRunner: runner,
-      scriptPath: 'C:\\Users\\x\\.codex\\hooks\\gsd-check-update.js',
+      scriptPath: 'C:\\Users\\x\\.codex\\hooks\\fvgsd/check-update.js',
       platform: 'win32',
     });
     assert.equal(parsed.command, expected,
       'rewritten command must project from decoded Windows path (not TOML-escaped token text)');
     assert.equal(unescapeRunner(parsed.runner), '/usr/local/bin/node',
       'runner must equal supplied absolute path');
-    assert.equal(parsed.hookPath, 'C:/Users/x/.codex/hooks/gsd-check-update.js',
+    assert.equal(parsed.hookPath, 'C:/Users/x/.codex/hooks/fvgsd/check-update.js',
       'hook path must equal decoded Windows path after projection normalization');
   });
 
@@ -226,7 +226,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
       '',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "\\"/usr/local/bin/node\\" /Users/x/.codex/hooks/gsd-check-update.js"',
+      'command = "\\"/usr/local/bin/node\\" /Users/x/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const result = rewriteLegacyCodexHookBlock(already, '"/usr/local/bin/node"');
@@ -250,7 +250,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
   });
 
   test('returns content unchanged when absoluteRunner is null', () => {
-    const before = 'command = "node /path/to/gsd-check-update.js"';
+    const before = 'command = "node /path/to/fvgsd/check-update.js"';
     const result = rewriteLegacyCodexHookBlock(before, null);
     assert.equal(result.changed, false);
     assert.equal(result.content, before);

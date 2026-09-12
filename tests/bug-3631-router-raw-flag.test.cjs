@@ -25,13 +25,13 @@ const path = require('node:path');
 const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 
-const GSD_TOOLS = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+const FVGSD_TOOLS = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
 
 function run(args, cwd) {
   try {
     return {
       ok: true,
-      stdout: execFileSync(process.execPath, [GSD_TOOLS, ...args], {
+      stdout: execFileSync(process.execPath, [FVGSD_TOOLS, ...args], {
         cwd,
         encoding: 'utf-8',
         timeout: 15000,
@@ -48,7 +48,7 @@ function run(args, cwd) {
 }
 
 function makeFixture() {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3631-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3631-'));
   const planning = path.join(tmp, '.planning');
   fs.mkdirSync(path.join(planning, 'phases'), { recursive: true });
   fs.writeFileSync(

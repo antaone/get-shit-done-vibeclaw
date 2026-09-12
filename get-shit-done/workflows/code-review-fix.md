@@ -1,5 +1,5 @@
 <purpose>
-Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns gsd-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
+Auto-fix issues from REVIEW.md. Validates phase, checks config gate, verifies REVIEW.md exists and has fixable issues, spawns fvgsd-code-fixer agent, handles --auto iteration loop (capped at 3), commits REVIEW-FIX.md once at the end, and presents results.
 </purpose>
 
 <required_reading>
@@ -7,8 +7,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- gsd-code-fixer: Applies fixes to code review findings
-- gsd-code-reviewer: Reviews source files for bugs and issues
+- fvgsd-code-fixer: Applies fixes to code review findings
+- fvgsd-code-reviewer: Reviews source files for bugs and issues
 </available_agent_types>
 
 <process>
@@ -18,7 +18,7 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -36,7 +36,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /vgsd:progress to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /fvgsd:progress to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -74,7 +74,7 @@ FIX_REPORT_PATH="${PHASE_DIR}/${PADDED_PHASE}-REVIEW-FIX.md"
 Check if code review is enabled via config:
 
 ```bash
-CODE_REVIEW_ENABLED=$(gsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(fvgsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
 If CODE_REVIEW_ENABLED is "false":
@@ -93,7 +93,7 @@ Verify that REVIEW.md exists:
 
 ```bash
 if [ ! -f "${REVIEW_PATH}" ]; then
-  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /vgsd:code-review ${PHASE_ARG} first."
+  echo "Error: No REVIEW.md found for Phase ${PHASE_ARG}. Run /fvgsd:code-review ${PHASE_ARG} first."
   exit 1
 fi
 ```
@@ -178,7 +178,7 @@ If REVIEW.md contains a `files_reviewed_list` frontmatter field, use that as the
 </step>
 
 <step name="spawn_fixer">
-Spawn the gsd-code-fixer agent with config:
+Spawn the fvgsd-code-fixer agent with config:
 
 ```bash
 # Build config for agent
@@ -189,7 +189,7 @@ echo "Fix scope: ${FIX_SCOPE}"
 Use Agent() to spawn agent:
 
 ```text
-Agent(subagent_type="gsd-code-fixer", prompt="
+Agent(subagent_type="fvgsd-code-fixer", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -223,7 +223,7 @@ Check if FIX_REPORT_PATH exists:
 Either way:
 ```
 Some fix commits may already exist in git history — check git log for fix(${PADDED_PHASE}) commits.
-You can retry with /vgsd:code-review ${PHASE_ARG} --fix.
+You can retry with /fvgsd:code-review ${PHASE_ARG} --fix.
 ```
 
 Exit workflow (skip auto loop).
@@ -270,9 +270,9 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn gsd-code-reviewer agent to re-review
+    # Spawn fvgsd-code-reviewer agent to re-review
     # (This overwrites REVIEW_PATH with latest review state)
-    Agent(subagent_type="gsd-code-reviewer", prompt="
+    Agent(subagent_type="fvgsd-code-reviewer", prompt="
 <config>
 depth: ${REVIEW_DEPTH}
 phase_dir: ${PHASE_DIR}
@@ -306,7 +306,7 @@ Do NOT commit the output — the orchestrator handles that.
     # Still has issues — spawn fixer again
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
-    Agent(subagent_type="gsd-code-fixer", prompt="
+    Agent(subagent_type="fvgsd-code-fixer", prompt="
 <files_to_read>
 ${REVIEW_PATH}
 </files_to_read>
@@ -363,7 +363,7 @@ if [ -f "${FIX_REPORT_PATH}" ]; then
     echo "REVIEW-FIX.md created at ${FIX_REPORT_PATH}"
     
     if [ "$COMMIT_DOCS" = "true" ]; then
-      gsd-sdk query commit \
+      fvgsd-sdk query commit \
         "docs(${PADDED_PHASE}): add code review fix report" \
         --files "${FIX_REPORT_PATH}"
     fi
@@ -398,7 +398,7 @@ if [ ! -f "${FIX_REPORT_PATH}" ]; then
   echo "The fixer agent may have failed before completing."
   echo "Check git log for any fix(${PADDED_PHASE}) commits."
   echo ""
-  echo "Retry: /vgsd:code-review ${PHASE_ARG} --fix"
+  echo "Retry: /fvgsd:code-review ${PHASE_ARG} --fix"
   echo ""
   echo "═══════════════════════════════════════════════════════════════"
   exit 1
@@ -455,7 +455,7 @@ if [ "$FIX_STATUS" = "all_fixed" ]; then
   echo "Full report: ${FIX_REPORT_PATH}"
   echo ""
   echo "Next step:"
-  echo "  /vgsd:verify-work  — Verify phase completion"
+  echo "  /fvgsd:verify-work  — Verify phase completion"
   echo ""
 fi
 ```
@@ -469,8 +469,8 @@ if [ "$FIX_STATUS" = "partial" ] || [ "$FIX_STATUS" = "none_fixed" ]; then
   echo ""
   echo "Next steps:"
   echo "  cat ${FIX_REPORT_PATH}                     — View fix report"
-  echo "  /vgsd:code-review ${PHASE_NUMBER}           — Re-review code"
-  echo "  /vgsd:verify-work                           — Verify phase completion"
+  echo "  /fvgsd:code-review ${PHASE_NUMBER}           — Re-review code"
+  echo "  /fvgsd:verify-work                           — Verify phase completion"
   echo ""
 fi
 ```

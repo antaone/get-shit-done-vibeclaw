@@ -22,16 +22,16 @@ const assert = require('node:assert/strict');
 
 const { routePhaseCommand } = require('../get-shit-done/bin/lib/phase-command-router.cjs');
 
-// Force CJS path throughout: set GSD_WORKSTREAM so tryLoadSdk() is bypassed.
+// Force CJS path throughout: set FVGSD_WORKSTREAM so tryLoadSdk() is bypassed.
 // This makes unit-level assertions deterministic regardless of SDK build state.
 let _prevWorkstream;
 before(() => {
-  _prevWorkstream = process.env.GSD_WORKSTREAM;
-  process.env.GSD_WORKSTREAM = 'test-unit';
+  _prevWorkstream = process.env.FVGSD_WORKSTREAM;
+  process.env.FVGSD_WORKSTREAM = 'test-unit';
 });
 after(() => {
-  if (_prevWorkstream === undefined) delete process.env.GSD_WORKSTREAM;
-  else process.env.GSD_WORKSTREAM = _prevWorkstream;
+  if (_prevWorkstream === undefined) delete process.env.FVGSD_WORKSTREAM;
+  else process.env.FVGSD_WORKSTREAM = _prevWorkstream;
 });
 
 // ─── Helper: build a minimal phase stub ──────────────────────────────────────

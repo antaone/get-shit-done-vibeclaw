@@ -12,9 +12,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-project-researcher — Researches project-level technical decisions
-- gsd-research-synthesizer — Synthesizes findings from parallel research agents
-- gsd-roadmapper — Creates phased execution roadmaps
+- fvgsd-project-researcher — Researches project-level technical decisions
+- fvgsd-research-synthesizer — Synthesizes findings from parallel research agents
+- fvgsd-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
 <process>
@@ -30,7 +30,7 @@ If the flag is absent, keep the current behavior of continuing phase numbering f
 - Read PROJECT.md (existing project, validated requirements, decisions)
 - Read MILESTONES.md (what shipped previously)
 - Read STATE.md (pending todos, blockers)
-- Check for MILESTONE-CONTEXT.md (from /vgsd-discuss-milestone)
+- Check for MILESTONE-CONTEXT.md (from /fvgsd-discuss-milestone)
 
 ## 2. Gather Milestone Goals
 
@@ -157,14 +157,14 @@ Ensure the `## Evolution` section exists in PROJECT.md. If missing (projects cre
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/vgsd-transition`):
+**After each phase transition** (via `/fvgsd-transition`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/vgsd:complete-milestone`):
+**After each milestone** (via `/fvgsd:complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -181,7 +181,7 @@ blockers, todos) is preserved across the switch — symmetric with
 `milestone.complete`.
 
 ```bash
-gsd-sdk query state.milestone-switch --milestone "v[X.Y]" --name "[Name]"
+fvgsd-sdk query state.milestone-switch --milestone "v[X.Y]" --name "[Name]"
 ```
 
 The resulting Current Position section looks like:
@@ -208,21 +208,21 @@ Delete MILESTONE-CONTEXT.md if exists (consumed).
 Clear leftover phase directories from the previous milestone:
 
 ```bash
-gsd-sdk query phases.clear --confirm
+fvgsd-sdk query phases.clear --confirm
 ```
 
 ```bash
-gsd-sdk query commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
+fvgsd-sdk query commit "docs: start milestone v[X.Y] [Name]" --files .planning/PROJECT.md .planning/STATE.md
 ```
 
 ## 7. Load Context and Resolve Models
 
 ```bash
-INIT=$(gsd-sdk query init.new-milestone)
+INIT=$(fvgsd-sdk query init.new-milestone)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(gsd-sdk query agent-skills gsd-project-researcher)
-AGENT_SKILLS_SYNTHESIZER=$(gsd-sdk query agent-skills gsd-research-synthesizer)
-AGENT_SKILLS_ROADMAPPER=$(gsd-sdk query agent-skills gsd-roadmapper)
+AGENT_SKILLS_RESEARCHER=$(fvgsd-sdk query agent-skills fvgsd-project-researcher)
+AGENT_SKILLS_SYNTHESIZER=$(fvgsd-sdk query agent-skills fvgsd-research-synthesizer)
+AGENT_SKILLS_ROADMAPPER=$(fvgsd-sdk query agent-skills fvgsd-roadmapper)
 ```
 
 Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`, `phase_archive_path`, `agents_installed`, `missing_agents`.
@@ -232,10 +232,10 @@ Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_mod
 ⚠ GSD agents not installed. The following agents are missing from your agents directory:
   {missing_agents joined with newline}
 
-Subagent spawns (gsd-project-researcher, gsd-research-synthesizer, gsd-roadmapper) will fail
+Subagent spawns (fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-roadmapper) will fail
 with "agent type not found". Run the installer with --global to make agents available:
 
-  npx get-shit-done-cc@latest --global
+  npx fvgsd@latest --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```
@@ -259,7 +259,7 @@ Then verify `.planning/phases/` no longer contains old milestone directories bef
 
 If `phase_dir_count > 0` but `phase_archive_path` is missing:
 - Stop and explain that reset numbering is unsafe without a completed milestone archive target.
-- Tell the user to complete/archive the previous milestone first, then rerun `/vgsd:new-milestone --reset-phase-numbers ${GSD_WS}`.
+- Tell the user to complete/archive the previous milestone first, then rerun `/fvgsd:new-milestone --reset-phase-numbers ${FVGSD_WS}`.
 
 ## 8. Research Decision
 
@@ -277,7 +277,7 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
 - "Skip research (current default)" — Go straight to requirements
 - "Research first" — Discover patterns, features, architecture for NEW capabilities
 
-**IMPORTANT:** Do NOT persist this choice to config.json. The `workflow.research` setting is a persistent user preference that controls plan-phase behavior across the project. Changing it here would silently alter future `/vgsd:plan-phase` behavior. To change the default, use `/vgsd:settings`.
+**IMPORTANT:** Do NOT persist this choice to config.json. The `workflow.research` setting is a persistent user preference that controls plan-phase behavior across the project. Changing it here would silently alter future `/fvgsd:plan-phase` behavior. To change the default, use `/fvgsd:settings`.
 
 **If user chose "Research first":**
 
@@ -294,7 +294,7 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
 mkdir -p .planning/research
 ```
 
-Spawn 4 parallel gsd-project-researcher agents. Each uses this template with dimension-specific fields:
+Spawn 4 parallel fvgsd-project-researcher agents. Each uses this template with dimension-specific fields:
 
 **Common structure for all 4 researchers:**
 ```text
@@ -321,9 +321,9 @@ ${AGENT_SKILLS_RESEARCHER}
 
 <output>
 Write to: .planning/research/{FILE}
-Use template: ~/.claude/get-shit-done/templates/research-project/{FILE}
+Use template: ~/.claude/fvgsd/templates/research-project/{FILE}
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="{DIMENSION} research")
+", subagent_type="fvgsd-project-researcher", model="{researcher_model}", description="{DIMENSION} research")
 ```
 
 **Dimension-specific fields:**
@@ -354,9 +354,9 @@ Synthesize research outputs into SUMMARY.md.
 ${AGENT_SKILLS_SYNTHESIZER}
 
 Write to: .planning/research/SUMMARY.md
-Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
+Use template: ~/.claude/fvgsd/templates/research-project/SUMMARY.md
 Commit after writing.
-", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
+", subagent_type="fvgsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -444,7 +444,7 @@ If "adjust": Return to scoping.
 
 **Commit requirements:**
 ```bash
-gsd-sdk query commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
+fvgsd-sdk query commit "docs: define milestone v[X.Y] requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 10. Create Roadmap
@@ -490,7 +490,7 @@ Create roadmap for milestone v[X.Y]:
 
 Write files first, then return.
 </instructions>
-", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
+", subagent_type="fvgsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -530,7 +530,7 @@ Success criteria:
 
 **Commit roadmap** (after approval):
 ```bash
-gsd-sdk query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
+fvgsd-sdk query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
 ```
 
 ## 10.5. Link Pending Todos to Roadmap Phases
@@ -573,7 +573,7 @@ files: [existing]
 
 **If any todos were linked:**
 ```bash
-gsd-sdk query commit "docs: tag [count] pending todos with resolves_phase after milestone v[X.Y] roadmap" --files .planning/todos/pending/*.md
+fvgsd-sdk query commit "docs: tag [count] pending todos with resolves_phase after milestone v[X.Y] roadmap" --files .planning/todos/pending/*.md
 ```
 
 Print a summary:
@@ -607,9 +607,9 @@ Print a summary:
 
 `/clear` then:
 
-`/vgsd:discuss-phase [N] ${GSD_WS}` — gather context and clarify approach
+`/fvgsd:discuss-phase [N] ${FVGSD_WS}` — gather context and clarify approach
 
-Also: `/vgsd:plan-phase [N] ${GSD_WS}` — skip discussion, plan directly
+Also: `/fvgsd:plan-phase [N] ${FVGSD_WS}` — skip discussion, plan directly
 ```
 
 </process>
@@ -621,13 +621,13 @@ Also: `/vgsd:plan-phase [N] ${GSD_WS}` — skip discussion, plan directly
 - [ ] Research completed (if selected) — 4 parallel agents, milestone-aware
 - [ ] Requirements gathered and scoped per category
 - [ ] REQUIREMENTS.md created with REQ-IDs
-- [ ] gsd-roadmapper spawned with phase numbering context
+- [ ] fvgsd-roadmapper spawned with phase numbering context
 - [ ] Roadmap files written immediately (not draft)
 - [ ] User feedback incorporated (if any)
 - [ ] Phase numbering mode respected (continued or reset)
 - [ ] All commits made (if planning docs committed)
 - [ ] Pending todos scanned for phase matches; matched todos tagged with `resolves_phase: N`
-- [ ] User knows next step: `/vgsd:discuss-phase [N] ${GSD_WS}`
+- [ ] User knows next step: `/fvgsd:discuss-phase [N] ${FVGSD_WS}`
 
 **Atomic commits:** Each phase commits its artifacts immediately.
 </success_criteria>

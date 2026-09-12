@@ -57,8 +57,8 @@ describe('bug #3628: BUNDLED_GSD_HOOK_FILES is an explicit whitelist', () => {
         `entry ${JSON.stringify(relPath)} must use POSIX slashes`,
       );
       assert.ok(
-        relPath.includes('gsd-'),
-        `entry ${JSON.stringify(relPath)} must contain the "gsd-" prefix`,
+        relPath.includes('fvgsd-'),
+        `entry ${JSON.stringify(relPath)} must contain the "fvgsd-" prefix`,
       );
     }
   });
@@ -82,7 +82,7 @@ describe('bug #3628: BUNDLED_GSD_HOOK_FILES is an explicit whitelist', () => {
     const hooksDir = path.join(__dirname, '..', 'hooks');
     const onDisk = fs
       .readdirSync(hooksDir, { withFileTypes: true })
-      .filter((e) => e.isFile() && /^gsd-[^/]+\.(?:js|sh|cjs|mjs)$/.test(e.name))
+      .filter((e) => e.isFile() && /^fvgsd-[^/]+\.(?:js|sh|cjs|mjs)$/.test(e.name))
       .map((e) => `hooks/${e.name}`);
     for (const relPath of onDisk) {
       assert.ok(

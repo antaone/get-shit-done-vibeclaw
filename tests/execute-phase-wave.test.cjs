@@ -131,7 +131,7 @@ describe('execute-phase docs: user-facing wave flag', () => {
 
 describe('phase-plan-index: wave grouping behavior', () => {
   test('phase-plan-index groups plans by wave (DAG-bucketing: P002 depends on P001)', () => {
-    // allow-test-rule: behavioral — calls gsd-tools and asserts structured output
+    // allow-test-rule: behavioral — calls fvgsd-tools and asserts structured output
     const fs = require('fs');
     const path = require('path');
     const tmpDir = createTempProject();
@@ -197,7 +197,7 @@ describe('phase-plan-index: wave grouping behavior', () => {
   });
 
   test('phase-plan-index defaults missing wave frontmatter to wave 1', () => {
-    // allow-test-rule: behavioral — exercises gsd-tools wave-defaulting logic
+    // allow-test-rule: behavioral — exercises fvgsd-tools wave-defaulting logic
     const fs = require('fs');
     const path = require('path');
     const tmpDir = createTempProject();

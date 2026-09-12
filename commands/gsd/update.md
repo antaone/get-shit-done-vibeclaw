@@ -1,5 +1,5 @@
 ---
-name: vgsd:update
+name: fvgsd:update
 description: Update GSD to latest version with changelog display
 argument-hint: "[--sync | --reapply]"
 allowed-tools:
@@ -13,12 +13,12 @@ allowed-tools:
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "update" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "update" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -36,7 +36,7 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/update.md
+@~/.claude/fvgsd/workflows/update.md
 </execution_context>
 
 <flags>
@@ -54,6 +54,6 @@ Parse the first token of $ARGUMENTS:
 </process>
 
 <execution_context_extended>
-@~/.claude/get-shit-done/workflows/sync-skills.md
-@~/.claude/get-shit-done/workflows/reapply-patches.md
+@~/.claude/fvgsd/workflows/sync-skills.md
+@~/.claude/fvgsd/workflows/reapply-patches.md
 </execution_context_extended>

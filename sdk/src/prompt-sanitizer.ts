@@ -2,12 +2,12 @@
  * Prompt sanitizer — resolves @-file references and strips interactive CLI
  * patterns from GSD-1 prompts so they're safe for headless SDK use.
  *
- * @-file references (e.g., @~/.claude/get-shit-done/references/foo.md) are
+ * @-file references (e.g., @~/.claude/fvgsd/references/foo.md) are
  * resolved by reading the file and inlining the content. This preserves the
  * critical instructions that the real agent prompts depend on.
  *
  * Patterns removed (interactive-only, not useful headless):
- * - /vgsd-... and legacy /vgsd-... skill commands (can't invoke skills in Agent SDK)
+ * - /fvgsd-... and legacy /fvgsd-... skill commands (can't invoke skills in Agent SDK)
  * - AskUserQuestion(...) calls
  * - STOP directives in interactive contexts
  * - SlashCommand() calls
@@ -21,8 +21,8 @@ import { homedir } from 'node:os';
 
 /**
  * Matches @-file references in prompt text. Handles:
- * - @~/.claude/get-shit-done/references/foo.md
- * - @~/.claude/get-shit-done/workflows/bar.md
+ * - @~/.claude/fvgsd/references/foo.md
+ * - @~/.claude/fvgsd/workflows/bar.md
  * - @.planning/PROJECT.md (project-relative)
  *
  * Only resolves references that start a line or follow whitespace,
@@ -69,7 +69,7 @@ const LINE_PATTERNS: RegExp[] = [
   /^.*@file:\S+.*$/gm,
 
   // Public and legacy command references — entire line containing a skill command
-  /^.*\/(?:vgsd|gsd)[:-]\S+.*$/gm,
+  /^.*\/(?:fvgsd|gsd)[:-]\S+.*$/gm,
 
   // AskUserQuestion(...) calls — entire line
   /^.*AskUserQuestion\s*\(.*$/gm,

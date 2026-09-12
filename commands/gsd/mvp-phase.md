@@ -1,5 +1,5 @@
 ---
-name: vgsd:mvp-phase
+name: fvgsd:mvp-phase
 description: Plan a phase as a vertical MVP slice — user story, SPIDR splitting, then plan-phase
 argument-hint: "<phase-number>"
 allowed-tools:
@@ -14,12 +14,12 @@ requires: [new-project, phase, plan-phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "mvp-phase" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "mvp-phase" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -36,9 +36,9 @@ Phase 1 of the vertical-mvp-slice PRD shipped the planner-side machinery; this c
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/mvp-phase.md
-@~/.claude/get-shit-done/references/spidr-splitting.md
-@~/.claude/get-shit-done/references/user-story-template.md
+@~/.claude/fvgsd/workflows/mvp-phase.md
+@~/.claude/fvgsd/references/spidr-splitting.md
+@~/.claude/fvgsd/references/user-story-template.md
 </execution_context>
 
 <runtime_note>
@@ -52,6 +52,6 @@ The phase must already exist in ROADMAP.md (created via `/gsd new-project`, `/gs
 </context>
 
 <process>
-Execute the mvp-phase workflow from @~/.claude/get-shit-done/workflows/mvp-phase.md end-to-end.
+Execute the mvp-phase workflow from @~/.claude/fvgsd/workflows/mvp-phase.md end-to-end.
 Preserve all gates: phase existence, status guard (refuse in_progress/completed), user-story format validation, SPIDR splitting check, ROADMAP write confirmation, plan-phase delegation.
 </process>

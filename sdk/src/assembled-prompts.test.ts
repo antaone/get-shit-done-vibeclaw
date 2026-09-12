@@ -19,7 +19,7 @@ import { PromptFactory } from './phase-prompt.js';
 import { InitRunner } from './init-runner.js';
 import { PhaseType } from './types.js';
 import type { ParsedPlan, ContextFiles, GSDEvent } from './types.js';
-import type { GSDTools } from './gsd-tools.js';
+import type { GSDTools } from './fvgsd-tools.js';
 import type { GSDEventStream } from './event-stream.js';
 
 // ─── Paths ───────────────────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ describe('InitRunner assembled output', () => {
     });
 
     it('contains agent definition content', () => {
-      // Roadmap prompt loads gsd-roadmapper.md
+      // Roadmap prompt loads fvgsd-roadmapper.md
       expect(output).toContain('agent_definition');
     });
 

@@ -194,8 +194,8 @@ function cmdInitExecutePhase(cwd, phase, raw, options = {}) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'gsd-executor'),
-    verifier_model: resolveModelInternal(cwd, 'gsd-verifier'),
+    executor_model: resolveModelInternal(cwd, 'fvgsd-executor'),
+    verifier_model: resolveModelInternal(cwd, 'fvgsd-verifier'),
 
     // Config flags
     tdd_mode: options.tdd || config.tdd_mode || false,
@@ -322,7 +322,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
   const phase_req_ids = (reqExtracted && reqExtracted !== 'TBD') ? reqExtracted : null;
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /vgsd:plan-phase stays consistent with phase.add.
+  // the first-touch mkdir in /fvgsd:plan-phase stays consistent with phase.add.
   const phaseDirPlan = phaseInfo?.directory || null;
   const phaseNumberPlan = phaseInfo?.phase_number || null;
   const phaseNamePlan = phaseInfo?.phase_name || null;
@@ -340,9 +340,9 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'gsd-phase-researcher'),
-    planner_model: resolveModelInternal(cwd, 'gsd-planner'),
-    checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+    researcher_model: resolveModelInternal(cwd, 'fvgsd-phase-researcher'),
+    planner_model: resolveModelInternal(cwd, 'fvgsd-planner'),
+    checker_model: resolveModelInternal(cwd, 'fvgsd-plan-checker'),
 
     // Workflow flags
     tdd_mode: options.tdd || config.tdd_mode || false,
@@ -368,7 +368,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
     padded_phase: phaseNumberPlan ? normalizePhaseName(phaseNumberPlan) : null,
     phase_req_ids,
 
-    // #3569: surface phase lifecycle status so /vgsd:plan-phase can short-circuit
+    // #3569: surface phase lifecycle status so /fvgsd:plan-phase can short-circuit
     // on closed (Complete) phases instead of silently replanning over shipped
     // code. Reuses determinePhaseStatus — the project-wide vocabulary
     // (Pending | Planned | In Progress | Executed | Complete | Needs Review).
@@ -527,9 +527,9 @@ function cmdInitNewProject(cwd, raw) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'gsd-project-researcher'),
-    synthesizer_model: resolveModelInternal(cwd, 'gsd-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'gsd-roadmapper'),
+    researcher_model: resolveModelInternal(cwd, 'fvgsd-project-researcher'),
+    synthesizer_model: resolveModelInternal(cwd, 'fvgsd-research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'fvgsd-roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -580,9 +580,9 @@ function cmdInitNewMilestone(cwd, raw) {
 
   const result = {
     // Models
-    researcher_model: resolveModelInternal(cwd, 'gsd-project-researcher'),
-    synthesizer_model: resolveModelInternal(cwd, 'gsd-research-synthesizer'),
-    roadmapper_model: resolveModelInternal(cwd, 'gsd-roadmapper'),
+    researcher_model: resolveModelInternal(cwd, 'fvgsd-project-researcher'),
+    synthesizer_model: resolveModelInternal(cwd, 'fvgsd-research-synthesizer'),
+    roadmapper_model: resolveModelInternal(cwd, 'fvgsd-roadmapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -637,10 +637,10 @@ function cmdInitQuick(cwd, description, raw) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'gsd-planner'),
-    executor_model: resolveModelInternal(cwd, 'gsd-executor'),
-    checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
-    verifier_model: resolveModelInternal(cwd, 'gsd-verifier'),
+    planner_model: resolveModelInternal(cwd, 'fvgsd-planner'),
+    executor_model: resolveModelInternal(cwd, 'fvgsd-executor'),
+    checker_model: resolveModelInternal(cwd, 'fvgsd-plan-checker'),
+    verifier_model: resolveModelInternal(cwd, 'fvgsd-verifier'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -759,8 +759,8 @@ function cmdInitVerifyWork(cwd, phase, raw) {
 
   const result = {
     // Models
-    planner_model: resolveModelInternal(cwd, 'gsd-planner'),
-    checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+    planner_model: resolveModelInternal(cwd, 'fvgsd-planner'),
+    checker_model: resolveModelInternal(cwd, 'fvgsd-plan-checker'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -827,7 +827,7 @@ function cmdInitPhaseOp(cwd, phase, raw) {
   }
 
   // #3287: compute the canonical directory name with project_code prefix so
-  // the first-touch mkdir in /vgsd:discuss-phase stays consistent with phase.add.
+  // the first-touch mkdir in /fvgsd:discuss-phase stays consistent with phase.add.
   const phaseDir = phaseInfo?.directory || null;
   const phaseNumber = phaseInfo?.phase_number || null;
   const phaseName = phaseInfo?.phase_name || null;
@@ -847,7 +847,7 @@ function cmdInitPhaseOp(cwd, phase, raw) {
     // Config
     commit_docs: config.commit_docs,
     // #2997: secret config keys may be either booleans (availability flags) or
-    // string API keys (when user did `gsd-tools config-set brave_search XXX`).
+    // string API keys (when user did `fvgsd-tools config-set brave_search XXX`).
     // Pass booleans through; mask string values so the init bundle never echoes
     // plaintext credentials. SDK init.ts mirrors this masking.
     brave_search: typeof config.brave_search === 'string' ? maskIfSecret('brave_search', config.brave_search) : config.brave_search,
@@ -1093,7 +1093,7 @@ function cmdInitMapCodebase(cwd, raw) {
 
   const result = {
     // Models
-    mapper_model: resolveModelInternal(cwd, 'gsd-codebase-mapper'),
+    mapper_model: resolveModelInternal(cwd, 'fvgsd-codebase-mapper'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -1125,7 +1125,7 @@ function cmdInitManager(cwd, raw) {
   const milestone = getMilestoneInfo(cwd);
   // Resolve the runtime once so every emitted slash-command reference uses
   // the routable shape for this install (#3584). Hyphen form for skills-based
-  // runtimes, $vgsd-<cmd> shell-var for codex.
+  // runtimes, $fvgsd-<cmd> shell-var for codex.
   const _slashRuntime = resolveRuntime(cwd);
 
   // Use planningPaths for forward-compatibility with workstream scoping (#1268)
@@ -1388,7 +1388,7 @@ function cmdInitManager(cwd, raw) {
     const tokens = val.split(/\s+/).filter(Boolean);
     const safe = tokens.every(t => /^--[a-zA-Z0-9][-a-zA-Z0-9]*$/.test(t) || /^[a-zA-Z0-9][-a-zA-Z0-9_.]*$/.test(t));
     if (!safe) {
-      process.stderr.write(`gsd-tools: warning: manager.flags contains invalid tokens, ignoring: ${val}\n`);
+      process.stderr.write(`fvgsd-tools: warning: manager.flags contains invalid tokens, ignoring: ${val}\n`);
       return '';
     }
     return val;
@@ -1547,8 +1547,8 @@ function cmdInitProgress(cwd, raw) {
 
   const result = {
     // Models
-    executor_model: resolveModelInternal(cwd, 'gsd-executor'),
-    planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+    executor_model: resolveModelInternal(cwd, 'fvgsd-executor'),
+    planner_model: resolveModelInternal(cwd, 'fvgsd-planner'),
 
     // Config
     commit_docs: config.commit_docs,
@@ -1607,7 +1607,7 @@ function detectChildRepos(dir) {
 
 function cmdInitNewWorkspace(cwd, raw) {
   const homedir = process.env.HOME || require('os').homedir();
-  const defaultBase = path.join(homedir, 'gsd-workspaces');
+  const defaultBase = path.join(homedir, 'fvgsd-workspaces');
 
   // Detect child git repos for interactive selection
   const childRepos = detectChildRepos(cwd);
@@ -1630,7 +1630,7 @@ function cmdInitNewWorkspace(cwd, raw) {
 
 function cmdInitListWorkspaces(cwd, raw) {
   const homedir = process.env.HOME || require('os').homedir();
-  const defaultBase = path.join(homedir, 'gsd-workspaces');
+  const defaultBase = path.join(homedir, 'fvgsd-workspaces');
 
   const workspaces = [];
   if (fs.existsSync(defaultBase)) {
@@ -1676,7 +1676,7 @@ function cmdInitListWorkspaces(cwd, raw) {
 
 function cmdInitRemoveWorkspace(cwd, name, raw) {
   const homedir = process.env.HOME || require('os').homedir();
-  const defaultBase = path.join(homedir, 'gsd-workspaces');
+  const defaultBase = path.join(homedir, 'fvgsd-workspaces');
 
   if (!name) {
     error('workspace name required for init remove-workspace');
@@ -1743,7 +1743,7 @@ function cmdInitRemoveWorkspace(cwd, name, raw) {
  * string if no skills are configured.
  *
  * @param {object} config - Loaded project config
- * @param {string} agentType - The agent type (e.g., 'gsd-executor', 'gsd-planner')
+ * @param {string} agentType - The agent type (e.g., 'fvgsd-executor', 'fvgsd-planner')
  * @param {string} projectRoot - Absolute path to project root (for path validation)
  * @returns {string} Formatted skills block or empty string
  */
@@ -1829,7 +1829,7 @@ function buildAgentSkillsBlock(config, agentType, projectRoot) {
 
 /**
  * Command: output the agent skills block for a given agent type.
- * Used by workflows: SKILLS=$(node "$TOOLS" agent-skills gsd-executor 2>/dev/null)
+ * Used by workflows: SKILLS=$(node "$TOOLS" agent-skills fvgsd-executor 2>/dev/null)
  */
 function cmdAgentSkills(cwd, agentType, raw) {
   if (!agentType) {
@@ -1926,8 +1926,8 @@ function buildSkillManifest(cwd, skillsDir = null) {
       deprecated: true,
     },
     {
-      root: '.claude/commands/vgsd',
-      path: path.join(os.homedir(), '.claude', 'commands', 'vgsd'),
+      root: '.claude/commands/fvgsd',
+      path: path.join(os.homedir(), '.claude', 'commands', 'fvgsd'),
       scope: 'global',
       kind: 'commands',
     },
@@ -2031,7 +2031,7 @@ function buildSkillManifest(cwd, skillsDir = null) {
     return rootCmp !== 0 ? rootCmp : a.name.localeCompare(b.name);
   });
 
-  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('gsd-'));
+  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('fvgsd-'));
 
   return {
     skills,

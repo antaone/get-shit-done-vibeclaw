@@ -27,10 +27,10 @@ describe('skill-manifest', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    homeDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-skill-manifest-home-'));
+    homeDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fvgsd-skill-manifest-home-'));
 
     writeSkill(path.join(tmpDir, '.claude', 'skills'), 'project-claude', 'Project Claude skill');
-    writeSkill(path.join(tmpDir, '.claude', 'skills'), 'gsd-help', 'Installed GSD skill');
+    writeSkill(path.join(tmpDir, '.claude', 'skills'), 'fvgsd-help', 'Installed GSD skill');
     writeSkill(path.join(tmpDir, '.agents', 'skills'), 'project-agents', 'Project agent skill');
     writeSkill(path.join(tmpDir, '.codex', 'skills'), 'project-codex', 'Project Codex skill');
 
@@ -68,7 +68,7 @@ describe('skill-manifest', () => {
     assert.deepStrictEqual(skillNames, [
       'global-claude',
       'global-codex',
-      'gsd-help',
+      'fvgsd-help',
       'legacy-import',
       'project-agents',
       'project-claude',
@@ -107,7 +107,7 @@ describe('skill-manifest', () => {
       }
     );
 
-    const gsdSkill = manifest.skills.find((skill) => skill.name === 'gsd-help');
+    const gsdSkill = manifest.skills.find((skill) => skill.name === 'fvgsd-help');
     assert.strictEqual(gsdSkill.installed, true);
 
     const legacyRoot = manifest.roots.find((root) => root.scope === 'legacy-commands');

@@ -69,51 +69,51 @@ describe('bug #1829: model_profile "inherit" — resolveModelInternal', () => {
     cleanup(tmpDir);
   });
 
-  test('returns "inherit" for gsd-planner when model_profile is "inherit"', () => {
+  test('returns "inherit" for fvgsd-planner when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-executor when model_profile is "inherit"', () => {
+  test('returns "inherit" for fvgsd-executor when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-executor'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-executor'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-phase-researcher when model_profile is "inherit"', () => {
+  test('returns "inherit" for fvgsd-phase-researcher when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-phase-researcher'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-phase-researcher'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-codebase-mapper when model_profile is "inherit"', () => {
+  test('returns "inherit" for fvgsd-codebase-mapper when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-codebase-mapper'), 'inherit');
   });
 
-  test('returns "inherit" for gsd-verifier when model_profile is "inherit"', () => {
+  test('returns "inherit" for fvgsd-verifier when model_profile is "inherit"', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-verifier'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-verifier'), 'inherit');
   });
 
   test('returns "inherit" for unknown agent with inherit profile', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-nonexistent'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-nonexistent'), 'inherit');
   });
 
   test('per-agent override takes precedence over inherit profile', () => {
     writeConfig(tmpDir, {
       model_profile: 'inherit',
-      model_overrides: { 'gsd-executor': 'haiku' },
+      model_overrides: { 'fvgsd-executor': 'haiku' },
     });
     // Override wins even when profile is inherit
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-executor'), 'haiku');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-executor'), 'haiku');
     // Other agents without override still inherit
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'inherit');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'fvgsd-planner'), 'inherit');
   });
 
   test('does not silently fall back to "sonnet" (the original bug)', () => {
     writeConfig(tmpDir, { model_profile: 'inherit' });
     // Before the fix, this returned 'sonnet' (via balanced fallback)
-    const model = resolveModelInternal(tmpDir, 'gsd-planner');
+    const model = resolveModelInternal(tmpDir, 'fvgsd-planner');
     assert.notStrictEqual(model, 'sonnet', 'inherit profile must not silently fall back to sonnet');
   });
 });
@@ -131,13 +131,13 @@ describe('bug #1829: model_profile "inherit" — resolve-model CLI', () => {
     cleanup(tmpDir);
   });
 
-  test('CLI resolve-model returns "inherit" for gsd-executor with inherit profile', () => {
+  test('CLI resolve-model returns "inherit" for fvgsd-executor with inherit profile', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'inherit' }, null, 2)
     );
 
-    const result = runGsdTools('resolve-model gsd-executor', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-executor', tmpDir);
     assert.ok(result.success, `resolve-model failed: ${result.error}`);
 
     const parsed = JSON.parse(result.output);
@@ -145,13 +145,13 @@ describe('bug #1829: model_profile "inherit" — resolve-model CLI', () => {
     assert.strictEqual(parsed.profile, 'inherit');
   });
 
-  test('CLI resolve-model returns "inherit" for gsd-planner with inherit profile', () => {
+  test('CLI resolve-model returns "inherit" for fvgsd-planner with inherit profile', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'inherit' }, null, 2)
     );
 
-    const result = runGsdTools('resolve-model gsd-planner', tmpDir);
+    const result = runGsdTools('resolve-model fvgsd-planner', tmpDir);
     assert.ok(result.success, `resolve-model failed: ${result.error}`);
 
     const parsed = JSON.parse(result.output);

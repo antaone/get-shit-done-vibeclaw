@@ -2,7 +2,7 @@
 /**
  * Regression test for bug #3659
  *
- * applySurface did not prune ~/.claude/skills/vgsd-STEM dirs when a cluster
+ * applySurface did not prune ~/.claude/skills/fvgsd-STEM dirs when a cluster
  * was disabled. install/uninstall both prune correctly via _removeGsdEntries;
  * applySurface called _syncGsdDir with the right logic but the surface.md spec
  * directed the AI to use RUNTIME_CONFIG_DIR=~/.claude/skills (the skills dir
@@ -12,19 +12,19 @@
  *   kind.destSubpath = 'skills'
  *   dest = path.join('~/.claude/skills', 'skills') = ~/.claude/skills/skills  WRONG
  *
- * The pruning ran against the wrong (non-existent) dir so stale vgsd-Y dirs
+ * The pruning ran against the wrong (non-existent) dir so stale fvgsd-Y dirs
  * were never removed from ~/.claude/skills/.
  *
  * Fix:
  *   1. surface.md RUNTIME_CONFIG_DIR changed to use the base Claude config dir
  *      (getGlobalDir('claude') = ~/.claude), not ~/.claude/skills.
- *   2. Surface state file moves to <configDir>/.vgsd-surface.json at the config
+ *   2. Surface state file moves to <configDir>/.fvgsd-surface.json at the config
  *      root, matching install/uninstall conventions.
  *   3. applySurface is called with scope='global' so the skills kind is active.
  *
  * Tests:
- *   a) disabled cluster vgsd-STEM dirs are REMOVED from ~/.claude/skills/
- *   b) vgsd-STEM dirs in the retain set are preserved
+ *   a) disabled cluster fvgsd-STEM dirs are REMOVED from ~/.claude/skills/
+ *   b) fvgsd-STEM dirs in the retain set are preserved
  *   c) non-gsd dirs are UNTOUCHED (user-owned)
  *   d) idempotence: running applySurface twice produces the same on-disk state
  */
@@ -45,20 +45,20 @@ const REAL_COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
  * Build a minimal fixture simulating a Claude global install.
  *
  * configDir  — analogous to ~/.claude
- * skillsDir  — analogous to ~/.claude/skills (contains vgsd-* dirs)
+ * skillsDir  — analogous to ~/.claude/skills (contains fvgsd-* dirs)
  *
  * Pre-populated with:
- *   vgsd-explore/SKILL.md  — in research_ideate cluster (will be disabled)
- *   vgsd-help/SKILL.md     — in core_loop cluster (will remain enabled)
- *   my-custom-skill/       — user-owned, not vgsd-prefixed (must never be touched)
+ *   fvgsd-explore/SKILL.md  — in research_ideate cluster (will be disabled)
+ *   fvgsd-help/SKILL.md     — in core_loop cluster (will remain enabled)
+ *   my-custom-skill/       — user-owned, not fvgsd-prefixed (must never be touched)
  */
 function createFixture() {
-  const configDir = createTempDir('gsd-bug3659-');
+  const configDir = createTempDir('fvgsd-bug3659-');
   const skillsDir = path.join(configDir, 'skills');
   fs.mkdirSync(skillsDir, { recursive: true });
 
-  const gsdExplore = path.join(skillsDir, 'vgsd-explore');
-  const gsdHelp = path.join(skillsDir, 'vgsd-help');
+  const gsdExplore = path.join(skillsDir, 'fvgsd-explore');
+  const gsdHelp = path.join(skillsDir, 'fvgsd-help');
   const userSkill = path.join(skillsDir, 'my-custom-skill');
 
   for (const d of [gsdExplore, gsdHelp, userSkill]) {
@@ -70,20 +70,20 @@ function createFixture() {
 }
 
 /**
- * Extended fixture that also includes a user-created vgsd-* directory.
+ * Extended fixture that also includes a user-created fvgsd-* directory.
  * Used by the all-clusters-disabled counter-test to prove the manifest-membership
- * gate (Finding 1 fix) protects user-owned vgsd-* dirs from data loss.
+ * gate (Finding 1 fix) protects user-owned fvgsd-* dirs from data loss.
  */
 function createFixtureWithUserGsdDir() {
   const base = createFixture();
-  const userGsdDir = path.join(base.skillsDir, 'vgsd-mything');
+  const userGsdDir = path.join(base.skillsDir, 'fvgsd-mything');
   fs.mkdirSync(userGsdDir, { recursive: true });
   fs.writeFileSync(path.join(userGsdDir, 'SKILL.md'), '# user skill\n', 'utf8');
   return { ...base, userGsdDir };
 }
 
-describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disable', () => {
-  test('(a) disabled cluster vgsd-* dirs are removed from skills dir', (t) => {
+describe('bug-3659: applySurface prunes ~/.claude/skills/fvgsd-*/ on cluster disable', () => {
+  test('(a) disabled cluster fvgsd-* dirs are removed from skills dir', (t) => {
     const { configDir, skillsDir, gsdExplore, gsdHelp } = createFixture();
     t.after(() => cleanup(configDir));
 
@@ -97,25 +97,25 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
     });
 
     const manifest = loadSkillsManifest(REAL_COMMANDS_DIR);
-    // scope='global' gives the skills kind for Claude (destSubpath='skills', prefix='vgsd-')
+    // scope='global' gives the skills kind for Claude (destSubpath='skills', prefix='fvgsd-')
     const layout = resolveRuntimeArtifactLayout('claude', configDir, 'global');
     applySurface(configDir, layout, manifest, CLUSTERS);
 
-    // vgsd-explore is in the research_ideate cluster which was disabled:
+    // fvgsd-explore is in the research_ideate cluster which was disabled:
     // it must be pruned from skillsDir.
     assert.ok(
       !fs.existsSync(gsdExplore),
-      'vgsd-explore/ must be removed from skills dir when research_ideate cluster is disabled'
+      'fvgsd-explore/ must be removed from skills dir when research_ideate cluster is disabled'
     );
 
-    // vgsd-help is in core_loop (not disabled) and must survive.
+    // fvgsd-help is in core_loop (not disabled) and must survive.
     assert.ok(
       fs.existsSync(gsdHelp),
-      'vgsd-help/ must be preserved when its cluster is not disabled'
+      'fvgsd-help/ must be preserved when its cluster is not disabled'
     );
   });
 
-  test('(b) vgsd-* dirs in retained clusters are preserved', (t) => {
+  test('(b) fvgsd-* dirs in retained clusters are preserved', (t) => {
     const { configDir, skillsDir, gsdHelp } = createFixture();
     t.after(() => cleanup(configDir));
 
@@ -133,7 +133,7 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
 
     assert.ok(
       fs.existsSync(gsdHelp),
-      'vgsd-help/ must be preserved — core_loop cluster remains enabled'
+      'fvgsd-help/ must be preserved — core_loop cluster remains enabled'
     );
   });
 
@@ -154,7 +154,7 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
 
     assert.ok(
       fs.existsSync(userSkill),
-      'my-custom-skill/ (non-vgsd user dir) must be preserved by applySurface'
+      'my-custom-skill/ (non-fvgsd user dir) must be preserved by applySurface'
     );
     assert.ok(
       fs.existsSync(path.join(userSkill, 'SKILL.md')),
@@ -193,7 +193,7 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
     // Double-check the pruned dir is gone after both runs
     assert.ok(
       !fs.existsSync(gsdExplore),
-      'vgsd-explore/ must remain absent after second applySurface call'
+      'fvgsd-explore/ must remain absent after second applySurface call'
     );
 
     // User dir must survive both runs
@@ -203,15 +203,15 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
     );
   });
 
-  test('(e) all-clusters-disabled: all vgsd-owned dirs removed; user dirs and user vgsd-* dirs survive', (t) => {
+  test('(e) all-clusters-disabled: all fvgsd-owned dirs removed; user dirs and user fvgsd-* dirs survive', (t) => {
     // Counter-test for Finding 1 (data-loss class) and Finding 3 (missing coverage).
     //
     // Disables EVERY cluster so the resolved skill set is empty.
     // Assertions:
-    //   1. vgsd-explore/ — GSD-owned, disabled cluster → REMOVED
-    //   2. vgsd-help/    — GSD-owned, disabled cluster → REMOVED
-    //   3. my-custom-skill/ — user-owned, no vgsd- prefix → PRESERVED
-    //   4. vgsd-mything/ — prefix match but NOT in manifest → PRESERVED (Finding 1 fix)
+    //   1. fvgsd-explore/ — GSD-owned, disabled cluster → REMOVED
+    //   2. fvgsd-help/    — GSD-owned, disabled cluster → REMOVED
+    //   3. my-custom-skill/ — user-owned, no fvgsd- prefix → PRESERVED
+    //   4. fvgsd-mything/ — prefix match but NOT in manifest → PRESERVED (Finding 1 fix)
     const { configDir, skillsDir, gsdExplore, gsdHelp, userSkill, userGsdDir } =
       createFixtureWithUserGsdDir();
     t.after(() => cleanup(configDir));
@@ -232,25 +232,25 @@ describe('bug-3659: applySurface prunes ~/.claude/skills/vgsd-*/ on cluster disa
     // 1. GSD-owned dirs in now-disabled clusters must be removed.
     assert.ok(
       !fs.existsSync(gsdExplore),
-      'vgsd-explore/ must be removed when all clusters are disabled'
+      'fvgsd-explore/ must be removed when all clusters are disabled'
     );
     assert.ok(
       !fs.existsSync(gsdHelp),
-      'vgsd-help/ must be removed when all clusters are disabled'
+      'fvgsd-help/ must be removed when all clusters are disabled'
     );
 
     // 2. Non-gsd user dir must be preserved regardless.
     assert.ok(
       fs.existsSync(userSkill),
-      'my-custom-skill/ (non-vgsd user dir) must survive when all clusters are disabled'
+      'my-custom-skill/ (non-fvgsd user dir) must survive when all clusters are disabled'
     );
 
-    // 3. User-created vgsd-* dir NOT in the manifest must be preserved.
+    // 3. User-created fvgsd-* dir NOT in the manifest must be preserved.
     //    This is the critical Finding 1 regression guard: without the manifest-membership
-    //    gate, vgsd-mything/ would have been silently deleted.
+    //    gate, fvgsd-mything/ would have been silently deleted.
     assert.ok(
       fs.existsSync(userGsdDir),
-      'vgsd-mything/ (user-created vgsd-* dir not in manifest) must be preserved — ' +
+      'fvgsd-mything/ (user-created fvgsd-* dir not in manifest) must be preserved — ' +
       'prefix match alone must not trigger deletion (Finding 1 data-loss fix)'
     );
   });

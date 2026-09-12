@@ -20,7 +20,7 @@ function worktreeSpawn(subcommand: string, args: string[], projectDir: string) {
 
 function worktreeHandleResult(result: ReturnType<typeof spawnSync>) {
   if (result.error) {
-    return { data: { ok: false, reason: (result.error as Error).message || 'gsd-tools invocation failed' } };
+    return { data: { ok: false, reason: (result.error as Error).message || 'fvgsd-tools invocation failed' } };
   }
   const stdout = (result.stdout as string || '').trim();
   if (stdout) {
@@ -33,7 +33,7 @@ function worktreeHandleResult(result: ReturnType<typeof spawnSync>) {
   return {
     data: {
       ok: result.status === 0,
-      reason: (result.stderr as string)?.trim() || (result.status === 0 ? 'ok' : 'gsd-tools error'),
+      reason: (result.stderr as string)?.trim() || (result.status === 0 ? 'ok' : 'fvgsd-tools error'),
     },
   };
 }
@@ -54,7 +54,7 @@ export const worktreeCleanupWave: QueryHandler = async (args, projectDir) => {
   });
 
   if (result.error) {
-    return { data: { ok: false, reason: result.error.message || 'gsd-tools invocation failed' } };
+    return { data: { ok: false, reason: result.error.message || 'fvgsd-tools invocation failed' } };
   }
 
   const stdout = (result.stdout || '').trim();
@@ -69,7 +69,7 @@ export const worktreeCleanupWave: QueryHandler = async (args, projectDir) => {
   return {
     data: {
       ok: result.status === 0,
-      reason: result.stderr?.trim() || (result.status === 0 ? 'ok' : 'gsd-tools error'),
+      reason: result.stderr?.trim() || (result.status === 0 ? 'ok' : 'fvgsd-tools error'),
     },
   };
 };

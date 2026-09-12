@@ -9,7 +9,7 @@
 // against the legacy path literal — the same shape the bug-2470
 // installer-leak test uses to enforce a known-pattern invariant.
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2973: /gsd-profile-user --refresh writes dev-preferences.md to the
@@ -50,7 +50,7 @@ describe('Bug #2973: dev-preferences default writer path is skills/gsd-dev-prefe
     // Subprocess so fs.writeSync(1, ...) in core.cjs goes to a pipe we can
     // capture (the parent process's fd 1 bypasses any in-process stubbing).
     const cp = require('node:child_process');
-    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2973-'));
+    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2973-'));
     try {
       const analysisPath = path.join(tmpHome, 'analysis.json');
       fs.writeFileSync(analysisPath, JSON.stringify({
@@ -76,7 +76,7 @@ describe('Bug #2973: dev-preferences default writer path is skills/gsd-dev-prefe
       assert.equal(result.status, 0, `writer subprocess failed: ${result.stderr}`);
       const parsed = JSON.parse(result.stdout);
 
-      const expectedPath = path.join(tmpHome, '.claude', 'skills', 'gsd-dev-preferences', 'SKILL.md');
+      const expectedPath = path.join(tmpHome, '.claude', 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
       assert.equal(parsed.command_path, expectedPath,
         `writer emitted ${parsed.command_path}; expected skills path ${expectedPath} (#2973)`);
       assert.equal(fs.existsSync(expectedPath), true,
@@ -120,13 +120,13 @@ describe('Bug #2973: installer migrates existing legacy dev-preferences.md to sk
   });
 
   test('migration writes to skills/gsd-dev-preferences/SKILL.md when no skill exists yet', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2973-mig-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2973-mig-'));
     try {
       const inst = require(INSTALL);
       const saved = new Map([['dev-preferences.md', '# my legacy preferences\n']]);
       const migrated = inst.migrateLegacyDevPreferencesToSkill(tmpDir, saved);
       assert.equal(migrated, true, 'expected migration to succeed when no SKILL.md exists');
-      const skillFile = path.join(tmpDir, 'skills', 'gsd-dev-preferences', 'SKILL.md');
+      const skillFile = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
       assert.equal(fs.existsSync(skillFile), true, `expected SKILL.md at ${skillFile}`);
       assert.equal(fs.readFileSync(skillFile, 'utf-8'), '# my legacy preferences\n');
     } finally {
@@ -135,10 +135,10 @@ describe('Bug #2973: installer migrates existing legacy dev-preferences.md to sk
   });
 
   test('migration is a no-op when a SKILL.md already exists at the new location (do not clobber user-customized skill content)', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2973-skip-'));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2973-skip-'));
     try {
       const inst = require(INSTALL);
-      const skillDir = path.join(tmpDir, 'skills', 'gsd-dev-preferences');
+      const skillDir = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences');
       const skillFile = path.join(skillDir, 'SKILL.md');
       fs.mkdirSync(skillDir, { recursive: true });
       fs.writeFileSync(skillFile, '# user-customized skill\n');
@@ -172,7 +172,7 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
     // gsd-dev-preferences (not in source) is left untouched.
     const inst = require(INSTALL);
     const { loadSkillsManifest, resolveProfile } = require(path.join(ROOT, 'get-shit-done', 'bin', 'lib', 'install-profiles.cjs'));
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2973-wipe-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2973-wipe-'));
     try {
       const configDir = path.join(tmp, 'config');
       fs.mkdirSync(configDir, { recursive: true });
@@ -181,10 +181,10 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
       const srcDir = path.join(tmp, 'src-commands');
       fs.mkdirSync(srcDir, { recursive: true });
       fs.writeFileSync(path.join(srcDir, 'plan-phase.md'), '---\nname: gsd:plan-phase\ndescription: Plan\n---\n\nPlan body.\n');
-      fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir + '\n');
+      fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir + '\n');
 
       const skillsDir = path.join(configDir, 'skills');
-      const userSkillDir = path.join(skillsDir, 'gsd-dev-preferences');
+      const userSkillDir = path.join(skillsDir, 'fvgsd-dev-preferences');
       fs.mkdirSync(userSkillDir, { recursive: true });
       const userContent = '# my customized dev preferences\n\nstack: rust\n';
       fs.writeFileSync(path.join(userSkillDir, 'SKILL.md'), userContent);
@@ -196,7 +196,7 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
 
       const skillFile = path.join(userSkillDir, 'SKILL.md');
       assert.equal(fs.existsSync(skillFile), true,
-        'gsd-dev-preferences/SKILL.md must survive a plain install (#3003 CR)');
+        'fvgsd-dev-preferences/SKILL.md must survive a plain install (#3003 CR)');
       assert.equal(fs.readFileSync(skillFile, 'utf-8'), userContent,
         'user content must be byte-identical after the install');
     } finally {
@@ -212,7 +212,7 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
     // then writes fresh ones from source.
     const inst = require(INSTALL);
     const { loadSkillsManifest, resolveProfile } = require(path.join(ROOT, 'get-shit-done', 'bin', 'lib', 'install-profiles.cjs'));
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2973-wipe-shipped-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2973-wipe-shipped-'));
     try {
       const configDir = path.join(tmp, 'config');
       fs.mkdirSync(configDir, { recursive: true });
@@ -220,10 +220,10 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
       const srcDir = path.join(tmp, 'src-commands');
       fs.mkdirSync(srcDir, { recursive: true });
       fs.writeFileSync(path.join(srcDir, 'plan-phase.md'), '---\nname: gsd:plan-phase\ndescription: Plan fresh\n---\n\nFresh body.\n');
-      fs.writeFileSync(path.join(configDir, '.gsd-source'), srcDir + '\n');
+      fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir + '\n');
 
       const skillsDir = path.join(configDir, 'skills');
-      const staleSkillDir = path.join(skillsDir, 'gsd-plan-phase');
+      const staleSkillDir = path.join(skillsDir, 'fvgsd-plan-phase');
       fs.mkdirSync(staleSkillDir, { recursive: true });
       fs.writeFileSync(path.join(staleSkillDir, 'STALE-MARKER.txt'), 'wipe me');
 

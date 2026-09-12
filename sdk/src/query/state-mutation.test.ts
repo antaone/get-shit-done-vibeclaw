@@ -164,7 +164,7 @@ describe('acquireStateLock / releaseStateLock', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-lock-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-lock-'));
   });
 
   afterEach(async () => {
@@ -213,7 +213,7 @@ describe('stateUpdate', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-update-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-update-'));
     await setupTestProject(tmpDir);
   });
 
@@ -382,7 +382,7 @@ describe('statePatch', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-patch-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-patch-'));
     await setupTestProject(tmpDir);
   });
 
@@ -449,7 +449,7 @@ describe('stateBeginPhase', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-begin-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-begin-'));
     await setupTestProject(tmpDir);
   });
 
@@ -556,7 +556,7 @@ describe('stateAdvancePlan', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-advance-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-advance-'));
     await setupTestProject(tmpDir);
   });
 
@@ -597,7 +597,7 @@ describe('stateAddDecision', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-decision-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-decision-'));
     await setupTestProject(tmpDir);
   });
 
@@ -630,7 +630,7 @@ describe('stateAddRoadmapEvolution', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-evo-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-evo-'));
   });
 
   afterEach(async () => {
@@ -790,7 +790,7 @@ describe('stateRecordSession', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-session-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-session-'));
     await setupTestProject(tmpDir);
   });
 
@@ -819,7 +819,7 @@ describe('Bug #2613: STATE.md frontmatter preservation through mutations', () =>
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-state-2613-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-2613-'));
   });
 
   afterEach(async () => {
@@ -1037,7 +1037,7 @@ describe('stateMilestoneSwitch', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-milestone-switch-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-milestone-switch-'));
   });
 
   afterEach(async () => {
@@ -1140,7 +1140,7 @@ describe('statePrune current phase extraction (#3471)', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'gsd-sdk-stateprune-'));
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-sdk-stateprune-'));
   });
 
   afterEach(async () => {

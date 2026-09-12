@@ -6,8 +6,8 @@ Paste this document (or `@sdk/HANDOVER-PARITY-DOCS.md`) at the start of a new ch
 
 ## Goal for this session
 
-1. **Parity “exceptions” documentation** — A clear, maintainable description of where **full JSON equality** between `gsd-tools.cjs` and `createRegistry()` is **not** expected or not attempted, and why (stubs, structural-only tests, environment-dependent fields, ordering, etc.). Map this to **#2007 / #2302** expectations: no *undocumented* gap.
-2. **CJS-only matrix** — A **single authoritative table**: each relevant `gsd-tools.cjs` surface (top-level command or documented cluster) → **registered in SDK** vs **permanent CLI-only** vs **alias / naming difference**, with a **one-line justification** where not registered.
+1. **Parity “exceptions” documentation** — A clear, maintainable description of where **full JSON equality** between `fvgsd-tools.cjs` and `createRegistry()` is **not** expected or not attempted, and why (stubs, structural-only tests, environment-dependent fields, ordering, etc.). Map this to **#2007 / #2302** expectations: no *undocumented* gap.
+2. **CJS-only matrix** — A **single authoritative table**: each relevant `fvgsd-tools.cjs` surface (top-level command or documented cluster) → **registered in SDK** vs **permanent CLI-only** vs **alias / naming difference**, with a **one-line justification** where not registered.
 
 ## Parent tracking
 
@@ -24,7 +24,7 @@ Paste this document (or `@sdk/HANDOVER-PARITY-DOCS.md`) at the start of a new ch
 
 - `sdk/src/query/QUERY-HANDLERS.md` — Registry conventions, partial “not registered” list (**graphify**, **from-gsd2**), CLI name differences (**summary-extract** vs **summary.extract**, **scaffold** vs **phase.scaffold**), **intel.update** (CJS JSON parity; refresh via agent), **skill-manifest --write** / mutation events, **docs-init** golden note (agent install fields), **stateExtractField** rule.
 - `sdk/src/golden/golden.integration.test.ts` — Source of truth for **which commands** are golden-tested and **how** (full equality vs subset vs normalized `existing_docs` vs omitted fields; `init.quick` strips clock-derived keys via `init-golden-normalize.ts`).
-- `sdk/src/golden/capture.ts` — `captureGsdToolsOutput()` spawns `get-shit-done/bin/gsd-tools.cjs`.
+- `sdk/src/golden/capture.ts` — `captureGsdToolsOutput()` spawns `get-shit-done/bin/fvgsd-tools.cjs`.
 - `docs/CLI-TOOLS.md` — User-facing CLI reference; should **link** to the parity exceptions + matrix (or host a short summary with pointer to `sdk/`).
 
 ## Deliverables (suggested shape)
@@ -49,7 +49,7 @@ Cover at least:
 
 ### B) CJS-only matrix
 
-Build the table by **diffing** `get-shit-done/bin/gsd-tools.cjs` `switch (command)` top-level cases against `createRegistry()` registrations in `sdk/src/query/index.ts`.
+Build the table by **diffing** `get-shit-done/bin/fvgsd-tools.cjs` `switch (command)` top-level cases against `createRegistry()` registrations in `sdk/src/query/index.ts`.
 
 **Already documented as product-out-of-scope for registry:** **graphify**, **from-gsd2** / **gsd2-import**.
 
@@ -78,7 +78,7 @@ Optional: footnote that `detect-custom-files` skips multi-repo root resolution i
 ## Out of scope for *this* handover session
 
 - Implementing runner alignment (`GSDTools` → registry) — separate #2302 work.
-- Adding `@deprecated` headers to `gsd-tools.cjs` — separate task.
+- Adding `@deprecated` headers to `fvgsd-tools.cjs` — separate task.
 - **CHANGELOG** — only if you batch doc work with release notes in same PR (optional).
 
 ## Verification
@@ -89,7 +89,7 @@ Optional: footnote that `detect-custom-files` skips multi-repo root resolution i
 ## Success criteria
 
 - A reader can answer: **“Which commands are fully golden-parity vs partial vs stub vs untested?”** without reading the whole test file.
-- A reader can answer: **“Which `gsd-tools` top-level commands are not registered and why?”** from one table.
+- A reader can answer: **“Which `fvgsd-tools` top-level commands are not registered and why?”** from one table.
 - **#2302** acceptance bullets on parity documentation and registry matrix are satisfied for the **documentation** slice (remaining issue items may still be open for code).
 
 ---

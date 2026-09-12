@@ -26,19 +26,19 @@
    (the user's persistent settings preference):
    ```bash
    if [[ ! "$ARGUMENTS" =~ --auto ]] && [[ ! "$ARGUMENTS" =~ --chain ]]; then
-     gsd-sdk query config-set workflow._auto_chain_active false || true
+     fvgsd-sdk query config-set workflow._auto_chain_active false || true
    fi
    ```
 
 3. Read consolidated auto-mode (`active` = chain flag OR user preference):
    ```bash
-   AUTO_MODE=$(gsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
+   AUTO_MODE=$(fvgsd-sdk query check auto-mode --pick active 2>/dev/null || echo "false")
    ```
 
 4. **If `--auto` or `--chain` flag present AND `AUTO_MODE` is not true:**
    Persist chain flag to config (handles direct usage without new-project):
    ```bash
-   gsd-sdk query config-set workflow._auto_chain_active true
+   fvgsd-sdk query config-set workflow._auto_chain_active true
    ```
 
 5. **If `--auto` flag present OR `--chain` flag present OR `AUTO_MODE` is
@@ -56,7 +56,7 @@
    Launch plan-phase using the Skill tool to avoid nested Task sessions
    (which cause runtime freezes due to deep agent nesting — see #686):
    ```
-   Skill(skill="vgsd-plan-phase", args="${PHASE} --auto ${GSD_WS}")
+   Skill(skill="fvgsd-plan-phase", args="${PHASE} --auto ${FVGSD_WS}")
    ```
 
    This keeps the auto-advance chain flat — discuss, plan, and execute all
@@ -75,22 +75,22 @@
 
      /clear then:
 
-     Next: /vgsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${GSD_WS}
+     Next: /fvgsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${FVGSD_WS}
      ```
    - **PLANNING COMPLETE** → Planning done, execution didn't complete:
      ```
      Auto-advance partial: Planning complete, execution did not finish.
-     Continue: /vgsd:execute-phase ${PHASE} ${GSD_WS}
+     Continue: /fvgsd:execute-phase ${PHASE} ${FVGSD_WS}
      ```
    - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
      ```
      Auto-advance stopped: Planning needs input.
-     Continue: /vgsd:plan-phase ${PHASE} ${GSD_WS}
+     Continue: /fvgsd:plan-phase ${PHASE} ${FVGSD_WS}
      ```
    - **GAPS FOUND** → Stop chain:
      ```
      Auto-advance stopped: Gaps found during execution.
-     Continue: /vgsd:plan-phase ${PHASE} --gaps ${GSD_WS}
+     Continue: /fvgsd:plan-phase ${PHASE} --gaps ${FVGSD_WS}
      ```
 
 7. **If none of `--auto`, `--chain`, nor config enabled:** route to

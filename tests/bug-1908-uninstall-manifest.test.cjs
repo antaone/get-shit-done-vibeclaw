@@ -1,7 +1,7 @@
 /**
  * Regression test for bug #1908
  *
- * `--uninstall` did not remove `gsd-file-manifest.json` from the target
+ * `--uninstall` did not remove `fvgsd-file-manifest.json` from the target
  * directory, leaving a stale metadata file after uninstall.
  *
  * Fix: `uninstall()` must call
@@ -11,7 +11,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -21,11 +21,11 @@ const os = require('os');
 
 const { uninstall } = require('../bin/install.js');
 
-const MANIFEST_NAME = 'gsd-file-manifest.json';
+const MANIFEST_NAME = 'fvgsd-file-manifest.json';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
-function createFakeInstall(prefix = 'gsd-uninstall-test-') {
+function createFakeInstall(prefix = 'fvgsd-uninstall-test-') {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 
   // Simulate the minimum directory/file layout produced by the installer:
@@ -34,14 +34,14 @@ function createFakeInstall(prefix = 'gsd-uninstall-test-') {
   fs.writeFileSync(path.join(dir, 'get-shit-done', 'workflows', 'execute-phase.md'), '# stub');
 
   fs.mkdirSync(path.join(dir, 'agents'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'agents', 'gsd-executor.md'), '# stub');
+  fs.writeFileSync(path.join(dir, 'agents', 'fvgsd-executor.md'), '# stub');
 
   const manifest = {
     version: '1.34.0',
     timestamp: new Date().toISOString(),
     files: {
       'get-shit-done/workflows/execute-phase.md': 'abc123',
-      'agents/gsd-executor.md': 'def456',
+      'agents/fvgsd-executor.md': 'def456',
     },
   };
   fs.writeFileSync(path.join(dir, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
@@ -66,7 +66,7 @@ describe('uninstall — manifest cleanup (#1908)', () => {
     cleanup(tmpDir);
   });
 
-  test('gsd-file-manifest.json is removed after global uninstall', () => {
+  test('fvgsd-file-manifest.json is removed after global uninstall', () => {
     const manifestPath = path.join(tmpDir, MANIFEST_NAME);
 
     // Pre-condition: manifest exists before uninstall
@@ -98,7 +98,7 @@ describe('uninstall — manifest cleanup (#1908)', () => {
     );
   });
 
-  test('gsd-file-manifest.json is removed after local uninstall', () => {
+  test('fvgsd-file-manifest.json is removed after local uninstall', () => {
     const manifestPath = path.join(tmpDir, MANIFEST_NAME);
 
     assert.ok(

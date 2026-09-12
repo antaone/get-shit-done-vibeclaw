@@ -29,21 +29,21 @@ describe('VALID_CONFIG_KEYS correctness', () => {
   test('#2531: hooks.workflow_guard must be in VALID_CONFIG_KEYS (used by hook, documented)', () => {
     assert.ok(
       VALID_CONFIG_KEYS.has('hooks.workflow_guard'),
-      'hooks.workflow_guard is read by gsd-workflow-guard.js hook and documented in CONFIGURATION.md'
+      'hooks.workflow_guard is read by fvgsd/workflow-guard.js hook and documented in CONFIGURATION.md'
     );
   });
 
   test('#2532: workflow.ui_review must be in VALID_CONFIG_KEYS (used in autonomous.md)', () => {
     assert.ok(
       VALID_CONFIG_KEYS.has('workflow.ui_review'),
-      'workflow.ui_review is read in autonomous.md via gsd-sdk query config-get'
+      'workflow.ui_review is read in autonomous.md via fvgsd-sdk query config-get'
     );
   });
 
   test('#2533: workflow.max_discuss_passes must be in VALID_CONFIG_KEYS (used in discuss-phase.md)', () => {
     assert.ok(
       VALID_CONFIG_KEYS.has('workflow.max_discuss_passes'),
-      'workflow.max_discuss_passes is read in discuss-phase.md via gsd-sdk query config-get'
+      'workflow.max_discuss_passes is read in discuss-phase.md via fvgsd-sdk query config-get'
     );
   });
 

@@ -6,18 +6,18 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 
 | Agent | `quality` | `balanced` | `budget` | `adaptive` | `inherit` |
 |-------|-----------|------------|----------|------------|-----------|
-| gsd-planner | opus | opus | sonnet | opus | inherit |
-| gsd-roadmapper | opus | sonnet | sonnet | sonnet | inherit |
-| gsd-executor | opus | sonnet | sonnet | sonnet | inherit |
-| gsd-phase-researcher | opus | sonnet | haiku | sonnet | inherit |
-| gsd-project-researcher | opus | sonnet | haiku | sonnet | inherit |
-| gsd-research-synthesizer | sonnet | sonnet | haiku | haiku | inherit |
-| gsd-debugger | opus | sonnet | sonnet | opus | inherit |
-| gsd-codebase-mapper | sonnet | haiku | haiku | haiku | inherit |
-| gsd-verifier | sonnet | sonnet | haiku | sonnet | inherit |
-| gsd-plan-checker | sonnet | sonnet | haiku | haiku | inherit |
-| gsd-integration-checker | sonnet | sonnet | haiku | haiku | inherit |
-| gsd-nyquist-auditor | sonnet | sonnet | haiku | haiku | inherit |
+| fvgsd-planner | opus | opus | sonnet | opus | inherit |
+| fvgsd-roadmapper | opus | sonnet | sonnet | sonnet | inherit |
+| fvgsd-executor | opus | sonnet | sonnet | sonnet | inherit |
+| fvgsd-phase-researcher | opus | sonnet | haiku | sonnet | inherit |
+| fvgsd-project-researcher | opus | sonnet | haiku | sonnet | inherit |
+| fvgsd-research-synthesizer | sonnet | sonnet | haiku | haiku | inherit |
+| fvgsd-debugger | opus | sonnet | sonnet | opus | inherit |
+| fvgsd-codebase-mapper | sonnet | haiku | haiku | haiku | inherit |
+| fvgsd-verifier | sonnet | sonnet | haiku | sonnet | inherit |
+| fvgsd-plan-checker | sonnet | sonnet | haiku | haiku | inherit |
+| fvgsd-integration-checker | sonnet | sonnet | haiku | haiku | inherit |
+| fvgsd-nyquist-auditor | sonnet | sonnet | haiku | haiku | inherit |
 
 ## Per-Phase-Type Model Map (#3023)
 
@@ -35,7 +35,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
     "completion": "sonnet"
   },
   "model_overrides": {
-    "gsd-codebase-mapper": "haiku"
+    "fvgsd-codebase-mapper": "haiku"
   }
 }
 ```
@@ -44,11 +44,11 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 
 | Phase type | Agents |
 |---|---|
-| `planning` | gsd-planner, gsd-roadmapper, gsd-pattern-mapper |
+| `planning` | fvgsd-planner, fvgsd-roadmapper, fvgsd-pattern-mapper |
 | `discuss` | (reserved — no subagent today) |
-| `research` | gsd-phase-researcher, gsd-project-researcher, gsd-research-synthesizer, gsd-codebase-mapper, gsd-ui-researcher |
-| `execution` | gsd-executor, gsd-debugger, gsd-doc-writer |
-| `verification` | gsd-verifier, gsd-plan-checker, gsd-integration-checker, gsd-nyquist-auditor, gsd-ui-checker, gsd-ui-auditor, gsd-doc-verifier |
+| `research` | fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-codebase-mapper, fvgsd-ui-researcher |
+| `execution` | fvgsd-executor, fvgsd-debugger, fvgsd-doc-writer |
+| `verification` | fvgsd-verifier, fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-nyquist-auditor, fvgsd-ui-checker, fvgsd-ui-auditor, fvgsd-doc-verifier |
 | `completion` | (reserved — no subagent today) |
 
 ### Resolution precedence (highest to lowest)
@@ -62,7 +62,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 
 - **Profile** is a global tier strategy (everyone runs balanced).
 - **`models`** is coarse phase-level tuning without learning agent names.
-- **`model_overrides`** is per-agent precision (e.g. force `haiku` on `gsd-codebase-mapper` for a fan-out).
+- **`model_overrides`** is per-agent precision (e.g. force `haiku` on `fvgsd-codebase-mapper` for a fan-out).
 
 The three layers compose: `models` defaults a phase, `model_overrides` carves an exception out of it.
 
@@ -106,10 +106,10 @@ To assign different models to different agents, add `model_overrides` with model
 {
   "resolve_model_ids": "omit",
   "model_overrides": {
-    "gsd-planner": "o3",
-    "gsd-executor": "o4-mini",
-    "gsd-debugger": "o3",
-    "gsd-codebase-mapper": "o4-mini"
+    "fvgsd-planner": "o3",
+    "fvgsd-executor": "o4-mini",
+    "fvgsd-debugger": "o3",
+    "fvgsd-codebase-mapper": "o4-mini"
   }
 }
 ```
@@ -122,7 +122,7 @@ If you're using Claude Code with OpenRouter, a local model, or any non-Anthropic
 
 ```bash
 # Via settings command
-/vgsd:settings
+/fvgsd:settings
 # → Select "Inherit" for model profile
 
 # Or manually in .planning/config.json
@@ -156,9 +156,9 @@ When `dynamic_routing.enabled = true` in `.planning/config.json`, the resolver p
 
 | Tier | Agents | Use case |
 |---|---|---|
-| `light` | gsd-codebase-mapper, gsd-pattern-mapper, gsd-research-synthesizer, gsd-plan-checker, gsd-integration-checker, gsd-nyquist-auditor, gsd-ui-checker, gsd-ui-auditor, gsd-doc-verifier | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | gsd-executor, gsd-phase-researcher, gsd-project-researcher, gsd-verifier, gsd-doc-writer, gsd-ui-researcher | Default workhorse — research, writing, primary verification |
-| `heavy` | gsd-planner, gsd-roadmapper, gsd-debugger | Deep reasoning — already at top, can't escalate further |
+| `light` | fvgsd-codebase-mapper, fvgsd-pattern-mapper, fvgsd-research-synthesizer, fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-nyquist-auditor, fvgsd-ui-checker, fvgsd-ui-auditor, fvgsd-doc-verifier | Cheap/fast — pure mappers, scanners, low-stakes audits |
+| `standard` | fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-verifier, fvgsd-doc-writer, fvgsd-ui-researcher | Default workhorse — research, writing, primary verification |
+| `heavy` | fvgsd-planner, fvgsd-roadmapper, fvgsd-debugger | Deep reasoning — already at top, can't escalate further |
 
 **Escalation flow** (orchestrator-driven):
 
@@ -205,8 +205,8 @@ Override specific agents without changing the entire profile:
 {
   "model_profile": "balanced",
   "model_overrides": {
-    "gsd-executor": "opus",
-    "gsd-planner": "haiku"
+    "fvgsd-executor": "opus",
+    "fvgsd-planner": "haiku"
   }
 }
 ```
@@ -215,7 +215,7 @@ Overrides take precedence over the profile. Valid values: `opus`, `sonnet`, `hai
 
 ## Switching Profiles
 
-Runtime: `/vgsd-set-profile <profile>`
+Runtime: `/fvgsd-set-profile <profile>`
 
 Per-project default: Set in `.planning/config.json`:
 ```json
@@ -226,16 +226,16 @@ Per-project default: Set in `.planning/config.json`:
 
 ## Design Rationale
 
-**Why Opus for gsd-planner?**
+**Why Opus for fvgsd-planner?**
 Planning involves architecture decisions, goal decomposition, and task design. This is where model quality has the highest impact.
 
-**Why Sonnet for gsd-executor?**
+**Why Sonnet for fvgsd-executor?**
 Executors follow explicit PLAN.md instructions. The plan already contains the reasoning; execution is implementation.
 
 **Why Sonnet (not Haiku) for verifiers in balanced?**
 Verification requires goal-backward reasoning - checking if code *delivers* what the phase promised, not just pattern matching. Sonnet handles this well; Haiku may miss subtle gaps.
 
-**Why Haiku for gsd-codebase-mapper?**
+**Why Haiku for fvgsd-codebase-mapper?**
 Read-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
 
 **Why `inherit` instead of passing `opus` directly?**

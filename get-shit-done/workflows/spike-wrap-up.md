@@ -2,7 +2,7 @@
 Package spike experiment findings into a persistent project skill — an implementation blueprint
 for future build conversations. Reads from `.planning/spikes/`, writes skill to
 `./.claude/skills/spike-findings-[project]/` (project-local) and summary to
-`.planning/spikes/WRAP-UP-SUMMARY.md`. Companion to `/vgsd:spike`.
+`.planning/spikes/WRAP-UP-SUMMARY.md`. Companion to `/fvgsd:spike`.
 </purpose>
 
 <required_reading>
@@ -31,13 +31,13 @@ Read all files referenced by the invoking prompt's execution_context before star
 If no unprocessed spikes exist:
 ```
 No unprocessed spikes found in `.planning/spikes/`.
-Run `/vgsd:spike` first to create experiments.
+Run `/fvgsd:spike` first to create experiments.
 ```
 Exit.
 
 Check `commit_docs` config:
 ```bash
-COMMIT_DOCS=$(gsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
+COMMIT_DOCS=$(fvgsd-sdk query config-get commit_docs 2>/dev/null || echo "true")
 ```
 </step>
 
@@ -246,7 +246,7 @@ Patterns and stack choices established across spike sessions. New spikes follow 
 Commit all artifacts (if `COMMIT_DOCS` is true):
 
 ```bash
-gsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into project skill" --files .planning/spikes/WRAP-UP-SUMMARY.md .planning/spikes/CONVENTIONS.md
+fvgsd-sdk query commit "docs(spike-wrap-up): package [N] spike findings into project skill" --files .planning/spikes/WRAP-UP-SUMMARY.md .planning/spikes/CONVENTIONS.md
 ```
 </step>
 
@@ -278,14 +278,14 @@ After the summary, present next-step options:
 
 **Explore frontier spikes** — see what else is worth spiking based on what we've learned
 
-`/vgsd:spike` (run with no argument — its frontier mode analyzes the spike landscape and proposes integration and frontier spikes)
+`/fvgsd:spike` (run with no argument — its frontier mode analyzes the spike landscape and proposes integration and frontier spikes)
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/vgsd:plan-phase` — start planning the real implementation
-- `/vgsd:spike [idea]` — spike a specific new idea
-- `/vgsd:explore` — continue exploring
+- `/fvgsd:plan-phase` — start planning the real implementation
+- `/fvgsd:spike [idea]` — spike a specific new idea
+- `/fvgsd:explore` — continue exploring
 - Other
 
 ───────────────────────────────────────────────────────────────
@@ -302,5 +302,5 @@ After the summary, present next-step options:
 - [ ] `.planning/spikes/WRAP-UP-SUMMARY.md` written for project history
 - [ ] Project CLAUDE.md has auto-load routing line
 - [ ] Summary presented
-- [ ] Next-step options presented (including frontier spike exploration via `/vgsd:spike`)
+- [ ] Next-step options presented (including frontier spike exploration via `/fvgsd:spike`)
 </success_criteria>

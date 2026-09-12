@@ -11,7 +11,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/continuation-format.md
+@~/.claude/fvgsd/references/continuation-format.md
 </required_reading>
 
 <process>
@@ -20,7 +20,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(gsd-sdk query init.resume)
+INIT=$(fvgsd-sdk query init.resume)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -28,7 +28,7 @@ Parse JSON for: `state_exists`, `roadmap_exists`, `project_exists`, `planning_ex
 
 **If `state_exists` is true:** Proceed to load_state
 **If `state_exists` is false but `roadmap_exists` or `project_exists` is true:** Offer to reconstruct STATE.md
-**If `planning_exists` is false:** This is a new project - route to /vgsd:new-project
+**If `planning_exists` is false:** This is a new project - route to /fvgsd:new-project
 </step>
 
 <step name="load_state">
@@ -91,7 +91,7 @@ fi
 
 **If HANDOFF.json exists:**
 
-- This is the primary resumption source — structured data from `/vgsd:pause-work`
+- This is the primary resumption source — structured data from `/fvgsd:pause-work`
 - Parse `status`, `phase`, `plan`, `task`, `total_tasks`, `next_action`
 - Check `blockers` and `human_actions_pending` — surface these immediately
 - Check `completed_tasks` for `in_progress` items — these need attention first
@@ -147,7 +147,7 @@ Present complete project status to user:
     Resume with: Task tool (resume parameter with agent ID)
 
 [If pending todos exist:]
-📋 [N] pending todos — /vgsd:capture --list to review
+📋 [N] pending todos — /fvgsd:capture --list to review
 
 [If blockers exist:]
 ⚠️  Carried concerns:
@@ -207,11 +207,11 @@ What would you like to do?
 [Primary action based on state - e.g.:]
 1. Resume interrupted agent [if interrupted agent found]
    OR
-1. Execute phase (/vgsd:execute-phase {phase} ${GSD_WS})
+1. Execute phase (/fvgsd:execute-phase {phase} ${FVGSD_WS})
    OR
-1. Discuss Phase 3 context (/vgsd:discuss-phase 3 ${GSD_WS}) [if CONTEXT.md missing]
+1. Discuss Phase 3 context (/fvgsd:discuss-phase 3 ${FVGSD_WS}) [if CONTEXT.md missing]
    OR
-1. Plan Phase 3 (/vgsd:plan-phase 3 ${GSD_WS}) [if CONTEXT.md exists or discuss option declined]
+1. Plan Phase 3 (/fvgsd:plan-phase 3 ${FVGSD_WS}) [if CONTEXT.md exists or discuss option declined]
 
 [Secondary options:]
 2. Review current phase status
@@ -244,7 +244,7 @@ Resume-specific exception: do **not** emit `/clear then:` here. Resume is alread
 
   **{phase}-{plan}: [Plan Name]** — [objective from PLAN.md]
 
-  `/vgsd:execute-phase {phase} ${GSD_WS}`
+  `/fvgsd:execute-phase {phase} ${FVGSD_WS}`
 
   ---
   ```
@@ -256,13 +256,13 @@ Resume-specific exception: do **not** emit `/clear then:` here. Resume is alread
 
   **Phase [N]: [Name]** — [Goal from ROADMAP.md]
 
-  `/vgsd:plan-phase [phase-number] ${GSD_WS}`
+  `/fvgsd:plan-phase [phase-number] ${FVGSD_WS}`
 
   ---
 
   **Also available:**
-  - `/vgsd:discuss-phase [N] ${GSD_WS}` — gather context first
-  - `/vgsd:plan-phase --research-phase [N] ${GSD_WS}` — investigate unknowns
+  - `/fvgsd:discuss-phase [N] ${FVGSD_WS}` — gather context first
+  - `/fvgsd:plan-phase --research-phase [N] ${FVGSD_WS}` — investigate unknowns
 
   ---
   ```

@@ -66,12 +66,12 @@ describe('plan-phase commit_docs support (#2399)', () => {
     );
   });
 
-  test('plan-phase.md uses gsd-sdk query commit for the plan commit', () => {
+  test('plan-phase.md uses fvgsd-sdk query commit for the plan commit', () => {
     const content = fs.readFileSync(PLAN_PHASE_PATH, 'utf-8');
-    // Must use gsd-sdk query commit (not raw git) so commit_docs guard in gsd-tools is respected
+    // Must use fvgsd-sdk query commit (not raw git) so commit_docs guard in fvgsd-tools is respected
     assert.ok(
-      content.includes('gsd-sdk query commit') || content.includes('gsd-tools') || content.includes('gsd-sdk'),
-      'plan-phase.md plan commit step must use gsd-sdk query commit (not raw git commit)'
+      content.includes('fvgsd-sdk query commit') || content.includes('fvgsd-tools') || content.includes('fvgsd-sdk'),
+      'plan-phase.md plan commit step must use fvgsd-sdk query commit (not raw git commit)'
     );
   });
 });

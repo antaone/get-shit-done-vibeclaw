@@ -6,7 +6,7 @@ import { PlanningJournal } from './planning-journal.js';
 
 describe('PlanningJournal', () => {
   it('appends events with monotonic source sequence numbers', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-journal-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-journal-'));
     const journal = new PlanningJournal({ projectDir: dir, sourceId: 'daemon-1', runId: 'run-1' });
 
     const first = await journal.append({
@@ -30,7 +30,7 @@ describe('PlanningJournal', () => {
   });
 
   it('replays an existing event for duplicate idempotency keys', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-journal-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-journal-'));
     const journal = new PlanningJournal({ projectDir: dir, sourceId: 'sdk-1', runId: 'run-1' });
 
     const first = await journal.append({
@@ -53,7 +53,7 @@ describe('PlanningJournal', () => {
   });
 
   it('writes jsonl under .gsd/journal.jsonl', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-journal-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-journal-'));
     const journal = new PlanningJournal({ projectDir: dir, sourceId: 'sdk-1', runId: 'run-1' });
     await journal.append({
       projectId: 'project-1',

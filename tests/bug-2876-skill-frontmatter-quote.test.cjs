@@ -18,7 +18,7 @@
  */
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -27,7 +27,7 @@ const fs = require('node:fs');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf-8'));
-const installPath = path.resolve(REPO_ROOT, pkg.bin['get-shit-done-cc']);
+const installPath = path.resolve(REPO_ROOT, pkg.bin['fvgsd']);
 const install = require(installPath);
 
 // Build a minimal Claude command source whose description starts with the
@@ -35,7 +35,7 @@ const install = require(installPath);
 // any naive single-quoting to also escape correctly — the canonical
 // safe form is `JSON.stringify(...)` (used by yamlQuote).
 const REPORTER_DESCRIPTION =
-  "[BETA] Offload plan phase to Claude Code's ultraplan cloud — drafts remotely while terminal stays free, review in browser with inline comments, import back via /vgsd-import. Claude Code only.";
+  "[BETA] Offload plan phase to Claude Code's ultraplan cloud — drafts remotely while terminal stays free, review in browser with inline comments, import back via /fvgsd-import. Claude Code only.";
 
 // Use unquoted description in the source frontmatter — that's exactly the
 // shape that ships in commands/gsd/*.md when authors paste a description
@@ -47,7 +47,7 @@ const REPORTER_DESCRIPTION =
 function buildClaudeCommand(description) {
   return [
     '---',
-    'name: vgsd:ultraplan-phase',
+    'name: fvgsd:ultraplan-phase',
     `description: ${description}`,
     'argument-hint: "[phase-number]"',
     'allowed-tools:',
@@ -63,7 +63,7 @@ function buildClaudeCommand(description) {
 function buildClaudeAgent(description) {
   return [
     '---',
-    'name: vgsd-extract-learnings',
+    'name: fvgsd-extract-learnings',
     `description: ${description}`,
     'tools: Read, Bash',
     '---',
@@ -132,10 +132,10 @@ function assertDescriptionRoundTrips(emitted, expected, label) {
 }
 
 const COMMAND_CONVERTERS = [
-  { label: 'convertClaudeCommandToCopilotSkill', fn: (src) => install.convertClaudeCommandToCopilotSkill(src, 'vgsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToAntigravitySkill', fn: (src) => install.convertClaudeCommandToAntigravitySkill(src, 'vgsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToTraeSkill', fn: (src) => install.convertClaudeCommandToTraeSkill(src, 'vgsd-ultraplan-phase') },
-  { label: 'convertClaudeCommandToCodebuddySkill', fn: (src) => install.convertClaudeCommandToCodebuddySkill(src, 'vgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToCopilotSkill', fn: (src) => install.convertClaudeCommandToCopilotSkill(src, 'fvgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToAntigravitySkill', fn: (src) => install.convertClaudeCommandToAntigravitySkill(src, 'fvgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToTraeSkill', fn: (src) => install.convertClaudeCommandToTraeSkill(src, 'fvgsd-ultraplan-phase') },
+  { label: 'convertClaudeCommandToCodebuddySkill', fn: (src) => install.convertClaudeCommandToCodebuddySkill(src, 'fvgsd-ultraplan-phase') },
 ];
 
 const AGENT_CONVERTERS = [

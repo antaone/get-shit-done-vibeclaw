@@ -35,7 +35,7 @@ const planScanLib = path.join(ROOT, 'get-shit-done', 'bin', 'lib', 'plan-scan.cj
 
 // Build a temporary phase directory with the slug layout
 function makeTempPhase(files) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3128-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3128-'));
   for (const f of files) {
     fs.writeFileSync(path.join(dir, f), `# ${f}\n`);
   }

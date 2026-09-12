@@ -11,7 +11,7 @@
  */
 
 // Enable test exports from install.js (skips main CLI logic)
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -48,7 +48,7 @@ const {
   migrateCodexHooksMapFormat,
   mergeCodexConfig,
   install,
-  GSD_CODEX_MARKER,
+  FVGSD_CODEX_MARKER,
   CODEX_AGENT_SANDBOX,
   parseTomlToObject,
   resolveNodeRunner,
@@ -122,7 +122,7 @@ function assertUsesOnlyEol(content, eol) {
 
 describe('getCodexSkillAdapterHeader', () => {
   test('contains all three sections', () => {
-    const result = getCodexSkillAdapterHeader('gsd-execute-phase');
+    const result = getCodexSkillAdapterHeader('fvgsd-execute-phase');
     assert.ok(result.includes('<codex_skill_adapter>'), 'has opening tag');
     assert.ok(result.includes('</codex_skill_adapter>'), 'has closing tag');
     assert.ok(result.includes('## A. Skill Invocation'), 'has section A');
@@ -131,13 +131,13 @@ describe('getCodexSkillAdapterHeader', () => {
   });
 
   test('includes correct invocation syntax', () => {
-    const result = getCodexSkillAdapterHeader('gsd-plan-phase');
+    const result = getCodexSkillAdapterHeader('fvgsd-plan-phase');
     assert.ok(result.includes('`$gsd-plan-phase`'), 'has $skillName invocation');
-    assert.ok(result.includes('{{GSD_ARGS}}'), 'has GSD_ARGS variable');
+    assert.ok(result.includes('{{FVGSD_ARGS}}'), 'has FVGSD_ARGS variable');
   });
 
   test('section B maps AskUserQuestion parameters', () => {
-    const result = getCodexSkillAdapterHeader('gsd-discuss-phase');
+    const result = getCodexSkillAdapterHeader('fvgsd-discuss-phase');
     assert.ok(result.includes('request_user_input'), 'maps to request_user_input');
     assert.ok(result.includes('header'), 'maps header parameter');
     assert.ok(result.includes('question'), 'maps question parameter');
@@ -148,7 +148,7 @@ describe('getCodexSkillAdapterHeader', () => {
   });
 
   test('section C maps Task to spawn_agent', () => {
-    const result = getCodexSkillAdapterHeader('gsd-execute-phase');
+    const result = getCodexSkillAdapterHeader('fvgsd-execute-phase');
     assert.ok(result.includes('spawn_agent'), 'maps to spawn_agent');
     assert.ok(result.includes('agent_type'), 'maps subagent_type to agent_type');
     assert.match(
@@ -169,7 +169,7 @@ describe('getCodexSkillAdapterHeader', () => {
 describe('convertClaudeAgentToCodexAgent', () => {
   test('adds codex_agent_role header and cleans frontmatter', () => {
     const input = `---
-name: gsd-executor
+name: fvgsd-executor
 description: Executes GSD plans with atomic commits
 tools: Read, Write, Edit, Bash, Grep, Glob
 color: yellow
@@ -183,7 +183,7 @@ You are a GSD plan executor.
 
     // Frontmatter rebuilt with only name and description
     assert.ok(result.startsWith('---\n'), 'starts with frontmatter');
-    assert.ok(result.includes('"gsd-executor"'), 'has quoted name');
+    assert.ok(result.includes('"fvgsd-executor"'), 'has quoted name');
     assert.ok(result.includes('"Executes GSD plans with atomic commits"'), 'has quoted description');
     assert.ok(!result.includes('color: yellow'), 'drops color field');
     // Tools should be in <codex_agent_role> but NOT in frontmatter
@@ -193,7 +193,7 @@ You are a GSD plan executor.
 
     // Has codex_agent_role block
     assert.ok(result.includes('<codex_agent_role>'), 'has role header');
-    assert.ok(result.includes('role: gsd-executor'), 'role matches agent name');
+    assert.ok(result.includes('role: fvgsd-executor'), 'role matches agent name');
     assert.ok(result.includes('tools: Read, Write, Edit, Bash, Grep, Glob'), 'tools in role block');
     assert.ok(result.includes('purpose: Executes GSD plans with atomic commits'), 'purpose from description');
     assert.ok(result.includes('</codex_agent_role>'), 'has closing tag');
@@ -224,16 +224,16 @@ Run /gsd:execute-phase to proceed.`;
 
   test('replaces .claude paths with .codex paths (#1430)', () => {
     const input = `---
-name: gsd-debugger
+name: fvgsd-debugger
 description: Debugs issues
 tools: Read, Bash
 ---
 
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state load)
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: resolve"`;
+INIT=$(node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" state load)
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" commit "docs: resolve"`;
 
     const result = convertClaudeAgentToCodexAgent(input);
-    assert.ok(result.includes('$HOME/.codex/get-shit-done/bin/gsd-tools.cjs'), 'replaces $HOME/.claude/ with $HOME/.codex/');
+    assert.ok(result.includes('$HOME/.codex/fvgsd/bin/fvgsd-tools.cjs'), 'replaces $HOME/.claude/ with $HOME/.codex/');
     assert.ok(!result.includes('$HOME/.claude/'), 'no .claude paths remain');
   });
 });
@@ -252,7 +252,7 @@ tools: Read
 /gsd-plan-phase 2 — create plan
 /gsd-execute-phase 3 — run it`;
 
-    const result = convertClaudeCommandToCodexSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToCodexSkill(input, 'fvgsd-test');
     assert.ok(result.includes('$gsd-discuss-phase'), 'converts /gsd-discuss-phase');
     assert.ok(result.includes('$gsd-plan-phase'), 'converts /gsd-plan-phase');
     assert.ok(result.includes('$gsd-execute-phase'), 'converts /gsd-execute-phase');
@@ -268,7 +268,7 @@ tools: Read
 
 Run \`/gsd-plan-phase 1\` to plan.`;
 
-    const result = convertClaudeCommandToCodexSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToCodexSkill(input, 'fvgsd-test');
     assert.ok(result.includes('$gsd-plan-phase'), 'converts backtick-wrapped command');
   });
 
@@ -279,11 +279,11 @@ description: Test
 tools: Read
 ---
 
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init`;
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" init`;
 
-    const result = convertClaudeCommandToCodexSkill(input, 'gsd-test');
-    assert.ok(result.includes('gsd-tools.cjs'), 'gsd-tools.cjs preserved in path');
-    assert.ok(!result.includes('$gsd-tools'), 'no $gsd-tools in file path');
+    const result = convertClaudeCommandToCodexSkill(input, 'fvgsd-test');
+    assert.ok(result.includes('fvgsd-tools.cjs'), 'fvgsd-tools.cjs preserved in path');
+    assert.ok(!result.includes('$fvgsd-tools'), 'no $fvgsd-tools in file path');
   });
 
   test('removes /clear then: for Codex', () => {
@@ -297,7 +297,7 @@ tools: Read
 
 \`$gsd-plan-phase 1\``;
 
-    const result = convertClaudeCommandToCodexSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToCodexSkill(input, 'fvgsd-test');
     assert.ok(!result.includes('/clear'), 'no /clear remains');
     assert.ok(result.includes('$gsd-plan-phase'), 'command preserved after /clear removal');
   });
@@ -312,7 +312,7 @@ tools: Read
 /clear then:
 /gsd-execute-phase 2`;
 
-    const result = convertClaudeCommandToCodexSkill(input, 'gsd-test');
+    const result = convertClaudeCommandToCodexSkill(input, 'fvgsd-test');
     assert.ok(!result.includes('/clear'), 'no /clear remains');
     assert.ok(result.includes('$gsd-execute-phase'), 'command converted');
   });
@@ -322,7 +322,7 @@ tools: Read
 
 describe('generateCodexAgentToml', () => {
   const sampleAgent = `---
-name: gsd-executor
+name: fvgsd-executor
 description: Executes plans
 tools: Read, Write, Edit
 color: yellow
@@ -331,69 +331,69 @@ color: yellow
 <role>You are an executor.</role>`;
 
   test('sets workspace-write for executor', () => {
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent);
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent);
     assert.ok(result.includes('sandbox_mode = "workspace-write"'), 'has workspace-write');
   });
 
   test('sets read-only for plan-checker', () => {
     const checker = `---
-name: gsd-plan-checker
+name: fvgsd-plan-checker
 description: Checks plans
 tools: Read, Grep, Glob
 ---
 
 <role>You check plans.</role>`;
-    const result = generateCodexAgentToml('gsd-plan-checker', checker);
+    const result = generateCodexAgentToml('fvgsd-plan-checker', checker);
     assert.ok(result.includes('sandbox_mode = "read-only"'), 'has read-only');
   });
 
   test('includes developer_instructions from body', () => {
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent);
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent);
     assert.ok(result.includes("developer_instructions = '''"), 'has literal triple-quoted instructions');
     assert.ok(result.includes('<role>You are an executor.</role>'), 'body content in instructions');
     assert.ok(result.includes("'''"), 'has closing literal triple quotes');
   });
 
   test('includes required name and description fields', () => {
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent);
-    assert.ok(result.includes('name = "gsd-executor"'), 'has name');
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent);
+    assert.ok(result.includes('name = "fvgsd-executor"'), 'has name');
     assert.ok(result.includes('description = "Executes plans"'), 'has description');
   });
 
   test('falls back to generated description when frontmatter is missing fields', () => {
     const minimalAgent = `<role>You are an unknown agent.</role>`;
-    const result = generateCodexAgentToml('gsd-unknown', minimalAgent);
-    assert.ok(result.includes('name = "gsd-unknown"'), 'falls back to agent name');
+    const result = generateCodexAgentToml('fvgsd-unknown', minimalAgent);
+    assert.ok(result.includes('name = "fvgsd-unknown"'), 'falls back to agent name');
     assert.ok(result.includes('description = "GSD agent gsd-unknown"'), 'falls back to synthetic description');
   });
 
   test('defaults unknown agents to read-only', () => {
-    const result = generateCodexAgentToml('gsd-unknown', sampleAgent);
+    const result = generateCodexAgentToml('fvgsd-unknown', sampleAgent);
     assert.ok(result.includes('sandbox_mode = "read-only"'), 'defaults to read-only');
   });
 
   // ─── #2256: model_overrides support ───────────────────────────────────────
 
   test('emits model field when modelOverrides contains an entry for the agent (#2256)', () => {
-    const overrides = { 'gsd-executor': 'gpt-5.3-codex' };
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent, overrides);
+    const overrides = { 'fvgsd-executor': 'gpt-5.3-codex' };
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent, overrides);
     assert.ok(result.includes('model = "gpt-5.3-codex"'), 'model field must be present in TOML');
   });
 
   test('does not emit model field when modelOverrides is null (#2256)', () => {
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent, null);
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent, null);
     assert.ok(!result.includes('model ='), 'model field must be absent when no override');
   });
 
   test('does not emit model field when modelOverrides has no entry for this agent (#2256)', () => {
-    const overrides = { 'gsd-planner': 'gpt-5.4' };
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent, overrides);
+    const overrides = { 'fvgsd-planner': 'gpt-5.4' };
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent, overrides);
     assert.ok(!result.includes('model ='), 'model field must be absent for agents not in overrides');
   });
 
   test('model field appears before developer_instructions (#2256)', () => {
-    const overrides = { 'gsd-executor': 'gpt-5.3-codex' };
-    const result = generateCodexAgentToml('gsd-executor', sampleAgent, overrides);
+    const overrides = { 'fvgsd-executor': 'gpt-5.3-codex' };
+    const result = generateCodexAgentToml('fvgsd-executor', sampleAgent, overrides);
     const modelIdx = result.indexOf('model = "gpt-5.3-codex"');
     const instrIdx = result.indexOf("developer_instructions = '''");
     assert.ok(modelIdx !== -1, 'model field present');
@@ -412,9 +412,9 @@ describe('CODEX_AGENT_SANDBOX', () => {
 
   test('workspace-write agents have write tools', () => {
     const writeAgents = [
-      'gsd-executor', 'gsd-planner', 'gsd-phase-researcher',
-      'gsd-project-researcher', 'gsd-research-synthesizer', 'gsd-verifier',
-      'gsd-codebase-mapper', 'gsd-roadmapper', 'gsd-debugger',
+      'fvgsd-executor', 'fvgsd-planner', 'fvgsd-phase-researcher',
+      'fvgsd-project-researcher', 'fvgsd-research-synthesizer', 'fvgsd-verifier',
+      'fvgsd-codebase-mapper', 'fvgsd-roadmapper', 'fvgsd-debugger',
     ];
     for (const name of writeAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'workspace-write', `${name} is workspace-write`);
@@ -422,7 +422,7 @@ describe('CODEX_AGENT_SANDBOX', () => {
   });
 
   test('read-only agents have no write tools', () => {
-    const readOnlyAgents = ['gsd-plan-checker', 'gsd-integration-checker'];
+    const readOnlyAgents = ['fvgsd-plan-checker', 'fvgsd-integration-checker'];
     for (const name of readOnlyAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'read-only', `${name} is read-only`);
     }
@@ -433,13 +433,13 @@ describe('CODEX_AGENT_SANDBOX', () => {
 
 describe('generateCodexConfigBlock', () => {
   const agents = [
-    { name: 'gsd-executor', description: 'Executes plans' },
-    { name: 'gsd-planner', description: 'Creates plans' },
+    { name: 'fvgsd-executor', description: 'Executes plans' },
+    { name: 'fvgsd-planner', description: 'Creates plans' },
   ];
 
   test('starts with GSD marker', () => {
     const result = generateCodexConfigBlock(agents);
-    assert.ok(result.startsWith(GSD_CODEX_MARKER), 'starts with marker');
+    assert.ok(result.startsWith(FVGSD_CODEX_MARKER), 'starts with marker');
   });
 
   test('does not include feature flags or agents table header', () => {
@@ -458,11 +458,11 @@ describe('generateCodexConfigBlock', () => {
   test('#2727: emits [agents.<name>] struct format (Codex 0.120.0+, replaces #2645 [[agents]])', () => {
     const result = generateCodexConfigBlock(agents);
     // One [agents.<name>] header per agent — no [[agents]] sequence.
-    assert.ok(result.includes('[agents.gsd-executor]'), 'executor has struct header');
-    assert.ok(result.includes('[agents.gsd-planner]'), 'planner has struct header');
+    assert.ok(result.includes('[agents.fvgsd-executor]'), 'executor has struct header');
+    assert.ok(result.includes('[agents.fvgsd-planner]'), 'planner has struct header');
     // Struct format uses the key as the name; no name = field.
-    assert.ok(!result.includes('name = "gsd-executor"'), 'no name field in struct format');
-    assert.ok(!result.includes('name = "gsd-planner"'), 'no name field in struct format');
+    assert.ok(!result.includes('name = "fvgsd-executor"'), 'no name field in struct format');
+    assert.ok(!result.includes('name = "fvgsd-planner"'), 'no name field in struct format');
     assert.ok(!result.includes('[[agents]]'), 'no sequence format headers');
   });
 
@@ -477,16 +477,16 @@ describe('generateCodexConfigBlock', () => {
 
   test('includes per-agent sections with relative paths (no targetDir)', () => {
     const result = generateCodexConfigBlock(agents);
-    assert.ok(result.includes('[agents.gsd-executor]'), 'has executor entry');
-    assert.ok(result.includes('[agents.gsd-planner]'), 'has planner entry');
-    assert.ok(result.includes('config_file = "agents/gsd-executor.toml"'), 'relative config_file without targetDir');
+    assert.ok(result.includes('[agents.fvgsd-executor]'), 'has executor entry');
+    assert.ok(result.includes('[agents.fvgsd-planner]'), 'has planner entry');
+    assert.ok(result.includes('config_file = "agents/fvgsd-executor.toml"'), 'relative config_file without targetDir');
     assert.ok(result.includes('"Executes plans"'), 'has executor description');
   });
 
   test('uses absolute config_file paths when targetDir is provided', () => {
     const result = generateCodexConfigBlock(agents, '/home/user/.codex');
-    assert.ok(result.includes('config_file = "/home/user/.codex/agents/gsd-executor.toml"'), 'absolute executor path');
-    assert.ok(result.includes('config_file = "/home/user/.codex/agents/gsd-planner.toml"'), 'absolute planner path');
+    assert.ok(result.includes('config_file = "/home/user/.codex/agents/fvgsd-executor.toml"'), 'absolute executor path');
+    assert.ok(result.includes('config_file = "/home/user/.codex/agents/fvgsd-planner.toml"'), 'absolute planner path');
     assert.ok(!result.includes('config_file = "agents/'), 'no relative paths when targetDir given');
   });
 
@@ -497,10 +497,10 @@ describe('generateCodexConfigBlock', () => {
     // "invalid type: sequence, expected struct AgentsToml".
     assert.ok(!result.includes('[[agents]]'), 'should not emit [[agents]] sequence format');
     assert.ok(result.includes('[agents.'), 'should emit [agents.<name>] struct format');
-    assert.ok(result.includes('[agents.gsd-executor]'), 'executor uses struct header');
-    assert.ok(result.includes('[agents.gsd-planner]'), 'planner uses struct header');
+    assert.ok(result.includes('[agents.fvgsd-executor]'), 'executor uses struct header');
+    assert.ok(result.includes('[agents.fvgsd-planner]'), 'planner uses struct header');
     // Struct format must NOT have a name = field (name is the key, not a value)
-    assert.ok(!result.includes('name = "gsd-executor"'), 'no name field in struct format');
+    assert.ok(!result.includes('name = "fvgsd-executor"'), 'no name field in struct format');
   });
 });
 
@@ -508,18 +508,18 @@ describe('generateCodexConfigBlock', () => {
 
 describe('stripGsdFromCodexConfig', () => {
   test('returns null for GSD-only config', () => {
-    const content = `${GSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const content = `${FVGSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.strictEqual(result, null, 'returns null when GSD-only');
   });
 
   test('preserves user content before marker', () => {
-    const content = `[model]\nname = "o3"\n\n${GSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const content = `[model]\nname = "o3"\n\n${FVGSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user section');
     assert.ok(result.includes('name = "o3"'), 'preserves user values');
     assert.ok(!result.includes('multi_agent'), 'removes GSD content');
-    assert.ok(!result.includes(GSD_CODEX_MARKER), 'removes marker');
+    assert.ok(!result.includes(FVGSD_CODEX_MARKER), 'removes marker');
   });
 
   test('strips injected feature keys without marker', () => {
@@ -539,26 +539,26 @@ describe('stripGsdFromCodexConfig', () => {
 
   test('strips injected keys above marker on uninstall', () => {
     // Case 3 install injects keys into [features] AND appends marker block
-    const content = `[model]\nname = "o3"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nsome_custom_flag = true\n\n${GSD_CODEX_MARKER}\n[agents]\nmax_threads = 4\n`;
+    const content = `[model]\nname = "o3"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nsome_custom_flag = true\n\n${FVGSD_CODEX_MARKER}\n[agents]\nmax_threads = 4\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user model section');
     assert.ok(result.includes('some_custom_flag = true'), 'preserves user feature');
     assert.ok(!result.includes('multi_agent'), 'strips injected multi_agent');
     assert.ok(!result.includes('default_mode_request_user_input'), 'strips injected request_user_input');
-    assert.ok(!result.includes(GSD_CODEX_MARKER), 'strips marker');
+    assert.ok(!result.includes(FVGSD_CODEX_MARKER), 'strips marker');
   });
 
-  test('removes legacy [agents.gsd-*] map sections (self-heal pre-#2645 configs)', () => {
-    const content = `[agents.gsd-executor]\ndescription = "test"\nconfig_file = "agents/gsd-executor.toml"\n\n[agents.custom-agent]\ndescription = "user agent"\n`;
+  test('removes legacy [agents.fvgsd-*] map sections (self-heal pre-#2645 configs)', () => {
+    const content = `[agents.fvgsd-executor]\ndescription = "test"\nconfig_file = "agents/fvgsd-executor.toml"\n\n[agents.custom-agent]\ndescription = "user agent"\n`;
     const result = stripGsdFromCodexConfig(content);
-    assert.ok(!result.includes('[agents.gsd-executor]'), 'removes legacy GSD agent map section');
+    assert.ok(!result.includes('[agents.fvgsd-executor]'), 'removes legacy GSD agent map section');
     assert.ok(result.includes('[agents.custom-agent]'), 'preserves user agent section');
   });
 
   test('#2645: removes [[agents]] array-of-tables entries whose name is gsd-*', () => {
-    const content = `[[agents]]\nname = "gsd-executor"\ndescription = "test"\nconfig_file = "agents/gsd-executor.toml"\n\n[[agents]]\nname = "custom-agent"\ndescription = "user agent"\n`;
+    const content = `[[agents]]\nname = "fvgsd-executor"\ndescription = "test"\nconfig_file = "agents/fvgsd-executor.toml"\n\n[[agents]]\nname = "custom-agent"\ndescription = "user agent"\n`;
     const result = stripGsdFromCodexConfig(content);
-    assert.ok(!/name = "gsd-executor"/.test(result), 'removes managed GSD [[agents]] entry');
+    assert.ok(!/name = "fvgsd-executor"/.test(result), 'removes managed GSD [[agents]] entry');
     assert.ok(result.includes('name = "custom-agent"'), 'preserves user [[agents]] entry');
   });
 
@@ -567,15 +567,15 @@ describe('stripGsdFromCodexConfig', () => {
     // with multiple user-authored agents in both shapes — none of the user
     // entries may be removed and all GSD entries must be stripped.
     const content = [
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "legacy gsd"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
       '[agents.custom-legacy]',
       'description = "user legacy"',
       '',
       '[[agents]]',
-      'name = "gsd-planner"',
+      'name = "fvgsd-planner"',
       'description = "new gsd"',
       '',
       '[[agents]]',
@@ -583,7 +583,7 @@ describe('stripGsdFromCodexConfig', () => {
       'description = "user new"',
       '',
       '[[agents]]',
-      "name = 'gsd-debugger'",
+      "name = 'fvgsd-debugger'",
       'description = "single-quoted gsd"',
       '',
       '[[agents]]',
@@ -593,9 +593,9 @@ describe('stripGsdFromCodexConfig', () => {
     ].join('\n');
     const result = stripGsdFromCodexConfig(content);
     // All GSD entries removed.
-    assert.ok(!result.includes('gsd-executor'), 'removes legacy gsd-executor');
-    assert.ok(!/name\s*=\s*"gsd-planner"/.test(result), 'removes new gsd-planner');
-    assert.ok(!/name\s*=\s*'gsd-debugger'/.test(result), 'removes single-quoted gsd-debugger');
+    assert.ok(!result.includes('fvgsd-executor'), 'removes legacy fvgsd-executor');
+    assert.ok(!/name\s*=\s*"fvgsd-planner"/.test(result), 'removes new fvgsd-planner');
+    assert.ok(!/name\s*=\s*'fvgsd-debugger'/.test(result), 'removes single-quoted fvgsd-debugger');
     // All user-authored entries preserved.
     assert.ok(result.includes('[agents.custom-legacy]'), 'preserves user legacy [agents.custom-legacy]');
     assert.ok(result.includes('user legacy'), 'preserves user legacy body');
@@ -617,7 +617,7 @@ describe('migrateCodexHooksMapFormat', () => {
       '',
       '[[hooks]]',
       'event = "SessionStart"',
-      'command = "node /home/.codex/hooks/gsd-check-update.js"',
+      'command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const result = migrateCodexHooksMapFormat(content);
@@ -628,7 +628,7 @@ describe('migrateCodexHooksMapFormat', () => {
     assert.ok(Array.isArray(parsed.hooks.SessionStart[0].hooks),
       'must emit [[hooks.SessionStart.hooks]] sub-table');
     assert.strictEqual(parsed.hooks.SessionStart[0].hooks[0].command,
-      'node /home/.codex/hooks/gsd-check-update.js');
+      'node /home/.codex/hooks/fvgsd/check-update.js');
     assert.strictEqual(parsed.hooks.SessionStart[0].hooks[0].type, 'command',
       'migrated handler must carry type = "command" per Codex 0.124.0+ schema');
     assert.equal(parsed.hooks.SessionStart[0].event, undefined,
@@ -649,7 +649,7 @@ describe('migrateCodexHooksMapFormat', () => {
       '[hooks]',
       '',
       '[hooks.shell]',
-      'command = "node /home/.codex/hooks/gsd-check-update.js"',
+      'command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const result = migrateCodexHooksMapFormat(content);
@@ -660,7 +660,7 @@ describe('migrateCodexHooksMapFormat', () => {
     assert.strictEqual(parsed.hooks.shell.length, 1);
     // #2773: command now lives in [[hooks.shell.hooks]] sub-table, not at event-entry level
     assert.ok(Array.isArray(parsed.hooks.shell[0].hooks), 'must emit [[hooks.shell.hooks]] sub-table');
-    assert.strictEqual(parsed.hooks.shell[0].hooks[0].command, 'node /home/.codex/hooks/gsd-check-update.js');
+    assert.strictEqual(parsed.hooks.shell[0].hooks[0].command, 'node /home/.codex/hooks/fvgsd/check-update.js');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].type, 'command');
     // No flat top-level [[hooks]] AoT and no synthetic event field.
     assert.ok(!Array.isArray(parsed.hooks),
@@ -694,7 +694,7 @@ describe('migrateCodexHooksMapFormat', () => {
   test('converts multiple [hooks.TYPE] sections to separate namespaced AoT blocks (#2760 CR5 finding 3)', () => {
     const content = [
       '[hooks.shell]',
-      'command = "node /home/.codex/hooks/gsd-check-update.js"',
+      'command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
       '[hooks.exec]',
       'command = "echo done"',
@@ -707,7 +707,7 @@ describe('migrateCodexHooksMapFormat', () => {
     assert.strictEqual(parsed.hooks.shell.length, 1);
     assert.strictEqual(parsed.hooks.exec.length, 1);
     // #2773: commands now live in the [[hooks.<TYPE>.hooks]] sub-table
-    assert.strictEqual(parsed.hooks.shell[0].hooks[0].command, 'node /home/.codex/hooks/gsd-check-update.js');
+    assert.strictEqual(parsed.hooks.shell[0].hooks[0].command, 'node /home/.codex/hooks/fvgsd/check-update.js');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].type, 'command',
       'migrated shell handler must carry type = "command"');
     assert.strictEqual(parsed.hooks.exec[0].hooks[0].command, 'echo done');
@@ -748,7 +748,7 @@ describe('migrateCodexHooksMapFormat', () => {
       '[hooks]',
       '',
       '  [hooks.shell]',
-      '  command = "node /home/.codex/hooks/gsd-check-update.js"',
+      '  command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const result = migrateCodexHooksMapFormat(oldContent);
@@ -761,7 +761,7 @@ describe('migrateCodexHooksMapFormat', () => {
     // #2773: command lives in [[hooks.shell.hooks]] sub-table
     assert.ok(Array.isArray(parsed.hooks.shell[0].hooks), 'must emit [[hooks.shell.hooks]] sub-table');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].command,
-      'node /home/.codex/hooks/gsd-check-update.js');
+      'node /home/.codex/hooks/fvgsd/check-update.js');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].type, 'command',
       'migrated shell handler must carry type = "command" per Codex 0.124.0+ schema');
     assert.equal(parsed.features && parsed.features.codex_hooks, true);
@@ -918,7 +918,7 @@ describe('migrateCodexHooksMapFormat', () => {
       'codex_hooks = true',
       '',
       '[hooks.shell]',
-      'command = "node /home/.codex/hooks/gsd-check-update.js"',
+      'command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\r\n');
     const result = migrateCodexHooksMapFormat(content);
@@ -930,7 +930,7 @@ describe('migrateCodexHooksMapFormat', () => {
     // #2773: command lives in [[hooks.shell.hooks]] sub-table
     assert.ok(Array.isArray(parsed.hooks.shell[0].hooks), 'must emit [[hooks.shell.hooks]] sub-table');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].command,
-      'node /home/.codex/hooks/gsd-check-update.js');
+      'node /home/.codex/hooks/fvgsd/check-update.js');
     assert.strictEqual(parsed.hooks.shell[0].hooks[0].type, 'command',
       'migrated shell handler must carry type = "command" per Codex 0.124.0+ schema');
   });
@@ -950,7 +950,7 @@ describe('Codex hooks emit: migration produces namespaced AoT so managed-emit co
 
   let tmpDir;
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-fieldparity-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-fieldparity-'));
   });
   afterEach(() => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -962,7 +962,7 @@ describe('Codex hooks emit: migration produces namespaced AoT so managed-emit co
       'codex_hooks = true',
       '',
       '[hooks.SessionStart]',
-      'command = "node /home/.codex/hooks/gsd-check-update.js"',
+      'command = "node /home/.codex/hooks/fvgsd/check-update.js"',
       '',
     ].join('\n');
     const migrated = migrateCodexHooksMapFormat(legacyContent);
@@ -986,7 +986,7 @@ describe('Codex hooks emit: migration produces namespaced AoT so managed-emit co
       'migration must inject type = "command" in handler sub-table');
     assert.strictEqual(
       handler.command,
-      'node /home/.codex/hooks/gsd-check-update.js',
+      'node /home/.codex/hooks/fvgsd/check-update.js',
       'migration must preserve original command value in handler sub-table'
     );
   });
@@ -998,7 +998,7 @@ describe('mergeCodexConfig', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-merge-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-merge-'));
   });
 
   afterEach(() => {
@@ -1006,7 +1006,7 @@ describe('mergeCodexConfig', () => {
   });
 
   const sampleBlock = generateCodexConfigBlock([
-    { name: 'gsd-executor', description: 'Executes plans' },
+    { name: 'fvgsd-executor', description: 'Executes plans' },
   ]);
 
   test('case 1: creates new config.toml', () => {
@@ -1015,8 +1015,8 @@ describe('mergeCodexConfig', () => {
 
     assert.ok(fs.existsSync(configPath), 'file created');
     const content = fs.readFileSync(configPath, 'utf8');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'has marker');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent in struct format');
+    assert.ok(content.includes(FVGSD_CODEX_MARKER), 'has marker');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent in struct format');
     assert.ok(!content.includes('[features]'), 'no features section');
     assert.ok(!content.includes('multi_agent'), 'no multi_agent');
   });
@@ -1028,17 +1028,17 @@ describe('mergeCodexConfig', () => {
 
     // Re-merge with updated block
     const newBlock = generateCodexConfigBlock([
-      { name: 'gsd-executor', description: 'Updated description' },
-      { name: 'gsd-planner', description: 'New agent' },
+      { name: 'fvgsd-executor', description: 'Updated description' },
+      { name: 'fvgsd-planner', description: 'New agent' },
     ]);
     mergeCodexConfig(configPath, newBlock);
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('[model]'), 'preserves user content');
     assert.ok(content.includes('Updated description'), 'has new description');
-    assert.ok(content.includes('[agents.gsd-planner]'), 'has new agent in struct format');
+    assert.ok(content.includes('[agents.fvgsd-planner]'), 'has new agent in struct format');
     // Verify no duplicate markers
-    const markerCount = (content.match(new RegExp(GSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const markerCount = (content.match(new RegExp(FVGSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
     assert.strictEqual(markerCount, 1, 'exactly one marker');
   });
 
@@ -1050,8 +1050,8 @@ describe('mergeCodexConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('[model]'), 'preserves user content');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'adds marker');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent in struct format');
+    assert.ok(content.includes(FVGSD_CODEX_MARKER), 'adds marker');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent in struct format');
   });
 
   test('case 3 with existing [features]: preserves user features, does not inject GSD keys', () => {
@@ -1064,11 +1064,11 @@ describe('mergeCodexConfig', () => {
     assert.ok(content.includes('other_feature = true'), 'preserves existing feature');
     assert.ok(!content.includes('multi_agent'), 'does not inject multi_agent');
     assert.ok(!content.includes('default_mode_request_user_input'), 'does not inject request_user_input');
-    assert.ok(content.includes(GSD_CODEX_MARKER), 'adds marker for agents block');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent in struct format');
+    assert.ok(content.includes(FVGSD_CODEX_MARKER), 'adds marker for agents block');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent in struct format');
   });
 
-  test('case 3 strips existing [agents.gsd-*] sections before appending fresh block', () => {
+  test('case 3 strips existing [agents.fvgsd-*] sections before appending fresh block', () => {
     const configPath = path.join(tmpDir, 'config.toml');
     const existing = [
       '[model]',
@@ -1078,9 +1078,9 @@ describe('mergeCodexConfig', () => {
       'description = "user agent"',
       '',
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "old"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
     ].join('\n');
     fs.writeFileSync(configPath, existing);
@@ -1088,16 +1088,16 @@ describe('mergeCodexConfig', () => {
     mergeCodexConfig(configPath, sampleBlock);
 
     const content = fs.readFileSync(configPath, 'utf8');
-    // After merge, GSD block is after the marker. Count [agents.gsd-executor] headers:
+    // After merge, GSD block is after the marker. Count [agents.fvgsd-executor] headers:
     // exactly one should exist (the one in the freshly-written GSD block).
-    const gsdStructCount = (content.match(/^\[agents\.gsd-executor\]\s*$/gm) || []).length;
-    const markerCount = (content.match(new RegExp(GSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const gsdStructCount = (content.match(/^\[agents\.fvgsd-executor\]\s*$/gm) || []).length;
+    const markerCount = (content.match(new RegExp(FVGSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
     // Struct format does not use name = field
-    assert.ok(!content.match(/^name = "gsd-executor"/m), 'no name = field in struct format');
+    assert.ok(!content.match(/^name = "fvgsd-executor"/m), 'no name = field in struct format');
 
     assert.ok(content.includes('[model]'), 'preserves user content');
     assert.ok(content.includes('[agents.custom-agent]'), 'preserves non-GSD agent section');
-    assert.strictEqual(gsdStructCount, 1, 'keeps exactly one [agents.gsd-executor] struct entry');
+    assert.strictEqual(gsdStructCount, 1, 'keeps exactly one [agents.fvgsd-executor] struct entry');
     assert.strictEqual(markerCount, 1, 'adds exactly one marker block');
     assert.ok(!/\n{3,}# GSD Agent Configuration/.test(content), 'does not leave extra blank lines before marker block');
   });
@@ -1124,15 +1124,15 @@ describe('mergeCodexConfig', () => {
     const featuresCount = (content.match(/^\[features\]\s*$/gm) || []).length;
     assert.strictEqual(featuresCount, 1, 'exactly one [features] section');
     assert.ok(content.includes('other_feature = true'), 'preserves user feature keys');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent in struct format');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent in struct format');
     // Verify no duplicate markers
-    const markerCount = (content.match(new RegExp(GSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+    const markerCount = (content.match(new RegExp(FVGSD_CODEX_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
     assert.strictEqual(markerCount, 1, 'exactly one marker');
   });
 
   test('case 2 does not inject feature keys', () => {
     const configPath = path.join(tmpDir, 'config.toml');
-    const manualContent = '[features]\nother_feature = true\n\n' + GSD_CODEX_MARKER + '\n[agents.gsd-old]\ndescription = "old"\n';
+    const manualContent = '[features]\nother_feature = true\n\n' + FVGSD_CODEX_MARKER + '\n[agents.fvgsd-old]\ndescription = "old"\n';
     fs.writeFileSync(configPath, manualContent);
 
     mergeCodexConfig(configPath, sampleBlock);
@@ -1141,10 +1141,10 @@ describe('mergeCodexConfig', () => {
     assert.ok(!content.includes('multi_agent'), 'does not inject multi_agent');
     assert.ok(!content.includes('default_mode_request_user_input'), 'does not inject request_user_input');
     assert.ok(content.includes('other_feature = true'), 'preserves user feature');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent from fresh block in struct format');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent from fresh block in struct format');
   });
 
-  test('case 2 strips leaked [agents] and [agents.gsd-*] from before content', () => {
+  test('case 2 strips leaked [agents] and [agents.fvgsd-*] from before content', () => {
     const configPath = path.join(tmpDir, 'config.toml');
     const brokenContent = [
       '[features]',
@@ -1154,15 +1154,15 @@ describe('mergeCodexConfig', () => {
       'max_threads = 4',
       'max_depth = 2',
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "old"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
-      GSD_CODEX_MARKER,
+      FVGSD_CODEX_MARKER,
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "Executes plans"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
     ].join('\n');
     fs.writeFileSync(configPath, brokenContent);
@@ -1171,12 +1171,12 @@ describe('mergeCodexConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('child_agents_md = false'), 'preserves user feature keys');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'has agent from fresh block in struct format');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'has agent from fresh block in struct format');
     // Verify the leaked [agents] table header above marker was stripped
-    const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+    const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
     const beforeMarker = content.substring(0, markerIndex);
     assert.ok(!beforeMarker.match(/^\[agents\]\s*$/m), 'no leaked [agents] above marker');
-    assert.ok(!beforeMarker.includes('[agents.gsd-'), 'no leaked [agents.gsd-*] above marker');
+    assert.ok(!beforeMarker.includes('[agents.fvgsd-'), 'no leaked [agents.fvgsd-*] above marker');
   });
 
   test('case 2 strips leaked GSD-managed sections above marker in CRLF files', () => {
@@ -1188,15 +1188,15 @@ describe('mergeCodexConfig', () => {
       '[agents]',
       'max_threads = 4',
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "stale"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
-      GSD_CODEX_MARKER,
+      FVGSD_CODEX_MARKER,
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "Executes plans"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
     ].join('\r\n');
     fs.writeFileSync(configPath, brokenContent, 'utf8');
@@ -1205,15 +1205,15 @@ describe('mergeCodexConfig', () => {
     mergeCodexConfig(configPath, sampleBlock);
 
     const content = fs.readFileSync(configPath, 'utf8');
-    const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+    const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
     const beforeMarker = content.slice(0, markerIndex);
 
     assert.ok(content.includes('child_agents_md = false'), 'preserves user feature keys');
     assert.strictEqual(countMatches(beforeMarker, /^\[agents\]\s*$/gm), 0, 'removes leaked [agents] above marker');
-    assert.strictEqual(countMatches(beforeMarker, /^\[agents\.gsd-executor\]\s*$/gm), 0, 'removes leaked GSD agent section above marker');
-    // New struct format: exactly one [agents.gsd-executor] header in the GSD block (after marker)
-    assert.strictEqual(countMatches(content, /^\[agents\.gsd-executor\]\s*$/gm), 1, 'exactly one struct agent header in GSD block');
-    assert.strictEqual(countMatches(content, /name = "gsd-executor"/g), 0, 'no name = field in struct format');
+    assert.strictEqual(countMatches(beforeMarker, /^\[agents\.fvgsd-executor\]\s*$/gm), 0, 'removes leaked GSD agent section above marker');
+    // New struct format: exactly one [agents.fvgsd-executor] header in the GSD block (after marker)
+    assert.strictEqual(countMatches(content, /^\[agents\.fvgsd-executor\]\s*$/gm), 1, 'exactly one struct agent header in GSD block');
+    assert.strictEqual(countMatches(content, /name = "fvgsd-executor"/g), 0, 'no name = field in struct format');
     assertUsesOnlyEol(content, '\r\n');
   });
 
@@ -1226,15 +1226,15 @@ describe('mergeCodexConfig', () => {
       '[agents]',
       'default = "custom-agent"',
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "stale"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
-      GSD_CODEX_MARKER,
+      FVGSD_CODEX_MARKER,
       '',
-      '[agents.gsd-executor]',
+      '[agents.fvgsd-executor]',
       'description = "Executes plans"',
-      'config_file = "agents/gsd-executor.toml"',
+      'config_file = "agents/fvgsd-executor.toml"',
       '',
     ].join('\r\n');
     fs.writeFileSync(configPath, brokenContent, 'utf8');
@@ -1243,7 +1243,7 @@ describe('mergeCodexConfig', () => {
     mergeCodexConfig(configPath, sampleBlock);
 
     const content = fs.readFileSync(configPath, 'utf8');
-    const markerIndex = content.indexOf(GSD_CODEX_MARKER);
+    const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
     const beforeMarker = content.slice(0, markerIndex);
 
     // Bare [agents] is invalid under Codex's current schema (rejected with
@@ -1264,9 +1264,9 @@ describe('mergeCodexConfig', () => {
       parsedBefore.features && parsedBefore.features.child_agents_md === false,
       'preserves user feature keys above marker',
     );
-    // New struct format: exactly one [agents.gsd-executor] in the GSD block (after marker)
-    assert.strictEqual(countMatches(content, /^\[agents\.gsd-executor\]\s*$/gm), 1, 'exactly one struct agent header in GSD block');
-    assert.strictEqual(countMatches(content, /name = "gsd-executor"/g), 0, 'no name = field in struct format');
+    // New struct format: exactly one [agents.fvgsd-executor] in the GSD block (after marker)
+    assert.strictEqual(countMatches(content, /^\[agents\.fvgsd-executor\]\s*$/gm), 1, 'exactly one struct agent header in GSD block');
+    assert.strictEqual(countMatches(content, /name = "fvgsd-executor"/g), 0, 'no name = field in struct format');
     assertUsesOnlyEol(content, '\r\n');
   });
 
@@ -1294,7 +1294,7 @@ describe('mergeCodexConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('[model]\r\nname = "o3"\r\n'), 'preserves existing CRLF content');
-    assert.ok(content.includes(`${GSD_CODEX_MARKER}\r\n`), 'writes marker with CRLF');
+    assert.ok(content.includes(`${FVGSD_CODEX_MARKER}\r\n`), 'writes marker with CRLF');
     assertUsesOnlyEol(content, '\r\n');
   });
 
@@ -1306,7 +1306,7 @@ describe('mergeCodexConfig', () => {
 
     const content = fs.readFileSync(configPath, 'utf8');
     assert.ok(content.includes('# first line wins\n[model]\r\nname = "o3"'), 'preserves the existing mixed-EOL model content');
-    assert.ok(content.includes(`\n\n${GSD_CODEX_MARKER}\n`), 'writes the managed block using the first newline style');
+    assert.ok(content.includes(`\n\n${FVGSD_CODEX_MARKER}\n`), 'writes the managed block using the first newline style');
   });
 });
 
@@ -1317,7 +1317,7 @@ describe('installCodexConfig (integration)', () => {
   const agentsSrc = path.join(__dirname, '..', 'agents');
 
   beforeEach(() => {
-    tmpTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-install-'));
+    tmpTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-install-'));
   });
 
   afterEach(() => {
@@ -1337,23 +1337,23 @@ describe('installCodexConfig (integration)', () => {
     const configPath = path.join(tmpTarget, 'config.toml');
     assert.ok(fs.existsSync(configPath), 'config.toml exists');
     const config = fs.readFileSync(configPath, 'utf8');
-    assert.ok(config.includes(GSD_CODEX_MARKER), 'has GSD marker');
-    assert.ok(config.includes('[agents.gsd-executor]'), 'has executor agent in struct format');
+    assert.ok(config.includes(FVGSD_CODEX_MARKER), 'has GSD marker');
+    assert.ok(config.includes('[agents.fvgsd-executor]'), 'has executor agent in struct format');
     assert.ok(!config.includes('multi_agent'), 'no feature flags');
 
     // Verify per-agent .toml files
     const agentsDir = path.join(tmpTarget, 'agents');
-    assert.ok(fs.existsSync(path.join(agentsDir, 'gsd-executor.toml')), 'executor .toml exists');
-    assert.ok(fs.existsSync(path.join(agentsDir, 'gsd-plan-checker.toml')), 'plan-checker .toml exists');
+    assert.ok(fs.existsSync(path.join(agentsDir, 'fvgsd-executor.toml')), 'executor .toml exists');
+    assert.ok(fs.existsSync(path.join(agentsDir, 'fvgsd-plan-checker.toml')), 'plan-checker .toml exists');
 
-    const executorToml = fs.readFileSync(path.join(agentsDir, 'gsd-executor.toml'), 'utf8');
-    assert.ok(executorToml.includes('name = "gsd-executor"'), 'executor has name');
+    const executorToml = fs.readFileSync(path.join(agentsDir, 'fvgsd-executor.toml'), 'utf8');
+    assert.ok(executorToml.includes('name = "fvgsd-executor"'), 'executor has name');
     assert.ok(executorToml.includes('description = "Executes GSD plans with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute-phase orchestrator or execute-plan command."'), 'executor has description');
     assert.ok(executorToml.includes('sandbox_mode = "workspace-write"'), 'executor is workspace-write');
     assert.ok(executorToml.includes('developer_instructions'), 'has developer_instructions');
 
-    const checkerToml = fs.readFileSync(path.join(agentsDir, 'gsd-plan-checker.toml'), 'utf8');
-    assert.ok(checkerToml.includes('name = "gsd-plan-checker"'), 'plan-checker has name');
+    const checkerToml = fs.readFileSync(path.join(agentsDir, 'fvgsd-plan-checker.toml'), 'utf8');
+    assert.ok(checkerToml.includes('name = "fvgsd-plan-checker"'), 'plan-checker has name');
     assert.ok(checkerToml.includes('sandbox_mode = "read-only"'), 'plan-checker is read-only');
   });
 
@@ -1392,7 +1392,7 @@ describe('codex features section safety', () => {
   test('non-boolean keys under [features] are moved to top level', () => {
     // Simulate the bug from #1202: model = "gpt-5.4" under [features]
     // causes "invalid type: string, expected a boolean in features"
-    const configContent = `[features]\ncodex_hooks = true\n\nmodel = "gpt-5.4"\nmodel_reasoning_effort = "medium"\n\n[agents.gsd-executor]\ndescription = "test"\n`;
+    const configContent = `[features]\ncodex_hooks = true\n\nmodel = "gpt-5.4"\nmodel_reasoning_effort = "medium"\n\n[agents.fvgsd-executor]\ndescription = "test"\n`;
 
     const featuresMatch = configContent.match(/\[features\]\n([\s\S]*?)(?=\n\[|$)/);
     assert.ok(featuresMatch, 'features section found');
@@ -1425,7 +1425,7 @@ describe('Codex install hook configuration (e2e)', () => {
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-e2e-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-e2e-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -1434,7 +1434,7 @@ describe('Codex install hook configuration (e2e)', () => {
   });
 
   test('Codex install copies hook file that is referenced in hooks.json (#2153)', () => {
-    // Regression test: Codex install writes gsd-check-update hook reference into
+    // Regression test: Codex install writes fvgsd/check-update hook reference into
     // hooks.json and must also copy the hook file to ~/$CODEX_HOME/hooks/
     runCodexInstall(codexHome);
 
@@ -1446,15 +1446,15 @@ describe('Codex install hook configuration (e2e)', () => {
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.equal(
-      hooksJsonCommands.some((cmd) => cmd.includes('gsd-check-update')),
+      hooksJsonCommands.some((cmd) => cmd.includes('fvgsd/check-update')),
       true,
-      'hooks.json references gsd-check-update (.js on POSIX, .cmd on Windows)'
+      'hooks.json references fvgsd/check-update (.js on POSIX, .cmd on Windows)'
     );
     // The hook file must physically exist at the referenced path
-    const hookFile = path.join(codexHome, 'hooks', 'gsd-check-update.js');
+    const hookFile = path.join(codexHome, 'hooks', 'fvgsd/check-update.js');
     assert.ok(
       fs.existsSync(hookFile),
-      `gsd-check-update.js must exist at ${hookFile} — hooks.json references it (directly on POSIX, via .cmd shim on Windows) but file was not installed`
+      `fvgsd/check-update.js must exist at ${hookFile} — hooks.json references it (directly on POSIX, via .cmd shim on Windows) but file was not installed`
     );
   });
 
@@ -1470,18 +1470,18 @@ describe('Codex install hook configuration (e2e)', () => {
     // On Windows (#3426) a .cmd shim is written instead; the command in hooks.json
     // is the quoted .cmd path (no node runner prefix — cmd.exe executes .cmd natively).
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdCommands = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdCommands = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdCommands.length, 1, 'writes one GSD update hook in hooks.json');
     if (process.platform === 'win32') {
       // On Windows, the command is the .cmd shim path (quoted).
-      const expectedCmdPath = path.join(codexHome, 'hooks', 'gsd-check-update.cmd').replace(/\\/g, '/');
+      const expectedCmdPath = path.join(codexHome, 'hooks', 'fvgsd/check-update.cmd').replace(/\\/g, '/');
       assert.strictEqual(gsdCommands[0], JSON.stringify(expectedCmdPath), 'win32: handler command must be the .cmd shim path (#3426)');
     } else {
       // On POSIX, the command is the node runner + .js hook path.
       const expectedRunner = JSON.parse(resolveNodeRunner());
-      const expectedHookPath = path.join(codexHome, 'hooks', 'gsd-check-update.js').replace(/\\/g, '/');
+      const expectedHookPath = path.join(codexHome, 'hooks', 'fvgsd/check-update.js').replace(/\\/g, '/');
       const expectedCommand = `"${expectedRunner}" "${expectedHookPath}"`;
-      assert.strictEqual(gsdCommands[0], expectedCommand, 'handler command must use absolute node runner pointing at gsd-check-update.js (#3017)');
+      assert.strictEqual(gsdCommands[0], expectedCommand, 'handler command must use absolute node runner pointing at fvgsd/check-update.js (#3017)');
     }
     assert.strictEqual(countMatches(content, /^hooks = true$/gm), 1, 'writes one codex_hooks key');
     assertNoDraftRootKeys(content);
@@ -1566,7 +1566,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('[model]\nname = "o3"'), 'preserves model section');
     assert.ok(content.includes('command = "echo custom"'), 'preserves custom hook');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'adds one GSD update hook in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -1705,7 +1705,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assert.ok(content.includes('command = "echo custom"'), 'preserves custom hook');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'does not duplicate GSD update hook in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -1749,7 +1749,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a second bare features table');
     assert.ok(content.includes('other_feature = true'), 'preserves existing feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'keeps one GSD update hook in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -1772,7 +1772,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 1, 'adds one real top-level features table');
     assert.strictEqual(countMatches(content, /^hooks = true$/gm), 1, 'adds one codex_hooks key');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -1794,7 +1794,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.strictEqual(countMatches(content, /^features\.hooks = true$/gm), 1, 'adds one dotted codex_hooks key');
     assert.ok(content.includes('features.other_feature = true'), 'preserves existing dotted features key');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'adds one GSD update hook for dotted codex_hooks and remains idempotent');
     assertNoDraftRootKeys(content);
   });
@@ -1815,8 +1815,8 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('features = { other_feature = true }'), 'preserves the root inline-table assignment');
     assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append an invalid dotted codex_hooks key');
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a features table');
-    assert.strictEqual(countMatches(content, /gsd-check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'still installs the managed agent block in struct format');
+    assert.strictEqual(countMatches(content, /fvgsd/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'still installs the managed agent block in struct format');
     assertNoDraftRootKeys(content);
   });
 
@@ -1836,8 +1836,8 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('features = "disabled"'), 'preserves the root scalar assignment');
     assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append an invalid dotted codex_hooks key');
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a features table');
-    assert.strictEqual(countMatches(content, /gsd-check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
-    assert.ok(content.includes('[agents.gsd-executor]'), 'still installs the managed agent block in struct format');
+    assert.strictEqual(countMatches(content, /fvgsd/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
+    assert.ok(content.includes('[agents.fvgsd-executor]'), 'still installs the managed agent block in struct format');
     assertNoDraftRootKeys(content);
   });
 
@@ -1860,7 +1860,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append a bare dotted duplicate');
     assert.ok(content.includes('features.other_feature = true'), 'preserves other dotted features keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'adds one GSD update hook for quoted dotted codex_hooks and remains idempotent');
     assertNoDraftRootKeys(content);
   });
@@ -1977,7 +1977,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(!content.includes('multiline-basic-sentinel'), 'removes multiline basic-string continuation lines');
     assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -2004,7 +2004,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(!content.includes('multiline-literal-sentinel'), 'removes multiline literal-string continuation lines');
     assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -2032,7 +2032,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(!content.includes('array-sentinel-2'), 'removes multiline array continuation lines');
     assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -2079,7 +2079,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assert.strictEqual(countMatches(content, /echo custom-after-command/g), 1, 'preserves non-GSD hook exactly once');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'keeps one GSD update hook in hooks.json');
     assertUsesOnlyEol(content, '\r\n');
     assertNoDraftRootKeys(content);
@@ -2104,7 +2104,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.strictEqual(countMatches(content, /^codex_hooks = true # keep me$/gm), 1, 'preserves the commented true value');
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'adds the GSD update hook once in hooks.json');
     assertNoDraftRootKeys(content);
   });
@@ -2123,7 +2123,7 @@ describe('Codex install hook configuration (e2e)', () => {
     const parsedMixed = parseTomlToObject(content);
     assert.ok(!parsedMixed.hooks || !Array.isArray(parsedMixed.hooks.SessionStart), 'does not write managed SessionStart hooks to config.toml');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('gsd-check-update'));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
     assert.strictEqual(gsdEntries.length, 1, 'writes one managed SessionStart hook to hooks.json');
     assert.ok(content.includes('[model]\r\nname = "o3"'), 'preserves the existing CRLF model lines');
     assert.strictEqual(countMatches(content, /^hooks = true$/gm), 1, 'remains idempotent on repeated installs');
@@ -2136,7 +2136,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
   let codexHome;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-codex-uninstall-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-codex-uninstall-'));
     codexHome = path.join(tmpDir, 'codex-home');
   });
 
@@ -2175,8 +2175,8 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     assert.ok(cleaned.includes('# keep me'), 'preserves user comments in [features]');
     assert.ok(cleaned.includes('other_feature = true'), 'preserves other feature keys');
     assert.strictEqual(countMatches(cleaned, /echo custom-after-command/g), 1, 'preserves non-GSD hooks');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes only the GSD update hook');
-    assert.strictEqual(countMatches(cleaned, /\[agents\.gsd-/g), 0, 'removes managed GSD agent sections');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes only the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
     assertUsesOnlyEol(cleaned, '\r\n');
   });
 
@@ -2200,7 +2200,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     assert.strictEqual(countMatches(cleaned, /^features\.codex_hooks = true$/gm), 0, 'removes the dotted GSD codex_hooks key');
     assert.strictEqual(countMatches(cleaned, /^\[features\]\s*$/gm), 0, 'does not leave behind a [features] table');
     assert.strictEqual(countMatches(cleaned, /echo custom-after-command/g), 1, 'preserves non-GSD hooks');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
   });
 
   test('install then uninstall preserves a pre-existing [features].codex_hooks = true', () => {
@@ -2219,8 +2219,8 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('[features]\ncodex_hooks = true\nother_feature = true'), 'preserves the user-authored codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^codex_hooks = true$/gm), 1, 'keeps the pre-existing codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes the GSD update hook');
-    assert.strictEqual(countMatches(cleaned, /\[agents\.gsd-/g), 0, 'removes managed GSD agent sections');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
   test('install then uninstall preserves a pre-existing quoted [features].\"codex_hooks\" = true', () => {
@@ -2239,8 +2239,8 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('[features]\n"codex_hooks" = true\nother_feature = true'), 'preserves the user-authored quoted codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^"codex_hooks" = true$/gm), 1, 'keeps the pre-existing quoted codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes the GSD update hook');
-    assert.strictEqual(countMatches(cleaned, /\[agents\.gsd-/g), 0, 'removes managed GSD agent sections');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
   test('install then uninstall preserves a pre-existing root dotted features.codex_hooks = true', () => {
@@ -2258,8 +2258,8 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('features.codex_hooks = true\nfeatures.other_feature = true'), 'preserves the user-authored dotted codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^features\.codex_hooks = true$/gm), 1, 'keeps the pre-existing dotted codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes the GSD update hook');
-    assert.strictEqual(countMatches(cleaned, /\[agents\.gsd-/g), 0, 'removes managed GSD agent sections');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
   test('install then uninstall leaves short-circuited root features assignments untouched', () => {
@@ -2297,7 +2297,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('# first line wins\n[features]\r\nother_feature = true\r\n\r\n[model]\r\nname = "o3"'), 'preserves the original mixed-EOL user content');
     assert.strictEqual(countMatches(cleaned, /^codex_hooks = true$/gm), 0, 'removes the injected codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /gsd-check-update\.js/g), 0, 'removes the GSD update hook');
-    assert.strictEqual(countMatches(cleaned, /\[agents\.gsd-/g), 0, 'removes managed GSD agent sections');
+    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 });

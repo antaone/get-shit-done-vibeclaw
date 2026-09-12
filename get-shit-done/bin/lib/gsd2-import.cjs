@@ -443,7 +443,7 @@ function writePlanningDir(artifacts, planningRoot) {
 // ─── Command Handler ──────────────────────────────────────────────────────────
 
 /**
- * Entry point called from gsd-tools.cjs.
+ * Entry point called from fvgsd-tools.cjs.
  * Supports: --force, --dry-run, --path <dir>
  */
 function cmdFromGsd2(args, cwd, raw) {

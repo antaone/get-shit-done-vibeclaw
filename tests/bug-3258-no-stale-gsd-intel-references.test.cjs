@@ -19,12 +19,12 @@
 //   - docs/USER-GUIDE.md
 //   - docs/FEATURES.md
 //
-// Allowed: `gsd-intel-updater` (still-valid agent name, no leading slash),
+// Allowed: `fvgsd-intel-updater` (still-valid agent name, no leading slash),
 //          `intel.cjs` / `intel.enabled` / `intel.*` (internal backend, not user command),
 //          CHANGELOG.md (historical record), test files themselves.
 //
 // This test distinguishes `/gsd-intel` (the retired slash command, leading slash)
-// from `gsd-intel-updater` (still-valid agent) by grepping for the literal
+// from `fvgsd-intel-updater` (still-valid agent) by grepping for the literal
 // string `/gsd-intel` and then asserting no match survives after excluding
 // the `-updater` suffix.
 
@@ -52,7 +52,7 @@ function walkMd(dir) {
 
 /**
  * Return all lines in `src` that contain `/gsd-intel` (the retired slash
- * command) but are NOT the agent name `gsd-intel-updater`.
+ * command) but are NOT the agent name `fvgsd-intel-updater`.
  * We match the literal substring `/gsd-intel` (with leading slash) and then
  * exclude any line where the match is immediately followed by `-updater`.
  */
@@ -60,7 +60,7 @@ function staleLinesIn(src) {
   return src.split('\n').filter((line) => {
     if (!line.includes('/gsd-intel')) return false;
     // Remove all occurrences of the valid agent name; if nothing remains, skip.
-    const stripped = line.replace(/\/gsd-intel-updater/g, '');
+    const stripped = line.replace(/\/fvgsd-intel-updater/g, '');
     return stripped.includes('/gsd-intel');
   });
 }

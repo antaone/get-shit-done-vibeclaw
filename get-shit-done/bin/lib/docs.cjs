@@ -13,7 +13,7 @@ const { platformReadSync } = require('./shell-command-projection.cjs');
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const GSD_MARKER = '<!-- generated-by: gsd-doc-writer -->';
+const FVGSD_MARKER = '<!-- generated-by: fvgsd-doc-writer -->';
 
 const SKIP_DIRS = new Set([
   'node_modules', '.git', '.planning', '.claude', '__pycache__',
@@ -36,7 +36,7 @@ function hasGsdMarker(filePath) {
     const fd = fs.openSync(filePath, 'r');
     const bytesRead = fs.readSync(fd, buf, 0, 500, 0);
     fs.closeSync(fd);
-    return buf.slice(0, bytesRead).toString('utf-8').includes(GSD_MARKER);
+    return buf.slice(0, bytesRead).toString('utf-8').includes(FVGSD_MARKER);
   } catch {
     return false;
   }
@@ -243,7 +243,7 @@ function detectMonorepoWorkspaces(cwd) {
  * resolution. Follows the cmdInitMapCodebase pattern.
  *
  * @example
- * node gsd-tools.cjs docs-init --raw
+ * node fvgsd-tools.cjs docs-init --raw
  *
  * @param {string} cwd - Project root directory
  * @param {boolean} raw - Pass raw JSON flag through to output()
@@ -251,7 +251,7 @@ function detectMonorepoWorkspaces(cwd) {
 function cmdDocsInit(cwd, raw) {
   const config = loadConfig(cwd);
   const result = {
-    doc_writer_model: resolveModelInternal(cwd, 'gsd-doc-writer'),
+    doc_writer_model: resolveModelInternal(cwd, 'fvgsd-doc-writer'),
     commit_docs: config.commit_docs,
     existing_docs: scanExistingDocs(cwd),
     project_type: detectProjectType(cwd),

@@ -14,17 +14,17 @@ Parse the command arguments:
 - Optional flag: --force (allow editing in_progress/completed phases)
 
 Examples:
-  `/vgsd-edit-phase 5`       → phase = 5, force = false
-  `/vgsd-edit-phase 5 --force` → phase = 5, force = true
-  `/vgsd-edit-phase 12.1`    → phase = 12.1, force = false
+  `/fvgsd-edit-phase 5`       → phase = 5, force = false
+  `/fvgsd-edit-phase 5 --force` → phase = 5, force = true
+  `/fvgsd-edit-phase 12.1`    → phase = 12.1, force = false
 
 If no argument provided:
 
 ```
 ERROR: Phase number required
-Usage: /vgsd-edit-phase <phase-number> [--force]
-Example: /vgsd-edit-phase 5
-Example: /vgsd-edit-phase 5 --force
+Usage: /fvgsd-edit-phase <phase-number> [--force]
+Example: /fvgsd-edit-phase 5
+Example: /fvgsd-edit-phase 5 --force
 ```
 
 Exit.
@@ -34,14 +34,14 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${target}")
+INIT=$(fvgsd-sdk query init.phase-op "${target}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Check `roadmap_exists` from init JSON. If false:
 ```
 ERROR: No roadmap found (.planning/ROADMAP.md)
-Run /vgsd:new-project to initialize.
+Run /fvgsd:new-project to initialize.
 ```
 Exit.
 </step>
@@ -50,7 +50,7 @@ Exit.
 Read the current phase section from ROADMAP.md:
 
 ```bash
-PHASE_DATA=$(gsd-sdk query roadmap get-phase "${target}")
+PHASE_DATA=$(fvgsd-sdk query roadmap get-phase "${target}")
 ```
 
 Parse the JSON result. If `found` is false:
@@ -58,7 +58,7 @@ Parse the JSON result. If `found` is false:
 ```
 ERROR: Phase {target} not found in ROADMAP.md
 
-Available phases can be seen with /vgsd:progress.
+Available phases can be seen with /fvgsd:progress.
 ```
 
 Exit.
@@ -78,7 +78,7 @@ Also parse the full section text to extract additional fields not in the SDK res
 Determine the phase status from disk. Compare against STATE.md current phase:
 
 ```bash
-ANALYZE=$(gsd-sdk query roadmap analyze)
+ANALYZE=$(fvgsd-sdk query roadmap analyze)
 ```
 
 Find the phase entry in the `phases` array. Extract `disk_status`.
@@ -96,7 +96,7 @@ ERROR: Cannot edit Phase {target} — status is {status}
 Editing an in-progress or completed phase may invalidate executed plans.
 
 To edit anyway, run:
-  /vgsd-edit-phase {target} --force
+  /fvgsd-edit-phase {target} --force
 ```
 
 Exit.
@@ -180,7 +180,7 @@ Wait for user input. Use the clarified intent to rewrite all fields:
 If `depends_on` is being updated (or preserved as non-empty), validate that every referenced phase number exists in ROADMAP.md:
 
 ```bash
-ALL_PHASES=$(gsd-sdk query roadmap analyze)
+ALL_PHASES=$(fvgsd-sdk query roadmap analyze)
 ```
 
 Parse the `phases` array to get all valid phase numbers.
@@ -239,7 +239,7 @@ Read the full ROADMAP.md content, locate the phase section by its header (`## Ph
 After writing ROADMAP.md, update STATE.md Roadmap Evolution:
 
 ```bash
-gsd-sdk query state.add-roadmap-evolution \
+fvgsd-sdk query state.add-roadmap-evolution \
   --phase {target} \
   --action edited \
   --note "edited fields: {changed_field_list}"
@@ -258,9 +258,9 @@ Fields changed: {changed_field_list}
 
 ## What's Next
 
-- `/vgsd:progress` — view updated roadmap
-- `/vgsd:plan-phase {target}` — re-plan this phase (if needed)
-- `/vgsd:discuss-phase {target}` — discuss implementation approach
+- `/fvgsd:progress` — view updated roadmap
+- `/fvgsd:plan-phase {target}` — re-plan this phase (if needed)
+- `/fvgsd:discuss-phase {target}` — discuss implementation approach
 
 ---
 ```

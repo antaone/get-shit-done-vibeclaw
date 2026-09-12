@@ -1,5 +1,5 @@
 ---
-name: vgsd:plan-review-convergence
+name: fvgsd:plan-review-convergence
 description: "Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain."
 argument-hint: "<phase> [--codex] [--gemini] [--claude] [--opencode] [--ollama] [--lm-studio] [--llama-cpp] [--text] [--ws <name>] [--all] [--max-cycles N]"
 allowed-tools:
@@ -14,32 +14,32 @@ requires: [phase, review]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "plan-review-convergence" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "plan-review-convergence" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
 
 <objective>
-Cross-AI plan convergence loop — an outer revision gate around vgsd-review and gsd-planner.
+Cross-AI plan convergence loop — an outer revision gate around fvgsd-review and fvgsd-planner.
 Repeatedly: review plans with external AI CLIs → if HIGH concerns found → replan with --reviews feedback → re-review. Stops when no HIGH concerns remain or max cycles reached.
 
-**Flow:** Agent→Skill("vgsd-plan-phase") → Agent→Skill("vgsd-review") → check HIGHs → Agent→Skill("vgsd-plan-phase --reviews") → Agent→Skill("vgsd-review") → ... → Converge or escalate
+**Flow:** Agent→Skill("fvgsd-plan-phase") → Agent→Skill("fvgsd-review") → check HIGHs → Agent→Skill("fvgsd-plan-phase --reviews") → Agent→Skill("fvgsd-review") → ... → Converge or escalate
 
-Replaces vgsd-plan-phase's internal gsd-plan-checker with external AI reviewers (codex, gemini, etc.). Each step runs inside an isolated Agent that calls the corresponding existing Skill — orchestrator only does loop control.
+Replaces fvgsd-plan-phase's internal fvgsd-plan-checker with external AI reviewers (codex, gemini, etc.). Each step runs inside an isolated Agent that calls the corresponding existing Skill — orchestrator only does loop control.
 
 **Orchestrator role:** Parse arguments, validate phase, spawn Agents for existing Skills, check HIGHs, stall detection, escalation gate.
 </objective>
 
 <execution_context>
-@$HOME/.claude/get-shit-done/workflows/plan-review-convergence.md
-@$HOME/.claude/get-shit-done/references/revision-loop.md
-@$HOME/.claude/get-shit-done/references/gates.md
-@$HOME/.claude/get-shit-done/references/agent-contracts.md
+@$HOME/.claude/fvgsd/workflows/plan-review-convergence.md
+@$HOME/.claude/fvgsd/references/revision-loop.md
+@$HOME/.claude/fvgsd/references/gates.md
+@$HOME/.claude/fvgsd/references/agent-contracts.md
 </execution_context>
 
 <runtime_note>

@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-INIT=$(gsd-sdk query init.todos)
+INIT=$(fvgsd-sdk query init.todos)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -28,7 +28,7 @@ Note existing areas from the todos array for consistency in infer_area step.
 
 <step name="extract_content">
 **With arguments:** Use as the title/focus.
-- `/vgsd-add-todo Add auth token refresh` → title = "Add auth token refresh"
+- `/fvgsd-add-todo Add auth token refresh` → title = "Add auth token refresh"
 
 **Without arguments:** Analyze recent conversation to extract:
 - The specific problem, idea, or task discussed
@@ -86,7 +86,7 @@ Use values from init context: `timestamp` and `date` are already available.
 
 Generate slug for the title:
 ```bash
-slug=$(gsd-sdk query generate-slug "$title" --raw)
+slug=$(fvgsd-sdk query generate-slug "$title" --raw)
 ```
 
 Write to `.planning/todos/pending/${date}-${slug}.md`:
@@ -121,7 +121,7 @@ If `.planning/STATE.md` exists:
 Commit the todo and any updated state:
 
 ```bash
-gsd-sdk query commit "docs: capture todo - [title]" --files .planning/todos/pending/[filename] .planning/STATE.md
+fvgsd-sdk query commit "docs: capture todo - [title]" --files .planning/todos/pending/[filename] .planning/STATE.md
 ```
 
 Tool respects `commit_docs` config and gitignore automatically.
@@ -143,7 +143,7 @@ Would you like to:
 
 1. Continue with current work
 2. Add another todo
-3. View all todos (/vgsd:capture --list)
+3. View all todos (/fvgsd:capture --list)
 ```
 </step>
 

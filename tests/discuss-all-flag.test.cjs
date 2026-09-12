@@ -91,7 +91,7 @@ describe('#2188: discuss-phase --all flag', () => {
     );
     // Find the discuss-phase section and verify --all is documented
     const discussSection = commands.slice(
-      commands.indexOf('gsd-discuss-phase') > -1 ? commands.indexOf('gsd-discuss-phase') : commands.indexOf('discuss-phase')
+      commands.indexOf('fvgsd-discuss-phase') > -1 ? commands.indexOf('fvgsd-discuss-phase') : commands.indexOf('discuss-phase')
     );
     assert.ok(discussSection.includes('--all'), 'COMMANDS.md should document --all for discuss-phase');
   });

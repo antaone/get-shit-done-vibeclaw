@@ -4,7 +4,7 @@
  *
  * Repro:
  *   After `node bin/install.js --global --claude`, the installed
- *   `~/.claude/get-shit-done/bin/lib/model-catalog.cjs` tries:
+ *   `~/.claude/fvgsd/bin/lib/model-catalog.cjs` tries:
  *     require(path.join(__dirname, '..', '..', '..', 'sdk', 'shared', 'model-catalog.json'))
  *   which resolves to `~/.claude/sdk/shared/model-catalog.json`.
  *   The installer copies `get-shit-done/` but never copies `sdk/shared/`,
@@ -23,7 +23,7 @@
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -83,7 +83,7 @@ describe('bug #3288: model-catalog.cjs install-layout resolution', () => {
   let savedExplicitConfigDir;
 
   beforeEach(() => {
-    tmpRoot = makeTmpDir('gsd-3288-');
+    tmpRoot = makeTmpDir('fvgsd-3288-');
     savedHome = process.env.HOME;
     // On Windows, os.homedir() reads USERPROFILE (and HOMEDRIVE+HOMEPATH), NOT
     // HOME. install() resolves the install destination via os.homedir(), so the
@@ -93,8 +93,8 @@ describe('bug #3288: model-catalog.cjs install-layout resolution', () => {
     // Stash and clear explicitConfigDir via env so install() picks up our tmp dir.
     // Must delete (not just save) so any CI-set value doesn't leak into install()
     // and target a different directory than tmpRoot (CR finding, PR #3293).
-    savedExplicitConfigDir = process.env.GSD_EXPLICIT_CONFIG_DIR;
-    delete process.env.GSD_EXPLICIT_CONFIG_DIR;
+    savedExplicitConfigDir = process.env.FVGSD_EXPLICIT_CONFIG_DIR;
+    delete process.env.FVGSD_EXPLICIT_CONFIG_DIR;
   });
 
   afterEach(() => {
@@ -102,9 +102,9 @@ describe('bug #3288: model-catalog.cjs install-layout resolution', () => {
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
     if (savedExplicitConfigDir === undefined) {
-      delete process.env.GSD_EXPLICIT_CONFIG_DIR;
+      delete process.env.FVGSD_EXPLICIT_CONFIG_DIR;
     } else {
-      process.env.GSD_EXPLICIT_CONFIG_DIR = savedExplicitConfigDir;
+      process.env.FVGSD_EXPLICIT_CONFIG_DIR = savedExplicitConfigDir;
     }
     rmTmpDir(tmpRoot);
   });

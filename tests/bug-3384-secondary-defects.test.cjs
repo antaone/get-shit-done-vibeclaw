@@ -12,7 +12,7 @@ function read(relPath) {
 
 describe('bug #3384: adjacent worktree data-loss guards', () => {
   test('worktree cleanup CLI preserves caller cwd instead of resolving project root', () => {
-    const source = read('get-shit-done/bin/gsd-tools.cjs');
+    const source = read('get-shit-done/bin/fvgsd-tools.cjs');
     const skipSet = source.slice(
       source.indexOf('const SKIP_ROOT_RESOLUTION = new Set(['),
       source.indexOf('if (!SKIP_ROOT_RESOLUTION.has(command))'),

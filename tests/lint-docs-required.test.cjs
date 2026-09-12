@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
@@ -279,7 +279,7 @@ describe('docs-required lint: helpers', () => {
 
 describe('docs-required lint: readFragmentsFromDisk', () => {
   function withTempRepo(fn) {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-docs-lint-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-docs-lint-'));
     try {
       fs.mkdirSync(path.join(tmp, '.changeset'), { recursive: true });
       fn(tmp);

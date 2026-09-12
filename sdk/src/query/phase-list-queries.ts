@@ -1,6 +1,6 @@
 /**
  * Handlers: phase.list-plans, phase.list-artifacts — deterministic plan/artifact listing
- * for agents (replaces shell `ls` / `find` patterns). SDK-only; no gsd-tools.cjs mirror.
+ * for agents (replaces shell `ls` / `find` patterns). SDK-only; no fvgsd-tools.cjs mirror.
  */
 
 import { readFile, readdir } from 'node:fs/promises';

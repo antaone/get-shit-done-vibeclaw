@@ -111,8 +111,8 @@ describe('init plan-phase patterns_path', () => {
   });
 });
 
-describe('gsd-pattern-mapper agent prompt efficiency constraints (#2312)', () => {
-  const agentPath = path.join(__dirname, '..', 'agents', 'gsd-pattern-mapper.md');
+describe('fvgsd-pattern-mapper agent prompt efficiency constraints (#2312)', () => {
+  const agentPath = path.join(__dirname, '..', 'agents', 'fvgsd-pattern-mapper.md');
   let agentContent;
 
   beforeEach(() => {

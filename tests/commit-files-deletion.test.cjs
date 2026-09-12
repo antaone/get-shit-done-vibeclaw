@@ -1,5 +1,5 @@
 /**
- * Regression test for #2014: gsd-tools commit --files silently deletes
+ * Regression test for #2014: fvgsd-tools commit --files silently deletes
  * planning files when a filename passed via --files does not exist on disk.
  *
  * Prior to this fix, when --files STATE.md was passed and STATE.md did not

@@ -76,7 +76,7 @@ describe('autonomous --interactive flag (#1413)', () => {
     const skillCall = /Skill\(\s*skill\s*=\s*['"]gsd-discuss-phase['"]/.test(branch);
     assert.ok(
       skillCall,
-      `INTERACTIVE branch must invoke Skill(skill="gsd-discuss-phase"). Got branch:\n${branch}`,
+      `INTERACTIVE branch must invoke Skill(skill="fvgsd-discuss-phase"). Got branch:\n${branch}`,
     );
   });
 

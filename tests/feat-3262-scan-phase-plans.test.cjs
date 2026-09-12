@@ -40,7 +40,7 @@ function touch(dir, ...filenames) {
 }
 
 beforeEach(() => {
-  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-plan-scan-'));
+  tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-plan-scan-'));
 });
 
 afterEach(() => {

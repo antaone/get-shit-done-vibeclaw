@@ -8,7 +8,7 @@ const { createTempProject, cleanup, runGsdTools } = require('./helpers.cjs');
 
 describe('bug #3150: stats.json includes contiguous decimal phases when .10 exists', () => {
   test('stats json preserves 06.7/06.8/06.9 alongside 06.10', () => {
-    const tmpDir = createTempProject('gsd-bug-3150-');
+    const tmpDir = createTempProject('fvgsd-bug-3150-');
     try {
       fs.writeFileSync(
         path.join(tmpDir, '.planning', 'ROADMAP.md'),

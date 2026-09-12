@@ -13,25 +13,25 @@ const { spawnSync } = require('node:child_process');
 const assert = require('node:assert/strict');
 
 const INSTALL_SCRIPT = path.join(__dirname, '..', '..', 'bin', 'install.js');
-const MANIFEST_NAME = 'gsd-file-manifest.json';
+const MANIFEST_NAME = 'fvgsd-file-manifest.json';
 
 const BUILD_SCRIPT = path.join(__dirname, '..', '..', 'scripts', 'build-hooks.js');
 const HOOKS_DIST = path.join(__dirname, '..', '..', 'hooks', 'dist');
 
 const EXPECTED_SH_HOOKS = [
-  'gsd-session-state.sh',
-  'gsd-validate-commit.sh',
-  'gsd-phase-boundary.sh',
+  'fvgsd/session-state.sh',
+  'fvgsd/validate-commit.sh',
+  'fvgsd/phase-boundary.sh',
 ];
 
 const EXPECTED_ALL_HOOKS = [
-  'gsd-check-update.js',
-  'gsd-context-monitor.js',
-  'gsd-prompt-guard.js',
-  'gsd-read-guard.js',
-  'gsd-read-injection-scanner.js',
-  'gsd-statusline.js',
-  'gsd-workflow-guard.js',
+  'fvgsd/check-update.js',
+  'fvgsd/context-monitor.js',
+  'fvgsd/prompt-guard.js',
+  'fvgsd/read-guard.js',
+  'fvgsd/read-injection-scanner.js',
+  'fvgsd/statusline.js',
+  'fvgsd/workflow-guard.js',
   ...EXPECTED_SH_HOOKS,
 ];
 
@@ -97,15 +97,15 @@ function simulateHookCopy(hooksSrc, hooksDest) {
 }
 
 /** Build a clean env for spawned installer processes.
- *  Must strip GSD_TEST_MODE so the child runs the real install, not the no-op guard. */
+ *  Must strip FVGSD_TEST_MODE so the child runs the real install, not the no-op guard. */
 function installerEnv(overrides = {}) {
   const env = { ...process.env, ...overrides };
-  delete env.GSD_TEST_MODE;
+  delete env.FVGSD_TEST_MODE;
   return env;
 }
 
 function runMinimalInstall({ runtime, scope, extraArgs = [] }) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), `gsd-${runtime}-${scope}-`));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), `fvgsd-${runtime}-${scope}-`));
   try {
     const LOCAL_DIR_NAME = {
       claude: '.claude', opencode: '.opencode', gemini: '.gemini', kilo: '.kilo',
@@ -147,12 +147,12 @@ function manifestSkillSet(manifest) {
   const out = new Set();
   for (const key of Object.keys(manifest.files)) {
     if (key.startsWith('skills/')) {
-      const seg = key.split('/')[1].replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, '');
+      const seg = key.split('/')[1].replace(/^(?:fvgsd|gsd)-/, '').replace(/\.md$/, '');
       out.add(seg);
     } else if (key.startsWith('command/')) {
       const file = key.split('/')[1];
-      out.add(file.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
-    } else if (key.startsWith('commands/gsd/') || key.startsWith('commands/vgsd/')) {
+      out.add(file.replace(/^(?:fvgsd|gsd)-/, '').replace(/\.md$/, ''));
+    } else if (key.startsWith('commands/gsd/') || key.startsWith('commands/fvgsd/')) {
       const file = key.split('/')[2];
       out.add(file.replace(/\.(md|toml)$/, ''));
     }
@@ -170,22 +170,22 @@ function collectSkillBasenamesOnDisk(configDir) {
   const skillsDir = path.join(configDir, 'skills');
   if (fs.existsSync(skillsDir)) {
     for (const entry of fs.readdirSync(skillsDir, { withFileTypes: true })) {
-      if (entry.isDirectory() && /^(?:vgsd|gsd)-/.test(entry.name)) {
-        out.add(entry.name.replace(/^(?:vgsd|gsd)-/, ''));
-      } else if (entry.isFile() && /^(?:vgsd|gsd)-/.test(entry.name) && entry.name.endsWith('.md')) {
-        out.add(entry.name.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
+      if (entry.isDirectory() && /^(?:fvgsd|gsd)-/.test(entry.name)) {
+        out.add(entry.name.replace(/^(?:fvgsd|gsd)-/, ''));
+      } else if (entry.isFile() && /^(?:fvgsd|gsd)-/.test(entry.name) && entry.name.endsWith('.md')) {
+        out.add(entry.name.replace(/^(?:fvgsd|gsd)-/, '').replace(/\.md$/, ''));
       }
     }
   }
   const commandDir = path.join(configDir, 'command');
   if (fs.existsSync(commandDir)) {
     for (const file of fs.readdirSync(commandDir)) {
-      if (/^(?:vgsd|gsd)-/.test(file) && file.endsWith('.md')) {
-        out.add(file.replace(/^(?:vgsd|gsd)-/, '').replace(/\.md$/, ''));
+      if (/^(?:fvgsd|gsd)-/.test(file) && file.endsWith('.md')) {
+        out.add(file.replace(/^(?:fvgsd|gsd)-/, '').replace(/\.md$/, ''));
       }
     }
   }
-  for (const namespace of ['vgsd', 'gsd']) {
+  for (const namespace of ['fvgsd', 'gsd']) {
     const commandsGsdDir = path.join(configDir, 'commands', namespace);
     if (fs.existsSync(commandsGsdDir)) {
       for (const file of fs.readdirSync(commandsGsdDir)) {

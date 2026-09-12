@@ -114,16 +114,16 @@ describe('workflow.human_verify_mode config round-trip', () => {
 
 // ─── Planner agent contract ──────────────────────────────────────────────────
 
-describe('agents/gsd-planner.md acknowledges workflow.human_verify_mode', () => {
+describe('agents/fvgsd-planner.md acknowledges workflow.human_verify_mode', () => {
   let plannerSrc;
 
   test('loads', () => {
-    plannerSrc = fs.readFileSync(path.join(REPO_ROOT, 'agents', 'gsd-planner.md'), 'utf-8');
+    plannerSrc = fs.readFileSync(path.join(REPO_ROOT, 'agents', 'fvgsd-planner.md'), 'utf-8');
     assert.ok(plannerSrc.length > 0);
   });
 
   test('mentions workflow.human_verify_mode by canonical name', () => {
-    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'gsd-planner.md'), 'utf-8');
+    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'fvgsd-planner.md'), 'utf-8');
     assert.ok(
       plannerSrc.includes('workflow.human_verify_mode'),
       'planner must reference the flag by canonical key so the runtime can resolve config-driven behavior',
@@ -131,7 +131,7 @@ describe('agents/gsd-planner.md acknowledges workflow.human_verify_mode', () => 
   });
 
   test('explains the end-of-phase behavior (do NOT emit checkpoint:human-verify)', () => {
-    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'gsd-planner.md'), 'utf-8');
+    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'fvgsd-planner.md'), 'utf-8');
     // The planner must instruct: when end-of-phase, do NOT emit checkpoint:human-verify
     assert.ok(
       /end-of-phase[\s\S]{0,400}checkpoint:human-verify/i.test(plannerSrc) ||
@@ -141,7 +141,7 @@ describe('agents/gsd-planner.md acknowledges workflow.human_verify_mode', () => 
   });
 
   test('routes deferred verification through the <verify><human-check> block on auto tasks', () => {
-    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'gsd-planner.md'), 'utf-8');
+    plannerSrc = plannerSrc || fs.readFileSync(path.join(REPO_ROOT, 'agents', 'fvgsd-planner.md'), 'utf-8');
     assert.ok(
       /`?<verify>`?\s*[\s\S]{0,200}`?<human-check>`?/i.test(plannerSrc) ||
       plannerSrc.includes('<verify><human-check>') ||
@@ -153,9 +153,9 @@ describe('agents/gsd-planner.md acknowledges workflow.human_verify_mode', () => 
 
 // ─── Verifier agent contract ─────────────────────────────────────────────────
 
-describe('agents/gsd-verifier.md harvests deferred human verification items', () => {
+describe('agents/fvgsd-verifier.md harvests deferred human verification items', () => {
   test('Step 8 mentions harvesting <verify><human-check> blocks from PLAN.md', () => {
-    const verifierSrc = fs.readFileSync(path.join(REPO_ROOT, 'agents', 'gsd-verifier.md'), 'utf-8');
+    const verifierSrc = fs.readFileSync(path.join(REPO_ROOT, 'agents', 'fvgsd-verifier.md'), 'utf-8');
     assert.ok(
       verifierSrc.includes('<verify><human-check>') || /<verify>[\s\S]{0,200}<human-check>/i.test(verifierSrc),
       'verifier must instruct itself to harvest <verify><human-check> blocks from PLAN.md when human_verify_mode = end-of-phase',

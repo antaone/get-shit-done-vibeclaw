@@ -16,7 +16,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 
-const { composeStatusline } = require('../hooks/gsd-statusline.js');
+const { composeStatusline } = require('../hooks/fvgsd/statusline.js');
 const { VALID_CONFIG_KEYS } = require('../get-shit-done/bin/lib/config-schema.cjs');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 

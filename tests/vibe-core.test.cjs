@@ -43,11 +43,11 @@ describe('VibeClaw orchestration core', () => {
   afterEach(() => cleanup(project));
 
   test('initializes a separate state store with valid routes and workflow contracts', () => {
-    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'config.yaml')));
-    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'routes', 'cheap.yaml')));
-    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'feature-development.yaml')));
-    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'project-bootstrap.yaml')));
-    assert.ok(fs.existsSync(path.join(project, '.planning-vibe', 'workflows', 'milestone-bootstrap.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-fvgsd-vibe', 'config.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-fvgsd-vibe', 'routes', 'cheap.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-fvgsd-vibe', 'workflows', 'feature-development.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-fvgsd-vibe', 'workflows', 'project-bootstrap.yaml')));
+    assert.ok(fs.existsSync(path.join(project, '.planning-fvgsd-vibe', 'workflows', 'milestone-bootstrap.yaml')));
     assert.equal(vibe.loadConfig().default_route, 'cheap');
     assert.deepEqual(vibe.listRoutes().map((route) => route.name), ['cheap', 'quality']);
     assert.deepEqual(
@@ -55,11 +55,11 @@ describe('VibeClaw orchestration core', () => {
       ['feature-development', 'milestone-bootstrap', 'project-bootstrap'],
     );
     assert.equal(vibe.loadWorkflow('feature-development').stages.execute.mutates_source, true);
-    assert.equal(vibe.loadWorkflow('project-bootstrap').stages.project.gsd.command, 'vgsd:new-project');
-    assert.equal(vibe.loadWorkflow('milestone-bootstrap').stages.milestone.gsd.command, 'vgsd:new-milestone');
+    assert.equal(vibe.loadWorkflow('project-bootstrap').stages.project.gsd.command, 'fvgsd:new-project');
+    assert.equal(vibe.loadWorkflow('milestone-bootstrap').stages.milestone.gsd.command, 'fvgsd:new-milestone');
     const excludePath = git(project, 'rev-parse', '--git-path', 'info/exclude');
     const absoluteExclude = path.isAbsolute(excludePath) ? excludePath : path.resolve(project, excludePath);
-    assert.match(fs.readFileSync(absoluteExclude, 'utf8'), /^\.vibe\/$/m);
+    assert.match(fs.readFileSync(absoluteExclude, 'utf8'), /^\.fvgsd-vibe\/$/m);
   });
 
   test('YAML subset round-trips nested route data without a runtime dependency', () => {
@@ -92,7 +92,7 @@ describe('VibeClaw orchestration core', () => {
       () => vibe.prepareStage('research', { runId: run.id, tool: 'unknown-tool' }),
       expectCode('TOOL_UNKNOWN'),
     );
-    fs.writeFileSync(path.join(project, '.planning-vibe', 'routes', 'invalid.yaml'), [
+    fs.writeFileSync(path.join(project, '.planning-fvgsd-vibe', 'routes', 'invalid.yaml'), [
       'version: 1',
       'name: invalid',
       'stages:',
@@ -154,20 +154,20 @@ describe('VibeClaw orchestration core', () => {
     assert.equal(context.branch, prepared.candidate.git.branch);
     assert.equal(context.worktree, prepared.candidate.git.worktree);
     assert.equal(context.responsibility, 'candidate');
-    assert.equal(context.gsd.invocation, '/vgsd:plan-phase');
+    assert.equal(context.gsd.invocation, '/fvgsd:plan-phase');
     assert.match(fs.readFileSync(context.context_file, 'utf8'), /VibeClaw Stage Context/);
     assert.match(fs.readFileSync(context.context_file, 'utf8'), /## Assignment/);
   });
 
-  test('renders the assigned GSD command in each tool-native vgsd form', () => {
+  test('renders the assigned GSD command in each tool-native fvgsd form', () => {
     vibe.startRun('project-bootstrap', { id: 'project-context' });
     const gemini = vibe.context(vibe.prepareStage('project', { tool: 'gemini' }).candidate.id);
     const codex = vibe.context(vibe.prepareStage('project', { tool: 'codex' }).candidate.id);
     const claude = vibe.context(vibe.prepareStage('project', { tool: 'claude' }).candidate.id);
 
-    assert.equal(gemini.gsd.invocation, '/vgsd:new-project');
-    assert.equal(codex.gsd.invocation, '$vgsd-new-project');
-    assert.equal(claude.gsd.invocation, '/vgsd-new-project');
+    assert.equal(gemini.gsd.invocation, '/fvgsd:new-project');
+    assert.equal(codex.gsd.invocation, '$fvgsd-new-project');
+    assert.equal(claude.gsd.invocation, '/fvgsd-new-project');
   });
 
   test('completion captures provenance and metrics but remains unpromoted', () => {
@@ -247,7 +247,7 @@ describe('VibeClaw orchestration core', () => {
     assert.equal(vibe.loadCandidate(second.id).promotion.status, 'promoted');
     assert.equal(git(project, 'rev-parse', `${replacement.integration_commit}^{tree}`), git(project, 'rev-parse', `${secondCommit}^{tree}`));
 
-    const promotionDir = path.join(project, '.planning-vibe', 'promotions', 'pipeline-001', 'execute');
+    const promotionDir = path.join(project, '.planning-fvgsd-vibe', 'promotions', 'pipeline-001', 'execute');
     assert.deepEqual(fs.readdirSync(promotionDir).filter((name) => /^\d{4}\.json$/.test(name)).sort(), ['0001.json', '0002.json']);
     const verify = vibe.prepareStage('verify').candidate;
     assert.equal(verify.input.candidate_id, second.id);
@@ -284,7 +284,7 @@ describe('VibeClaw orchestration core', () => {
 
   test('recovers a stale lock without removing a live fresh lock', () => {
     const store = new VibeStore(project, { lockTimeoutMs: 100, staleLockMs: 25 });
-    const lockPath = path.join(project, '.planning-vibe', 'locks', 'test.lock');
+    const lockPath = path.join(project, '.planning-fvgsd-vibe', 'locks', 'test.lock');
     fs.writeFileSync(lockPath, `${JSON.stringify({ pid: 99999999, host: os.hostname(), acquired_at: new Date(0).toISOString() })}\n`, 'utf8');
     const old = new Date(Date.now() - 1000);
     fs.utimesSync(lockPath, old, old);

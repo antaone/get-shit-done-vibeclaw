@@ -2,14 +2,14 @@
  * Regression test for bug #2801
  *
  * `/gsd-ingest-docs` was broken because:
- * 1. `workflows/ingest-docs.md` called `gsd-sdk query init.ingest-docs` but the
- *    installed binary is `gsd-tools` (not `gsd-sdk`).
- * 2. `gsd-tools init` had no `ingest-docs` case in its dispatch switch.
+ * 1. `workflows/ingest-docs.md` called `fvgsd-sdk query init.ingest-docs` but the
+ *    installed binary is `fvgsd-tools` (not `fvgsd-sdk`).
+ * 2. `fvgsd-tools init` had no `ingest-docs` case in its dispatch switch.
  *
  * The fix:
- * - Added `case 'ingest-docs'` to the `init` switch in `gsd-tools.cjs`.
+ * - Added `case 'ingest-docs'` to the `init` switch in `fvgsd-tools.cjs`.
  * - Exported `cmdInitIngestDocs` from `init.cjs`.
- * - Updated `workflows/ingest-docs.md` to call `gsd-tools init ingest-docs`.
+ * - Updated `workflows/ingest-docs.md` to call `fvgsd-tools init ingest-docs`.
  *
  * This test prevents regression of the dispatch omission.
  */
@@ -36,7 +36,7 @@ function spawnGsdTools(args, projectDir) {
       {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, GSD_SESSION_KEY: '' },
+        env: { ...process.env, FVGSD_SESSION_KEY: '' },
       }
     );
   } catch (err) {
@@ -46,11 +46,11 @@ function spawnGsdTools(args, projectDir) {
   return { exitCode, stdout };
 }
 
-describe('bug-2801: gsd-tools init ingest-docs handler exists', () => {
+describe('bug-2801: fvgsd-tools init ingest-docs handler exists', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempProject('gsd-test-2801-');
+    tmpDir = createTempProject('fvgsd-test-2801-');
   });
 
   afterEach(() => {
@@ -100,8 +100,8 @@ describe('bug-2801: gsd-tools init ingest-docs handler exists', () => {
   });
 });
 
-describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => {
-  test('no bash code block in ingest-docs.md calls gsd-sdk', () => {
+describe('bug-2801: ingest-docs.md workflow calls fvgsd-tools not fvgsd-sdk', () => {
+  test('no bash code block in ingest-docs.md calls fvgsd-sdk', () => {
     const content = fs.readFileSync(WORKFLOW_FILE, 'utf-8');
     // Extract bash fenced code blocks structurally.
     const bashBlocks = [];
@@ -113,7 +113,7 @@ describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => 
     assert.ok(bashBlocks.length > 0, 'expected bash code blocks in workflow');
 
     // Check every line in every bash block — not just lines that start with the token,
-    // since gsd-sdk can appear in subshell expansions like $(gsd-sdk query ...).
+    // since fvgsd-sdk can appear in subshell expansions like $(fvgsd-sdk query ...).
     const sdkCalls = bashBlocks
       .join('\n')
       .split('\n')
@@ -122,11 +122,11 @@ describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => 
     assert.deepStrictEqual(
       sdkCalls,
       [],
-      `workflow bash blocks still reference gsd-sdk (should use gsd-tools): ${sdkCalls.join(', ')}`
+      `workflow bash blocks still reference fvgsd-sdk (should use fvgsd-tools): ${sdkCalls.join(', ')}`
     );
   });
 
-  test('ingest-docs.md init step uses canonical node-path gsd-tools.cjs invocation', () => {
+  test('ingest-docs.md init step uses canonical node-path fvgsd-tools.cjs invocation', () => {
     const content = fs.readFileSync(WORKFLOW_FILE, 'utf-8');
     // Parse fenced bash blocks structurally — do not match raw markdown text.
     const codeBlockRe = /```bash\r?\n([\s\S]*?)```/g;
@@ -134,11 +134,11 @@ describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => 
       .flatMap((m) => m[1].split('\n'))
       .filter((l) => !/^\s*#/.test(l));
     // Per #2851 the only valid form is the absolute-path node invocation; the
-    // legacy bare `gsd-tools` is the bug being fixed and must not be accepted.
+    // legacy bare `fvgsd-tools` is the bug being fixed and must not be accepted.
     const initLine = bashLines.find((l) =>
-      /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/gsd-tools\.cjs["']?\s+init\s+ingest-docs\b/.test(l)
+      /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/fvgsd-tools\.cjs["']?\s+init\s+ingest-docs\b/.test(l)
     );
-    assert.ok(initLine, 'workflow must invoke init ingest-docs via canonical node-path gsd-tools.cjs');
+    assert.ok(initLine, 'workflow must invoke init ingest-docs via canonical node-path fvgsd-tools.cjs');
   });
 
   test('cmdInitIngestDocs is exported from init.cjs', () => {

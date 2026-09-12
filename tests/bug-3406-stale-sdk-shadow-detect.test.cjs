@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * Regression tests for #3406 — stale globally-installed `@gsd-build/sdk@0.1.0`
- * shadows the `gsd-sdk` shim that `get-shit-done-cc` installs. The standalone
+ * Regression tests for #3406 — stale globally-installed `@fvgsd/sdk@0.1.0`
+ * shadows the `fvgsd-sdk` shim that `fvgsd` installs. The standalone
  * 0.1.0 binary only knows `run | auto | init` (no `query` subcommand), so
- * every workflow that calls `gsd-sdk query <command>` fails until the user
- * runs `npm uninstall -g @gsd-build/sdk`.
+ * every workflow that calls `fvgsd-sdk query <command>` fails until the user
+ * runs `npm uninstall -g @fvgsd/sdk`.
  *
  * Maintainer decision (per triage): option 2 — detect-and-warn during
  * install. This test pins the pure detection helper so the install-time
@@ -13,7 +13,7 @@
  *
  * Test surface is the exported helper `detectStaleStandaloneSdk(runNpmLs)`.
  * `runNpmLs` is an injected executor: in production it spawns
- * `npm ls -g @gsd-build/sdk --json --depth=0`; in tests we hand it a stub
+ * `npm ls -g @fvgsd/sdk --json --depth=0`; in tests we hand it a stub
  * that returns canned stdout / throws, so the test never touches the host
  * npm state.
  */
@@ -21,12 +21,12 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 const installer = require('../bin/install.js');
 const { detectStaleStandaloneSdk } = installer;
 
 describe('#3406: detectStaleStandaloneSdk', () => {
-  test('is exported from bin/install.js under GSD_TEST_MODE', () => {
+  test('is exported from bin/install.js under FVGSD_TEST_MODE', () => {
     assert.strictEqual(
       typeof detectStaleStandaloneSdk,
       'function',
@@ -35,7 +35,7 @@ describe('#3406: detectStaleStandaloneSdk', () => {
   });
 
   test('returns { stale: false } when npm ls reports the package is not installed', () => {
-    // `npm ls -g @gsd-build/sdk --json --depth=0` exit code 1 with this
+    // `npm ls -g @fvgsd/sdk --json --depth=0` exit code 1 with this
     // JSON shape is the standard "not present" signal.
     const stub = () => JSON.stringify({
       name: 'lib',
@@ -45,13 +45,13 @@ describe('#3406: detectStaleStandaloneSdk', () => {
     assert.deepStrictEqual(result, { stale: false });
   });
 
-  test('returns { stale: true, version, path? } when @gsd-build/sdk is present', () => {
+  test('returns { stale: true, version, path? } when @fvgsd/sdk is present', () => {
     const stub = () => JSON.stringify({
       name: 'lib',
       dependencies: {
-        '@gsd-build/sdk': {
+        '@fvgsd/sdk': {
           version: '0.1.0',
-          resolved: 'file:/Users/REDACTED/.nvm/versions/node/v24.15.0/lib/node_modules/@gsd-build/sdk',
+          resolved: 'file:/Users/REDACTED/.nvm/versions/node/v24.15.0/lib/node_modules/@fvgsd/sdk',
         },
       },
     });
@@ -90,8 +90,8 @@ describe('#3406: detectStaleStandaloneSdk', () => {
     // version is an intentional install (or a future republish) and must
     // NOT be flagged. Without this gate, every maintainer with a local-link
     // or any future publish would trigger a misleading warning on install.
-    const stubNewer = () => JSON.stringify({ dependencies: { '@gsd-build/sdk': { version: '1.50.0-canary.0' } } });
-    const stubFuture = () => JSON.stringify({ dependencies: { '@gsd-build/sdk': { version: '2.0.0' } } });
+    const stubNewer = () => JSON.stringify({ dependencies: { '@fvgsd/sdk': { version: '1.50.0-canary.0' } } });
+    const stubFuture = () => JSON.stringify({ dependencies: { '@fvgsd/sdk': { version: '2.0.0' } } });
     assert.deepStrictEqual(detectStaleStandaloneSdk(stubNewer), { stale: false });
     assert.deepStrictEqual(detectStaleStandaloneSdk(stubFuture), { stale: false });
   });
@@ -100,7 +100,7 @@ describe('#3406: detectStaleStandaloneSdk', () => {
 describe('#3406: install-time wiring stays silent when no stale package is found', () => {
   // We can't easily stub npm inside a spawned install subprocess without
   // shelling around it, so the install-side coverage here verifies the
-  // negative case: when @gsd-build/sdk is NOT installed globally (the npm
+  // negative case: when @fvgsd/sdk is NOT installed globally (the npm
   // dependency tree on CI is irrelevant — we use a doctored PATH that points
   // npm at an empty prefix), the install run prints NO #3406 warning. The
   // positive case is exhaustively covered by detectStaleStandaloneSdk above.
@@ -111,8 +111,8 @@ describe('#3406: install-time wiring stays silent when no stale package is found
 
   test('install does not emit the stale-SDK warning on a clean npm prefix', () => {
     const installScript = path.resolve(__dirname, '..', 'bin', 'install.js');
-    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3406-home-'));
-    const tmpPrefix = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3406-npm-'));
+    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3406-home-'));
+    const tmpPrefix = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3406-npm-'));
     try {
       const stdout = execFileSync(
         process.execPath,
@@ -125,14 +125,14 @@ describe('#3406: install-time wiring stays silent when no stale package is found
             CLAUDE_CONFIG_DIR: tmpHome,
             npm_config_prefix: tmpPrefix,
             // Detect-and-warn must execute, just find nothing — so do NOT set
-            // GSD_SKIP_STALE_SDK_CHECK here.
+            // FVGSD_SKIP_STALE_SDK_CHECK here.
           },
           timeout: 60_000,
         }
       );
       assert.ok(
-        !stdout.includes('@gsd-build/sdk'),
-        'install output must not mention @gsd-build/sdk when the package is absent'
+        !stdout.includes('@fvgsd/sdk'),
+        'install output must not mention @fvgsd/sdk when the package is absent'
       );
       assert.ok(
         !stdout.includes('#3406'),
@@ -148,7 +148,7 @@ describe('#3406: install-time wiring stays silent when no stale package is found
 describe('#3406: formatStaleStandaloneSdkWarning', () => {
   const { formatStaleStandaloneSdkWarning } = installer;
 
-  test('is exported from bin/install.js under GSD_TEST_MODE', () => {
+  test('is exported from bin/install.js under FVGSD_TEST_MODE', () => {
     assert.strictEqual(
       typeof formatStaleStandaloneSdkWarning,
       'function',
@@ -158,10 +158,10 @@ describe('#3406: formatStaleStandaloneSdkWarning', () => {
 
   test('message names the stale package, the version, and the uninstall command', () => {
     const out = formatStaleStandaloneSdkWarning({ stale: true, version: '0.1.0' });
-    assert.ok(out.includes('@gsd-build/sdk'), 'must name the shadowing package');
+    assert.ok(out.includes('@fvgsd/sdk'), 'must name the shadowing package');
     assert.ok(out.includes('0.1.0'), 'must show the stale version');
     assert.ok(
-      out.includes('npm uninstall -g @gsd-build/sdk'),
+      out.includes('npm uninstall -g @fvgsd/sdk'),
       'must include the remediation command verbatim'
     );
     assert.ok(out.includes('#3406'), 'must reference the issue for traceability');

@@ -6,9 +6,9 @@
 
 ## Command Syntax
 
-- **Claude Code / Copilot / OpenCode / Kilo:** `/vgsd-command-name [args]` (hyphen form)
-- **Gemini CLI:** `/vgsd:command-name [args]` (colon form — Gemini namespaces commands under `gsd:`)
-- **Codex:** `$vgsd-command-name [args]`
+- **Claude Code / Copilot / OpenCode / Kilo:** `/fvgsd-command-name [args]` (hyphen form)
+- **Gemini CLI:** `/fvgsd:command-name [args]` (colon form — Gemini namespaces commands under `gsd:`)
+- **Codex:** `$fvgsd-command-name [args]`
 
 The hyphen and colon forms are *runtime-specific spellings of the same command*. Whichever runtime you're on, the installer writes the correct form into your runtime's command directory.
 
@@ -20,20 +20,20 @@ Six namespace routers ship as the first-stage entry points in v1.40. They keep t
 
 | Command | Routes to |
 |---------|-----------|
-| `/vgsd-workflow` | Phase pipeline — discuss / plan / execute / verify / phase / progress |
-| `/vgsd-project` | Project lifecycle — milestones, audits, summary |
-| `/vgsd-quality` | Quality gates — code review, debug, audit, security, eval, ui |
-| `/vgsd-context` | Codebase intelligence — map, graphify, docs, learnings |
-| `/vgsd-manage` | Management — config, workspace, workstreams, thread, update, ship, inbox |
-| `/vgsd-ideate` | Exploration & capture — explore, sketch, spike, spec, capture |
+| `/fvgsd-workflow` | Phase pipeline — discuss / plan / execute / verify / phase / progress |
+| `/fvgsd-project` | Project lifecycle — milestones, audits, summary |
+| `/fvgsd-quality` | Quality gates — code review, debug, audit, security, eval, ui |
+| `/fvgsd-context` | Codebase intelligence — map, graphify, docs, learnings |
+| `/fvgsd-manage` | Management — config, workspace, workstreams, thread, update, ship, inbox |
+| `/fvgsd-ideate` | Exploration & capture — explore, sketch, spike, spec, capture |
 
-The namespace skills are **additive** — every existing concrete command (e.g. `/vgsd-plan-phase`, `/vgsd-code-review --fix`) is still invocable directly.
+The namespace skills are **additive** — every existing concrete command (e.g. `/fvgsd-plan-phase`, `/fvgsd-code-review --fix`) is still invocable directly.
 
 ---
 
 ## Core Workflow Commands
 
-### `/vgsd-new-project`
+### `/fvgsd-new-project`
 
 Initialize a new project with deep context gathering.
 
@@ -45,13 +45,13 @@ Initialize a new project with deep context gathering.
 **Produces:** `PROJECT.md`, `REQUIREMENTS.md`, `ROADMAP.md`, `STATE.md`, `config.json`, `research/`, `CLAUDE.md`
 
 ```bash
-/vgsd-new-project                    # Interactive mode
-/vgsd-new-project --auto @prd.md     # Auto-extract from PRD
+/fvgsd-new-project                    # Interactive mode
+/fvgsd-new-project --auto @prd.md     # Auto-extract from PRD
 ```
 
 ---
 
-### `/vgsd-workspace`
+### `/fvgsd-workspace`
 
 Manage GSD workspaces — create, list, or remove isolated workspace environments with repo copies and independent `.planning/` directories.
 
@@ -62,7 +62,7 @@ Manage GSD workspaces — create, list, or remove isolated workspace environment
 | `--remove <name>` | Remove a workspace and clean up git worktrees |
 | `--name <name>` | Workspace name (used with `--new`) |
 | `--repos repo1,repo2` | Comma-separated repo paths or names (used with `--new`) |
-| `--path /target` | Target directory (default: `~/vgsd-workspaces/<name>`) |
+| `--path /target` | Target directory (default: `~/fvgsd-workspaces/<name>`) |
 | `--strategy worktree\|clone` | Copy strategy (default: `worktree`) |
 | `--branch <name>` | Branch to checkout (default: `workspace/<name>`) |
 | `--auto` | Skip interactive questions |
@@ -74,15 +74,15 @@ Manage GSD workspaces — create, list, or remove isolated workspace environment
 **Produces:** `WORKSPACE.md`, `.planning/`, repo copies (worktrees or clones)
 
 ```bash
-/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
-/vgsd-workspace --new --name feature-b --repos . --strategy worktree  # Same-repo isolation
-/vgsd-workspace --list
-/vgsd-workspace --remove feature-b
+/fvgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
+/fvgsd-workspace --new --name feature-b --repos . --strategy worktree  # Same-repo isolation
+/fvgsd-workspace --list
+/fvgsd-workspace --remove feature-b
 ```
 
 ---
 
-### `/vgsd-discuss-phase`
+### `/fvgsd-discuss-phase`
 
 Gather phase context through adaptive questioning before planning.
 
@@ -103,18 +103,18 @@ Gather phase context through adaptive questioning before planning.
 **Produces:** `{phase}-CONTEXT.md`, `{phase}-DISCUSSION-LOG.md` (audit trail)
 
 ```bash
-/vgsd-discuss-phase 1                # Interactive discussion for phase 1
-/vgsd-discuss-phase 1 --all          # Discuss all gray areas without selection step
-/vgsd-discuss-phase 3 --auto         # Auto-select defaults for phase 3
-/vgsd-discuss-phase --batch          # Batch mode for current phase
-/vgsd-discuss-phase 2 --analyze      # Discussion with trade-off analysis
-/vgsd-discuss-phase 1 --power        # Bulk answers from file
-/vgsd-discuss-phase 3 --assumptions  # Surface Claude's assumptions before planning
+/fvgsd-discuss-phase 1                # Interactive discussion for phase 1
+/fvgsd-discuss-phase 1 --all          # Discuss all gray areas without selection step
+/fvgsd-discuss-phase 3 --auto         # Auto-select defaults for phase 3
+/fvgsd-discuss-phase --batch          # Batch mode for current phase
+/fvgsd-discuss-phase 2 --analyze      # Discussion with trade-off analysis
+/fvgsd-discuss-phase 1 --power        # Bulk answers from file
+/fvgsd-discuss-phase 3 --assumptions  # Surface Claude's assumptions before planning
 ```
 
 ---
 
-### `/vgsd-ui-phase`
+### `/fvgsd-ui-phase`
 
 Generate UI design contract for frontend phases.
 
@@ -126,12 +126,12 @@ Generate UI design contract for frontend phases.
 **Produces:** `{phase}-UI-SPEC.md`
 
 ```bash
-/vgsd-ui-phase 2                     # Design contract for phase 2
+/fvgsd-ui-phase 2                     # Design contract for phase 2
 ```
 
 ---
 
-### `/vgsd-plan-phase`
+### `/fvgsd-plan-phase`
 
 Research, plan, and verify a phase.
 
@@ -176,21 +176,21 @@ Packages sourced from WebSearch are tagged `[ASSUMED]` (not `[VERIFIED]`) and tr
 See [Package Legitimacy Gate in the User Guide](USER-GUIDE.md#package-legitimacy-gate-v1421) for the full checkpoint format, verdict table, and troubleshooting.
 
 ```bash
-/vgsd-plan-phase 1                              # Research + plan + verify phase 1
-/vgsd-plan-phase 3 --skip-research              # Plan without research (familiar domain)
-/vgsd-plan-phase --auto                         # Non-interactive planning
-/vgsd-plan-phase 2 --validate                   # Validate state before planning
-/vgsd-plan-phase 1 --bounce                     # Plan + external bounce validation
-/vgsd-plan-phase 2 --ingest docs/adr/0010.md   # ADR express path for context synthesis
-/vgsd-plan-phase 2 --ingest 'docs/adr/00*.md' --ingest-format auto
-/vgsd-plan-phase --research-phase 4             # Research only on phase 4 (prompts if RESEARCH.md exists)
-/vgsd-plan-phase --research-phase 4 --view      # Print existing RESEARCH.md, no spawn
-/vgsd-plan-phase --research-phase 4 --research  # Force-refresh research, no prompt
+/fvgsd-plan-phase 1                              # Research + plan + verify phase 1
+/fvgsd-plan-phase 3 --skip-research              # Plan without research (familiar domain)
+/fvgsd-plan-phase --auto                         # Non-interactive planning
+/fvgsd-plan-phase 2 --validate                   # Validate state before planning
+/fvgsd-plan-phase 1 --bounce                     # Plan + external bounce validation
+/fvgsd-plan-phase 2 --ingest docs/adr/0010.md   # ADR express path for context synthesis
+/fvgsd-plan-phase 2 --ingest 'docs/adr/00*.md' --ingest-format auto
+/fvgsd-plan-phase --research-phase 4             # Research only on phase 4 (prompts if RESEARCH.md exists)
+/fvgsd-plan-phase --research-phase 4 --view      # Print existing RESEARCH.md, no spawn
+/fvgsd-plan-phase --research-phase 4 --research  # Force-refresh research, no prompt
 ```
 
 ---
 
-### `/vgsd-plan-review-convergence`
+### `/fvgsd-plan-review-convergence`
 
 Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain. Runs `plan-phase → review → replan → re-review` cycles (max 3 cycles by default). Spawns isolated agents for planning and review; orchestrator handles loop control, HIGH-concern counting, stall detection, and escalation.
 
@@ -204,30 +204,30 @@ Cross-AI plan convergence loop — replan with review feedback until no HIGH con
 **Exit behavior:** Loop exits when HIGH count hits zero. Stall detection warns when HIGH count is not decreasing across cycles. Escalation gate asks the user to proceed or review manually when `--max-cycles` is hit with HIGH concerns still open.
 
 ```bash
-/vgsd-plan-review-convergence 3                    # Default reviewers, 3 cycles
-/vgsd-plan-review-convergence 3 --codex            # Codex-only review
-/vgsd-plan-review-convergence 3 --all --max-cycles 5
+/fvgsd-plan-review-convergence 3                    # Default reviewers, 3 cycles
+/fvgsd-plan-review-convergence 3 --codex            # Codex-only review
+/fvgsd-plan-review-convergence 3 --all --max-cycles 5
 ```
 
 ---
 
-### `/vgsd-ultraplan-phase`
+### `/fvgsd-ultraplan-phase`
 
-**[BETA]** Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back. The plan drafts remotely so the terminal stays free; review inline comments in a browser, then import the finalized plan back into `.planning/` via `/vgsd-import`.
+**[BETA]** Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back. The plan drafts remotely so the terminal stays free; review inline comments in a browser, then import the finalized plan back into `.planning/` via `/fvgsd-import`.
 
 | Flag | Required | Description |
 |------|----------|-------------|
 | `N` | **Yes** | Phase number to plan remotely |
 
-**Isolation:** Intentionally separate from `/vgsd-plan-phase` so upstream ultraplan changes cannot affect the core planning pipeline.
+**Isolation:** Intentionally separate from `/fvgsd-plan-phase` so upstream ultraplan changes cannot affect the core planning pipeline.
 
 ```bash
-/vgsd-ultraplan-phase 4                  # Offload planning for phase 4
+/fvgsd-ultraplan-phase 4                  # Offload planning for phase 4
 ```
 
 ---
 
-### `/vgsd-execute-phase`
+### `/fvgsd-execute-phase`
 
 Execute all plans in a phase with wave-based parallelization, or run a specific wave.
 
@@ -245,15 +245,15 @@ Execute all plans in a phase with wave-based parallelization, or run a specific 
 **Package install failures (v1.42.1):** If a plan's install step fails, the executor surfaces a `checkpoint:human-verify` and stops. It does not auto-install a similarly-named alternative. This is intentional — silently substituting package names is how slopsquatting spreads. Respond to the checkpoint after verifying the package on its registry page.
 
 ```bash
-/vgsd-execute-phase 1                # Execute phase 1
-/vgsd-execute-phase 1 --wave 2       # Execute only Wave 2
-/vgsd-execute-phase 1 --validate     # Validate state before execution
-/vgsd-execute-phase 2 --cross-ai     # Delegate phase 2 to external AI CLI
+/fvgsd-execute-phase 1                # Execute phase 1
+/fvgsd-execute-phase 1 --wave 2       # Execute only Wave 2
+/fvgsd-execute-phase 1 --validate     # Validate state before execution
+/fvgsd-execute-phase 2 --cross-ai     # Delegate phase 2 to external AI CLI
 ```
 
 ---
 
-### `/vgsd-verify-work`
+### `/fvgsd-verify-work`
 
 User acceptance testing with auto-diagnosis.
 
@@ -265,14 +265,14 @@ User acceptance testing with auto-diagnosis.
 **Produces:** `{phase}-UAT.md`, fix plans if issues found
 
 ```bash
-/vgsd-verify-work 1                  # UAT for phase 1
+/fvgsd-verify-work 1                  # UAT for phase 1
 ```
 
 ---
 
 ---
 
-### `/vgsd-ship`
+### `/fvgsd-ship`
 
 Create PR from completed phase work with auto-generated body.
 
@@ -281,12 +281,12 @@ Create PR from completed phase work with auto-generated body.
 | `N` | No | Phase number or milestone version (e.g., `4` or `v1.0`) |
 | `--draft` | No | Create as draft PR |
 
-**Prerequisites:** Phase verified (`/vgsd-verify-work` passed), `gh` CLI installed and authenticated
+**Prerequisites:** Phase verified (`/fvgsd-verify-work` passed), `gh` CLI installed and authenticated
 **Produces:** GitHub PR with rich body from planning artifacts, STATE.md updated
 
 ```bash
-/vgsd-ship 4                         # Ship phase 4
-/vgsd-ship 4 --draft                 # Ship as draft PR
+/fvgsd-ship 4                         # Ship phase 4
+/fvgsd-ship 4 --draft                 # Ship as draft PR
 ```
 
 **PR body includes:**
@@ -301,7 +301,7 @@ See [Custom PR Body Sections](ship-pr-body-sections.md) for onboarding, examples
 
 ---
 
-### `/vgsd-ui-review`
+### `/fvgsd-ui-review`
 
 Retroactive 6-pillar visual audit of implemented frontend.
 
@@ -313,13 +313,13 @@ Retroactive 6-pillar visual audit of implemented frontend.
 **Produces:** `{phase}-UI-REVIEW.md`, screenshots in `.planning/ui-reviews/`
 
 ```bash
-/vgsd-ui-review                      # Audit current phase
-/vgsd-ui-review 3                    # Audit phase 3
+/fvgsd-ui-review                      # Audit current phase
+/fvgsd-ui-review 3                    # Audit phase 3
 ```
 
 ---
 
-### `/vgsd-audit-uat`
+### `/fvgsd-audit-uat`
 
 Cross-phase audit of all outstanding UAT and verification items.
 
@@ -327,12 +327,12 @@ Cross-phase audit of all outstanding UAT and verification items.
 **Produces:** Categorized audit report with human test plan
 
 ```bash
-/vgsd-audit-uat
+/fvgsd-audit-uat
 ```
 
 ---
 
-### `/vgsd-audit-milestone`
+### `/fvgsd-audit-milestone`
 
 Verify milestone met its definition of done.
 
@@ -340,12 +340,12 @@ Verify milestone met its definition of done.
 **Produces:** Audit report with gap analysis
 
 ```bash
-/vgsd-audit-milestone
+/fvgsd-audit-milestone
 ```
 
 ---
 
-### `/vgsd-complete-milestone`
+### `/fvgsd-complete-milestone`
 
 Archive milestone, tag release.
 
@@ -353,12 +353,12 @@ Archive milestone, tag release.
 **Produces:** `MILESTONES.md` entry, git tag
 
 ```bash
-/vgsd-complete-milestone
+/fvgsd-complete-milestone
 ```
 
 ---
 
-### `/vgsd-milestone-summary`
+### `/fvgsd-milestone-summary`
 
 Generate comprehensive project summary from milestone artifacts for team onboarding and review.
 
@@ -378,13 +378,13 @@ Generate comprehensive project summary from milestone artifacts for team onboard
 - Interactive Q&A offered after generation
 
 ```bash
-/vgsd-milestone-summary                # Summarize current milestone
-/vgsd-milestone-summary v1.0           # Summarize specific milestone
+/fvgsd-milestone-summary                # Summarize current milestone
+/fvgsd-milestone-summary v1.0           # Summarize specific milestone
 ```
 
 ---
 
-### `/vgsd-new-milestone`
+### `/fvgsd-new-milestone`
 
 Start next version cycle.
 
@@ -397,16 +397,16 @@ Start next version cycle.
 **Produces:** Updated `PROJECT.md`, new `REQUIREMENTS.md`, new `ROADMAP.md`
 
 ```bash
-/vgsd-new-milestone                  # Interactive
-/vgsd-new-milestone "v2.0 Mobile"    # Named milestone
-/vgsd-new-milestone --reset-phase-numbers "v2.0 Mobile"  # Restart milestone numbering at 1
+/fvgsd-new-milestone                  # Interactive
+/fvgsd-new-milestone "v2.0 Mobile"    # Named milestone
+/fvgsd-new-milestone --reset-phase-numbers "v2.0 Mobile"  # Restart milestone numbering at 1
 ```
 
 ---
 
 ## Phase Management Commands
 
-### `/vgsd-phase`
+### `/fvgsd-phase`
 
 CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases with a single consolidated command.
 
@@ -422,16 +422,16 @@ CRUD for phases in ROADMAP.md — add, insert, remove, or edit phases with a sin
 **Produces:** Updated ROADMAP.md
 
 ```bash
-/vgsd-phase "Add authentication system"          # Append new phase with description
-/vgsd-phase --insert 3 "Fix auth race condition" # Insert between phase 3 and 4 → creates 3.1
-/vgsd-phase --remove 7               # Remove phase 7, renumber 8→7, 9→8, etc.
-/vgsd-phase --edit 5                 # Edit any field of phase 5
-/vgsd-phase --edit 5 --force         # Edit phase 5 even if in-progress or completed
+/fvgsd-phase "Add authentication system"          # Append new phase with description
+/fvgsd-phase --insert 3 "Fix auth race condition" # Insert between phase 3 and 4 → creates 3.1
+/fvgsd-phase --remove 7               # Remove phase 7, renumber 8→7, 9→8, etc.
+/fvgsd-phase --edit 5                 # Edit any field of phase 5
+/fvgsd-phase --edit 5 --force         # Edit phase 5 even if in-progress or completed
 ```
 
 ---
 
-### `/vgsd-validate-phase`
+### `/fvgsd-validate-phase`
 
 Retroactively audit and fill Nyquist validation gaps.
 
@@ -440,14 +440,14 @@ Retroactively audit and fill Nyquist validation gaps.
 | `N` | No | Phase number |
 
 ```bash
-/vgsd-validate-phase 2               # Audit test coverage for phase 2
+/fvgsd-validate-phase 2               # Audit test coverage for phase 2
 ```
 
 ---
 
 ## Navigation Commands
 
-### `/vgsd-progress`
+### `/fvgsd-progress`
 
 Show status, next steps, and automatically advance to the next logical workflow step. Reads project state and determines the appropriate action.
 
@@ -458,29 +458,29 @@ Show status, next steps, and automatically advance to the next logical workflow 
 | `--forensic` | Append a 6-check integrity audit after the standard report (STATE consistency, orphaned handoffs, deferred scope drift, memory-flagged pending work, blocking todos, uncommitted code) |
 
 **Auto-routing behavior (`--next`):**
-- No project → suggests `/vgsd-new-project`
-- Phase needs discussion → runs `/vgsd-discuss-phase`
-- Phase needs planning → runs `/vgsd-plan-phase`
-- Phase needs execution → runs `/vgsd-execute-phase`
-- Phase needs verification → runs `/vgsd-verify-work`
-- All phases complete → suggests `/vgsd-complete-milestone`
+- No project → suggests `/fvgsd-new-project`
+- Phase needs discussion → runs `/fvgsd-discuss-phase`
+- Phase needs planning → runs `/fvgsd-plan-phase`
+- Phase needs execution → runs `/fvgsd-execute-phase`
+- Phase needs verification → runs `/fvgsd-verify-work`
+- All phases complete → suggests `/fvgsd-complete-milestone`
 
 ```bash
-/vgsd-progress                       # "Where am I? What's next?" with auto-routing
-/vgsd-progress --next                # Advance to next step automatically
-/vgsd-progress --do "fix the auth bug"  # Dispatch freeform intent to best GSD command
-/vgsd-progress --forensic            # Standard report + integrity audit
+/fvgsd-progress                       # "Where am I? What's next?" with auto-routing
+/fvgsd-progress --next                # Advance to next step automatically
+/fvgsd-progress --do "fix the auth bug"  # Dispatch freeform intent to best GSD command
+/fvgsd-progress --forensic            # Standard report + integrity audit
 ```
 
-### `/vgsd-resume-work`
+### `/fvgsd-resume-work`
 
 Restore full context from last session.
 
 ```bash
-/vgsd-resume-work                    # After context reset or new session
+/fvgsd-resume-work                    # After context reset or new session
 ```
 
-### `/vgsd-pause-work`
+### `/fvgsd-pause-work`
 
 Save context handoff when stopping mid-phase.
 
@@ -489,11 +489,11 @@ Save context handoff when stopping mid-phase.
 | `--report` | Generate a post-session summary in `.planning/reports/` capturing commits, file changes, and phase progress |
 
 ```bash
-/vgsd-pause-work                     # Creates continue-here.md
-/vgsd-pause-work --report            # Creates continue-here.md + session report
+/fvgsd-pause-work                     # Creates continue-here.md
+/fvgsd-pause-work --report            # Creates continue-here.md + session report
 ```
 
-### `/vgsd-manager`
+### `/fvgsd-manager`
 
 Interactive command center for managing multiple phases from one terminal.
 
@@ -506,8 +506,8 @@ Interactive command center for managing multiple phases from one terminal.
 - Supports per-step passthrough flags via `manager.flags` config (see [Configuration](CONFIGURATION.md#manager-passthrough-flags))
 
 ```bash
-/vgsd-manager                        # Open command center dashboard
-/vgsd-manager --analyze-deps         # Scan ROADMAP phases for dependency relationships before parallel execution
+/fvgsd-manager                        # Open command center dashboard
+/fvgsd-manager --analyze-deps         # Scan ROADMAP phases for dependency relationships before parallel execution
 ```
 
 **Checkpoint Heartbeats (#2410):**
@@ -546,16 +546,16 @@ Configure per-step flags in `.planning/config.json` under `manager.flags`. These
 
 ---
 
-### `/vgsd-help`
+### `/fvgsd-help`
 
 Show GSD commands at the tier you ask for. Default fits one screen; `--full` is the complete reference; `<topic>` jumps directly to one section.
 
 ```bash
-/vgsd-help                           # One-page tour (default)
-/vgsd-help --brief                   # ~10-line one-liner refresher of top commands
-/vgsd-help --full                    # Complete reference (every command, every flag)
-/vgsd-help <topic>                   # One section only (e.g. /vgsd-help debug)
-/vgsd-help --brief <topic>           # Compact scoped lookup — signature + one-line summary
+/fvgsd-help                           # One-page tour (default)
+/fvgsd-help --brief                   # ~10-line one-liner refresher of top commands
+/fvgsd-help --full                    # Complete reference (every command, every flag)
+/fvgsd-help <topic>                   # One section only (e.g. /fvgsd-help debug)
+/fvgsd-help --brief <topic>           # Compact scoped lookup — signature + one-line summary
 ```
 
 See `get-shit-done/workflows/help/modes/topic.md` for the full alias table. Unknown topics print the recognized list.
@@ -564,22 +564,22 @@ See `get-shit-done/workflows/help/modes/topic.md` for the full alias table. Unkn
 
 ## Utility Commands
 
-### `/vgsd-explore`
+### `/fvgsd-explore`
 
 Socratic ideation session — guide an idea through probing questions, optionally spawn research, then route output to the right GSD artifact (notes, todos, seeds, research questions, requirements, or a new phase).
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `topic` | No | Topic to explore (e.g., `/vgsd-explore authentication strategy`) |
+| `topic` | No | Topic to explore (e.g., `/fvgsd-explore authentication strategy`) |
 
 ```bash
-/vgsd-explore                        # Open-ended ideation session
-/vgsd-explore authentication strategy  # Explore a specific topic
+/fvgsd-explore                        # Open-ended ideation session
+/fvgsd-explore authentication strategy  # Explore a specific topic
 ```
 
 ---
 
-### `/vgsd-undo`
+### `/fvgsd-undo`
 
 Safe git revert — roll back GSD phase or plan commits using the phase manifest with dependency checks and a confirmation gate.
 
@@ -592,14 +592,14 @@ Safe git revert — roll back GSD phase or plan commits using the phase manifest
 **Safety:** Checks dependent phases/plans before reverting; always shows a confirmation gate.
 
 ```bash
-/vgsd-undo --last 5                  # Pick from the 5 most recent GSD commits
-/vgsd-undo --phase 03                # Revert all commits for phase 3
-/vgsd-undo --plan 03-02              # Revert commits for plan 02 of phase 3
+/fvgsd-undo --last 5                  # Pick from the 5 most recent GSD commits
+/fvgsd-undo --phase 03                # Revert all commits for phase 3
+/fvgsd-undo --plan 03-02              # Revert commits for plan 02 of phase 3
 ```
 
 ---
 
-### `/vgsd-import`
+### `/fvgsd-import`
 
 Ingest an external plan file into the GSD planning system with conflict detection against `PROJECT.md` decisions before writing anything.
 
@@ -609,19 +609,19 @@ Ingest an external plan file into the GSD planning system with conflict detectio
 | `--from-gsd2` | Yes (or `--from`) | Reverse-migrate a GSD-2 (`.gsd/`) project back to GSD v1 (`.planning/`) format |
 | `--path <dir>` | No | With `--from-gsd2`: path to the GSD-2 project directory (defaults to current directory) |
 
-**Process:** Detects conflicts → prompts for resolution → writes as GSD PLAN.md → validates via `gsd-plan-checker`
+**Process:** Detects conflicts → prompts for resolution → writes as GSD PLAN.md → validates via `fvgsd-plan-checker`
 
 ```bash
-/vgsd-import --from /tmp/team-plan.md    # Import and validate an external plan
-/vgsd-import --from-gsd2                # Migrate from GSD-2 back to v1 (current dir)
-/vgsd-import --from-gsd2 --path ~/old-project  # Migrate from a different path
+/fvgsd-import --from /tmp/team-plan.md    # Import and validate an external plan
+/fvgsd-import --from-gsd2                # Migrate from GSD-2 back to v1 (current dir)
+/fvgsd-import --from-gsd2 --path ~/old-project  # Migrate from a different path
 ```
 
 ---
 
-### `/vgsd-ingest-docs`
+### `/fvgsd-ingest-docs`
 
-Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo. Runs parallel classification (`gsd-doc-classifier`) plus synthesis with precedence rules and cycle detection (`gsd-doc-synthesizer`). Produces a three-bucket conflicts report (`INGEST-CONFLICTS.md`: auto-resolved, competing-variants, unresolved-blockers) and hard-blocks on LOCKED-vs-LOCKED ADR contradictions.
+Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs in a repo. Runs parallel classification (`fvgsd-doc-classifier`) plus synthesis with precedence rules and cycle detection (`fvgsd-doc-synthesizer`). Produces a three-bucket conflicts report (`INGEST-CONFLICTS.md`: auto-resolved, competing-variants, unresolved-blockers) and hard-blocks on LOCKED-vs-LOCKED ADR contradictions.
 
 | Argument / Flag | Required | Description |
 |-----------------|----------|-------------|
@@ -630,17 +630,17 @@ Bootstrap or merge a .planning/ setup from existing ADRs, PRDs, SPECs, and docs 
 | `--manifest <file>` | No | YAML file listing `{path, type, precedence?}` per doc; overrides heuristic classification |
 | `--resolve auto` | No | Conflict resolution mode (v1: only `auto`; `interactive` is reserved) |
 
-**Limits:** v1 caps at 50 docs per invocation. Extracts the shared conflict-detection contract into `references/doc-conflict-engine.md`, which `/vgsd-import` also consumes.
+**Limits:** v1 caps at 50 docs per invocation. Extracts the shared conflict-detection contract into `references/doc-conflict-engine.md`, which `/fvgsd-import` also consumes.
 
 ```bash
-/vgsd-ingest-docs                            # Scan repo root, auto-detect mode
-/vgsd-ingest-docs docs/                      # Only ingest under docs/
-/vgsd-ingest-docs --manifest ingest.yaml     # Explicit precedence manifest
+/fvgsd-ingest-docs                            # Scan repo root, auto-detect mode
+/fvgsd-ingest-docs docs/                      # Only ingest under docs/
+/fvgsd-ingest-docs --manifest ingest.yaml     # Explicit precedence manifest
 ```
 
 ---
 
-### `/vgsd-quick`
+### `/fvgsd-quick`
 
 Execute ad-hoc task with GSD guarantees.
 
@@ -660,16 +660,16 @@ Granular flags are composable: `--discuss --research --validate` is equivalent t
 | `resume <slug>` | Resume a specific quick task by slug |
 
 ```bash
-/vgsd-quick                          # Basic quick task
-/vgsd-quick --discuss --research     # Discussion + research + planning
-/vgsd-quick --validate               # Plan-checking + verification only
-/vgsd-quick --full                   # Complete quality pipeline
-/vgsd-quick list                     # List all quick tasks
-/vgsd-quick status my-task-slug      # Show status of a quick task
-/vgsd-quick resume my-task-slug      # Resume a quick task
+/fvgsd-quick                          # Basic quick task
+/fvgsd-quick --discuss --research     # Discussion + research + planning
+/fvgsd-quick --validate               # Plan-checking + verification only
+/fvgsd-quick --full                   # Complete quality pipeline
+/fvgsd-quick list                     # List all quick tasks
+/fvgsd-quick status my-task-slug      # Show status of a quick task
+/fvgsd-quick resume my-task-slug      # Resume a quick task
 ```
 
-### `/vgsd-autonomous`
+### `/fvgsd-autonomous`
 
 Run all remaining phases autonomously.
 
@@ -680,13 +680,13 @@ Run all remaining phases autonomously.
 | `--interactive` | Lean context with user input |
 
 ```bash
-/vgsd-autonomous                     # Run all remaining phases
-/vgsd-autonomous --from 3            # Start from phase 3
-/vgsd-autonomous --to 5              # Run up to and including phase 5
-/vgsd-autonomous --from 3 --to 5     # Run phases 3 through 5
+/fvgsd-autonomous                     # Run all remaining phases
+/fvgsd-autonomous --from 3            # Start from phase 3
+/fvgsd-autonomous --to 5              # Run up to and including phase 5
+/fvgsd-autonomous --from 3 --to 5     # Run phases 3 through 5
 ```
 
-### `/vgsd-debug`
+### `/fvgsd-debug`
 
 Systematic debugging with persistent state.
 
@@ -699,22 +699,22 @@ Systematic debugging with persistent state.
 | `--diagnose` | Diagnosis-only mode — investigate without attempting fixes |
 
 **Subcommands:**
-- `/vgsd-debug list` — List all active debug sessions with status, hypothesis, and next action
-- `/vgsd-debug status <slug>` — Print full summary of a session (Evidence count, Eliminated count, Resolution, TDD checkpoint) without spawning an agent
-- `/vgsd-debug continue <slug>` — Resume a specific session by slug (surfaces Current Focus then spawns continuation agent)
-- `/vgsd-debug [--diagnose] <description>` — Start new debug session (existing behavior; `--diagnose` stops at root cause without applying fix)
+- `/fvgsd-debug list` — List all active debug sessions with status, hypothesis, and next action
+- `/fvgsd-debug status <slug>` — Print full summary of a session (Evidence count, Eliminated count, Resolution, TDD checkpoint) without spawning an agent
+- `/fvgsd-debug continue <slug>` — Resume a specific session by slug (surfaces Current Focus then spawns continuation agent)
+- `/fvgsd-debug [--diagnose] <description>` — Start new debug session (existing behavior; `--diagnose` stops at root cause without applying fix)
 
 **TDD mode:** When `tdd_mode: true` in `.planning/config.json`, debug sessions require a failing test to be written and verified before any fix is applied (red → green → done).
 
 ```bash
-/vgsd-debug "Login button not responding on mobile Safari"
-/vgsd-debug --diagnose "Intermittent 500 errors on /api/users"
-/vgsd-debug list
-/vgsd-debug status auth-token-null
-/vgsd-debug continue form-submit-500
+/fvgsd-debug "Login button not responding on mobile Safari"
+/fvgsd-debug --diagnose "Intermittent 500 errors on /api/users"
+/fvgsd-debug list
+/fvgsd-debug status auth-token-null
+/fvgsd-debug continue form-submit-500
 ```
 
-### `/vgsd-add-tests`
+### `/fvgsd-add-tests`
 
 Generate tests for a completed phase.
 
@@ -723,18 +723,18 @@ Generate tests for a completed phase.
 | `N` | No | Phase number |
 
 ```bash
-/vgsd-add-tests 2                    # Generate tests for phase 2
+/fvgsd-add-tests 2                    # Generate tests for phase 2
 ```
 
-### `/vgsd-stats`
+### `/fvgsd-stats`
 
 Display project statistics.
 
 ```bash
-/vgsd-stats                          # Project metrics dashboard
+/fvgsd-stats                          # Project metrics dashboard
 ```
 
-### `/vgsd-profile-user`
+### `/fvgsd-profile-user`
 
 Generate a developer behavioral profile from Claude Code session analysis across 8 dimensions (communication style, decision patterns, debugging approach, UX preferences, vendor choices, frustration triggers, learning style, explanation depth). Produces artifacts that personalize Claude's responses.
 
@@ -748,12 +748,12 @@ Generate a developer behavioral profile from Claude Code session analysis across
 - `CLAUDE.md` profile section — Auto-discovered by Claude Code
 
 ```bash
-/vgsd-profile-user                   # Analyze sessions and build profile
-/vgsd-profile-user --questionnaire   # Interactive questionnaire fallback
-/vgsd-profile-user --refresh         # Re-generate from fresh analysis
+/fvgsd-profile-user                   # Analyze sessions and build profile
+/fvgsd-profile-user --questionnaire   # Interactive questionnaire fallback
+/fvgsd-profile-user --refresh         # Re-generate from fresh analysis
 ```
 
-### `/vgsd-health`
+### `/fvgsd-health`
 
 Validate `.planning/` directory integrity. With `--context`, probes the
 context-window utilization guard against the 60 % / 70 % thresholds (added
@@ -765,24 +765,24 @@ v1.40.0, [#2792](https://github.com/gsd-build/get-shit-done/issues/2792)).
 | `--context` | Probe context-window utilization; warns at 60 %, critical at 70 % |
 
 ```bash
-/vgsd-health                         # Check integrity
-/vgsd-health --repair                # Check and fix
-/vgsd-health --context               # Context-utilization triage
+/fvgsd-health                         # Check integrity
+/fvgsd-health --repair                # Check and fix
+/fvgsd-health --context               # Context-utilization triage
 ```
 
-### `/vgsd-cleanup`
+### `/fvgsd-cleanup`
 
 Archive accumulated phase directories from completed milestones.
 
 ```bash
-/vgsd-cleanup
+/fvgsd-cleanup
 ```
 
 ---
 
 ## Spiking & Sketching Commands
 
-### `/vgsd-spike`
+### `/fvgsd-spike`
 
 Run 2–5 focused feasibility experiments before committing to an implementation approach. Each experiment uses Given/When/Then framing, produces executable code, and returns a VALIDATED / INVALIDATED / PARTIAL verdict.
 
@@ -796,15 +796,15 @@ Run 2–5 focused feasibility experiments before committing to an implementation
 **`--wrap-up` produces:** `.claude/skills/spike-findings-[project]/` skill file
 
 ```bash
-/vgsd-spike                              # Interactive intake
-/vgsd-spike "can we stream LLM tokens through SSE"
-/vgsd-spike --quick websocket-vs-polling
-/vgsd-spike --wrap-up                    # Package findings into a reusable skill
+/fvgsd-spike                              # Interactive intake
+/fvgsd-spike "can we stream LLM tokens through SSE"
+/fvgsd-spike --quick websocket-vs-polling
+/fvgsd-spike --wrap-up                    # Package findings into a reusable skill
 ```
 
 ---
 
-### `/vgsd-sketch`
+### `/fvgsd-sketch`
 
 Explore design directions through throwaway HTML mockups before committing to implementation. Produces 2–3 variants per design question for direct browser comparison.
 
@@ -819,18 +819,18 @@ Explore design directions through throwaway HTML mockups before committing to im
 **`--wrap-up` produces:** `.claude/skills/sketch-findings-[project]/` skill file
 
 ```bash
-/vgsd-sketch                             # Interactive mood intake
-/vgsd-sketch "dashboard layout"
-/vgsd-sketch --quick "sidebar navigation"
-/vgsd-sketch --text "onboarding flow"    # Non-Claude runtime
-/vgsd-sketch --wrap-up                   # Package winning sketch into a skill
+/fvgsd-sketch                             # Interactive mood intake
+/fvgsd-sketch "dashboard layout"
+/fvgsd-sketch --quick "sidebar navigation"
+/fvgsd-sketch --text "onboarding flow"    # Non-Claude runtime
+/fvgsd-sketch --wrap-up                   # Package winning sketch into a skill
 ```
 
 ---
 
 ## Diagnostics Commands
 
-### `/vgsd-forensics`
+### `/fvgsd-forensics`
 
 Post-mortem investigation for failed GSD workflows — diagnoses what went wrong.
 
@@ -850,13 +850,13 @@ Post-mortem investigation for failed GSD workflows — diagnoses what went wrong
 - GitHub issue creation offered if actionable findings exist
 
 ```bash
-/vgsd-forensics                              # Interactive — prompted for problem
-/vgsd-forensics "Phase 3 execution stalled"  # With problem description
+/fvgsd-forensics                              # Interactive — prompted for problem
+/fvgsd-forensics "Phase 3 execution stalled"  # With problem description
 ```
 
 ---
 
-### `/vgsd-extract-learnings`
+### `/fvgsd-extract-learnings`
 
 Extract reusable patterns, anti-patterns, and architectural decisions from completed phase work.
 
@@ -880,15 +880,15 @@ Extract reusable patterns, anti-patterns, and architectural decisions from compl
 - Performance and testing observations
 
 ```bash
-/vgsd-extract-learnings 3                    # Extract learnings from phase 3
-/vgsd-extract-learnings --all                # Extract from all completed phases
+/fvgsd-extract-learnings 3                    # Extract learnings from phase 3
+/fvgsd-extract-learnings --all                # Extract from all completed phases
 ```
 
 ---
 
 ## Workstream Management
 
-### `/vgsd-workstreams`
+### `/fvgsd-workstreams`
 
 Manage parallel workstreams for concurrent work on different milestone areas.
 
@@ -908,20 +908,20 @@ Manage parallel workstreams for concurrent work on different milestone areas.
 **Produces:** Workstream directories under `.planning/`, state tracking per workstream
 
 ```bash
-/vgsd-workstreams                    # List all workstreams
-/vgsd-workstreams create backend-api # Create new workstream
-/vgsd-workstreams switch backend-api # Set active workstream
-/vgsd-workstreams status backend-api # Detailed status
-/vgsd-workstreams progress           # Cross-workstream progress overview
-/vgsd-workstreams complete backend-api  # Archive completed workstream
-/vgsd-workstreams resume backend-api    # Resume work in workstream
+/fvgsd-workstreams                    # List all workstreams
+/fvgsd-workstreams create backend-api # Create new workstream
+/fvgsd-workstreams switch backend-api # Set active workstream
+/fvgsd-workstreams status backend-api # Detailed status
+/fvgsd-workstreams progress           # Cross-workstream progress overview
+/fvgsd-workstreams complete backend-api  # Archive completed workstream
+/fvgsd-workstreams resume backend-api    # Resume work in workstream
 ```
 
 ---
 
 ## Configuration Commands
 
-### `/vgsd-settings`
+### `/fvgsd-settings`
 
 Interactive configuration of workflow toggles and model profile. Questions are grouped into six visual sections:
 
@@ -932,13 +932,13 @@ Interactive configuration of workflow toggles and model profile. Questions are g
 - **Model & Pipeline** — Model Profile, Auto-Advance, Branching
 - **Misc** — Context Warnings, Research Qs
 
-All answers are merged via `gsd-sdk query config-set` into the resolved project config path (`.planning/config.json` for a standard install, or `.planning/workstreams/<active>/config.json` when a workstream is active), preserving unrelated keys. After confirmation, the user may save the full settings object to `~/.gsd/defaults.json` so future `/vgsd-new-project` runs start from the same baseline.
+All answers are merged via `fvgsd-sdk query config-set` into the resolved project config path (`.planning/config.json` for a standard install, or `.planning/workstreams/<active>/config.json` when a workstream is active), preserving unrelated keys. After confirmation, the user may save the full settings object to `~/.gsd/defaults.json` so future `/fvgsd-new-project` runs start from the same baseline.
 
 ```bash
-/vgsd-settings                       # Interactive config
+/fvgsd-settings                       # Interactive config
 ```
 
-### `/vgsd-config`
+### `/fvgsd-config`
 
 Configure GSD settings interactively — workflow toggles, advanced knobs, integrations, and model profile — with a single consolidated command.
 
@@ -960,19 +960,19 @@ Configure GSD settings interactively — workflow toggles, advanced knobs, integ
 | Git Customization | `git.base_branch`, `git.phase_branch_template`, `git.milestone_branch_template` |
 | Runtime / Output | `response_language`, `context_window`, `search_gitignored`, `graphify.build_timeout` |
 
-All answers merge via `gsd-sdk query config-set`, preserving unrelated keys. API keys are masked (`****<last-4>`) in all output.
+All answers merge via `fvgsd-sdk query config-set`, preserving unrelated keys. API keys are masked (`****<last-4>`) in all output.
 
 ```bash
-/vgsd-config                         # Common-case interactive config
-/vgsd-config --advanced              # Power-user knobs (six-section prompt)
-/vgsd-config --integrations          # API keys, review CLI routing, agent skills
-/vgsd-config --profile budget        # Switch to budget profile
-/vgsd-config --profile quality       # Switch to quality profile
+/fvgsd-config                         # Common-case interactive config
+/fvgsd-config --advanced              # Power-user knobs (six-section prompt)
+/fvgsd-config --integrations          # API keys, review CLI routing, agent skills
+/fvgsd-config --profile budget        # Switch to budget profile
+/fvgsd-config --profile quality       # Switch to quality profile
 ```
 
 See [CONFIGURATION.md](CONFIGURATION.md) for the full schema and defaults.
 
-### `/vgsd-surface`
+### `/fvgsd-surface`
 
 Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall.
 
@@ -986,17 +986,17 @@ Toggle which skills are surfaced — apply a profile, list, or disable a cluster
 | `reset` | Delete surface delta; return to install-time profile |
 
 ```bash
-/vgsd-surface list                   # Show current surface
-/vgsd-surface profile standard       # Switch to standard profile
-/vgsd-surface disable utility        # Disable the utility cluster
-/vgsd-surface reset                  # Restore install-time profile
+/fvgsd-surface list                   # Show current surface
+/fvgsd-surface profile standard       # Switch to standard profile
+/fvgsd-surface disable utility        # Disable the utility cluster
+/fvgsd-surface reset                  # Restore install-time profile
 ```
 
 ---
 
 ## Brownfield Commands
 
-### `/vgsd-map-codebase`
+### `/fvgsd-map-codebase`
 
 Analyze existing codebase with parallel mapper agents. Use `--fast` for a quick single-agent scan, or `--query` to search existing intel.
 
@@ -1013,14 +1013,14 @@ Analyze existing codebase with parallel mapper agents. Use `--fast` for a quick 
 **Produces:** `.planning/codebase/` analysis documents (full mode); targeted document(s) in `.planning/codebase/` (`--fast`); intel query results (`--query`)
 
 ```bash
-/vgsd-map-codebase                   # Full codebase analysis (4 parallel agents)
-/vgsd-map-codebase auth              # Focus on auth area
-/vgsd-map-codebase --fast            # Quick tech + arch overview (1 agent)
-/vgsd-map-codebase --fast --focus quality  # Quality and code health only
-/vgsd-map-codebase --query authentication  # Search intel for a term
+/fvgsd-map-codebase                   # Full codebase analysis (4 parallel agents)
+/fvgsd-map-codebase auth              # Focus on auth area
+/fvgsd-map-codebase --fast            # Quick tech + arch overview (1 agent)
+/fvgsd-map-codebase --fast --focus quality  # Quality and code health only
+/fvgsd-map-codebase --query authentication  # Search intel for a term
 ```
 
-### `/vgsd-graphify`
+### `/fvgsd-graphify`
 
 Build, query, and inspect the project knowledge graph stored in `.planning/graphs/`. Opt-in via `graphify.enabled: true` in `config.json` (see [Configuration Reference](CONFIGURATION.md#graphify-settings)); when disabled, the command prints an activation hint and stops.
 
@@ -1034,19 +1034,19 @@ Build, query, and inspect the project knowledge graph stored in `.planning/graph
 **Produces:** `.planning/graphs/` graph artifacts (nodes, edges, snapshots)
 
 ```bash
-/vgsd-graphify build                 # Build or rebuild the knowledge graph
-/vgsd-graphify query authentication  # Search the graph for a term
-/vgsd-graphify status                # Show freshness and statistics
-/vgsd-graphify diff                  # Show changes since last build
+/fvgsd-graphify build                 # Build or rebuild the knowledge graph
+/fvgsd-graphify query authentication  # Search the graph for a term
+/fvgsd-graphify status                # Show freshness and statistics
+/fvgsd-graphify diff                  # Show changes since last build
 ```
 
-**Programmatic access:** `node gsd-tools.cjs graphify <build|query|status|diff|snapshot>` — see [CLI Tools Reference](CLI-TOOLS.md).
+**Programmatic access:** `node fvgsd-tools.cjs graphify <build|query|status|diff|snapshot>` — see [CLI Tools Reference](CLI-TOOLS.md).
 
 ---
 
 ## AI Integration Commands
 
-### `/vgsd-ai-integration-phase`
+### `/fvgsd-ai-integration-phase`
 
 Generate an AI-SPEC.md design contract for phases that involve building AI systems. Presents an interactive decision matrix, surfaces domain-specific failure modes and eval criteria, and produces `AI-SPEC.md` with a framework recommendation, implementation guidance, and evaluation strategy.
 
@@ -1055,29 +1055,29 @@ Generate an AI-SPEC.md design contract for phases that involve building AI syste
 **Spawns:** 3 parallel specialist agents: domain-researcher, framework-selector, ai-researcher, and eval-planner
 
 ```bash
-/vgsd-ai-integration-phase              # Wizard for the current phase
-/vgsd-ai-integration-phase 3           # Wizard for a specific phase
+/fvgsd-ai-integration-phase              # Wizard for the current phase
+/fvgsd-ai-integration-phase 3           # Wizard for a specific phase
 ```
 
 ---
 
-### `/vgsd-eval-review`
+### `/fvgsd-eval-review`
 
-Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan. Checks implementation against the `AI-SPEC.md` evaluation plan produced by `/vgsd-ai-integration-phase`. Scores each eval dimension as COVERED/PARTIAL/MISSING.
+Audit an executed AI phase's evaluation coverage and produce an EVAL-REVIEW.md remediation plan. Checks implementation against the `AI-SPEC.md` evaluation plan produced by `/fvgsd-ai-integration-phase`. Scores each eval dimension as COVERED/PARTIAL/MISSING.
 
 **Prerequisites:** Phase has been executed and has an `AI-SPEC.md`
 **Produces:** `{phase}-EVAL-REVIEW.md` with findings, gaps, and remediation guidance
 
 ```bash
-/vgsd-eval-review                       # Audit current phase
-/vgsd-eval-review 3                     # Audit a specific phase
+/fvgsd-eval-review                       # Audit current phase
+/fvgsd-eval-review 3                     # Audit a specific phase
 ```
 
 ---
 
 ## Update Commands
 
-### `/vgsd-update`
+### `/fvgsd-update`
 
 Update GSD with changelog preview, and optionally sync skills or reapply local patches.
 
@@ -1087,16 +1087,16 @@ Update GSD with changelog preview, and optionally sync skills or reapply local p
 | `--reapply` | Restore local modifications (patches) after updating |
 
 ```bash
-/vgsd-update                         # Check for updates and install
-/vgsd-update --sync                  # Update and sync skills
-/vgsd-update --reapply               # Update and reapply local patches
+/fvgsd-update                         # Check for updates and install
+/fvgsd-update --sync                  # Update and sync skills
+/fvgsd-update --reapply               # Update and reapply local patches
 ```
 
 ---
 
 ## Code Quality Commands
 
-### `/vgsd-code-review`
+### `/fvgsd-code-review`
 
 Review source files changed during a phase for bugs, security vulnerabilities, and code quality problems. Use `--fix` to auto-fix findings after review.
 
@@ -1111,22 +1111,22 @@ Review source files changed during a phase for bugs, security vulnerabilities, a
 
 **Prerequisites:** Phase has been executed and has SUMMARY.md or git history
 **Produces:** `{phase}-REVIEW.md` with severity-classified findings; `{phase}-REVIEW-FIX.md` when `--fix` is used
-**Spawns:** `gsd-code-reviewer` agent; `gsd-code-fixer` agent (with `--fix`)
+**Spawns:** `fvgsd-code-reviewer` agent; `fvgsd-code-fixer` agent (with `--fix`)
 
 **Optional structural pre-pass:** Set `code_quality.fallow.enabled` to `true` to run fallow before the agent review. GSD writes `{phase}/FALLOW.json` and embeds a `Structural Findings (fallow)` section in `REVIEW.md`. Configure scope and profile with `code_quality.fallow.scope` and `code_quality.fallow.profile`.
 
 ```bash
-/vgsd-code-review 3                          # Standard review for phase 3
-/vgsd-code-review 2 --depth=deep             # Deep cross-file review
-/vgsd-code-review 4 --files src/auth.ts,src/token.ts  # Explicit file list
-/vgsd-code-review 3 --fix                    # Review then fix Critical + Warning findings
-/vgsd-code-review 3 --fix --all             # Review then fix all findings including Info
-/vgsd-code-review 3 --fix --auto            # Review, fix, and re-review until clean (max 3 iterations)
+/fvgsd-code-review 3                          # Standard review for phase 3
+/fvgsd-code-review 2 --depth=deep             # Deep cross-file review
+/fvgsd-code-review 4 --files src/auth.ts,src/token.ts  # Explicit file list
+/fvgsd-code-review 3 --fix                    # Review then fix Critical + Warning findings
+/fvgsd-code-review 3 --fix --all             # Review then fix all findings including Info
+/fvgsd-code-review 3 --fix --auto            # Review, fix, and re-review until clean (max 3 iterations)
 ```
 
 ---
 
-### `/vgsd-audit-fix`
+### `/fvgsd-audit-fix`
 
 Autonomous audit-to-fix pipeline — runs an audit, classifies findings, fixes auto-fixable issues with test verification, and commits each fix atomically.
 
@@ -1141,17 +1141,17 @@ Autonomous audit-to-fix pipeline — runs an audit, classifies findings, fixes a
 **Produces:** Fix commits with test verification; classification report
 
 ```bash
-/vgsd-audit-fix                              # Run audit-uat, fix medium+ issues (max 5)
-/vgsd-audit-fix --severity high             # Only fix high-severity issues
-/vgsd-audit-fix --dry-run                   # Preview classification without fixing
-/vgsd-audit-fix --max 10 --severity all     # Fix up to 10 issues of any severity
+/fvgsd-audit-fix                              # Run audit-uat, fix medium+ issues (max 5)
+/fvgsd-audit-fix --severity high             # Only fix high-severity issues
+/fvgsd-audit-fix --dry-run                   # Preview classification without fixing
+/fvgsd-audit-fix --max 10 --severity all     # Fix up to 10 issues of any severity
 ```
 
 ---
 
 ## Fast & Inline Commands
 
-### `/vgsd-fast`
+### `/fvgsd-fast`
 
 Execute a trivial task inline — no subagents, no planning overhead. For typo fixes, config changes, small refactors, forgotten commits.
 
@@ -1159,16 +1159,16 @@ Execute a trivial task inline — no subagents, no planning overhead. For typo f
 |----------|----------|-------------|
 | `task description` | No | What to do (prompted if omitted) |
 
-**Not a replacement for `/vgsd-quick`** — use `/vgsd-quick` for anything needing research, multi-step planning, or verification.
+**Not a replacement for `/fvgsd-quick`** — use `/fvgsd-quick` for anything needing research, multi-step planning, or verification.
 
 ```bash
-/vgsd-fast "fix typo in README"
-/vgsd-fast "add .env to gitignore"
+/fvgsd-fast "fix typo in README"
+/fvgsd-fast "add .env to gitignore"
 ```
 
 ---
 
-### `/vgsd-review`
+### `/fvgsd-review`
 
 Cross-AI peer review of phase plans from external AI CLIs.
 
@@ -1191,26 +1191,26 @@ Cross-AI peer review of phase plans from external AI CLIs.
 | `--all` | Include all available reviewers (CLI + local model servers) |
 
 **Default reviewer behavior (no flags):**
-- If `review.default_reviewers` is **unset**, `/vgsd-review` runs all detected reviewers (current default behavior).
-- If `review.default_reviewers` is **set**, `/vgsd-review` runs only that subset (for example `["gemini","codex"]`).
+- If `review.default_reviewers` is **unset**, `/fvgsd-review` runs all detected reviewers (current default behavior).
+- If `review.default_reviewers` is **set**, `/fvgsd-review` runs only that subset (for example `["gemini","codex"]`).
 - `--all` always overrides config and runs the full detected set.
 - Explicit flags (for example `--cursor`) override both `--all` and config defaults for that run.
 
-**Produces:** `{phase}-REVIEWS.md` — consumable by `/vgsd-plan-phase --reviews`
+**Produces:** `{phase}-REVIEWS.md` — consumable by `/fvgsd-plan-phase --reviews`
 
 ```bash
-# set project default reviewers for no-flag /vgsd-review runs
+# set project default reviewers for no-flag /fvgsd-review runs
 gsd config-set review.default_reviewers '["gemini","codex"]'
 
-/vgsd-review --phase 2             # runs gemini+codex from config
-/vgsd-review --phase 3 --all
-/vgsd-review --phase 2 --gemini
-/vgsd-review --phase 2 --cursor    # one-off override
+/fvgsd-review --phase 2             # runs gemini+codex from config
+/fvgsd-review --phase 3 --all
+/fvgsd-review --phase 2 --gemini
+/fvgsd-review --phase 2 --cursor    # one-off override
 ```
 
 ---
 
-### `/vgsd-pr-branch`
+### `/fvgsd-pr-branch`
 
 Create a clean PR branch by filtering out `.planning/` commits.
 
@@ -1221,13 +1221,13 @@ Create a clean PR branch by filtering out `.planning/` commits.
 **Purpose:** Reviewers see only code changes, not GSD planning artifacts.
 
 ```bash
-/vgsd-pr-branch                     # Filter against main
-/vgsd-pr-branch develop             # Filter against develop
+/fvgsd-pr-branch                     # Filter against main
+/fvgsd-pr-branch develop             # Filter against develop
 ```
 
 ---
 
-### `/vgsd-secure-phase`
+### `/fvgsd-secure-phase`
 
 Retroactively verify threat mitigations for a completed phase.
 
@@ -1237,7 +1237,7 @@ Retroactively verify threat mitigations for a completed phase.
 
 **Prerequisites:** Phase must have been executed. Works with or without existing SECURITY.md.
 **Produces:** `{phase}-SECURITY.md` with threat verification results
-**Spawns:** `gsd-security-auditor` agent
+**Spawns:** `fvgsd-security-auditor` agent
 
 Three operating modes:
 1. SECURITY.md exists — audit and verify existing mitigations
@@ -1245,13 +1245,13 @@ Three operating modes:
 3. Phase not executed — exits with guidance
 
 ```bash
-/vgsd-secure-phase                   # Audit last completed phase
-/vgsd-secure-phase 5                 # Audit specific phase
+/fvgsd-secure-phase                   # Audit last completed phase
+/fvgsd-secure-phase 5                 # Audit specific phase
 ```
 
 ---
 
-### `/vgsd-docs-update`
+### `/fvgsd-docs-update`
 
 Generate or update project documentation verified against the codebase.
 
@@ -1261,21 +1261,21 @@ Generate or update project documentation verified against the codebase.
 | `--verify-only` | No | Check existing docs for accuracy, no generation |
 
 **Produces:** Up to 9 documentation files (README, architecture, API, getting started, development, testing, configuration, deployment, contributing)
-**Spawns:** `gsd-doc-writer` agents (one per doc type), then `gsd-doc-verifier` agents for factual verification
+**Spawns:** `fvgsd-doc-writer` agents (one per doc type), then `fvgsd-doc-verifier` agents for factual verification
 
 Each doc writer explores the codebase directly — no hallucinated paths or stale signatures. Doc verifier checks claims against the live filesystem.
 
 ```bash
-/vgsd-docs-update                    # Generate/update docs interactively
-/vgsd-docs-update --force            # Regenerate all docs
-/vgsd-docs-update --verify-only      # Verify existing docs only
+/fvgsd-docs-update                    # Generate/update docs interactively
+/fvgsd-docs-update --force            # Regenerate all docs
+/fvgsd-docs-update --verify-only      # Verify existing docs only
 ```
 
 ---
 
 ## Task Capture & Backlog Commands
 
-### `/vgsd-capture`
+### `/fvgsd-capture`
 
 Capture ideas, tasks, notes, and seeds to their appropriate destination. Default mode adds a structured todo; flags route to specialized capture workflows.
 
@@ -1288,36 +1288,36 @@ Capture ideas, tasks, notes, and seeds to their appropriate destination. Default
 | `--list` | List pending todos and select one to work on |
 | `--global` | Use global scope (for note operations) |
 
-**Backlog:** 999.x numbering keeps items outside the active phase sequence; phase directories are created immediately so `/vgsd-discuss-phase` and `/vgsd-plan-phase` work on them.
-**Seeds:** Preserve full WHY, WHEN to surface, and breadcrumbs — consumed by `/vgsd-new-milestone`.
+**Backlog:** 999.x numbering keeps items outside the active phase sequence; phase directories are created immediately so `/fvgsd-discuss-phase` and `/fvgsd-plan-phase` work on them.
+**Seeds:** Preserve full WHY, WHEN to surface, and breadcrumbs — consumed by `/fvgsd-new-milestone`.
 
 **Produces:** `.planning/todos/` (default), note files (--note), ROADMAP.md backlog section (--backlog), `.planning/seeds/SEED-NNN-slug.md` (--seed)
 
 ```bash
-/vgsd-capture "Consider adding dark mode support"   # Add todo
-/vgsd-capture --note "Caching strategy idea"        # Quick note
-/vgsd-capture --note list                           # List all notes
-/vgsd-capture --note promote 3                      # Promote note 3 to todo
-/vgsd-capture --backlog "GraphQL API layer"         # Add to backlog
-/vgsd-capture --seed "Add real-time collaboration when WebSocket infra is in place"
-/vgsd-capture --list                                # Browse and act on todos
+/fvgsd-capture "Consider adding dark mode support"   # Add todo
+/fvgsd-capture --note "Caching strategy idea"        # Quick note
+/fvgsd-capture --note list                           # List all notes
+/fvgsd-capture --note promote 3                      # Promote note 3 to todo
+/fvgsd-capture --backlog "GraphQL API layer"         # Add to backlog
+/fvgsd-capture --seed "Add real-time collaboration when WebSocket infra is in place"
+/fvgsd-capture --list                                # Browse and act on todos
 ```
 
 ---
 
-### `/vgsd-review-backlog`
+### `/fvgsd-review-backlog`
 
 Review and promote backlog items to active milestone.
 
 **Actions per item:** Promote (move to active sequence), Keep (leave in backlog), Remove (delete).
 
 ```bash
-/vgsd-review-backlog
+/fvgsd-review-backlog
 ```
 
 ---
 
-### `/vgsd-thread`
+### `/fvgsd-thread`
 
 Manage persistent context threads for cross-session work.
 
@@ -1331,16 +1331,16 @@ Manage persistent context threads for cross-session work.
 | `name` | — | Resume existing thread by name |
 | `description` | — | Create new thread |
 
-Threads are lightweight cross-session knowledge stores for work that spans multiple sessions but doesn't belong to any specific phase. Lighter weight than `/vgsd-pause-work`.
+Threads are lightweight cross-session knowledge stores for work that spans multiple sessions but doesn't belong to any specific phase. Lighter weight than `/fvgsd-pause-work`.
 
 ```bash
-/vgsd-thread                         # List all threads
-/vgsd-thread list --open             # List only open/in-progress threads
-/vgsd-thread list --resolved         # List only resolved threads
-/vgsd-thread status fix-deploy-key   # Show thread status
-/vgsd-thread close fix-deploy-key    # Mark thread as resolved
-/vgsd-thread fix-deploy-key-auth     # Resume thread
-/vgsd-thread "Investigate TCP timeout in pasta service"  # Create new
+/fvgsd-thread                         # List all threads
+/fvgsd-thread list --open             # List only open/in-progress threads
+/fvgsd-thread list --resolved         # List only resolved threads
+/fvgsd-thread status fix-deploy-key   # Show thread status
+/fvgsd-thread close fix-deploy-key    # Mark thread as resolved
+/fvgsd-thread fix-deploy-key-auth     # Resume thread
+/fvgsd-thread "Investigate TCP timeout in pasta service"  # Create new
 ```
 
 ---
@@ -1355,7 +1355,7 @@ Detect drift between STATE.md and the actual filesystem.
 **Produces:** Validation report showing any drift between STATE.md fields and filesystem reality
 
 ```bash
-node gsd-tools.cjs state validate
+node fvgsd-tools.cjs state validate
 ```
 
 ---
@@ -1372,8 +1372,8 @@ Reconstruct STATE.md from actual project state on disk.
 **Produces:** Updated `STATE.md` reflecting filesystem reality
 
 ```bash
-node gsd-tools.cjs state sync             # Reconstruct STATE.md from disk
-node gsd-tools.cjs state sync --verify    # Dry-run: show changes without writing
+node fvgsd-tools.cjs state sync             # Reconstruct STATE.md from disk
+node fvgsd-tools.cjs state sync --verify    # Dry-run: show changes without writing
 ```
 
 ---
@@ -1391,7 +1391,7 @@ Record state transition after plan-phase completes (Planned/Ready to execute).
 **Produces:** Updated `STATE.md` with post-planning state
 
 ```bash
-node gsd-tools.cjs state planned-phase --phase 3 --plans 2
+node fvgsd-tools.cjs state planned-phase --phase 3 --plans 2
 ```
 
 ---
@@ -1404,9 +1404,9 @@ Optional git and session hooks gated behind `hooks.community: true` in `.plannin
 
 | Hook | Purpose |
 |------|---------|
-| `gsd-validate-commit.sh` | Enforce Conventional Commits format on git commit messages |
-| `gsd-session-state.sh` | Track session state transitions |
-| `gsd-phase-boundary.sh` | Enforce phase boundary checks |
+| `fvgsd/validate-commit.sh` | Enforce Conventional Commits format on git commit messages |
+| `fvgsd/session-state.sh` | Track session state transitions |
+| `fvgsd/phase-boundary.sh` | Enforce phase boundary checks |
 
 Enable with:
 ```json
@@ -1417,7 +1417,7 @@ Enable with:
 
 ### Community Invite
 
-To join the GSD Discord community, visit the link in the GSD README or run `/vgsd-help` and follow the Discord link shown there.
+To join the GSD Discord community, visit the link in the GSD README or run `/fvgsd-help` and follow the Discord link shown there.
 
 ---
 

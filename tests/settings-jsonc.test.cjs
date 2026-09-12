@@ -146,14 +146,14 @@ describe('stripJsonComments (#1461)', () => {
         "hooks": [
           {
             "type": "command",
-            "command": "node ~/.claude/hooks/gsd-statusline.js"
+            "command": "node ~/.claude/hooks/fvgsd/statusline.js"
           }
         ]
       }
     ]
   },
   "statusLine": {
-    "command": "node ~/.claude/hooks/gsd-statusline.js",
+    "command": "node ~/.claude/hooks/fvgsd/statusline.js",
     "refreshInterval": 10
   }
 }`;

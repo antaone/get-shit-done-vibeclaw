@@ -1,16 +1,16 @@
 <purpose>
 Orchestrate the full developer profiling flow: consent, session analysis (or questionnaire fallback), profile generation, result display, and artifact creation.
 
-This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) into a cohesive user-facing experience. All heavy lifting is done by existing `gsd-sdk query` handlers (with legacy `gsd-tools.cjs` parity where needed) and the gsd-user-profiler agent -- this workflow orchestrates the sequence, handles branching, and provides the UX.
+This workflow wires Phase 1 (session pipeline) and Phase 2 (profiling engine) into a cohesive user-facing experience. All heavy lifting is done by existing `fvgsd-sdk query` handlers (with legacy `fvgsd-tools.cjs` parity where needed) and the fvgsd-user-profiler agent -- this workflow orchestrates the sequence, handles branching, and provides the UX.
 </purpose>
 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
 Key references:
-- @$HOME/.claude/get-shit-done/references/ui-brand.md (display patterns)
-- @$HOME/.claude/agents/gsd-user-profiler.md (profiler agent definition)
-- @$HOME/.claude/get-shit-done/references/user-profiling.md (profiling reference doc)
+- @$HOME/.claude/fvgsd/references/ui-brand.md (display patterns)
+- @$HOME/.claude/agents/fvgsd-user-profiler.md (profiler agent definition)
+- @$HOME/.claude/fvgsd/references/user-profiling.md (profiling reference doc)
 </required_reading>
 
 <process>
@@ -24,7 +24,7 @@ Parse flags from $ARGUMENTS:
 Check for existing profile:
 
 ```bash
-PROFILE_PATH="$HOME/.claude/get-shit-done/USER-PROFILE.md"
+PROFILE_PATH="$HOME/.claude/fvgsd/USER-PROFILE.md"
 [ -f "$PROFILE_PATH" ] && echo "EXISTS" || echo "NOT_FOUND"
 ```
 
@@ -48,7 +48,7 @@ If "Cancel": Display "No changes made." and exit.
 
 Backup existing profile:
 ```bash
-cp "$HOME/.claude/get-shit-done/USER-PROFILE.md" "$HOME/.claude/USER-PROFILE.backup.md"
+cp "$HOME/.claude/fvgsd/USER-PROFILE.md" "$HOME/.claude/USER-PROFILE.backup.md"
 ```
 
 Display: "Re-analyzing your sessions to update your profile."
@@ -92,7 +92,7 @@ Your recent Claude Code sessions, looking for patterns in these
 
 ✓ Reads session files locally (read-only, nothing modified)
 ✓ Analyzes message patterns (not content meaning)
-✓ Stores profile at $HOME/.claude/get-shit-done/USER-PROFILE.md
+✓ Stores profile at $HOME/.claude/fvgsd/USER-PROFILE.md
 ✗ Nothing is sent to external services
 ✗ Sensitive content (API keys, passwords) is automatically excluded
 ```
@@ -120,7 +120,7 @@ Use AskUserQuestion:
 - options:
   - "Let's go" -- Proceed to step 3 (session analysis)
   - "Use questionnaire instead" -- Jump to step 4b (questionnaire path)
-  - "Not now" -- Display "No worries. Run /vgsd:profile-user when ready." and exit
+  - "Not now" -- Display "No worries. Run /fvgsd:profile-user when ready." and exit
 
 ---
 
@@ -130,7 +130,7 @@ Display: "◆ Scanning sessions..."
 
 Run session scan:
 ```bash
-SCAN_RESULT=$(gsd-sdk query scan-sessions --json 2>/dev/null)
+SCAN_RESULT=$(fvgsd-sdk query scan-sessions --json 2>/dev/null)
 ```
 
 Parse the JSON output to get session count and project count.
@@ -150,7 +150,7 @@ Display: "◆ Sampling messages..."
 
 Run profile sampling:
 ```bash
-SAMPLE_RESULT=$(gsd-sdk query profile-sample --json 2>/dev/null)
+SAMPLE_RESULT=$(fvgsd-sdk query profile-sample --json 2>/dev/null)
 ```
 
 Parse the JSON output to get the temp directory path and message count.
@@ -159,17 +159,17 @@ Display: "✓ Sampled N messages from M projects"
 
 Display: "◆ Analyzing patterns..."
 
-**Spawn gsd-user-profiler agent using Task tool:**
+**Spawn fvgsd-user-profiler agent using Task tool:**
 
-Use the Task tool to spawn the `gsd-user-profiler` agent. Provide it with:
+Use the Task tool to spawn the `fvgsd-user-profiler` agent. Provide it with:
 - The sampled JSONL file path from profile-sample output
-- The user-profiling reference doc at `$HOME/.claude/get-shit-done/references/user-profiling.md`
+- The user-profiling reference doc at `$HOME/.claude/fvgsd/references/user-profiling.md`
 
 The agent prompt should follow this structure:
 ```
 Read the profiling reference document and the sampled session messages, then analyze the developer's behavioral patterns across all 8 dimensions.
 
-Reference: @$HOME/.claude/get-shit-done/references/user-profiling.md
+Reference: @$HOME/.claude/fvgsd/references/user-profiling.md
 Session data: @{temp_dir}/profile-sample.jsonl
 
 Analyze these messages and return your analysis in the <analysis> JSON format specified in the reference document.
@@ -201,7 +201,7 @@ Display: "Using questionnaire to build your profile."
 
 **Get questions:**
 ```bash
-QUESTIONS=$(gsd-sdk query profile-questionnaire --json 2>/dev/null)
+QUESTIONS=$(fvgsd-sdk query profile-questionnaire --json 2>/dev/null)
 ```
 
 Parse the questions JSON. It contains 8 questions, one per dimension.
@@ -224,7 +224,7 @@ Write the answers JSON to `$ANSWERS_PATH`.
 
 **Convert answers to analysis:**
 ```bash
-ANALYSIS_RESULT=$(gsd-sdk query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
+ANALYSIS_RESULT=$(fvgsd-sdk query profile-questionnaire --answers "$ANSWERS_PATH" --json 2>/dev/null)
 ```
 
 Parse the analysis JSON from the result.
@@ -271,10 +271,10 @@ Write updated analysis JSON back to `$ANALYSIS_PATH`.
 Display: "◆ Writing profile..."
 
 ```bash
-gsd-sdk query write-profile --input "$ANALYSIS_PATH" --json
+fvgsd-sdk query write-profile --input "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Profile written to $HOME/.claude/get-shit-done/USER-PROFILE.md"
+Display: "✓ Profile written to $HOME/.claude/fvgsd/USER-PROFILE.md"
 
 ---
 
@@ -335,11 +335,11 @@ Use AskUserQuestion with multiSelect:
 - header: "Artifacts"
 - question: "Which artifacts should I generate?"
 - options (ALL pre-selected by default):
-  - "/vgsd-dev-preferences command file" -- "Load your preferences in any session"
+  - "/fvgsd-dev-preferences command file" -- "Load your preferences in any session"
   - "CLAUDE.md profile section" -- "Add profile to this project's CLAUDE.md"
   - "Global CLAUDE.md" -- "Add profile to $HOME/.claude/CLAUDE.md for all projects"
 
-**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at $HOME/.claude/get-shit-done/USER-PROFILE.md" and jump to step 10.
+**If no artifacts selected:** Display "No artifacts generated. Your profile is saved at $HOME/.claude/fvgsd/USER-PROFILE.md" and jump to step 10.
 
 ---
 
@@ -347,18 +347,18 @@ Use AskUserQuestion with multiSelect:
 
 Generate selected artifacts sequentially (file I/O is fast, no benefit from parallel agents):
 
-**For /vgsd-dev-preferences (if selected):**
+**For /fvgsd-dev-preferences (if selected):**
 
 ```bash
-gsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
+fvgsd-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json
 ```
 
-Display: "✓ Generated /vgsd-dev-preferences at $HOME/.claude/skills/vgsd-dev-preferences/SKILL.md"
+Display: "✓ Generated /fvgsd-dev-preferences at $HOME/.claude/skills/fvgsd-dev-preferences/SKILL.md"
 
 **For CLAUDE.md profile section (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
+fvgsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --json
 ```
 
 Display: "✓ Added profile section to CLAUDE.md"
@@ -366,12 +366,12 @@ Display: "✓ Added profile section to CLAUDE.md"
 **For Global CLAUDE.md (if selected):**
 
 ```bash
-gsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
+fvgsd-sdk query generate-claude-profile --analysis "$ANALYSIS_PATH" --global --json
 ```
 
 Display: "✓ Added profile section to $HOME/.claude/CLAUDE.md"
 
-**Error handling:** If any `gsd-sdk query` or gsd-tools.cjs call fails, display the error message and use AskUserQuestion to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
+**Error handling:** If any `fvgsd-sdk query` or fvgsd-tools.cjs call fails, display the error message and use AskUserQuestion to offer "Retry" or "Skip this artifact". On retry, re-run the command. On skip, continue to next artifact.
 
 ---
 
@@ -406,13 +406,13 @@ If nothing changed: Display "No changes detected -- your profile is already up t
  GSD > PROFILE COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Your profile:    $HOME/.claude/get-shit-done/USER-PROFILE.md
+Your profile:    $HOME/.claude/fvgsd/USER-PROFILE.md
 ```
 
 Then list paths for each generated artifact:
 ```
 Artifacts:
-  ✓ /vgsd-dev-preferences   $HOME/.claude/skills/vgsd-dev-preferences/SKILL.md
+  ✓ /fvgsd-dev-preferences   $HOME/.claude/skills/fvgsd-dev-preferences/SKILL.md
   ✓ CLAUDE.md section       ./CLAUDE.md
   ✓ Global CLAUDE.md        $HOME/.claude/CLAUDE.md
 ```
@@ -446,7 +446,7 @@ rm -f "$ANALYSIS_PATH" 2>/dev/null
 - [ ] Profile written to USER-PROFILE.md via write-profile subcommand
 - [ ] Result display shows report card table and highlight reel with evidence
 - [ ] Artifact selection uses multiSelect with all options pre-selected
-- [ ] Artifacts generated sequentially via gsd-sdk query (or gsd-tools.cjs) subcommands
+- [ ] Artifacts generated sequentially via fvgsd-sdk query (or fvgsd-tools.cjs) subcommands
 - [ ] Refresh diff shows changed dimensions when --refresh was used
 - [ ] Temp files cleaned up on completion
 </success_criteria>

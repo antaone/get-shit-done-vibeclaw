@@ -686,7 +686,7 @@ function cmdValidateHealth(cwd, options, raw) {
       }
     } catch { /* intentionally empty */ }
     // Bug #3652 — also union phases from every milestone archive, not only
-    // the active one. After /vgsd:complete-milestone, historical phase dirs
+    // the active one. After /fvgsd:complete-milestone, historical phase dirs
     // live under milestones/vX.Y-phases/ and their `#### Phase N:` headings
     // get collapsed inside <details> blocks (which the heading regex above
     // misses). collectDiskPhases() only scans the active archive, so
@@ -820,12 +820,12 @@ function cmdValidateHealth(cwd, options, raw) {
     if (!agentStatus.agents_installed) {
       if (agentStatus.installed_agents.length === 0) {
         addIssue('warning', 'W010',
-          `No GSD agents found in ${agentStatus.agents_dir} — Task(subagent_type="gsd-*") will fall back to general-purpose`,
-          'Run the GSD installer: npx get-shit-done-cc@latest');
+          `No GSD agents found in ${agentStatus.agents_dir} — Task(subagent_type="fvgsd-*") will fall back to general-purpose`,
+          'Run the GSD installer: npx fvgsd@latest');
       } else {
         addIssue('warning', 'W010',
           `Missing ${agentStatus.missing_agents.length} GSD agents: ${agentStatus.missing_agents.join(', ')} — affected workflows will fall back to general-purpose`,
-          'Run the GSD installer: npx get-shit-done-cc@latest');
+          'Run the GSD installer: npx fvgsd@latest');
       }
     }
   } catch { /* intentionally empty — agent check is non-blocking */ }

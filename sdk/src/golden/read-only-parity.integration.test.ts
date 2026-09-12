@@ -1,5 +1,5 @@
 /**
- * Read-only subprocess golden checks (SDK vs gsd-tools.cjs JSON).
+ * Read-only subprocess golden checks (SDK vs fvgsd-tools.cjs JSON).
  * Row data: `read-only-golden-rows.ts`. Policy: `golden-policy.ts`, `QUERY-HANDLERS.md`.
  */
 import { describe, it, expect } from 'vitest';
@@ -18,7 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '..', '..', '..');
 
 describe('Read-only golden parity (JSON toEqual)', () => {
-  it.each(STABLE_JSON_PARITY_ROWS)('$canonical matches gsd-tools.cjs JSON', async (row) => {
+  it.each(STABLE_JSON_PARITY_ROWS)('$canonical matches fvgsd-tools.cjs JSON', async (row) => {
 
     const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
     const registry = createRegistry();
@@ -28,7 +28,7 @@ describe('Read-only golden parity (JSON toEqual)', () => {
 });
 
 describe('config-path (plain stdout vs SDK { path })', () => {
-  it('SDK path matches gsd-tools.cjs plain-text stdout', async () => {
+  it('SDK path matches fvgsd-tools.cjs plain-text stdout', async () => {
     const out = await captureGsdToolsStdout('config-path', [], REPO_ROOT);
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('config-path', [], REPO_ROOT);
@@ -39,7 +39,7 @@ describe('config-path (plain stdout vs SDK { path })', () => {
 });
 
 describe('audit-open golden parity (excluding scanned_at)', () => {
-  it('SDK JSON matches gsd-tools.cjs except volatile scanned_at', async () => {
+  it('SDK JSON matches fvgsd-tools.cjs except volatile scanned_at', async () => {
     const gsdOutput = await captureGsdToolsOutput('audit-open', ['--json'], REPO_ROOT);
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('audit-open', ['--json'], REPO_ROOT);
@@ -54,7 +54,7 @@ describe('audit-open golden parity (excluding scanned_at)', () => {
 });
 
 describe('state.json golden parity (excluding last_updated)', () => {
-  it('SDK rebuilt frontmatter matches gsd-tools.cjs except volatile last_updated', async () => {
+  it('SDK rebuilt frontmatter matches fvgsd-tools.cjs except volatile last_updated', async () => {
     const gsdOutput = await captureGsdToolsOutput('state', ['json'], REPO_ROOT);
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('state.json', [], REPO_ROOT);
@@ -68,7 +68,7 @@ describe('state.json golden parity (excluding last_updated)', () => {
 });
 
 describe('summary.extract golden parity (with array-of-objects fix)', () => {
-  it('SDK JSON matches gsd-tools.cjs except for intentional array-of-objects parsing fix', async () => {
+  it('SDK JSON matches fvgsd-tools.cjs except for intentional array-of-objects parsing fix', async () => {
     const gsdOutput = await captureGsdToolsOutput('summary-extract', ['sdk/src/golden/fixtures/summary-extract-sample.md'], REPO_ROOT);
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('summary.extract', ['sdk/src/golden/fixtures/summary-extract-sample.md'], REPO_ROOT);
@@ -87,7 +87,7 @@ describe('summary.extract golden parity (with array-of-objects fix)', () => {
 });
 
 describe('state.load golden parity', () => {
-  it('SDK load payload matches gsd-tools.cjs state load', async () => {
+  it('SDK load payload matches fvgsd-tools.cjs state load', async () => {
     const gsdOutput = await captureGsdToolsOutput('state', ['load'], REPO_ROOT);
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('state.load', [], REPO_ROOT);
@@ -115,7 +115,7 @@ describe('state.get golden parity', () => {
 });
 
 describe('verify.commits golden parity', () => {
-  it('SDK output matches gsd-tools.cjs for two SHAs', async () => {
+  it('SDK output matches fvgsd-tools.cjs for two SHAs', async () => {
     const revs = execSync('git rev-list --max-count=2 HEAD', { cwd: REPO_ROOT, encoding: 'utf-8' })
       .trim()
       .split('\n')

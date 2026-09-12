@@ -168,7 +168,7 @@ test('throws when installer migrations require user choice', () => {
   assert.ok(captured instanceof Error);
   assert.match(captured.message, /installer migration blocked pending user choice/);
   assert.match(captured.message, /hooks\/gsd-retired-hook\.js/);
-  assert.match(captured.message, /GSD_INSTALLER_MIGRATION_RESOLVE/);
+  assert.match(captured.message, /FVGSD_INSTALLER_MIGRATION_RESOLVE/);
   assert.ok(captured.blockedByReason, 'error exposes grouped-by-reason data');
-  assert.equal(captured.resolutionEnvVar, 'GSD_INSTALLER_MIGRATION_RESOLVE');
+  assert.equal(captured.resolutionEnvVar, 'FVGSD_INSTALLER_MIGRATION_RESOLVE');
 });

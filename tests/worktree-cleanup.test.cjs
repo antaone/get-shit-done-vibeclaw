@@ -7,7 +7,7 @@
  * Worktree Cleanup Module — HEAD attachment, post-executor cleanup, and contract tests
  *
  * Seam: get-shit-done/workflows/{execute-phase,execute-plan,quick}.md,
- *       agents/gsd-executor.md, references/git-integration.md
+ *       agents/fvgsd-executor.md, references/git-integration.md
  *
  * Split from the consolidated 13→2 worktree cluster (≤800 LOC/file):
  *   - tests/bug-2924-worktree-head-attachment.test.cjs   (#2924: HEAD attachment)
@@ -31,7 +31,7 @@ const REPO_ROOT = path.join(__dirname, '..');
 const EXECUTE_PHASE_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'execute-phase.md');
 const EXECUTE_PLAN_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'execute-plan.md');
 const QUICK_PATH = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'quick.md');
-const EXECUTOR_AGENT_PATH = path.join(REPO_ROOT, 'agents', 'gsd-executor.md');
+const EXECUTOR_AGENT_PATH = path.join(REPO_ROOT, 'agents', 'fvgsd-executor.md');
 const GIT_INTEGRATION_PATH = path.join(REPO_ROOT, 'get-shit-done', 'references', 'git-integration.md');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -352,12 +352,12 @@ describe('bug #2924: worktree HEAD attachment + destructive recovery', () => {
     });
   });
 
-  describe('gsd-executor.md prohibits update-ref self-recovery', () => {
+  describe('fvgsd-executor.md prohibits update-ref self-recovery', () => {
     const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
     const block = extractNamedBlock(content, 'destructive_git_prohibition');
 
     test('destructive_git_prohibition block exists', () => {
-      assert.ok(block, 'gsd-executor.md must contain a <destructive_git_prohibition> block');
+      assert.ok(block, 'fvgsd-executor.md must contain a <destructive_git_prohibition> block');
     });
 
     test('block prohibits `git update-ref refs/heads/<protected>`', () => {
@@ -379,12 +379,12 @@ describe('bug #2924: worktree HEAD attachment + destructive recovery', () => {
     });
   });
 
-  describe('gsd-executor.md task_commit_protocol enforces worktree-agent-* allow-list', () => {
+  describe('fvgsd-executor.md task_commit_protocol enforces worktree-agent-* allow-list', () => {
     const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
     const block = extractNamedBlock(content, 'task_commit_protocol');
 
     test('task_commit_protocol block exists', () => {
-      assert.ok(block, 'gsd-executor.md must contain a <task_commit_protocol> block');
+      assert.ok(block, 'fvgsd-executor.md must contain a <task_commit_protocol> block');
     });
 
     test('step 0 enforces positive worktree-agent-* allow-list (#2924 hardening)', () => {
@@ -619,7 +619,7 @@ describe('worktree commit safety hardening (#1977)', () => {
     assert.ok(isUniversal, 'worktree_branch_check description must indicate the fix applies to all platforms');
   });
 
-  test('gsd-executor.md task_commit_protocol includes post-commit deletion verification', () => {
+  test('fvgsd-executor.md task_commit_protocol includes post-commit deletion verification', () => {
     const content = fs.readFileSync(EXECUTOR_AGENT_PATH, 'utf-8');
     assert.ok(content.includes('--diff-filter=D'), 'must include --diff-filter=D deletion verification');
     assert.ok(
@@ -712,7 +712,7 @@ test('#3425: helper cleanup path pins orchestrator CWD to primary worktree and c
   assert.match(content, /cd "\$PRIMARY_WT" \|\| \{ echo "FATAL: cannot cd to primary worktree \$PRIMARY_WT" >&2; exit 1; \}/);
   assert.match(content, /ORCH_BRANCH=\$\(git rev-parse --abbrev-ref HEAD\)/);
   assert.match(content, /FATAL: orchestrator on '\$ORCH_BRANCH' but expected '\$EXPECTED_BRANCH' before worktree cleanup — refusing to merge \(#3174-class drift\)/);
-  assert.match(content, /gsd-sdk query worktree\.cleanup-wave --manifest "\$WAVE_WORKTREE_MANIFEST" \|\| exit 1/);
+  assert.match(content, /fvgsd-sdk query worktree\.cleanup-wave --manifest "\$WAVE_WORKTREE_MANIFEST" \|\| exit 1/);
 });
 
 test('#3425: cleanup-tail snippet carries the same primary-worktree pin before removal', () => {

@@ -17,7 +17,7 @@ function read(relativePath) {
 }
 
 function runGsd(args, cwd) {
-  return spawnSync(process.execPath, [path.join(ROOT, 'get-shit-done/bin/gsd-tools.cjs'), ...args], {
+  return spawnSync(process.execPath, [path.join(ROOT, 'get-shit-done/bin/fvgsd-tools.cjs'), ...args], {
     cwd,
     encoding: 'utf8',
   });
@@ -46,7 +46,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   });
 
   test('config-get returns schema defaults for executor stall detector keys', (t) => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3212-'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3212-'));
     t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
     fs.mkdirSync(path.join(tmp, '.planning'));
     fs.writeFileSync(path.join(tmp, '.planning/config.json'), '{}\n');

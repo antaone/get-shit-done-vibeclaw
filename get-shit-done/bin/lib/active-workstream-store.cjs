@@ -2,7 +2,7 @@
  * Active Workstream Pointer Store Module
  *
  * Owns workstream source precedence and selection:
- * CLI --ws > GSD_WORKSTREAM env > stored active workstream pointer.
+ * CLI --ws > FVGSD_WORKSTREAM env > stored active workstream pointer.
  */
 
 const { getActiveWorkstream } = require('./planning-workspace.cjs');
@@ -53,8 +53,8 @@ function resolveActiveWorkstream(cwd, args, env = process.env, deps = {}) {
   if (parsed.value) {
     ws = parsed.value;
     source = parsed.source;
-  } else if (env && typeof env.GSD_WORKSTREAM === 'string' && env.GSD_WORKSTREAM.trim()) {
-    ws = env.GSD_WORKSTREAM.trim();
+  } else if (env && typeof env.FVGSD_WORKSTREAM === 'string' && env.FVGSD_WORKSTREAM.trim()) {
+    ws = env.FVGSD_WORKSTREAM.trim();
     source = 'env';
   } else {
     ws = getStored(cwd) || null;
@@ -74,7 +74,7 @@ function resolveActiveWorkstream(cwd, args, env = process.env, deps = {}) {
 
 function applyResolvedWorkstreamEnv(resolution, env = process.env) {
   if (!resolution || !resolution.ws) return;
-  env.GSD_WORKSTREAM = resolution.ws;
+  env.FVGSD_WORKSTREAM = resolution.ws;
 }
 
 module.exports = {

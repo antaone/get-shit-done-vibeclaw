@@ -21,7 +21,7 @@ Rules that apply to ALL workflows and agents. Individual workflows may have addi
 
 ## Subagent Rules
 
-10. **NEVER** use non-GSD agent types (`general-purpose`, `Explore`, `Plan`, `Bash`, `feature-dev`, etc.) -- ALWAYS use `subagent_type: "gsd-{agent}"` (e.g., `gsd-phase-researcher`, `gsd-executor`, `gsd-planner`). GSD agents have project-aware prompts, audit logging, and workflow context. Generic agents bypass all of this.
+10. **NEVER** use non-GSD agent types (`general-purpose`, `Explore`, `Plan`, `Bash`, `feature-dev`, etc.) -- ALWAYS use `subagent_type: "gsd-{agent}"` (e.g., `fvgsd-phase-researcher`, `fvgsd-executor`, `fvgsd-planner`). GSD agents have project-aware prompts, audit logging, and workflow context. Generic agents bypass all of this.
 11. **Do not** re-litigate decisions that are already locked in CONTEXT.md (or PROJECT.md ## Context section) -- respect locked decisions unconditionally.
 
 ## Questioning Anti-Patterns
@@ -34,7 +34,7 @@ Reference: `references/questioning.md` for the full anti-pattern list.
 
 ## State Management Anti-Patterns
 
-15. **No direct Write/Edit to STATE.md or ROADMAP.md for mutations.** Always use `gsd-sdk query` for registered state/roadmap handlers (e.g. `state.update`, `state.advance-plan`, `roadmap.update-plan-progress`), or legacy `node …/vgsd-tools.cjs` for CLI-only commands. Direct Write tool usage bypasses safe update logic and is unsafe in multi-session environments. Exception: first-time creation of STATE.md from template is allowed.
+15. **No direct Write/Edit to STATE.md or ROADMAP.md for mutations.** Always use `fvgsd-sdk query` for registered state/roadmap handlers (e.g. `state.update`, `state.advance-plan`, `roadmap.update-plan-progress`), or legacy `node …/fvgsd-tools.cjs` for CLI-only commands. Direct Write tool usage bypasses safe update logic and is unsafe in multi-session environments. Exception: first-time creation of STATE.md from template is allowed.
 
 ## Behavioral Rules
 
@@ -53,8 +53,8 @@ Reference: `references/questioning.md` for the full anti-pattern list.
 ## GSD-Specific Rules
 
 24. **Do not** check for `mode === 'auto'` or `mode === 'autonomous'` -- GSD uses `yolo` config flag. Check `yolo: true` for autonomous mode, absence or `false` for interactive mode.
-25. **Prefer `gsd-sdk query`** for orchestration when a handler exists; when shelling out to the legacy CLI, use **`gsd-tools.cjs`** (not `gsd-tools.js` or any other filename) — GSD ships the programmatic API as CommonJS for Node.js CLI compatibility.
-26. **Plan files MUST follow `{padded_phase}-{NN}-PLAN.md` pattern** (e.g., `01-01-PLAN.md`). Never use `PLAN-01.md`, `plan-01.md`, or any other variation -- gsd-tools detection depends on this exact pattern.
+25. **Prefer `fvgsd-sdk query`** for orchestration when a handler exists; when shelling out to the legacy CLI, use **`fvgsd-tools.cjs`** (not `fvgsd-tools.js` or any other filename) — GSD ships the programmatic API as CommonJS for Node.js CLI compatibility.
+26. **Plan files MUST follow `{padded_phase}-{NN}-PLAN.md` pattern** (e.g., `01-01-PLAN.md`). Never use `PLAN-01.md`, `plan-01.md`, or any other variation -- fvgsd-tools detection depends on this exact pattern.
 27. **Do not start executing the next plan before writing the SUMMARY.md for the current plan** -- downstream plans may reference it via `@` includes.
 
 ## iOS / Apple Platform Rules

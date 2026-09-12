@@ -1,5 +1,5 @@
 ---
-name: vgsd:map-codebase
+name: fvgsd:map-codebase
 description: Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents
 argument-hint: "[--fast [--focus tech|arch|quality|concerns]] [--query <term>|status|diff|refresh] [area]"
 allowed-tools:
@@ -13,18 +13,18 @@ requires: [config, new-project, plan-phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "map-codebase" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "map-codebase" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
 
 <objective>
-Analyze existing codebase using parallel gsd-codebase-mapper agents to produce structured codebase documents.
+Analyze existing codebase using parallel fvgsd-codebase-mapper agents to produce structured codebase documents.
 
 Each mapper agent explores a focus area and **writes documents directly** to `.planning/codebase/`. The orchestrator only receives confirmations, keeping context usage minimal.
 
@@ -32,7 +32,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/map-codebase.md
+@~/.claude/fvgsd/workflows/map-codebase.md
 </execution_context>
 
 <flags>
@@ -53,8 +53,8 @@ Parse the first token of $ARGUMENTS:
 Check for .planning/STATE.md - loads context if project already initialized
 
 **This command can run:**
-- Before /vgsd:new-project (brownfield codebases) - creates codebase map first
-- After /vgsd:new-project (greenfield codebases) - updates codebase map as code evolves
+- Before /fvgsd:new-project (brownfield codebases) - creates codebase map first
+- After /fvgsd:new-project (greenfield codebases) - updates codebase map as code evolves
 - Anytime to refresh codebase understanding
 </context>
 
@@ -74,7 +74,7 @@ Check for .planning/STATE.md - loads context if project already initialized
 <process>
 1. Check if .planning/codebase/ already exists (offer to refresh or skip)
 2. Create .planning/codebase/ directory structure
-3. Spawn 4 parallel gsd-codebase-mapper agents:
+3. Spawn 4 parallel fvgsd-codebase-mapper agents:
    - Agent 1: tech focus → writes STACK.md, INTEGRATIONS.md
    - Agent 2: arch focus → writes ARCHITECTURE.md, STRUCTURE.md
    - Agent 3: quality focus → writes CONVENTIONS.md, TESTING.md
@@ -82,7 +82,7 @@ Check for .planning/STATE.md - loads context if project already initialized
 4. Wait for agents to complete, collect confirmations (NOT document contents)
 5. Verify all 7 documents exist with line counts
 6. Commit codebase map
-7. Offer next steps (typically: /vgsd:new-project or /vgsd:plan-phase)
+7. Offer next steps (typically: /fvgsd:new-project or /fvgsd:plan-phase)
 </process>
 
 <success_criteria>

@@ -19,7 +19,7 @@ The statusline shows context usage to the **user**, but the **agent** has no awa
 |-------|-----------|----------------|
 | Normal | > 35% | No warning |
 | WARNING | <= 35% | Wrap up current task, avoid starting new complex work |
-| CRITICAL | <= 25% | Stop immediately, save state (`/vgsd-pause-work`) |
+| CRITICAL | <= 25% | Stop immediately, save state (`/fvgsd-pause-work`) |
 
 ## Debounce
 
@@ -31,13 +31,13 @@ To avoid spamming the agent with repeated warnings:
 ## Architecture
 
 ```
-Statusline Hook (gsd-statusline.js)
+Statusline Hook (fvgsd/statusline.js)
     | writes
     v
 /tmp/claude-ctx-{session_id}.json
     ^ reads
     |
-Context Monitor (gsd-context-monitor.js, PostToolUse/AfterTool)
+Context Monitor (fvgsd/context-monitor.js, PostToolUse/AfterTool)
     | injects
     v
 additionalContext -> Agent sees warning
@@ -56,11 +56,11 @@ The bridge file is a simple JSON object:
 
 ## Integration with GSD
 
-GSD's `/vgsd-pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
+GSD's `/fvgsd-pause-work` command saves execution state. The WARNING message suggests using it. The CRITICAL message instructs immediate state save.
 
 ## Setup
 
-Both hooks are automatically registered during `npx get-shit-done-cc` installation:
+Both hooks are automatically registered during `npx fvgsd` installation:
 
 - **Statusline** (writes bridge file): Registered as `statusLine` in settings.json
 - **Context Monitor** (reads bridge file): Registered as `PostToolUse` hook in settings.json (`AfterTool` for Gemini)
@@ -73,7 +73,7 @@ Manual registration in `~/.claude/settings.json` (Claude Code):
 {
   "statusLine": {
     "type": "command",
-    "command": "\"/usr/local/bin/node\" \"/Users/me/.claude/hooks/gsd-statusline.js\""
+    "command": "\"/usr/local/bin/node\" \"/Users/me/.claude/hooks/fvgsd/statusline.js\""
   },
   "hooks": {
     "PostToolUse": [
@@ -81,7 +81,7 @@ Manual registration in `~/.claude/settings.json` (Claude Code):
         "hooks": [
           {
             "type": "command",
-            "command": "\"/usr/local/bin/node\" \"/Users/me/.claude/hooks/gsd-context-monitor.js\""
+            "command": "\"/usr/local/bin/node\" \"/Users/me/.claude/hooks/fvgsd/context-monitor.js\""
           }
         ]
       }
@@ -100,7 +100,7 @@ For Gemini CLI (`~/.gemini/settings.json`), use `AfterTool` instead of `PostTool
         "hooks": [
           {
             "type": "command",
-            "command": "& \"C:/Program Files/nodejs/node.exe\" \"C:/Users/me/.gemini/hooks/gsd-context-monitor.js\""
+            "command": "& \"C:/Program Files/nodejs/node.exe\" \"C:/Users/me/.gemini/hooks/fvgsd/context-monitor.js\""
           }
         ]
       }

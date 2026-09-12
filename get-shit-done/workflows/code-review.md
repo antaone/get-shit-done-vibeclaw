@@ -1,5 +1,5 @@
 <purpose>
-Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns gsd-code-reviewer agent, commits REVIEW.md, and presents results to user. When --fix is passed, delegates to code-review-fix.md after review to auto-apply findings via gsd-code-fixer.
+Review source files changed during a phase for bugs, security issues, and code quality problems. Computes file scope (--files override > SUMMARY.md > git diff fallback), checks config gate, spawns fvgsd-code-reviewer agent, commits REVIEW.md, and presents results to user. When --fix is passed, delegates to code-review-fix.md after review to auto-apply findings via fvgsd-code-fixer.
 </purpose>
 
 <required_reading>
@@ -7,8 +7,8 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-- gsd-code-reviewer: Reviews source files for bugs and quality issues
-- gsd-code-fixer: Applies fixes to code review findings (used via dispatch_fix → code-review-fix.md when --fix is passed)
+- fvgsd-code-reviewer: Reviews source files for bugs and quality issues
+- fvgsd-code-fixer: Applies fixes to code review findings (used via dispatch_fix → code-review-fix.md when --fix is passed)
 </available_agent_types>
 
 <process>
@@ -18,7 +18,7 @@ Parse arguments and load project state:
 
 ```bash
 PHASE_ARG="${1}"
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -36,7 +36,7 @@ fi
 **Phase validation (before config gate):**
 If `phase_found` is false, report error and exit:
 ```
-Error: Phase ${PHASE_ARG} not found. Run /vgsd:progress to see available phases.
+Error: Phase ${PHASE_ARG} not found. Run /fvgsd:progress to see available phases.
 ```
 
 This runs BEFORE config gate check so user errors are surfaced immediately regardless of config state.
@@ -74,7 +74,7 @@ fi
 Check if code review is enabled via config:
 
 ```bash
-CODE_REVIEW_ENABLED=$(gsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
+CODE_REVIEW_ENABLED=$(fvgsd-sdk query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
 If CODE_REVIEW_ENABLED is "false":
@@ -90,14 +90,14 @@ Default is true — only skip on explicit false. This check runs AFTER phase val
 Determine review depth with priority order:
 
 1. DEPTH_OVERRIDE from --depth flag (highest priority)
-2. Config value: `gsd-sdk query config-get workflow.code_review_depth 2>/dev/null`
+2. Config value: `fvgsd-sdk query config-get workflow.code_review_depth 2>/dev/null`
 3. Default: "standard"
 
 ```bash
 if [ -n "$DEPTH_OVERRIDE" ]; then
   REVIEW_DEPTH="$DEPTH_OVERRIDE"
 else
-  CONFIG_DEPTH=$(gsd-sdk query config-get workflow.code_review_depth 2>/dev/null || echo "")
+  CONFIG_DEPTH=$(fvgsd-sdk query config-get workflow.code_review_depth 2>/dev/null || echo "")
   REVIEW_DEPTH="${CONFIG_DEPTH:-standard}"
 fi
 ```
@@ -233,7 +233,7 @@ if [ ${#REVIEW_FILES[@]} -eq 0 ]; then
   else
     # Fail closed — no reliable diff base found. Do not use arbitrary HEAD~N.
     echo "Warning: No phase commits found for '${PADDED_PHASE}'. Cannot determine reliable diff scope."
-    echo "Use --files flag to specify files explicitly: /vgsd:code-review ${PHASE_ARG} --files=file1,file2,..."
+    echo "Use --files flag to specify files explicitly: /fvgsd:code-review ${PHASE_ARG} --files=file1,file2,..."
   fi
 fi
 ```
@@ -323,10 +323,10 @@ Optional structural cross-module pass powered by fallow.
 
 Read fallow config gates:
 ```bash
-FALLOW_ENABLED=$(gsd-sdk query config-get code_quality.fallow.enabled 2>/dev/null || echo "false")
-FALLOW_SCOPE=$(gsd-sdk query config-get code_quality.fallow.scope 2>/dev/null || echo "phase")
-FALLOW_PROFILE=$(gsd-sdk query config-get code_quality.fallow.profile 2>/dev/null || echo "standard")
-FALLOW_MCP=$(gsd-sdk query config-get code_quality.fallow.mcp 2>/dev/null || echo "false")
+FALLOW_ENABLED=$(fvgsd-sdk query config-get code_quality.fallow.enabled 2>/dev/null || echo "false")
+FALLOW_SCOPE=$(fvgsd-sdk query config-get code_quality.fallow.scope 2>/dev/null || echo "phase")
+FALLOW_PROFILE=$(fvgsd-sdk query config-get code_quality.fallow.profile 2>/dev/null || echo "standard")
+FALLOW_MCP=$(fvgsd-sdk query config-get code_quality.fallow.mcp 2>/dev/null || echo "false")
 ```
 
 Defaults are fail-closed and opt-in:
@@ -438,10 +438,10 @@ if [ -n "$FALLOW_JSON_PATH" ] && [ -f "$FALLOW_JSON_PATH" ]; then
 fi
 ```
 
-Spawn the gsd-code-reviewer agent:
+Spawn the fvgsd-code-reviewer agent:
 
 ```
-Agent(subagent_type="gsd-code-reviewer", prompt="
+Agent(subagent_type="fvgsd-code-reviewer", prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>
@@ -470,7 +470,7 @@ If the Agent() call fails (agent error, timeout, or exception):
 ```
 Error: Code review agent failed: ${error_message}
 
-No REVIEW.md created. You can retry with /vgsd:code-review ${PHASE_ARG} or check agent logs.
+No REVIEW.md created. You can retry with /fvgsd:code-review ${PHASE_ARG} or check agent logs.
 ```
 
 Do NOT proceed to commit_review step. Do NOT create a partial or empty REVIEW.md. Exit workflow.
@@ -493,7 +493,7 @@ if [ -f "${REVIEW_PATH}" ]; then
     echo "REVIEW.md created at ${REVIEW_PATH}"
     
     if [ "$COMMIT_DOCS" = "true" ]; then
-      gsd-sdk query commit \
+      fvgsd-sdk query commit \
         "docs(${PADDED_PHASE}): add code review report" \
         --files "${REVIEW_PATH}"
     fi
@@ -503,7 +503,7 @@ if [ -f "${REVIEW_PATH}" ]; then
   fi
 else
   echo "Warning: Agent completed but REVIEW.md not found at ${REVIEW_PATH}. This may indicate an agent issue."
-  echo "No REVIEW.md to commit. Please retry with /vgsd:code-review ${PHASE_ARG}"
+  echo "No REVIEW.md to commit. Please retry with /fvgsd:code-review ${PHASE_ARG}"
 fi
 ```
 </step>
@@ -535,7 +535,7 @@ if [ "$FIX_FLAG" = "true" ]; then
 
   # Load and execute the code-review-fix workflow.
   # The fix workflow is the canonical implementation for all fix logic:
-  # gsd-code-fixer agent dispatch, --auto iteration loop, REVIEW-FIX.md commit,
+  # fvgsd-code-fixer agent dispatch, --auto iteration loop, REVIEW-FIX.md commit,
   # and result presentation. Do not duplicate that logic here.
   Workflow(workflow="get-shit-done/workflows/code-review-fix.md", args="${FIX_ARGS}")
 
@@ -607,7 +607,7 @@ If total findings > 0:
 Full report: ${REVIEW_PATH}
 
 Next steps:
-  /vgsd:code-review ${PHASE_NUMBER} --fix  — Auto-fix issues
+  /fvgsd:code-review ${PHASE_NUMBER} --fix  — Auto-fix issues
   cat ${REVIEW_PATH}                     — View full report
 ```
 

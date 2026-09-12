@@ -50,7 +50,7 @@ function commitEmpty(cwd, message) {
 // optional .last-build-status.json written as autoUpdateValue.
 // autoUpdateValue === null means no status file is written.
 function makeStatusProject(autoUpdateValue) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3347-status-'));
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-3347-status-'));
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: tmpDir });
   execFileSync('git', ['config', 'user.email', 'test@example.com'], { cwd: tmpDir });
   execFileSync('git', ['config', 'user.name', 'Test'], { cwd: tmpDir });

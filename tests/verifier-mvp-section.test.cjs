@@ -1,5 +1,5 @@
 /**
- * gsd-verifier agent — MVP Mode Verification section contract
+ * fvgsd-verifier agent — MVP Mode Verification section contract
  * Verifies the agent definition contains a section instructing the verifier
  * to emphasize user-visible outcomes under MVP mode.
  */
@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const AGENT = path.join(__dirname, '..', 'agents', 'gsd-verifier.md');
+const AGENT = path.join(__dirname, '..', 'agents', 'fvgsd-verifier.md');
 const REF = path.join(__dirname, '..', 'get-shit-done', 'references', 'verify-mvp-mode.md');
 
 function parseVerifierContract(content) {
@@ -21,7 +21,7 @@ function parseVerifierContract(content) {
   };
 }
 
-describe('gsd-verifier — MVP Mode Verification section', () => {
+describe('fvgsd-verifier — MVP Mode Verification section', () => {
   const contract = parseVerifierContract(fs.readFileSync(AGENT, 'utf-8'));
 
   test('agent defines an MVP Mode Verification section', () => {

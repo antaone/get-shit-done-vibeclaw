@@ -30,7 +30,7 @@ describe('skill-manifest', () => {
   });
 
   it('discovers skills from explicit --skills-dir without scanning global roots', async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), 'gsd-skill-manifest-'));
+    const tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-skill-manifest-'));
     try {
       const skillsDir = join(tmpDir, 'custom-skills');
       const alphaDir = join(skillsDir, 'alpha-skill');
@@ -56,7 +56,7 @@ describe('skill-manifest', () => {
     }
   });
 
-  it('legacy skills dir helper points at ~/.claude/get-shit-done/skills', () => {
+  it('legacy skills dir helper points at ~/.claude/fvgsd/skills', () => {
     expect(resolveLegacySkillsDir()).toBe(join(homedir(), '.claude', 'get-shit-done', 'skills'));
   });
 });

@@ -6,7 +6,7 @@
  *   > Skipped Codex skill-copy generation (Codex discovers official skills directly)
  * which left users with a "successful" install but no routable `$gsd-*`
  * entrypoints in Codex CLI 0.130.0. Codex CLI does NOT auto-discover
- * commands from `~/.codex/get-shit-done/workflows/*.md` or `agents/*.md`;
+ * commands from `~/.codex/fvgsd/workflows/*.md` or `agents/*.md`;
  * it only registers slash commands derived from `~/.codex/skills/<name>/SKILL.md`.
  * The "Codex discovers official skills directly" assumption was wrong.
  *
@@ -28,11 +28,11 @@
 
 'use strict';
 
-// GSD_TEST_MODE neutralizes side-effecting branches (auto-detection, etc.).
+// FVGSD_TEST_MODE neutralizes side-effecting branches (auto-detection, etc.).
 // Must be set BEFORE requiring bin/install.js; scoped to module load only
 // so downstream tests don't see it. Mirrors the bug-2760 codex harness.
-const previousGsdTestMode = process.env.GSD_TEST_MODE;
-process.env.GSD_TEST_MODE = '1';
+const previousGsdTestMode = process.env.FVGSD_TEST_MODE;
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -44,9 +44,9 @@ const { install, getCodexSkillAdapterHeader } = require('../bin/install.js');
 const { parseFrontmatter, createTempDir, cleanup } = require('./helpers.cjs');
 
 if (previousGsdTestMode === undefined) {
-  delete process.env.GSD_TEST_MODE;
+  delete process.env.FVGSD_TEST_MODE;
 } else {
-  process.env.GSD_TEST_MODE = previousGsdTestMode;
+  process.env.FVGSD_TEST_MODE = previousGsdTestMode;
 }
 
 const ROOT = path.join(__dirname, '..');
@@ -61,7 +61,7 @@ function stripAnsi(s) {
  * Walk commands/gsd/**\/*.md and return the set of skill names the installer
  * is contractually obligated to produce. Naming rule mirrors
  * `copyCommandsAsCodexSkills` in bin/install.js: nested dirs collapse to
- * `gsd-<dir>-<file>` with the .md stripped.
+ * `fvgsd-<dir>-<file>` with the .md stripped.
  */
 function expectedSkillNames() {
   const names = new Set();
@@ -85,7 +85,7 @@ function expectedSkillNames() {
  * temp directories.
  */
 function runCodexInstallCaptured() {
-  const codexHome = createTempDir('gsd-3582-codex-');
+  const codexHome = createTempDir('fvgsd-3582-codex-');
   const logs = [];
   const warnings = [];
   const origLog = console.log;
@@ -96,7 +96,7 @@ function runCodexInstallCaptured() {
   const previousCodexHome = process.env.CODEX_HOME;
   const previousCwd = process.cwd();
   process.env.CODEX_HOME = codexHome;
-  process.env.GSD_TEST_MODE = '1';
+  process.env.FVGSD_TEST_MODE = '1';
   try {
     process.chdir(ROOT);
     install(true, 'codex');
@@ -116,9 +116,9 @@ function runCodexInstallCaptured() {
       process.env.CODEX_HOME = previousCodexHome;
     }
     if (previousGsdTestMode === undefined) {
-      delete process.env.GSD_TEST_MODE;
+      delete process.env.FVGSD_TEST_MODE;
     } else {
-      process.env.GSD_TEST_MODE = previousGsdTestMode;
+      process.env.FVGSD_TEST_MODE = previousGsdTestMode;
     }
   }
 }
@@ -146,12 +146,12 @@ describe('bug-3582: Codex global install materializes the skill surface', { conc
     );
 
     const actualNames = fs.readdirSync(skillsDir, { withFileTypes: true })
-      .filter(e => e.isDirectory() && e.name.startsWith('gsd-'))
+      .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'))
       .map(e => e.name);
 
     // deepStrictEqual on the sorted full set — not just count — so a
     // partial install that drops a real command and substitutes a bogus
-    // same-count `gsd-*` directory cannot pass.
+    // same-count `fvgsd-*` directory cannot pass.
     const expected = [...expectedSkillNames()].sort();
     assert.deepStrictEqual(
       [...actualNames].sort(),
@@ -173,7 +173,7 @@ describe('bug-3582: Codex global install materializes the skill surface', { conc
   test('SKILL.md frontmatter declares hyphen-form name matching the directory', () => {
     const skillsDir = path.join(installRun.codexHome, 'skills');
     const skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true })
-      .filter(e => e.isDirectory() && e.name.startsWith('gsd-'))
+      .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'))
       .map(e => e.name);
 
     for (const name of skillDirs) {
@@ -205,7 +205,7 @@ describe('bug-3582: Codex global install materializes the skill surface', { conc
     // empty, or missing-closing-tag adapter cannot satisfy this assertion.
     const skillsDir = path.join(installRun.codexHome, 'skills');
     const skillDirs = fs.readdirSync(skillsDir, { withFileTypes: true })
-      .filter(e => e.isDirectory() && e.name.startsWith('gsd-'))
+      .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'))
       .map(e => e.name);
 
     for (const name of skillDirs) {
@@ -237,11 +237,11 @@ describe('bug-3582: Codex global install materializes the skill surface', { conc
     // representative set so a future dispatch / filter / profile change
     // cannot drop just the commands the original user was trying to run.
     const representative = [
-      'gsd-map-codebase',     // the literal command from the bug report
-      'gsd-execute-phase',
-      'gsd-plan-phase',
-      'gsd-new-project',
-      'gsd-health',
+      'fvgsd-map-codebase',     // the literal command from the bug report
+      'fvgsd-execute-phase',
+      'fvgsd-plan-phase',
+      'fvgsd-new-project',
+      'fvgsd-health',
     ];
     const skillsDir = path.join(installRun.codexHome, 'skills');
     for (const name of representative) {

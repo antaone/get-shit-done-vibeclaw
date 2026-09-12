@@ -19,24 +19,24 @@ const {
 } = require('./install-profiles.cjs');
 
 // ---------------------------------------------------------------------------
-// Lazy installer exports (avoids GSD_TEST_MODE env mutation at module load)
+// Lazy installer exports (avoids FVGSD_TEST_MODE env mutation at module load)
 // ---------------------------------------------------------------------------
 
 /**
  * Load bin/install.js exports in a test-safe way.
- * Sets GSD_TEST_MODE only for the duration of the require() call and only if
+ * Sets FVGSD_TEST_MODE only for the duration of the require() call and only if
  * it was not already set, restoring the original value in a finally block so
  * the module-level environment is never permanently mutated.
  */
 function loadInstallExports() {
-  const savedTestMode = process.env.GSD_TEST_MODE;
-  if (savedTestMode === undefined) process.env.GSD_TEST_MODE = '1';
+  const savedTestMode = process.env.FVGSD_TEST_MODE;
+  if (savedTestMode === undefined) process.env.FVGSD_TEST_MODE = '1';
   try {
     // eslint-disable-next-line global-require -- lazy import to avoid running installer at module load
     return require('../../../bin/install.js');
   } finally {
-    if (savedTestMode === undefined) delete process.env.GSD_TEST_MODE;
-    else process.env.GSD_TEST_MODE = savedTestMode;
+    if (savedTestMode === undefined) delete process.env.FVGSD_TEST_MODE;
+    else process.env.FVGSD_TEST_MODE = savedTestMode;
   }
 }
 
@@ -68,7 +68,7 @@ function getInstallExports() {
  * Locate the GSD commands/gsd source directory.
  *
  * Resolution order:
- * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.gsd-source marker.
+ * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.fvgsd-source marker.
  * 2. Walk up from __dirname using path.dirname (no literal .. segments).
  * 3. Throw a descriptive error if neither succeeds.
  *
@@ -78,7 +78,7 @@ function getInstallExports() {
 function findInstallSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
   if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, '.gsd-source');
+    const markerPath = path.join(runtimeConfigDir, '.fvgsd-source');
     if (fs.existsSync(markerPath)) {
       try {
         const src = fs.readFileSync(markerPath, 'utf8').trim();
@@ -104,7 +104,7 @@ function findInstallSourceRoot(runtimeConfigDir) {
  * Locate the GSD agents source directory.
  *
  * Resolution order:
- * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.gsd-source marker.
+ * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.fvgsd-source marker.
  * 2. Walk up from __dirname using path.dirname (no literal .. segments).
  * 3. Throw a descriptive error if neither succeeds.
  *
@@ -114,7 +114,7 @@ function findInstallSourceRoot(runtimeConfigDir) {
 function findAgentsSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
   if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, '.gsd-source');
+    const markerPath = path.join(runtimeConfigDir, '.fvgsd-source');
     if (fs.existsSync(markerPath)) {
       try {
         const src = fs.readFileSync(markerPath, 'utf8').trim();
@@ -179,7 +179,7 @@ function agentsKind(destSubpath, prefix, configDir) {
  * @param {string} prefix
  * @param {string} converterName  name of converter function in bin/install.js exports
  * @param {string} runtime        canonical runtime ID (gates Hermes/Qwen branding in converter)
- * @param {string} configDir      runtime config dir (for .gsd-source marker resolution)
+ * @param {string} configDir      runtime config dir (for .fvgsd-source marker resolution)
  */
 function skillsKind(destSubpath, prefix, converterName, runtime, configDir) {
   return {
@@ -227,56 +227,56 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
     case 'claude':
       if (scope === 'local') {
         kinds = [
-          commandsKind('commands/vgsd', 'vgsd-', configDir),
-          agentsKind('agents', 'gsd-', configDir),
+          commandsKind('commands/fvgsd', 'fvgsd-', configDir),
+          agentsKind('agents', 'fvgsd-', configDir),
         ];
       } else {
-        kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
+        kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
       }
       break;
 
     case 'cursor':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
       break;
 
     case 'gemini':
-      kinds = [commandsKind('commands/vgsd', 'vgsd-', configDir)];
+      kinds = [commandsKind('commands/fvgsd', 'fvgsd-', configDir)];
       break;
 
     case 'codex':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
       break;
 
     case 'copilot':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
       break;
 
     case 'antigravity':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
       break;
 
     case 'windsurf':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
       break;
 
     case 'augment':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
       break;
 
     case 'trae':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
       break;
 
     case 'qwen':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
       break;
 
     case 'hermes':
-      kinds = [skillsKind('skills/vgsd', '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
+      kinds = [skillsKind('skills/fvgsd', '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
       break;
 
     case 'codebuddy':
-      kinds = [skillsKind('skills', 'vgsd-', 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
+      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
       break;
 
     case 'cline':
@@ -284,11 +284,11 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
       break;
 
     case 'opencode':
-      kinds = [commandsKind('command', 'vgsd-', configDir)];
+      kinds = [commandsKind('command', 'fvgsd-', configDir)];
       break;
 
     case 'kilo':
-      kinds = [commandsKind('command', 'vgsd-', configDir)];
+      kinds = [commandsKind('command', 'fvgsd-', configDir)];
       break;
 
     default:

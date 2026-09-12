@@ -1,5 +1,5 @@
 /**
- * gsd-executor agent — MVP+TDD gate section contract
+ * fvgsd-executor agent — MVP+TDD gate section contract
  * Verifies the agent definition contains a section instructing the executor
  * to halt and report when the runtime gate trips.
  */
@@ -8,10 +8,10 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-const AGENT = path.join(__dirname, '..', 'agents', 'gsd-executor.md');
+const AGENT = path.join(__dirname, '..', 'agents', 'fvgsd-executor.md');
 const REF = path.join(__dirname, '..', 'get-shit-done', 'references', 'execute-mvp-tdd.md');
 
-describe('gsd-executor — MVP+TDD gate section', () => {
+describe('fvgsd-executor — MVP+TDD gate section', () => {
   const content = fs.readFileSync(AGENT, 'utf-8');
 
   test('agent defines an MVP+TDD Gate section', () => {

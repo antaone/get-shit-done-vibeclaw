@@ -2,11 +2,11 @@
 Interactive configuration of third-party integrations for GSD — search API keys
 (Brave / Firecrawl / Exa), code-review CLI routing (`review.models.<cli>`), and
 agent-skill injection (`agent_skills.<agent-type>`). Writes to
-`.planning/config.json` via `gsd-sdk`/`gsd-tools` so unrelated keys are
+`.planning/config.json` via `fvgsd-sdk`/`fvgsd-tools` so unrelated keys are
 preserved, never clobbered.
 
-This command is deliberately separate from `/vgsd:settings` (workflow toggles)
-and any `/vgsd-settings-advanced` tuning surface. It exists because API keys and
+This command is deliberately separate from `/fvgsd:settings` (workflow toggles)
+and any `/fvgsd-settings-advanced` tuning surface. It exists because API keys and
 cross-tool routing are *connectivity* concerns, not workflow or tuning knobs.
 </purpose>
 
@@ -42,18 +42,18 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and resolve the active config path (flat vs workstream, #2282):
 
 ```bash
-gsd-sdk query config-ensure-section
-if [[ -z "${GSD_CONFIG_PATH:-}" ]]; then
+fvgsd-sdk query config-ensure-section
+if [[ -z "${FVGSD_CONFIG_PATH:-}" ]]; then
   if [[ -f .planning/active-workstream ]]; then
     WS=$(tr -d '\n\r' < .planning/active-workstream)
-    GSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
+    FVGSD_CONFIG_PATH=".planning/workstreams/${WS}/config.json"
   else
-    GSD_CONFIG_PATH=".planning/config.json"
+    FVGSD_CONFIG_PATH=".planning/config.json"
   fi
 fi
 ```
 
-Store `$GSD_CONFIG_PATH`. Every subsequent read/write uses it.
+Store `$FVGSD_CONFIG_PATH`. Every subsequent read/write uses it.
 </step>
 
 <step name="read_current">
@@ -65,10 +65,10 @@ integration field, compute one of:
 - `<value>` — non-secret routing/skill string, shown as-is
 
 ```bash
-BRAVE=$(gsd-sdk query config-get brave_search --default null)
-FIRECRAWL=$(gsd-sdk query config-get firecrawl --default null)
-EXA=$(gsd-sdk query config-get exa_search --default null)
-SEARCH_GITIGNORED=$(gsd-sdk query config-get search_gitignored --default false)
+BRAVE=$(fvgsd-sdk query config-get brave_search --default null)
+FIRECRAWL=$(fvgsd-sdk query config-get firecrawl --default null)
+EXA=$(fvgsd-sdk query config-get exa_search --default null)
+SEARCH_GITIGNORED=$(fvgsd-sdk query config-get search_gitignored --default false)
 ```
 
 For each secret key (`brave_search`, `firecrawl`, `exa_search`) the displayed
@@ -131,16 +131,16 @@ key value. **The answer must not be echoed back** in subsequent question
 descriptions or confirmation text. Write the value via:
 
 ```bash
-gsd-sdk query config-set brave_search "<value>"     # masked in output
-gsd-sdk query config-set firecrawl "<value>"        # masked in output
-gsd-sdk query config-set exa_search "<value>"       # masked in output
-gsd-sdk query config-set search_gitignored true|false
+fvgsd-sdk query config-set brave_search "<value>"     # masked in output
+fvgsd-sdk query config-set firecrawl "<value>"        # masked in output
+fvgsd-sdk query config-set exa_search "<value>"       # masked in output
+fvgsd-sdk query config-set search_gitignored true|false
 ```
 
 For "Clear", write `null`:
 
 ```bash
-gsd-sdk query config-set brave_search null
+fvgsd-sdk query config-set brave_search null
 ```
 </step>
 
@@ -172,7 +172,7 @@ Leave / Replace / Clear, followed by a text-input prompt for the new command
 string. Write via:
 
 ```bash
-gsd-sdk query config-set review.models.<cli> "<command string>"
+fvgsd-sdk query config-set review.models.<cli> "<command string>"
 ```
 
 Loop until the user selects "Done".
@@ -196,9 +196,9 @@ AskUserQuestion([
     header: "Agent Type",
     multiSelect: false,
     options: [
-      { label: "gsd-executor", description: "Skills injected when spawning executor agents" },
-      { label: "gsd-planner", description: "Skills injected when spawning planner agents" },
-      { label: "gsd-verifier", description: "Skills injected when spawning verifier agents" },
+      { label: "fvgsd-executor", description: "Skills injected when spawning executor agents" },
+      { label: "fvgsd-planner", description: "Skills injected when spawning planner agents" },
+      { label: "fvgsd-verifier", description: "Skills injected when spawning verifier agents" },
       { label: "Custom…", description: "Enter a custom agent-type slug" },
       { label: "Done", description: "Skip — finish this section" }
     ]
@@ -220,7 +220,7 @@ For a selected slug, prompt for the comma-separated skill list (text input).
 Show the current value if any, offer Leave / Replace / Clear. Write via:
 
 ```bash
-gsd-sdk query config-set agent_skills.<slug> "<skill-a,skill-b,skill-c>"
+fvgsd-sdk query config-set agent_skills.<slug> "<skill-a,skill-b,skill-c>"
 ```
 
 Loop until "Done".
@@ -264,15 +264,15 @@ Notes:
   and not displayed in error messages.
 
 Quick commands:
-- /vgsd:settings — workflow toggles and model profile
-- /vgsd-set-profile <profile> — switch model profile
+- /fvgsd:settings — workflow toggles and model profile
+- /fvgsd-set-profile <profile> — switch model profile
 ```
 </step>
 
 </process>
 
 <success_criteria>
-- [ ] Current config read from `$GSD_CONFIG_PATH`
+- [ ] Current config read from `$FVGSD_CONFIG_PATH`
 - [ ] User presented with three sections: Search Integrations, Review CLI Routing, Agent Skills Injection
 - [ ] API keys written plaintext only to `config.json`; never echoed, never logged, never displayed
 - [ ] Masked confirmation table uses `****<last-4>` for set keys and `(unset)` for null

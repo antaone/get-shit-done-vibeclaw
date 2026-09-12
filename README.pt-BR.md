@@ -8,8 +8,8 @@
 
 **Resolve context rot — a degradação de qualidade que acontece conforme o Claude enche a janela de contexto.**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
+[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
+[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -20,7 +20,7 @@
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 **Funciona em Mac, Windows e Linux.**
@@ -78,11 +78,11 @@ Quality gates embutidos capturam problemas reais: detecção de schema drift sin
 Lista completa nas [notas de release v1.39.0](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0).
 
 - **Perfil de instalação `--minimal`** — alias `--core-only`. Instala apenas os 6 skills do loop principal (`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `help`, `update`) e nenhum subagente `gsd-*`. Reduz o overhead do system prompt no cold-start de ~12k para ~700 tokens (≥94% de redução). Útil para LLMs locais com contexto de 32K–128K e APIs cobradas por token.
-- **`/vgsd-phase --edit`** — edita qualquer campo de uma fase existente em `ROADMAP.md` no lugar, sem alterar o número ou a posição. `--force` pula o diff de confirmação; referências em `depends_on` são validadas e o `STATE.md` é atualizado na escrita.
+- **`/fvgsd-phase --edit`** — edita qualquer campo de uma fase existente em `ROADMAP.md` no lugar, sem alterar o número ou a posição. `--force` pula o diff de confirmação; referências em `depends_on` são validadas e o `STATE.md` é atualizado na escrita.
 - **Build & test gate pós-merge** — o passo 5.6 de `execute-phase` agora detecta automaticamente o comando de build em `workflow.build_command`, com fallback para Xcode (`.xcodeproj`), Makefile, Justfile, Cargo, Go, Python ou npm. Projetos Xcode/iOS rodam `xcodebuild build` e `xcodebuild test` automaticamente. Funciona em modo paralelo e serial.
 - **Modelo de review por runtime** — `review.models.<cli>` permite que cada CLI externa de review (codex, gemini, etc.) escolha seu próprio modelo, independente do perfil de planner/executor.
-- **Herança de configuração de workstream** — quando `GSD_WORKSTREAM` está definido, o `.planning/config.json` raiz é carregado primeiro e merge-deep com o config da workstream (workstream vence em conflito). Um `null` explícito no config da workstream sobrescreve corretamente o valor raiz.
-- **Workflow manual de canary release** — `.github/workflows/canary.yml` publica builds `{base}-canary.{N}` de `get-shit-done-cc` e `@gsd-build/sdk` na dist-tag `@canary` a partir de `dev`, sob demanda via `workflow_dispatch`.
+- **Herança de configuração de workstream** — quando `FVGSD_WORKSTREAM` está definido, o `.planning/config.json` raiz é carregado primeiro e merge-deep com o config da workstream (workstream vence em conflito). Um `null` explícito no config da workstream sobrescreve corretamente o valor raiz.
+- **Workflow manual de canary release** — `.github/workflows/canary.yml` publica builds `{base}-canary.{N}` de `fvgsd` e `@fvgsd/sdk` na dist-tag `@canary` a partir de `dev`, sob demanda via `workflow_dispatch`.
 - **Consolidação de skills: 86 → 59** — 4 novos skills agrupados (`capture`, `phase`, `config`, `workspace`) absorvem 31 micro-skills. 6 skills pais existentes absorvem wrap-up e sub-operações como flags: `update --sync/--reapply`, `sketch --wrap-up`, `spike --wrap-up`, `map-codebase --fast/--query`, `code-review --fix`, `progress --do/--next`. Sem perda funcional.
 
 ---
@@ -90,7 +90,7 @@ Lista completa nas [notas de release v1.39.0](https://github.com/gsd-build/get-s
 ## Primeiros passos
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 O instalador pede:
@@ -98,10 +98,10 @@ O instalador pede:
 2. **Local** — Global (todos os projetos) ou local (apenas projeto atual)
 
 Verifique com:
-- Claude Code / Copilot / Antigravity: `/vgsd-help`
-- Gemini: `/vgsd:help`
-- OpenCode / Kilo / Augment / Trae: `/vgsd-help`
-- Codex: `$vgsd-help`
+- Claude Code / Copilot / Antigravity: `/fvgsd-help`
+- Gemini: `/fvgsd:help`
+- OpenCode / Kilo / Augment / Trae: `/fvgsd-help`
+- Codex: `$fvgsd-help`
 - Cline: GSD instala via `.clinerules` — verifique se `.clinerules` existe
 
 > [!NOTE]
@@ -113,7 +113,7 @@ Verifique com:
 ### Mantendo atualizado
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 <details>
@@ -121,49 +121,49 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global
-npx get-shit-done-cc --claude --local
+npx fvgsd --claude --global
+npx fvgsd --claude --local
 
 # OpenCode
-npx get-shit-done-cc --opencode --global
+npx fvgsd --opencode --global
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global
+npx fvgsd --gemini --global
 
 # Kilo
-npx get-shit-done-cc --kilo --global
-npx get-shit-done-cc --kilo --local
+npx fvgsd --kilo --global
+npx fvgsd --kilo --local
 
 # Codex
-npx get-shit-done-cc --codex --global
-npx get-shit-done-cc --codex --local
+npx fvgsd --codex --global
+npx fvgsd --codex --local
 
 # Copilot
-npx get-shit-done-cc --copilot --global
-npx get-shit-done-cc --copilot --local
+npx fvgsd --copilot --global
+npx fvgsd --copilot --local
 
 # Cursor
-npx get-shit-done-cc --cursor --global
-npx get-shit-done-cc --cursor --local
+npx fvgsd --cursor --global
+npx fvgsd --cursor --local
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global
-npx get-shit-done-cc --antigravity --local
+npx fvgsd --antigravity --global
+npx fvgsd --antigravity --local
 
 # Augment
-npx get-shit-done-cc --augment --global     # Install to ~/.augment/
-npx get-shit-done-cc --augment --local      # Install to ./.augment/
+npx fvgsd --augment --global     # Install to ~/.augment/
+npx fvgsd --augment --local      # Install to ./.augment/
 
 # Trae
-npx get-shit-done-cc --trae --global        # Install to ~/.trae/
-npx get-shit-done-cc --trae --local         # Install to ./.trae/
+npx fvgsd --trae --global        # Install to ~/.trae/
+npx fvgsd --trae --local         # Install to ./.trae/
 
 # Cline
-npx get-shit-done-cc --cline --global       # Install to ~/.cline/
-npx get-shit-done-cc --cline --local        # Install to ./.clinerules
+npx fvgsd --cline --global       # Install to ~/.cline/
+npx fvgsd --cline --local        # Install to ./.clinerules
 
 # Todos
-npx get-shit-done-cc --all --global
+npx fvgsd --all --global
 ```
 
 Use `--global` (`-g`) ou `--local` (`-l`) para pular a pergunta de local.
@@ -184,12 +184,12 @@ claude --dangerously-skip-permissions
 
 ## Como funciona
 
-> **Já tem código?** Rode `/vgsd-map-codebase` primeiro para analisar stack, arquitetura, convenções e riscos.
+> **Já tem código?** Rode `/fvgsd-map-codebase` primeiro para analisar stack, arquitetura, convenções e riscos.
 
 ### 1. Inicializar projeto
 
 ```
-/vgsd-new-project
+/fvgsd-new-project
 ```
 
 O sistema:
@@ -203,7 +203,7 @@ O sistema:
 ### 2. Discutir fase
 
 ```
-/vgsd-discuss-phase 1
+/fvgsd-discuss-phase 1
 ```
 
 Captura suas preferências de implementação antes do planejamento.
@@ -213,7 +213,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 3. Planejar fase
 
 ```
-/vgsd-plan-phase 1
+/fvgsd-plan-phase 1
 ```
 
 1. Pesquisa abordagens
@@ -225,7 +225,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 4. Executar fase
 
 ```
-/vgsd-execute-phase 1
+/fvgsd-execute-phase 1
 ```
 
 1. Executa planos em ondas
@@ -238,7 +238,7 @@ Captura suas preferências de implementação antes do planejamento.
 ### 5. Verificar trabalho
 
 ```
-/vgsd-verify-work 1
+/fvgsd-verify-work 1
 ```
 
 Validação manual orientada para confirmar que a feature realmente funciona como esperado.
@@ -248,25 +248,25 @@ Validação manual orientada para confirmar que a feature realmente funciona com
 ### 6. Repetir -> Entregar -> Completar
 
 ```
-/vgsd-discuss-phase 2
-/vgsd-plan-phase 2
-/vgsd-execute-phase 2
-/vgsd-verify-work 2
-/vgsd-ship 2
-/vgsd-complete-milestone
-/vgsd-new-milestone
+/fvgsd-discuss-phase 2
+/fvgsd-plan-phase 2
+/fvgsd-execute-phase 2
+/fvgsd-verify-work 2
+/fvgsd-ship 2
+/fvgsd-complete-milestone
+/fvgsd-new-milestone
 ```
 
 Ou deixe o GSD decidir:
 
 ```
-/vgsd-progress --next
+/fvgsd-progress --next
 ```
 
 ### Modo rápido
 
 ```
-/vgsd-quick
+/fvgsd-quick
 ```
 
 Para tarefas ad-hoc sem ciclo completo de planejamento.
@@ -322,36 +322,36 @@ Cada tarefa gera commit próprio, facilitando `git bisect`, rollback e rastreabi
 
 | Comando | O que faz |
 |---------|-----------|
-| `/vgsd-new-project [--auto]` | Inicializa projeto completo |
-| `/vgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | Captura decisões antes do plano (`--chain` encadeia automaticamente em plan+execute) |
-| `/vgsd-plan-phase [N] [--auto] [--reviews]` | Pesquisa + plano + validação |
-| `/vgsd-execute-phase <N>` | Executa planos em ondas paralelas |
-| `/vgsd-verify-work [N]` | UAT manual |
-| `/vgsd-ship [N] [--draft]` | Cria PR da fase validada |
-| `/vgsd-progress --next` | Avança automaticamente para o próximo passo |
-| `/vgsd-fast <text>` | Tarefas triviais sem planejamento |
-| `/vgsd-complete-milestone` | Fecha o marco e marca release |
-| `/vgsd-new-milestone [name]` | Inicia próximo marco |
+| `/fvgsd-new-project [--auto]` | Inicializa projeto completo |
+| `/fvgsd-discuss-phase [N] [--auto] [--analyze] [--chain]` | Captura decisões antes do plano (`--chain` encadeia automaticamente em plan+execute) |
+| `/fvgsd-plan-phase [N] [--auto] [--reviews]` | Pesquisa + plano + validação |
+| `/fvgsd-execute-phase <N>` | Executa planos em ondas paralelas |
+| `/fvgsd-verify-work [N]` | UAT manual |
+| `/fvgsd-ship [N] [--draft]` | Cria PR da fase validada |
+| `/fvgsd-progress --next` | Avança automaticamente para o próximo passo |
+| `/fvgsd-fast <text>` | Tarefas triviais sem planejamento |
+| `/fvgsd-complete-milestone` | Fecha o marco e marca release |
+| `/fvgsd-new-milestone [name]` | Inicia próximo marco |
 
 ### Qualidade e utilidades
 
 | Comando | O que faz |
 |---------|-----------|
-| `/vgsd-review` | Peer review com múltiplas IAs |
-| `/vgsd-pr-branch` | Cria branch limpa para PR |
-| `/vgsd-settings` | Configura perfis e agentes |
-| `/vgsd-config --profile <profile>` | Troca perfil (quality/balanced/budget/inherit) |
-| `/vgsd-quick [--full] [--discuss] [--research]` | Execução rápida com garantias do GSD (`--full` ativa todas as etapas, `--validate` ativa apenas verificação) |
-| `/vgsd-health [--repair]` | Verifica e repara `.planning/` |
+| `/fvgsd-review` | Peer review com múltiplas IAs |
+| `/fvgsd-pr-branch` | Cria branch limpa para PR |
+| `/fvgsd-settings` | Configura perfis e agentes |
+| `/fvgsd-config --profile <profile>` | Troca perfil (quality/balanced/budget/inherit) |
+| `/fvgsd-quick [--full] [--discuss] [--research]` | Execução rápida com garantias do GSD (`--full` ativa todas as etapas, `--validate` ativa apenas verificação) |
+| `/fvgsd-health [--repair]` | Verifica e repara `.planning/` |
 
-> Para a lista completa de comandos e opções, use `/vgsd-help`.
+> Para a lista completa de comandos e opções, use `/fvgsd-help`.
 
 ---
 
 ## Configuração
 
 As configurações do projeto ficam em `.planning/config.json`.
-Você pode configurar no `/vgsd-new-project` ou ajustar depois com `/vgsd-settings`.
+Você pode configurar no `/fvgsd-new-project` ou ajustar depois com `/fvgsd-settings`.
 
 ### Ajustes principais
 
@@ -371,7 +371,7 @@ Você pode configurar no `/vgsd-new-project` ou ajustar depois com `/vgsd-settin
 
 Troca rápida:
 ```
-/vgsd-config --profile budget
+/fvgsd-config --profile budget
 ```
 
 ---
@@ -415,51 +415,51 @@ Adicione padrões sensíveis ao deny list do Claude Code:
 - Verifique se os arquivos foram instalados no diretório correto
 
 **Comandos não funcionam como esperado?**
-- Rode `/vgsd-help`
-- Reinstale com `npx get-shit-done-cc@latest`
+- Rode `/fvgsd-help`
+- Reinstale com `npx fvgsd@latest`
 
 **Em Docker/container?**
 - Defina `CLAUDE_CONFIG_DIR` antes da instalação:
 
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
 ```
 
 ### Desinstalar
 
 ```bash
 # Instalações globais
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --augment --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
-npx get-shit-done-cc --cline --global --uninstall
+npx fvgsd --claude --global --uninstall
+npx fvgsd --opencode --global --uninstall
+npx fvgsd --gemini --global --uninstall
+npx fvgsd --kilo --global --uninstall
+npx fvgsd --codex --global --uninstall
+npx fvgsd --copilot --global --uninstall
+npx fvgsd --cursor --global --uninstall
+npx fvgsd --antigravity --global --uninstall
+npx fvgsd --augment --global --uninstall
+npx fvgsd --trae --global --uninstall
+npx fvgsd --cline --global --uninstall
 
 # Instalações locais (projeto atual)
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --augment --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
-npx get-shit-done-cc --cline --local --uninstall
+npx fvgsd --claude --local --uninstall
+npx fvgsd --opencode --local --uninstall
+npx fvgsd --gemini --local --uninstall
+npx fvgsd --kilo --local --uninstall
+npx fvgsd --codex --local --uninstall
+npx fvgsd --copilot --local --uninstall
+npx fvgsd --cursor --local --uninstall
+npx fvgsd --antigravity --local --uninstall
+npx fvgsd --augment --local --uninstall
+npx fvgsd --trae --local --uninstall
+npx fvgsd --cline --local --uninstall
 ```
 
 ---
 
 ## Community Ports
 
-OpenCode, Gemini CLI, Kilo e Codex agora são suportados nativamente via `npx get-shit-done-cc`.
+OpenCode, Gemini CLI, Kilo e Codex agora são suportados nativamente via `npx fvgsd`.
 
 | Projeto | Plataforma | Descrição |
 |---------|------------|-----------|

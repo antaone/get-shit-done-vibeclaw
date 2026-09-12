@@ -16,7 +16,7 @@ import { tmpdir } from 'node:os';
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-roadmap-update-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-roadmap-update-'));
 });
 
 afterEach(async () => {

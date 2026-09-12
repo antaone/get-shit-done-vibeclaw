@@ -8,7 +8,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-codebase-mapper — Maps project structure and dependencies
+- fvgsd-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
 <philosophy>
@@ -29,11 +29,11 @@ Documents are reference material for Claude when planning/executing. Always incl
 
 <step name="parse_paths_flag" priority="first">
 Parse an optional `--paths <p1,p2,...>` argument. When supplied (by the
-post-execute codebase-drift gate in `/vgsd:execute-phase` or by a user running
-`/vgsd:map-codebase --paths apps/accounting,packages/ui`), the workflow
+post-execute codebase-drift gate in `/fvgsd:execute-phase` or by a user running
+`/fvgsd:map-codebase --paths apps/accounting,packages/ui`), the workflow
 operates in **incremental-remap mode**:
 
-- Pass `--paths <p1>,<p2>,...` through to each spawned `gsd-codebase-mapper`
+- Pass `--paths <p1>,<p2>,...` through to each spawned `fvgsd-codebase-mapper`
   agent's prompt. Agents scope their Glob/Grep/Bash exploration to the listed
   repo-relative prefixes only — no whole-repo scan.
 - Reject path values that contain `..`, start with `/`, or include shell
@@ -69,9 +69,9 @@ documents refreshed.
 Load codebase mapping context:
 
 ```bash
-INIT=$(gsd-sdk query init.map-codebase)
+INIT=$(fvgsd-sdk query init.map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_MAPPER=$(gsd-sdk query agent-skills gsd-codebase-mapper)
+AGENT_SKILLS_MAPPER=$(fvgsd-sdk query agent-skills fvgsd-codebase-mapper)
 ```
 
 Extract from init JSON: `mapper_model`, `commit_docs`, `codebase_dir`, `existing_maps`, `has_maps`, `codebase_dir_exists`, `subagent_timeout`, `date`.
@@ -137,17 +137,17 @@ Before spawning agents, detect whether the current runtime supports the `Agent` 
 </step>
 
 <step name="spawn_agents" condition="Agent tool is available">
-Spawn 4 parallel gsd-codebase-mapper agents.
+Spawn 4 parallel fvgsd-codebase-mapper agents.
 
-Use Agent tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
+Use Agent tool with `subagent_type="fvgsd-codebase-mapper"`, `model="{mapper_model}"`, and `run_in_background=true` for parallel execution.
 
-**CRITICAL:** Use the dedicated `gsd-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
+**CRITICAL:** Use the dedicated `fvgsd-codebase-mapper` agent, NOT `Explore` or `browser_subagent`. The mapper agent writes documents directly.
 
 **Agent 1: Tech Focus**
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="fvgsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase tech stack",
@@ -173,7 +173,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="fvgsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase architecture",
@@ -199,7 +199,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```text
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="fvgsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase conventions",
@@ -225,7 +225,7 @@ ${AGENT_SKILLS_MAPPER}"
 
 ```
 Agent(
-  subagent_type="gsd-codebase-mapper",
+  subagent_type="fvgsd-codebase-mapper",
   model="{mapper_model}",
   run_in_background=true,
   description="Map codebase concerns",
@@ -317,7 +317,7 @@ Perform all 4 mapping passes sequentially:
 - Explore TODOs, known issues, fragile areas, security patterns
 - Write `.planning/codebase/CONCERNS.md` — Tech debt, bugs, security, performance, fragile areas
 
-Use the same document templates as the `gsd-codebase-mapper` agent. Include actual file paths formatted with backticks.
+Use the same document templates as the `fvgsd-codebase-mapper` agent. Include actual file paths formatted with backticks.
 
 Continue to verify_output.
 </step>
@@ -378,7 +378,7 @@ Continue to commit_codebase_map.
 Commit the codebase map:
 
 ```bash
-gsd-sdk query commit "docs: map existing codebase" --files .planning/codebase/*.md
+fvgsd-sdk query commit "docs: map existing codebase" --files .planning/codebase/*.md
 ```
 
 Continue to offer_next.
@@ -415,12 +415,12 @@ Created .planning/codebase/:
 
 `/clear` then:
 
-`/vgsd:new-project`
+`/fvgsd:new-project`
 
 ---
 
 **Also available:**
-- Re-run mapping: `/vgsd:map-codebase`
+- Re-run mapping: `/fvgsd:map-codebase`
 - Review specific file: `cat .planning/codebase/STACK.md`
 - Edit any document before proceeding
 
@@ -434,7 +434,7 @@ End workflow.
 
 <success_criteria>
 - .planning/codebase/ directory created
-- If Agent tool available: 4 parallel gsd-codebase-mapper agents spawned with run_in_background=true
+- If Agent tool available: 4 parallel fvgsd-codebase-mapper agents spawned with run_in_background=true
 - If Agent tool NOT available: 4 sequential mapping passes performed inline (never using browser_subagent)
 - All 7 codebase documents exist
 - No empty documents (each should have >20 lines)

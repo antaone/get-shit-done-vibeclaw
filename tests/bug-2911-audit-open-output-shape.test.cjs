@@ -3,7 +3,7 @@
 /**
  * Regression test for #2911.
  *
- * Two bugs in the `audit-open` dispatch case in bin/gsd-tools.cjs:
+ * Two bugs in the `audit-open` dispatch case in bin/fvgsd-tools.cjs:
  *
  *   1. Bare `output(...)` calls (only `core.output` is in scope) → ReferenceError.
  *   2. Even after switching to `core.output(formatted, raw)`, the human-readable
@@ -33,7 +33,7 @@ describe('audit-open — output shape (#2911)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempProject('gsd-bug-2911-');
+    tmpDir = createTempProject('fvgsd-bug-2911-');
   });
 
   afterEach(() => {

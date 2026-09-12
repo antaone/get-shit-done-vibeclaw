@@ -73,7 +73,7 @@ export const NON_FAMILY_COMMAND_MANIFEST: readonly NonFamilyCommandManifestEntry
 
   // intel.* entries intentionally NOT in this manifest — intel is out-of-seam
   // (CJS-only) per ADR/PRD 3524 §3 / L160. Dispatch is direct from
-  // get-shit-done/bin/gsd-tools.cjs `case 'intel':` to bin/lib/intel.cjs.
+  // get-shit-done/bin/fvgsd-tools.cjs `case 'intel':` to bin/lib/intel.cjs.
 
   { canonical: 'write-profile', aliases: [], mutation: true, outputMode: 'json' },
   { canonical: 'generate-claude-profile', aliases: [], mutation: true, outputMode: 'json' },

@@ -1,18 +1,18 @@
 /**
  * Regression test for bug #2791 (Issue 2 — query registry not workstream-aware)
  *
- * When GSD_WORKSTREAM is set in the environment, `gsd-sdk query` commands must
+ * When FVGSD_WORKSTREAM is set in the environment, `fvgsd-sdk query` commands must
  * route .planning/ reads to `.planning/workstreams/<name>/` — matching the
- * behaviour of `gsd-tools.cjs` which reads the same env var via planningDir().
+ * behaviour of `fvgsd-tools.cjs` which reads the same env var via planningDir().
  *
- * Before the fix: the SDK CLI only respected `--ws <name>` flag; GSD_WORKSTREAM
- * was ignored, so `gsd-sdk query roadmap.analyze` always read the root
+ * Before the fix: the SDK CLI only respected `--ws <name>` flag; FVGSD_WORKSTREAM
+ * was ignored, so `fvgsd-sdk query roadmap.analyze` always read the root
  * `.planning/ROADMAP.md` even when a workstream was active.
  *
- * After the fix: the SDK CLI falls back to GSD_WORKSTREAM when --ws is absent.
+ * After the fix: the SDK CLI falls back to FVGSD_WORKSTREAM when --ws is absent.
  *
  * This test also verifies:
- * - The `gsd-tools` bin alias maps to the same SDK shim as `gsd-sdk` (#2791 Issue 1)
+ * - The `fvgsd-tools` bin alias maps to the same SDK shim as `fvgsd-sdk` (#2791 Issue 1)
  */
 
 'use strict';
@@ -39,7 +39,7 @@ function runSdkQuery(args, projectDir, extraEnv = {}) {
       {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env, GSD_SESSION_KEY: '', ...extraEnv },
+        env: { ...process.env, FVGSD_SESSION_KEY: '', ...extraEnv },
       }
     );
   } catch (err) {
@@ -51,11 +51,11 @@ function runSdkQuery(args, projectDir, extraEnv = {}) {
   return { exitCode, stdout, json };
 }
 
-describe('bug-2791: GSD_WORKSTREAM env var respected by gsd-sdk query', () => {
+describe('bug-2791: FVGSD_WORKSTREAM env var respected by fvgsd-sdk query', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-test-2791-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-test-2791-'));
     // Create root .planning/ with a minimal config
     fs.mkdirSync(path.join(tmpDir, '.planning', 'phases'), { recursive: true });
     fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({ mode: 'balanced' }));
@@ -95,7 +95,7 @@ describe('bug-2791: GSD_WORKSTREAM env var respected by gsd-sdk query', () => {
     cleanup(tmpDir);
   });
 
-  test('without GSD_WORKSTREAM: roadmap.analyze reads root .planning/ROADMAP.md', () => {
+  test('without FVGSD_WORKSTREAM: roadmap.analyze reads root .planning/ROADMAP.md', () => {
     const result = runSdkQuery(['roadmap.analyze'], tmpDir);
     assert.strictEqual(result.exitCode, 0, `expected exit 0: ${result.stdout}`);
     assert.ok(result.json !== null, 'expected JSON output');
@@ -107,8 +107,8 @@ describe('bug-2791: GSD_WORKSTREAM env var respected by gsd-sdk query', () => {
     );
   });
 
-  test('with GSD_WORKSTREAM set: roadmap.analyze reads workstream ROADMAP.md', () => {
-    const result = runSdkQuery(['roadmap.analyze'], tmpDir, { GSD_WORKSTREAM: 'my-ws' });
+  test('with FVGSD_WORKSTREAM set: roadmap.analyze reads workstream ROADMAP.md', () => {
+    const result = runSdkQuery(['roadmap.analyze'], tmpDir, { FVGSD_WORKSTREAM: 'my-ws' });
     assert.strictEqual(result.exitCode, 0, `expected exit 0: ${result.stdout}`);
     assert.ok(result.json !== null, 'expected JSON output');
     // Workstream ROADMAP has 1 phase
@@ -119,11 +119,11 @@ describe('bug-2791: GSD_WORKSTREAM env var respected by gsd-sdk query', () => {
     );
   });
 
-  test('--ws flag takes precedence over GSD_WORKSTREAM env var', () => {
-    // Set GSD_WORKSTREAM to a non-existent workstream; --ws should override it.
+  test('--ws flag takes precedence over FVGSD_WORKSTREAM env var', () => {
+    // Set FVGSD_WORKSTREAM to a non-existent workstream; --ws should override it.
     // This verifies flag-wins-over-env precedence, not just that --ws works.
     const result = runSdkQuery(['roadmap.analyze', '--ws', 'my-ws'], tmpDir, {
-      GSD_WORKSTREAM: 'nonexistent-ws',
+      FVGSD_WORKSTREAM: 'nonexistent-ws',
     });
     assert.strictEqual(result.exitCode, 0, `expected exit 0: ${result.stdout}`);
     assert.ok(result.json !== null, 'expected JSON output');
@@ -132,39 +132,39 @@ describe('bug-2791: GSD_WORKSTREAM env var respected by gsd-sdk query', () => {
     assert.strictEqual(
       result.json.phase_count,
       1,
-      `expected 1 phase via --ws flag (overriding GSD_WORKSTREAM), got ${result.json.phase_count}`
+      `expected 1 phase via --ws flag (overriding FVGSD_WORKSTREAM), got ${result.json.phase_count}`
     );
   });
 
-  test('invalid GSD_WORKSTREAM value is silently ignored and falls back to root', () => {
-    const result = runSdkQuery(['roadmap.analyze'], tmpDir, { GSD_WORKSTREAM: '../evil' });
+  test('invalid FVGSD_WORKSTREAM value is silently ignored and falls back to root', () => {
+    const result = runSdkQuery(['roadmap.analyze'], tmpDir, { FVGSD_WORKSTREAM: '../evil' });
     // Should not crash; invalid name is silently ignored and falls back to root ROADMAP.
-    assert.strictEqual(result.exitCode, 0, `expected exit 0 (invalid GSD_WORKSTREAM ignored): ${result.stdout}`);
-    assert.ok(result.json !== null, 'expected JSON output after invalid GSD_WORKSTREAM fallback');
+    assert.strictEqual(result.exitCode, 0, `expected exit 0 (invalid FVGSD_WORKSTREAM ignored): ${result.stdout}`);
+    assert.ok(result.json !== null, 'expected JSON output after invalid FVGSD_WORKSTREAM fallback');
     // Root ROADMAP has no phases — confirming root fallback, not an error path.
     assert.strictEqual(
       result.json.phase_count,
       0,
-      `expected 0 phases from root ROADMAP fallback (invalid GSD_WORKSTREAM), got ${result.json.phase_count}`
+      `expected 0 phases from root ROADMAP fallback (invalid FVGSD_WORKSTREAM), got ${result.json.phase_count}`
     );
   });
 });
 
-describe('bug-2791: package.json declares gsd-tools bin alias (#2791 Issue 1)', () => {
-  test('package.json bin has gsd-tools entry', () => {
+describe('bug-2791: package.json declares fvgsd-tools bin alias (#2791 Issue 1)', () => {
+  test('package.json bin has fvgsd-tools entry', () => {
     const pkg = JSON.parse(fs.readFileSync(PKG_JSON, 'utf-8'));
     assert.ok(
-      Object.prototype.hasOwnProperty.call(pkg.bin ?? {}, 'gsd-tools'),
-      'package.json bin must include "gsd-tools" to provide collision-free alternative to gsd-sdk'
+      Object.prototype.hasOwnProperty.call(pkg.bin ?? {}, 'fvgsd-tools'),
+      'package.json bin must include "fvgsd-tools" to provide collision-free alternative to fvgsd-sdk'
     );
   });
 
-  test('gsd-tools bin entry points to same file as gsd-sdk', () => {
+  test('fvgsd-tools bin entry points to same file as fvgsd-sdk', () => {
     const pkg = JSON.parse(fs.readFileSync(PKG_JSON, 'utf-8'));
     assert.strictEqual(
-      pkg.bin['gsd-tools'],
-      pkg.bin['gsd-sdk'],
-      'gsd-tools and gsd-sdk must point to the same bin shim'
+      pkg.bin['fvgsd-tools'],
+      pkg.bin['fvgsd-sdk'],
+      'fvgsd-tools and fvgsd-sdk must point to the same bin shim'
     );
   });
 });

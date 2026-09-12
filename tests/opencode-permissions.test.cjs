@@ -10,7 +10,7 @@
  * permissions are written against the actual resolved install directory.
  */
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -39,7 +39,7 @@ describe('configureOpencodePermissions', () => {
   let configDir;
 
   beforeEach(() => {
-    configDir = createTempDir('gsd-opencode-');
+    configDir = createTempDir('fvgsd-opencode-');
   });
 
   afterEach(() => {

@@ -11,7 +11,7 @@
  * const result = await configGet(['workflow.auto_advance'], '/project');
  * // { data: true }
  *
- * const model = await resolveModel(['gsd-planner'], '/project');
+ * const model = await resolveModel(['fvgsd-planner'], '/project');
  * // { data: { model: 'opus', profile: 'balanced' } }
  * ```
  */
@@ -64,7 +64,7 @@ const SCHEMA_DEFAULTS: Readonly<Record<string, string | number | boolean>> = Obj
  * Query handler for config-get command.
  *
  * Reads raw .planning/config.json and traverses dot-notation key paths.
- * Does NOT merge with defaults (matches gsd-tools.cjs behavior).
+ * Does NOT merge with defaults (matches fvgsd-tools.cjs behavior).
  *
  * @param args - args[0] is the dot-notation key path (e.g., 'workflow.auto_advance')
  * @param projectDir - Project root directory
@@ -73,7 +73,7 @@ const SCHEMA_DEFAULTS: Readonly<Record<string, string | number | boolean>> = Obj
  */
 export const configGet: QueryHandler = async (args, projectDir, workstream) => {
   // Support --default <value> flag (#2803): return this value (exit 0) when the
-  // key is absent, mirroring gsd-tools.cjs config-get behavior from #1893.
+  // key is absent, mirroring fvgsd-tools.cjs config-get behavior from #1893.
   const defaultIdx = args.indexOf('--default');
   let defaultValue: string | undefined;
   let filteredArgs = args;
@@ -125,7 +125,7 @@ export const configGet: QueryHandler = async (args, projectDir, workstream) => {
   for (const key of keys) {
     if (current === undefined || current === null || typeof current !== 'object') {
       // UNIX convention (cf. `git config --get`): missing key exits 1, not 10.
-      // See issue #2544 — callers use `if ! gsd-sdk query config-get k; then` patterns.
+      // See issue #2544 — callers use `if ! fvgsd-sdk query config-get k; then` patterns.
       // CJS parity ordering (config.cjs:543-551): --default first, then
       // SCHEMA_DEFAULTS, then CONFIG_KEY_NOT_FOUND.
       if (defaultValue !== undefined) return { data: defaultValue };
@@ -149,7 +149,7 @@ export const configGet: QueryHandler = async (args, projectDir, workstream) => {
   }
 
   // Mask plaintext for keys in SECRET_CONFIG_KEYS to match CJS behavior at
-  // config.cjs:440-441 — without this, `gsd-sdk query config-get brave_search`
+  // config.cjs:440-441 — without this, `fvgsd-sdk query config-get brave_search`
   // would echo the plaintext credential into machine-readable output. (#2997)
   return { data: maskIfSecret(keyPath, current) };
 };
@@ -217,7 +217,7 @@ function resolveRuntimeTier(config: Record<string, unknown>, tier: string): Runt
  * Resolves the model alias for a given agent type based on the current profile.
  * Uses loadConfig (with defaults) and MODEL_PROFILES for lookup.
  *
- * @param args - args[0] is the agent type (e.g., 'gsd-planner')
+ * @param args - args[0] is the agent type (e.g., 'fvgsd-planner')
  * @param projectDir - Project root directory
  * @param workstream - Optional workstream name; forwarded to loadConfig so per-workstream
  *   model_profile settings are respected (mirrors configGet/configPath behavior)

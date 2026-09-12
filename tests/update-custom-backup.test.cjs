@@ -5,12 +5,12 @@
  * directories (get-shit-done/, agents/, commands/gsd/, hooks/) before the
  * installer wipes those directories.
  *
- * This tests the `detect-custom-files` subcommand of gsd-tools.cjs, which is
+ * This tests the `detect-custom-files` subcommand of fvgsd-tools.cjs, which is
  * the correct fix for the bash path-stripping failure described in #1997.
  *
  * The bash pattern `${filepath#$RUNTIME_DIR/}` is unreliable because
  * $RUNTIME_DIR may not be set and the stripped relative path may not match
- * manifest key format. Moving the logic into gsd-tools.cjs eliminates the
+ * manifest key format. Moving the logic into fvgsd-tools.cjs eliminates the
  * shell variable expansion failure entirely.
  *
  * Closes: #1997
@@ -28,7 +28,7 @@ function sha256(content) {
 }
 
 /**
- * Write a fake gsd-file-manifest.json into configDir with the given file entries.
+ * Write a fake fvgsd-file-manifest.json into configDir with the given file entries.
  */
 function writeManifest(configDir, files) {
   const manifest = {
@@ -43,7 +43,7 @@ function writeManifest(configDir, files) {
     manifest.files[relPath] = sha256(content);
   }
   fs.writeFileSync(
-    path.join(configDir, 'gsd-file-manifest.json'),
+    path.join(configDir, 'fvgsd-file-manifest.json'),
     JSON.stringify(manifest, null, 2)
   );
 }
@@ -52,7 +52,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-custom-detect-');
+    tmpDir = createTempDir('fvgsd-custom-detect-');
   });
 
   afterEach(() => {
@@ -87,7 +87,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('detects custom files added inside agents/', () => {
     writeManifest(tmpDir, {
-      'agents/gsd-executor.md': '# GSD Executor\n',
+      'agents/fvgsd-executor.md': '# GSD Executor\n',
     });
 
     // Add a user's custom agent (not prefixed with gsd-)
@@ -111,7 +111,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
     writeManifest(tmpDir, {
       'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
       'get-shit-done/references/gates.md': '# Gates\n',
-      'agents/gsd-executor.md': '# Executor\n',
+      'agents/fvgsd-executor.md': '# Executor\n',
     });
     // No extra files added
 
@@ -233,7 +233,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
   test('scans skills/ directory and detects user-added skills not in manifest (#2942)', () => {
     writeManifest(tmpDir, {
       'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
-      'skills/gsd-planner/SKILL.md': '# GSD Planner\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner\n',
     });
 
     // Simulate user having a custom skill installed — NOT in manifest
@@ -258,7 +258,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
     // The GSD-owned skill (in manifest) should NOT be flagged as custom
     assert.ok(
-      !json.custom_files.includes('skills/gsd-planner/SKILL.md'),
+      !json.custom_files.includes('skills/fvgsd-planner/SKILL.md'),
       `GSD-owned skill should not be flagged as custom; got: ${JSON.stringify(json.custom_files)}`
     );
   });

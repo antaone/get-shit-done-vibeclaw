@@ -13,7 +13,7 @@ Parse the command arguments:
 - First argument: integer phase number to insert after
 - Remaining arguments: phase description
 
-Example: `/vgsd:phase --insert 72 Fix critical auth bug`
+Example: `/fvgsd:phase --insert 72 Fix critical auth bug`
 -> after = 72
 -> description = "Fix critical auth bug"
 
@@ -21,8 +21,8 @@ If arguments missing:
 
 ```
 ERROR: Both phase number and description required
-Usage: /vgsd:phase --insert <after> <description>
-Example: /vgsd:phase --insert 72 Fix critical auth bug
+Usage: /fvgsd:phase --insert <after> <description>
+Example: /fvgsd:phase --insert 72 Fix critical auth bug
 ```
 
 Exit.
@@ -34,7 +34,7 @@ Validate first argument is an integer.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${after_phase}")
+INIT=$(fvgsd-sdk query init.phase-op "${after_phase}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -46,10 +46,10 @@ Exit.
 </step>
 
 <step name="insert_phase">
-**Delegate the phase insertion to `gsd-sdk query phase.insert`:**
+**Delegate the phase insertion to `fvgsd-sdk query phase.insert`:**
 
 ```bash
-RESULT=$(gsd-sdk query phase.insert "${after_phase}" "${description}")
+RESULT=$(fvgsd-sdk query phase.insert "${after_phase}" "${description}")
 ```
 
 The CLI handles:
@@ -71,7 +71,7 @@ blocks direct STATE.md writes):
    `{decimal_phase}`:
 
    ```bash
-   gsd-sdk query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/vgsd:plan-phase {decimal_phase}"}'
+   fvgsd-sdk query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/fvgsd:plan-phase {decimal_phase}"}'
    ```
 
    (Adjust field names to whatever pointers STATE.md exposes — the handler
@@ -82,7 +82,7 @@ blocks direct STATE.md writes):
    and dedupes identical entries:
 
    ```bash
-   gsd-sdk query state.add-roadmap-evolution \
+   fvgsd-sdk query state.add-roadmap-evolution \
      --phase {decimal_phase} \
      --action inserted \
      --after {after_phase} \
@@ -115,7 +115,7 @@ Project state updated: .planning/STATE.md
 
 `/clear` then:
 
-`/vgsd:plan-phase {decimal_phase}`
+`/fvgsd:plan-phase {decimal_phase}`
 
 ---
 
@@ -131,21 +131,21 @@ Project state updated: .planning/STATE.md
 
 <anti_patterns>
 
-- Don't use this for planned work at end of milestone (use /vgsd-add-phase)
+- Don't use this for planned work at end of milestone (use /fvgsd-add-phase)
 - Don't insert before Phase 1 (decimal 0.1 makes no sense)
 - Don't renumber existing phases
 - Don't modify the target phase content
-- Don't create plans yet (that's /vgsd:plan-phase)
+- Don't create plans yet (that's /fvgsd:plan-phase)
 - Don't commit changes (user decides when to commit)
 </anti_patterns>
 
 <success_criteria>
 Phase insertion is complete when:
 
-- [ ] `gsd-sdk query phase.insert` executed successfully
+- [ ] `fvgsd-sdk query phase.insert` executed successfully
 - [ ] Phase directory created
 - [ ] Roadmap updated with new phase entry (includes "(INSERTED)" marker)
-- [ ] `gsd-sdk query state.add-roadmap-evolution ...` returned `{ added: true }` or `{ added: false, reason: "duplicate" }`
-- [ ] `gsd-sdk query state.patch` returned matched next-phase pointer field(s)
+- [ ] `fvgsd-sdk query state.add-roadmap-evolution ...` returned `{ added: true }` or `{ added: false, reason: "duplicate" }`
+- [ ] `fvgsd-sdk query state.patch` returned matched next-phase pointer field(s)
 - [ ] User informed of next steps and dependency implications
 </success_criteria>

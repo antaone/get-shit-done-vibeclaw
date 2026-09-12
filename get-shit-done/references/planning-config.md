@@ -37,7 +37,7 @@ Configuration options for `.planning/` directory behavior.
 | `workflow.use_worktrees` | `true` | Whether executor agents run in isolated git worktrees. Set to `false` to disable worktrees — agents execute sequentially on the main working tree instead. Recommended for solo developers or when worktree merges cause issues. |
 | `workflow.subagent_timeout` | `300000` | Timeout in milliseconds for parallel subagent tasks (e.g. codebase mapping). Increase for large codebases or slower models. Default: 300000 (5 minutes). |
 | `workflow.inline_plan_threshold` | `2` | Plans with this many tasks or fewer execute inline (Pattern C) instead of spawning a subagent. Avoids ~14K token spawn overhead for small plans. Set to `0` to always spawn subagents. |
-| `manager.flags.discuss` | `""` | Flags passed to `/vgsd:discuss-phase` when dispatched from manager (e.g. `"--auto --analyze"`) |
+| `manager.flags.discuss` | `""` | Flags passed to `/fvgsd:discuss-phase` when dispatched from manager (e.g. `"--auto --analyze"`) |
 | `manager.flags.plan` | `""` | Flags passed to plan workflow when dispatched from manager |
 | `manager.flags.execute` | `""` | Flags passed to execute workflow when dispatched from manager |
 | `response_language` | `null` | Language for user-facing questions and prompts across all phases/subagents (e.g. `"Portuguese"`, `"Japanese"`, `"Spanish"`). When set, all spawned agents include a directive to respond in this language. |
@@ -55,19 +55,19 @@ Configuration options for `.planning/` directory behavior.
 - User must add `.planning/` to `.gitignore`
 - Useful for: OSS contributions, client projects, keeping planning private
 
-**Using `gsd-sdk query` (preferred):**
+**Using `fvgsd-sdk query` (preferred):**
 
 ```bash
 # Commit with automatic commit_docs + gitignore checks:
-gsd-sdk query commit "docs: update state" --files .planning/STATE.md
+fvgsd-sdk query commit "docs: update state" --files .planning/STATE.md
 
 # Load config via state load (returns JSON):
-INIT=$(gsd-sdk query state.load)
+INIT=$(fvgsd-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # commit_docs is available in the JSON output
 
 # Or use init commands which include commit_docs:
-INIT=$(gsd-sdk query init.execute-phase "1")
+INIT=$(fvgsd-sdk query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # commit_docs is included in all init command outputs
 ```
@@ -77,7 +77,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 **Commit via CLI (handles checks automatically):**
 
 ```bash
-gsd-sdk query commit "docs: update state" --files .planning/STATE.md
+fvgsd-sdk query commit "docs: update state" --files .planning/STATE.md
 ```
 
 The CLI checks `commit_docs` config and gitignore status internally — no manual conditionals needed.
@@ -165,14 +165,14 @@ To use uncommitted mode:
 
 Use `init execute-phase` which returns all config as JSON:
 ```bash
-INIT=$(gsd-sdk query init.execute-phase "1")
+INIT=$(fvgsd-sdk query init.execute-phase "1")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # JSON output includes: branching_strategy, phase_branch_template, milestone_branch_template
 ```
 
 Or use `state load` for the config values:
 ```bash
-INIT=$(gsd-sdk query state.load)
+INIT=$(fvgsd-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # Parse branching_strategy, phase_branch_template, milestone_branch_template from JSON
 ```
@@ -237,7 +237,7 @@ Generated from `CONFIG_DEFAULTS` (core.cjs) and `VALID_CONFIG_KEYS` (config.cjs)
 | `context_window` | number | `200000` | `200000`, `1000000` | Context window size; set `1000000` for 1M-context models |
 | `resolve_model_ids` | boolean\|string | `false` | `false`, `true`, `"omit"` | Map model aliases to full Claude IDs; `"omit"` returns empty string |
 | `context` | string\|null | `null` | `"dev"`, `"research"`, `"review"` | Execution context profile that adjusts agent behavior: `"dev"` for development tasks, `"research"` for investigation/exploration, `"review"` for code review workflows |
-| `review.models.<cli>` | string\|null | `null` | Any model ID string | Per-CLI model override for /vgsd:review (e.g., `review.models.gemini`). Falls back to CLI default when null. |
+| `review.models.<cli>` | string\|null | `null` | Any model ID string | Per-CLI model override for /fvgsd:review (e.g., `review.models.gemini`). Falls back to CLI default when null. |
 
 ### Workflow Fields
 
@@ -253,7 +253,7 @@ Set via `workflow.*` namespace in config.json (e.g., `"workflow": { "research": 
 | `workflow.auto_advance` | boolean | `false` | `true`, `false` | Auto-advance to next phase after completion |
 | `workflow.node_repair` | boolean | `true` | `true`, `false` | Attempt automatic repair of failed plan nodes |
 | `workflow.node_repair_budget` | number | `2` | Any positive integer | Max repair retries per failed node |
-| `workflow.ai_integration_phase` | boolean | `true` | `true`, `false` | Run /vgsd:ai-integration-phase before planning AI system phases |
+| `workflow.ai_integration_phase` | boolean | `true` | `true`, `false` | Run /fvgsd:ai-integration-phase before planning AI system phases |
 | `workflow.ui_phase` | boolean | `true` | `true`, `false` | Generate UI-SPEC.md for frontend phases |
 | `workflow.ui_safety_gate` | boolean | `true` | `true`, `false` | Require safety gate approval for UI changes |
 | `workflow.text_mode` | boolean | `false` | `true`, `false` | Use plain-text numbered lists instead of AskUserQuestion menus |
@@ -266,14 +266,14 @@ Set via `workflow.*` namespace in config.json (e.g., `"workflow": { "research": 
 | `workflow.code_review` | boolean | `true` | `true`, `false` | Enable built-in code review step in the ship workflow |
 | `workflow.code_review_depth` | string | `"standard"` | `"light"`, `"standard"`, `"deep"` | Depth level for code review analysis in the ship workflow |
 | `workflow._auto_chain_active` | boolean | `false` | `true`, `false` | Internal: tracks whether autonomous chaining is active |
-| `workflow.security_enforcement` | boolean | `true` | `true`, `false` | Enable threat-model-anchored security verification via `/vgsd:secure-phase`. When `false`, security checks are skipped entirely |
+| `workflow.security_enforcement` | boolean | `true` | `true`, `false` | Enable threat-model-anchored security verification via `/fvgsd:secure-phase`. When `false`, security checks are skipped entirely |
 | `workflow.security_asvs_level` | number | `1` | `1`, `2`, `3` | OWASP ASVS verification level. Level 1 = opportunistic, Level 2 = standard, Level 3 = comprehensive |
 | `workflow.security_block_on` | string | `"high"` | `"high"`, `"medium"`, `"low"` | Minimum severity that blocks phase advancement |
 | `workflow.post_planning_gaps` | boolean | `true` | `true`, `false` | Post-planning gap report (#2493). After plans are generated, scans REQUIREMENTS.md and CONTEXT.md `<decisions>` against all PLAN.md files and emits a unified `Source \| Item \| Status` table. Non-blocking. Set to `false` to skip Step 13e of plan-phase. _Alias:_ `post_planning_gaps` is the flat-key form used in `CONFIG_DEFAULTS`; `workflow.post_planning_gaps` is the canonical namespaced form. |
 
 ### Ship Fields
 
-Set via `ship.*` namespace in config.json. These fields affect `/vgsd:ship` PRD-style pull request body composition only.
+Set via `ship.*` namespace in config.json. These fields affect `/fvgsd:ship` PRD-style pull request body composition only.
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
@@ -329,11 +329,11 @@ Set via `learnings.*` namespace (e.g., `"learnings": { "max_inject": 5 }`). Used
 
 ### Intel Fields
 
-Set via `intel.*` namespace (e.g., `"intel": { "enabled": true }`). Controls the queryable codebase intelligence system consumed by `/vgsd:map-codebase --query`.
+Set via `intel.*` namespace (e.g., `"intel": { "enabled": true }`). Controls the queryable codebase intelligence system consumed by `/fvgsd:map-codebase --query`.
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `intel.enabled` | boolean | `false` | `true`, `false` | Enable queryable codebase intelligence system. When `true`, `/vgsd:map-codebase --query` builds and queries a JSON index in `.planning/intel/`. |
+| `intel.enabled` | boolean | `false` | `true`, `false` | Enable queryable codebase intelligence system. When `true`, `/fvgsd:map-codebase --query` builds and queries a JSON index in `.planning/intel/`. |
 
 ### Manager Fields
 
@@ -341,7 +341,7 @@ Set via `manager.*` namespace (e.g., `"manager": { "flags": { "discuss": "--auto
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `manager.flags.discuss` | string | `""` | Any CLI flags string | Flags passed to `/vgsd:discuss-phase` from manager (e.g., `"--auto --analyze"`) |
+| `manager.flags.discuss` | string | `""` | Any CLI flags string | Flags passed to `/fvgsd:discuss-phase` from manager (e.g., `"--auto --analyze"`) |
 | `manager.flags.plan` | string | `""` | Any CLI flags string | Flags passed to plan workflow from manager |
 | `manager.flags.execute` | string | `""` | Any CLI flags string | Flags passed to execute workflow from manager |
 

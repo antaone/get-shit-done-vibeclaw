@@ -13,7 +13,7 @@ const path = require('node:path');
 //      Three levels up from bin/lib/: works when running directly from the
 //      gsd-build/get-shit-done clone (the original path introduced by #3230).
 //
-//   3. GSD_MODEL_CATALOG env override — allows test harnesses and custom
+//   3. FVGSD_MODEL_CATALOG env override — allows test harnesses and custom
 //      deployments to point at an arbitrary catalog file.
 //
 // Throws with a diagnostic message that lists all candidates when none resolve,
@@ -21,7 +21,7 @@ const path = require('node:path');
 const _catalogCandidates = [
   path.resolve(__dirname, '..', 'shared', 'model-catalog.json'),
   path.resolve(__dirname, '..', '..', '..', 'sdk', 'shared', 'model-catalog.json'),
-  process.env.GSD_MODEL_CATALOG ? path.resolve(process.env.GSD_MODEL_CATALOG) : null,
+  process.env.FVGSD_MODEL_CATALOG ? path.resolve(process.env.FVGSD_MODEL_CATALOG) : null,
 ].filter(Boolean);
 
 let catalog = null;

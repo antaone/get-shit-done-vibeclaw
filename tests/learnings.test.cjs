@@ -29,7 +29,7 @@ const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
  * @returns {string}
  */
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-learnings-test-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-learnings-test-'));
 }
 
 /**

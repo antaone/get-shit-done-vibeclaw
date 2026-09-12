@@ -3,7 +3,7 @@
  *
  * Validates that GSD detects missing or incomplete agent installations and
  * surfaces warnings through init commands and health checks. When agents are
- * not installed, Task(subagent_type="gsd-*") silently falls back to
+ * not installed, Task(subagent_type="fvgsd-*") silently falls back to
  * general-purpose, losing specialized instructions.
  */
 
@@ -19,10 +19,10 @@ const EXPECTED_AGENTS = Object.keys(MODEL_PROFILES);
 
 /**
  * Create a fake GSD install directory structure that mirrors what the installer
- * produces. gsd-tools.cjs lives at <configDir>/get-shit-done/bin/gsd-tools.cjs,
+ * produces. fvgsd-tools.cjs lives at <configDir>/get-shit-done/bin/fvgsd-tools.cjs,
  * so the agents dir is at <configDir>/agents/.
  *
- * We use --cwd to point at the project, and GSD_INSTALL_DIR env to override
+ * We use --cwd to point at the project, and FVGSD_INSTALL_DIR env to override
  * the agents directory location for testing.
  */
 function createAgentsDir(configDir, agentNames = []) {
@@ -51,8 +51,8 @@ describe('init commands: agents_installed field (#1371)', () => {
   });
 
   // Point the SDK at the repo's agents/ dir (sibling of get-shit-done/) via the
-  // GSD_AGENTS_DIR override. The SDK side of init resolves agents from
-  // GSD_AGENTS_DIR or the runtime config dir (~/.claude/agents for Claude); it
+  // FVGSD_AGENTS_DIR override. The SDK side of init resolves agents from
+  // FVGSD_AGENTS_DIR or the runtime config dir (~/.claude/agents for Claude); it
   // does NOT walk up from cwd like the CJS-era code did. Without this override
   // these tests would only pass on a dev machine with ~/.claude/agents/
   // populated — which masked the divergence on Linux CI where that path is
@@ -64,21 +64,21 @@ describe('init commands: agents_installed field (#1371)', () => {
     const phaseDir = path.join(tmpDir, '.planning', 'phases', '01-setup');
     fs.mkdirSync(phaseDir, { recursive: true });
 
-    const result = runGsdTools('init execute-phase 1 --raw', tmpDir, { GSD_AGENTS_DIR: REPO_AGENTS_DIR });
+    const result = runGsdTools('init execute-phase 1 --raw', tmpDir, { FVGSD_AGENTS_DIR: REPO_AGENTS_DIR });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
     assert.strictEqual(typeof output.agents_installed, 'boolean',
       'init execute-phase must include agents_installed field');
     assert.strictEqual(output.agents_installed, true,
-      'agents_installed should be true when GSD_AGENTS_DIR has gsd-*.md files');
+      'agents_installed should be true when FVGSD_AGENTS_DIR has gsd-*.md files');
   });
 
   test('init plan-phase includes agents_installed=true when agents exist', () => {
     const phaseDir = path.join(tmpDir, '.planning', 'phases', '01-setup');
     fs.mkdirSync(phaseDir, { recursive: true });
 
-    const result = runGsdTools('init plan-phase 1 --raw', tmpDir, { GSD_AGENTS_DIR: REPO_AGENTS_DIR });
+    const result = runGsdTools('init plan-phase 1 --raw', tmpDir, { FVGSD_AGENTS_DIR: REPO_AGENTS_DIR });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -146,7 +146,7 @@ describe('validate health: agent installation check W010 (#1371)', () => {
 
   test('health check reports healthy when agents are installed (repo layout)', () => {
     // In the repo, agents/ exists as a sibling of get-shit-done/, so the
-    // health check should find them via the gsd-tools.cjs path resolution
+    // health check should find them via the fvgsd-tools.cjs path resolution
     const result = runGsdTools('validate health --raw', tmpDir);
     assert.ok(result.success, `Command failed: ${result.error}`);
 
@@ -172,7 +172,7 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
 
   test('agents_installed=true when agents exist as .agent.md (Copilot format)', () => {
     // Simulate a Copilot install: agents are named gsd-*.agent.md, not gsd-*.md
-    // Use GSD_AGENTS_DIR to point at an isolated dir with ONLY .agent.md files,
+    // Use FVGSD_AGENTS_DIR to point at an isolated dir with ONLY .agent.md files,
     // so the test does not accidentally pass via the repo's own agents/ dir.
     const agentsDir = path.join(tmpDir, 'copilot-agents');
     fs.mkdirSync(agentsDir, { recursive: true });
@@ -183,13 +183,13 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
       );
     }
 
-    const result = runGsdTools('validate agents --raw', tmpDir, { GSD_AGENTS_DIR: agentsDir });
+    const result = runGsdTools('validate agents --raw', tmpDir, { FVGSD_AGENTS_DIR: agentsDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
     // Must report the custom dir, not the default repo agents dir
     assert.strictEqual(output.agents_dir, agentsDir,
-      'agents_dir must be the GSD_AGENTS_DIR override, not the repo default');
+      'agents_dir must be the FVGSD_AGENTS_DIR override, not the repo default');
     assert.strictEqual(output.agents_found, true,
       'agents_found must be true when agents exist as .agent.md (Copilot format)');
     assert.deepStrictEqual(output.missing, [],
@@ -206,7 +206,7 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
       `---\nname: ${firstAgent}\ndescription: Test agent\n---\nAgent content.\n`
     );
 
-    const result = runGsdTools('validate agents --raw', tmpDir, { GSD_AGENTS_DIR: agentsDir });
+    const result = runGsdTools('validate agents --raw', tmpDir, { FVGSD_AGENTS_DIR: agentsDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -226,7 +226,7 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
       );
     }
 
-    const result = runGsdTools('init new-workspace --raw', tmpDir, { GSD_AGENTS_DIR: agentsDir });
+    const result = runGsdTools('init new-workspace --raw', tmpDir, { FVGSD_AGENTS_DIR: agentsDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -236,7 +236,7 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
       'missing_agents must be empty when all .agent.md files are present');
   });
 
-  test('GSD_AGENTS_DIR env var overrides default agents directory', () => {
+  test('FVGSD_AGENTS_DIR env var overrides default agents directory', () => {
     // Create a custom agents dir in a subdirectory
     const customAgentsDir = path.join(tmpDir, 'custom-agents');
     fs.mkdirSync(customAgentsDir, { recursive: true });
@@ -246,13 +246,13 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
       `---\nname: ${EXPECTED_AGENTS[0]}\ndescription: Test agent\n---\nAgent content.\n`
     );
 
-    const result = runGsdTools('validate agents --raw', tmpDir, { GSD_AGENTS_DIR: customAgentsDir });
+    const result = runGsdTools('validate agents --raw', tmpDir, { FVGSD_AGENTS_DIR: customAgentsDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
     // The custom dir path should be reported
     assert.strictEqual(output.agents_dir, customAgentsDir,
-      'agents_dir must reflect GSD_AGENTS_DIR override');
+      'agents_dir must reflect FVGSD_AGENTS_DIR override');
   });
 });
 

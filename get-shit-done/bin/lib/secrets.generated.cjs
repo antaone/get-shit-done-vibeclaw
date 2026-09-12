@@ -7,7 +7,7 @@
  * Regenerate: cd sdk && npm run gen:secrets
  *
  * Secrets handling — masking convention for API keys and other
- * credentials managed via /vgsd-settings-integrations.
+ * credentials managed via /fvgsd-settings-integrations.
  * This module does not read the filesystem.
  */
 

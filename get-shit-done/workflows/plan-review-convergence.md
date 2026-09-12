@@ -1,6 +1,6 @@
 <purpose>
 Cross-AI plan convergence loop — automates the manual chain:
-vgsd-plan-phase N → vgsd-review N --codex → vgsd-plan-phase N --reviews → vgsd-review N --codex → ...
+fvgsd-plan-phase N → fvgsd-review N --codex → fvgsd-plan-phase N --reviews → fvgsd-review N --codex → ...
 Each step runs inside an isolated Agent that calls the corresponding Skill.
 Orchestrator only does: init, loop control, parse CYCLE_SUMMARY for HIGH count, stall detection, escalation.
 </purpose>
@@ -8,9 +8,9 @@ Orchestrator only does: init, loop control, parse CYCLE_SUMMARY for HIGH count, 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@$HOME/.claude/get-shit-done/references/revision-loop.md
-@$HOME/.claude/get-shit-done/references/gates.md
-@$HOME/.claude/get-shit-done/references/agent-contracts.md
+@$HOME/.claude/fvgsd/references/revision-loop.md
+@$HOME/.claude/fvgsd/references/gates.md
+@$HOME/.claude/fvgsd/references/agent-contracts.md
 </required_reading>
 
 <process>
@@ -36,33 +36,33 @@ if [ -z "$REVIEWER_FLAGS" ]; then REVIEWER_FLAGS="--codex"; fi
 MAX_CYCLES=$(echo "$ARGUMENTS" | grep -oE '\-\-max-cycles\s+[0-9]+' | awk '{print $2}')
 if [ -z "$MAX_CYCLES" ]; then MAX_CYCLES=3; fi
 
-GSD_WS=""
-echo "$ARGUMENTS" | grep -qE '\-\-ws\s+\S+' && GSD_WS=$(echo "$ARGUMENTS" | grep -oE '\-\-ws\s+\S+')
+FVGSD_WS=""
+echo "$ARGUMENTS" | grep -qE '\-\-ws\s+\S+' && FVGSD_WS=$(echo "$ARGUMENTS" | grep -oE '\-\-ws\s+\S+')
 ```
 
 ## 1.5. Config Gate (feature disabled by default)
 
 ```bash
-CONVERGENCE_ENABLED=$(gsd-sdk query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
+CONVERGENCE_ENABLED=$(fvgsd-sdk query config-get workflow.plan_review_convergence 2>/dev/null || echo "false")
 ```
 
 **If `CONVERGENCE_ENABLED` is not `"true"`:** Display and exit:
 
 ```text
-vgsd-plan-review-convergence is disabled (workflow.plan_review_convergence=false).
+fvgsd-plan-review-convergence is disabled (workflow.plan_review_convergence=false).
 
 This feature automates the plan→review→replan loop using external AI reviewers.
 Enable it with:
 
   gsd config-set workflow.plan_review_convergence true
 
-Then re-run: /vgsd:plan-review-convergence {PHASE}
+Then re-run: /fvgsd:plan-review-convergence {PHASE}
 ```
 
 ## 2. Initialize
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -75,7 +75,7 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 ## 3. Validate Phase + Pre-flight Gate
 
 ```bash
-PHASE_INFO=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases. Exit.
@@ -102,9 +102,9 @@ Display: `◆ No plans found — spawning initial planning agent...`
 ```text
 Agent(
   description="Initial planning Phase {PHASE}",
-  prompt="Run /vgsd:plan-phase for Phase {PHASE}.
+  prompt="Run /fvgsd:plan-phase for Phase {PHASE}.
 
-Execute: Skill(skill='vgsd-plan-phase', args='{PHASE} {GSD_WS}')
+Execute: Skill(skill='fvgsd-plan-phase', args='{PHASE} {FVGSD_WS}')
 
 Complete the full planning workflow. Do NOT return until planning is complete and PLAN.md files are committed.",
   mode="auto"
@@ -138,9 +138,9 @@ Display: `◆ Cycle {cycle}/{MAX_CYCLES} — spawning review agent...`
 ```text
 Agent(
   description="Cross-AI review Phase {PHASE} cycle {cycle}",
-  prompt="Run /vgsd:review for Phase {PHASE}.
+  prompt="Run /fvgsd:review for Phase {PHASE}.
 
-Execute: Skill(skill='vgsd-review', args='--phase {PHASE} {REVIEWER_FLAGS} {GSD_WS}')
+Execute: Skill(skill='fvgsd-review', args='--phase {PHASE} {REVIEWER_FLAGS} {FVGSD_WS}')
 
 Complete the full review workflow. Do NOT return until REVIEWS.md is committed.
 
@@ -213,7 +213,7 @@ fi
 **If HIGH_COUNT == 0 (converged):**
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" state planned-phase --phase "${PHASE}" --name "${phase_name}" --plans "${PLAN_COUNT}"
 ```
 
 Display:
@@ -226,7 +226,7 @@ Display:
  No HIGH concerns remaining.
 
  REVIEWS.md: {REVIEWS_FILE}
- Next: /vgsd:execute-phase {PHASE}
+ Next: /fvgsd:execute-phase {PHASE}
 ```
 
 Exit — convergence achieved.
@@ -280,8 +280,8 @@ If "Manual review":
 ```text
 Review the concerns in: {REVIEWS_FILE}
 
-To replan manually:  /vgsd:plan-phase {PHASE} --reviews
-To restart loop:     /vgsd:plan-review-convergence {PHASE} {REVIEWER_FLAGS}
+To replan manually:  /fvgsd:plan-phase {PHASE} --reviews
+To restart loop:     /fvgsd:plan-review-convergence {PHASE} {REVIEWER_FLAGS}
 ```
 Exit workflow.
 
@@ -296,14 +296,14 @@ Display: `◆ Spawning replan agent with review feedback...`
 ```text
 Agent(
   description="Replan Phase {PHASE} with review feedback cycle {cycle}",
-  prompt="Run /vgsd:plan-phase with --reviews for Phase {PHASE}.
+  prompt="Run /fvgsd:plan-phase with --reviews for Phase {PHASE}.
 
-Execute: Skill(skill='vgsd-plan-phase', args='{PHASE} --reviews --skip-research {GSD_WS}')
+Execute: Skill(skill='fvgsd-plan-phase', args='{PHASE} --reviews --skip-research {FVGSD_WS}')
 
 This will replan incorporating cross-AI review feedback from REVIEWS.md.
 Do NOT return until replanning is complete and updated PLAN.md files are committed.
 
-IMPORTANT: When vgsd-plan-phase outputs '## PLANNING COMPLETE', that means replanning is done. Return at that point.",
+IMPORTANT: When fvgsd-plan-phase outputs '## PLANNING COMPLETE', that means replanning is done. Return at that point.",
   mode="auto"
 )
 ```
@@ -314,9 +314,9 @@ After agent returns → go back to **step 5a** (review again).
 
 <success_criteria>
 - [ ] Config gate checked before running — exits with enable instructions if workflow.plan_review_convergence is false
-- [ ] Initial planning via Agent → Skill("vgsd-plan-phase") if no plans exist
-- [ ] Review via Agent → Skill("vgsd-review") — isolated, not inline; {GSD_WS} forwarded
-- [ ] Replan via Agent → Skill("vgsd-plan-phase --reviews") — isolated, not inline
+- [ ] Initial planning via Agent → Skill("fvgsd-plan-phase") if no plans exist
+- [ ] Review via Agent → Skill("fvgsd-review") — isolated, not inline; {FVGSD_WS} forwarded
+- [ ] Replan via Agent → Skill("fvgsd-plan-phase --reviews") — isolated, not inline
 - [ ] Orchestrator only does: init, config gate, loop control, parse CYCLE_SUMMARY for HIGH count, stall detection, escalation
 - [ ] HIGH count extracted from review agent's CYCLE_SUMMARY return message (not by grepping REVIEWS.md)
 - [ ] Review agent prompt defines CYCLE_SUMMARY: current_high=<N> contract with PARTIALLY/FULLY RESOLVED definitions

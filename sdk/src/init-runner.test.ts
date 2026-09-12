@@ -596,15 +596,15 @@ describe('InitRunner', () => {
 
       // Write headless agents (with known marker text)
       await writeFile(
-        join(sdkPromptsDir, 'agents', 'gsd-project-researcher.md'),
+        join(sdkPromptsDir, 'agents', 'fvgsd-project-researcher.md'),
         '# Project Researcher Agent\nSDK_HEADLESS_MARKER_RESEARCHER\n',
       );
       await writeFile(
-        join(sdkPromptsDir, 'agents', 'gsd-research-synthesizer.md'),
+        join(sdkPromptsDir, 'agents', 'fvgsd-research-synthesizer.md'),
         '# Research Synthesizer Agent\nSDK_HEADLESS_MARKER_SYNTHESIZER\n',
       );
       await writeFile(
-        join(sdkPromptsDir, 'agents', 'gsd-roadmapper.md'),
+        join(sdkPromptsDir, 'agents', 'fvgsd-roadmapper.md'),
         '# Roadmapper Agent\nSDK_HEADLESS_MARKER_ROADMAPPER\n',
       );
     });
@@ -642,7 +642,7 @@ describe('InitRunner', () => {
 
       await runner.run('build a todo app');
 
-      // Research calls (indices 1-4) use gsd-project-researcher.md agent def
+      // Research calls (indices 1-4) use fvgsd-project-researcher.md agent def
       const researchPrompt = mockRunSession.mock.calls[1]![0] as string;
       // Should contain research instruction regardless of source
       expect(researchPrompt).toContain('You are researching the');

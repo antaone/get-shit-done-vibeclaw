@@ -3,7 +3,7 @@
 /**
  * Regression test for #2659.
  *
- * The `audit-open` dispatch case in bin/gsd-tools.cjs previously called bare
+ * The `audit-open` dispatch case in bin/fvgsd-tools.cjs previously called bare
  * `output(...)` on both the --json and text branches. `output` is never in
  * local scope — the entire core module is imported as `const core`, so every
  * other case uses `core.output(...)`. The bare calls therefore crashed with
@@ -23,7 +23,7 @@ describe('audit-open — does not crash with ReferenceError (#2659)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempProject('gsd-bug-2659-');
+    tmpDir = createTempProject('fvgsd-bug-2659-');
   });
 
   afterEach(() => {

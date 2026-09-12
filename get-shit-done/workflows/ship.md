@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Parse arguments and load project state:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${PHASE_ARG}")
+INIT=$(fvgsd-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -20,14 +20,14 @@ Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, 
 
 Also load config for branching strategy:
 ```bash
-CONFIG=$(gsd-sdk query state.load)
+CONFIG=$(fvgsd-sdk query state.load)
 ```
 
 Extract: `branching_strategy`, `branch_name`.
 
 Detect base branch for PRs and merges:
 ```bash
-BASE_BRANCH=$(gsd-sdk query config-get git.base_branch 2>/dev/null || echo "")
+BASE_BRANCH=$(fvgsd-sdk query config-get git.base_branch 2>/dev/null || echo "")
 if [ -z "$BASE_BRANCH" ] || [ "$BASE_BRANCH" = "null" ]; then
   BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|^refs/remotes/origin/||')
   BASE_BRANCH="${BASE_BRANCH:-main}"
@@ -146,12 +146,12 @@ For each SUMMARY.md in the phase directory:
 Read append-only project-specific PRD/PR body sections from config:
 
 ```bash
-CUSTOM_PR_SECTIONS=$(gsd-sdk query config-get ship.pr_body_sections --default '[]' 2>/dev/null || echo '[]')
+CUSTOM_PR_SECTIONS=$(fvgsd-sdk query config-get ship.pr_body_sections --default '[]' 2>/dev/null || echo '[]')
 ```
 
 `ship.pr_body_sections` is an onboarding-time extension point for teams that need extra PRD-style sections such as `User Stories & Acceptance Criteria`, `Risks & Dependencies`, `Success Metrics`, `Release Criteria`, or `Stakeholder Review & Approval`.
 
-Use these sections for lean/agile PRD material that should travel with the PR without making the core `/vgsd:ship` body configurable:
+Use these sections for lean/agile PRD material that should travel with the PR without making the core `/fvgsd:ship` body configurable:
 
 - User stories and acceptance criteria that explain the functional increment from the user's point of view.
 - Definition of Done or release criteria that make the completion standard explicit.
@@ -196,7 +196,7 @@ Example configured sections:
 Create the PR using the generated body. Write the body to a temp file first so large generated PRD sections do not hit shell argument limits:
 
 ```bash
-PR_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/vgsd-pr-body.XXXXXX.md")
+PR_BODY_FILE=$(mktemp "${TMPDIR:-/tmp}/fvgsd-pr-body.XXXXXX.md")
 trap 'rm -f "${PR_BODY_FILE:-}"' EXIT
 printf '%s\n' "${PR_BODY}" > "${PR_BODY_FILE}"
 
@@ -218,7 +218,7 @@ Report: "PR #{number} created: {url}"
 Before prompting the user, check if an external review command is configured:
 
 ```bash
-REVIEW_CMD=$(gsd-sdk query config-get workflow.code_review_command 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
+REVIEW_CMD=$(fvgsd-sdk query config-get workflow.code_review_command 2>/dev/null | jq -r '.' 2>/dev/null || echo "")
 ```
 
 If `REVIEW_CMD` is non-empty and not `"null"`, run the external review:
@@ -231,7 +231,7 @@ If `REVIEW_CMD` is non-empty and not `"null"`, run the external review:
 
 2. **Load phase context from STATE.md:**
    ```bash
-   STATE_STATUS=$(gsd-sdk query state.load 2>/dev/null | head -20)
+   STATE_STATUS=$(fvgsd-sdk query state.load 2>/dev/null | head -20)
    ```
 
 3. **Build review prompt and pipe to command via stdin:**
@@ -304,13 +304,13 @@ Report the PR URL and suggest: "Review the diff at {url}/files"
 Update STATE.md to reflect the shipping action:
 
 ```bash
-gsd-sdk query state.update "Last Activity" "$(date +%Y-%m-%d)"
-gsd-sdk query state.update "Status" "Phase ${PHASE_NUMBER} shipped — PR #${PR_NUMBER}"
+fvgsd-sdk query state.update "Last Activity" "$(date +%Y-%m-%d)"
+fvgsd-sdk query state.update "Status" "Phase ${PHASE_NUMBER} shipped — PR #${PR_NUMBER}"
 ```
 
 If `commit_docs` is true:
 ```bash
-gsd-sdk query commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" --files .planning/STATE.md
+fvgsd-sdk query commit "docs(${padded_phase}): ship phase ${PHASE_NUMBER} — PR #${PR_NUMBER}" --files .planning/STATE.md
 ```
 </step>
 
@@ -329,8 +329,8 @@ Requirements: {N} REQ-IDs addressed
 Next steps:
 - Review/approve PR
 - Merge when CI passes
-- /vgsd:complete-milestone (if last phase in milestone)
-- /vgsd:progress (to see what's next)
+- /fvgsd:complete-milestone (if last phase in milestone)
+- /fvgsd:progress (to see what's next)
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -341,9 +341,9 @@ Next steps:
 <offer_next>
 After shipping:
 
-- /vgsd:complete-milestone — if all phases in milestone are done
-- /vgsd:progress — see overall project state
-- /vgsd:execute-phase {next} — continue to next phase
+- /fvgsd:complete-milestone — if all phases in milestone are done
+- /fvgsd:progress — see overall project state
+- /fvgsd:execute-phase {next} — continue to next phase
 </offer_next>
 
 <success_criteria>

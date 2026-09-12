@@ -4,9 +4,9 @@
  * prompt-budget — SDK handler for applying a token budget to review prompts.
  *
  * Port of get-shit-done/bin/lib/prompt-budget.cjs + the `case 'prompt-budget':`
- * block in get-shit-done/bin/gsd-tools.cjs.
+ * block in get-shit-done/bin/fvgsd-tools.cjs.
  *
- * CLI call surface (via `gsd-sdk query prompt-budget`):
+ * CLI call surface (via `fvgsd-sdk query prompt-budget`):
  *   --budget <N>                   Token budget (required, positive integer)
  *   --instructions-file <path>     Path to instructions file (required)
  *   --roadmap-file <path>          Path to roadmap file (required)
@@ -436,7 +436,7 @@ async function readOptional(filePath: string | null): Promise<string | null> {
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
 /**
- * SDK handler for `gsd-sdk query prompt-budget`.
+ * SDK handler for `fvgsd-sdk query prompt-budget`.
  *
  * Reads input files, applies the token budget algorithm, writes the trimmed
  * prompt and metadata to the specified output files, and returns the metadata.

@@ -18,7 +18,7 @@ const {
 const firstTimeBaselineMigration = require('../get-shit-done/bin/lib/installer-migrations/000-first-time-baseline.cjs');
 
 function createTempInstall() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-installer-migrations-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-installer-migrations-'));
 }
 
 function cleanup(dir) {
@@ -37,7 +37,7 @@ function writeFile(root, relPath, content) {
 
 function writeManifest(root, files) {
   fs.writeFileSync(
-    path.join(root, 'gsd-file-manifest.json'),
+    path.join(root, 'fvgsd-file-manifest.json'),
     JSON.stringify({
       version: '1.49.0',
       timestamp: '2026-05-10T00:00:00.000Z',
@@ -73,7 +73,7 @@ function legacyCodexHook(configDir) {
     hooks: [
       {
         type: 'command',
-        command: `node "${path.join(configDir, 'hooks', 'gsd-check-update.js')}"`,
+        command: `node "${path.join(configDir, 'hooks', 'fvgsd/check-update.js')}"`,
       },
     ],
   };
@@ -266,8 +266,8 @@ test('blocks stale GSD-looking baseline artifacts for explicit user choice', () 
 test('records known generated agent artifacts so profile cleanup can remove them', () => {
   const configDir = createTempInstall();
   try {
-    writeFile(configDir, 'agents/gsd-executor.md', 'old generated agent\n');
-    writeFile(configDir, 'agents/gsd-executor.toml', 'old generated agent config\n');
+    writeFile(configDir, 'agents/fvgsd-executor.md', 'old generated agent\n');
+    writeFile(configDir, 'agents/fvgsd-executor.toml', 'old generated agent config\n');
     writeFile(configDir, 'agents/gsd-local-experiment.md', 'user experiment\n');
     writeManifest(configDir, {});
 
@@ -289,12 +289,12 @@ test('records known generated agent artifacts so profile cleanup can remove them
       [
         {
           type: 'record-baseline',
-          relPath: 'agents/gsd-executor.md',
+          relPath: 'agents/fvgsd-executor.md',
           classification: 'unknown',
         },
         {
           type: 'record-baseline',
-          relPath: 'agents/gsd-executor.toml',
+          relPath: 'agents/fvgsd-executor.toml',
           classification: 'unknown',
         },
         {
@@ -305,8 +305,8 @@ test('records known generated agent artifacts so profile cleanup can remove them
       ]
     );
     assert.deepEqual(result.blocked.map((action) => action.relPath), ['agents/gsd-local-experiment.md']);
-    assert.equal(fs.readFileSync(path.join(configDir, 'agents/gsd-executor.md'), 'utf8'), 'old generated agent\n');
-    assert.equal(fs.readFileSync(path.join(configDir, 'agents/gsd-executor.toml'), 'utf8'), 'old generated agent config\n');
+    assert.equal(fs.readFileSync(path.join(configDir, 'agents/fvgsd-executor.md'), 'utf8'), 'old generated agent\n');
+    assert.equal(fs.readFileSync(path.join(configDir, 'agents/fvgsd-executor.toml'), 'utf8'), 'old generated agent config\n');
     assert.equal(fs.readFileSync(path.join(configDir, 'agents/gsd-local-experiment.md'), 'utf8'), 'user experiment\n');
   } finally {
     cleanup(configDir);
@@ -534,7 +534,7 @@ test('applies an unblocked plan with a journal and install-state update', () => 
     assert.deepEqual(result.appliedMigrationIds, ['2026-05-11-remove-old-hook']);
     assert.match(
       result.journalRelPath,
-      /^gsd-migration-journal\/2026-05-11T00-00-01-000Z-[0-9a-f]+\.json$/
+      /^fvgsd-migration-journal\/2026-05-11T00-00-01-000Z-[0-9a-f]+\.json$/
     );
 
     const journal = JSON.parse(fs.readFileSync(path.join(configDir, result.journalRelPath), 'utf8'));
@@ -627,7 +627,7 @@ test('stores modified-file backups under the unique migration run journal', (t) 
   const journal = JSON.parse(fs.readFileSync(path.join(configDir, result.journalRelPath), 'utf8'));
   const backupRelPath = journal.actions[0].backupRelPath;
 
-  assert.match(backupRelPath, /^gsd-migration-journal\/2026-05-11T00-00-10-000Z-[0-9a-f]+-backups\/hooks\/old-hook\.js$/);
+  assert.match(backupRelPath, /^fvgsd-migration-journal\/2026-05-11T00-00-10-000Z-[0-9a-f]+-backups\/hooks\/old-hook\.js$/);
   assert.equal(fs.readFileSync(path.join(configDir, backupRelPath), 'utf8'), 'user changed hook\n');
 });
 
@@ -659,7 +659,7 @@ test('successful migration rollback removes run-scoped backup directories', (t) 
   assert.equal(fs.readFileSync(path.join(configDir, 'hooks/old-hook.js'), 'utf8'), 'user changed hook\n');
   assert.equal(fs.existsSync(path.join(configDir, result.journalRelPath)), false);
   assert.equal(
-    fs.readdirSync(path.join(configDir, 'gsd-migration-journal')).some((name) => name.includes('backups')),
+    fs.readdirSync(path.join(configDir, 'fvgsd-migration-journal')).some((name) => name.includes('backups')),
     false
   );
 });
@@ -667,7 +667,7 @@ test('successful migration rollback removes run-scoped backup directories', (t) 
 test('refuses to run migrations while another installer owns the migration lock', (t) => {
   const configDir = createTempInstall();
   t.after(() => cleanup(configDir));
-  fs.writeFileSync(path.join(configDir, 'gsd-install-migration.lock'), 'held by test\n', 'utf8');
+  fs.writeFileSync(path.join(configDir, 'fvgsd-install-migration.lock'), 'held by test\n', 'utf8');
 
   assert.throws(
     () => runInstallerMigrations({
@@ -691,7 +691,7 @@ test('reports lock release failures after migration work completes', (t) => {
   // NOT silently swallowed on Windows (#3670). Mock unlinkSync to simulate
   // a Windows NTFS EPERM condition when the lock file is removed.
   fs.unlinkSync = (targetPath) => {
-    if (path.basename(String(targetPath)) === 'gsd-install-migration.lock') {
+    if (path.basename(String(targetPath)) === 'fvgsd-install-migration.lock') {
       throw new Error('simulated lock unlink failure');
     }
     return originalUnlinkSync.call(fs, targetPath);
@@ -719,7 +719,7 @@ test('rollback handle restores files and install state after a successful apply'
         {
           id: 'already-applied',
           appliedAt: '2026-05-10T00:00:00.000Z',
-          journal: 'gsd-migration-journal/prior.json',
+          journal: 'fvgsd-migration-journal/prior.json',
         },
       ],
     });
@@ -809,8 +809,8 @@ test('rolls back touched files and leaves state unchanged when apply fails', () 
     assert.equal(fs.readFileSync(path.join(configDir, 'hooks/old-hook.js'), 'utf8'), 'managed hook\n');
     assert.deepEqual(readInstallState(configDir).appliedMigrations, []);
     assert.equal(
-      fs.existsSync(path.join(configDir, 'gsd-migration-journal')) &&
-        fs.readdirSync(path.join(configDir, 'gsd-migration-journal')).some((name) =>
+      fs.existsSync(path.join(configDir, 'fvgsd-migration-journal')) &&
+        fs.readdirSync(path.join(configDir, 'fvgsd-migration-journal')).some((name) =>
           name.startsWith('2026-05-11T00-00-02-000Z')
         ),
       false
@@ -865,8 +865,8 @@ test('cleans rollback and backup artifacts when migration apply fails', (t) => {
 
   assert.equal(fs.readFileSync(path.join(configDir, 'hooks/old-hook.js'), 'utf8'), 'user changed hook\n');
   assert.equal(
-    fs.existsSync(path.join(configDir, 'gsd-migration-journal')) &&
-      fs.readdirSync(path.join(configDir, 'gsd-migration-journal')).some((name) =>
+    fs.existsSync(path.join(configDir, 'fvgsd-migration-journal')) &&
+      fs.readdirSync(path.join(configDir, 'fvgsd-migration-journal')).some((name) =>
         name.startsWith('2026-05-11T00-00-12-000Z')
       ),
     false
@@ -1006,7 +1006,7 @@ test('skips migration records already present in install state', () => {
         {
           id: '2026-05-11-remove-old-hook',
           appliedAt: '2026-05-11T00:00:00.000Z',
-          journal: 'gsd-migration-journal/prior.json',
+          journal: 'fvgsd-migration-journal/prior.json',
         },
       ],
     });
@@ -1073,7 +1073,7 @@ test('refuses to plan an already-applied migration whose checksum changed', () =
           id: '2026-05-11-remove-old-hook',
           checksum: 'sha256:old-definition',
           appliedAt: '2026-05-11T00:00:00.000Z',
-          journal: 'gsd-migration-journal/prior.json',
+          journal: 'fvgsd-migration-journal/prior.json',
         },
       ],
     });
@@ -1107,7 +1107,7 @@ test('ignores checksum drift for applied migrations outside the active runtime s
           id: '2026-05-11-codex-only',
           checksum: 'sha256:old-definition',
           appliedAt: '2026-05-11T00:00:00.000Z',
-          journal: 'gsd-migration-journal/prior.json',
+          journal: 'fvgsd-migration-journal/prior.json',
         },
       ],
     });
@@ -1298,7 +1298,7 @@ test('runs a Codex legacy hooks.json cleanup migration without removing user hoo
         SessionStart: [
           legacyCodexHook(configDir),
           userHook('node "/Users/example/bin/user-hook.js"'),
-          userHook('node "/Users/example/bin/gsd-check-update.js"'),
+          userHook('node "/Users/example/bin/fvgsd/check-update.js"'),
         ],
       }, null, 2)
     );
@@ -1316,7 +1316,7 @@ test('runs a Codex legacy hooks.json cleanup migration without removing user hoo
 
     assert.deepEqual(commands, [
       'node "/Users/example/bin/user-hook.js"',
-      'node "/Users/example/bin/gsd-check-update.js"',
+      'node "/Users/example/bin/fvgsd/check-update.js"',
     ]);
     assert.ok(result.appliedMigrationIds.includes('2026-05-11-codex-legacy-hooks-json'));
   } finally {
@@ -1378,7 +1378,7 @@ test('skips runtime-specific migration records for other runtimes', () => {
     });
 
     const hooksJson = JSON.parse(fs.readFileSync(path.join(configDir, 'hooks.json'), 'utf8'));
-    assert.equal(hooksJson.SessionStart[0].hooks[0].command, `node "${path.join(configDir, 'hooks', 'gsd-check-update.js')}"`);
+    assert.equal(hooksJson.SessionStart[0].hooks[0].command, `node "${path.join(configDir, 'hooks', 'fvgsd/check-update.js')}"`);
     assert.equal(result.appliedMigrationIds.includes('2026-05-11-codex-legacy-hooks-json'), false);
   } finally {
     cleanup(configDir);

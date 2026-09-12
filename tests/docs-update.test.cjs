@@ -1,7 +1,7 @@
 /**
  * GSD Tools Tests - docs-update
  *
- * Integration tests for the docs-init gsd-tools subcommand.
+ * Integration tests for the docs-init fvgsd-tools subcommand.
  * Covers: JSON output shape, project type detection, existing doc scanning,
  * GSD marker detection, and doc tooling detection.
  *
@@ -206,7 +206,7 @@ describe('existing doc scanning', () => {
   test('detects GSD marker in existing docs', () => {
     fs.writeFileSync(
       path.join(tmpDir, 'README.md'),
-      '<!-- generated-by: gsd-doc-writer -->\n# README\n',
+      '<!-- generated-by: fvgsd-doc-writer -->\n# README\n',
       'utf-8'
     );
     fs.writeFileSync(path.join(tmpDir, 'NOTES.md'), '# Notes\n', 'utf-8');

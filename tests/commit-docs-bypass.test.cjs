@@ -2,7 +2,7 @@
  * commit_docs bypass guard tests (#1783)
  *
  * When users set commit_docs: false during /gsd-new-project, .planning/
- * files should never be staged or committed. The gsd-tools.cjs commit
+ * files should never be staged or committed. The fvgsd-tools.cjs commit
  * wrapper already checks this flag, but three locations in execute-phase.md
  * and quick.md used raw `git add .planning/` commands that bypassed it.
  *

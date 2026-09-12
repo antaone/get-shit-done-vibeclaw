@@ -1,5 +1,5 @@
 ---
-name: vgsd:review-backlog
+name: fvgsd:review-backlog
 description: Review and promote backlog items to active milestone
 allowed-tools:
   - Read
@@ -10,12 +10,12 @@ requires: [phase, review]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "review-backlog" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "review-backlog" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -46,7 +46,7 @@ milestone sequence or remove stale entries.
    - Find the next sequential phase number in the active milestone
    - Rename the directory from `999.x-slug` to `{new_num}-slug`:
      ```bash
-     NEW_NUM=$(gsd-sdk query phase.add "${DESCRIPTION}" --raw)
+     NEW_NUM=$(fvgsd-sdk query phase.add "${DESCRIPTION}" --raw)
      ```
    - Move accumulated artifacts to the new phase directory
    - Update ROADMAP.md: move the entry from `## Backlog` section to the active phase list
@@ -59,7 +59,7 @@ milestone sequence or remove stale entries.
 
 6. **Commit changes:**
    ```bash
-   gsd-sdk query commit "docs: review backlog — promoted N, removed M" --files .planning/ROADMAP.md
+   fvgsd-sdk query commit "docs: review backlog — promoted N, removed M" --files .planning/ROADMAP.md
    ```
 
 7. **Report summary:**

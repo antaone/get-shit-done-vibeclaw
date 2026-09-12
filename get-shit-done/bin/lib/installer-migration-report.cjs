@@ -1,18 +1,18 @@
 'use strict';
 
 // Resolution environment variable surface for #3541 — when the installer
-// runs without a TTY (typical /vgsd:update path via Claude Code or any
+// runs without a TTY (typical /fvgsd:update path via Claude Code or any
 // scripted update), prompt-user migration actions cannot be answered
 // interactively. We resolve them by classification:
-//   - Stale SDK build artifacts (get-shit-done/sdk/{dist,src}/vgsd-*):
+//   - Stale SDK build artifacts (get-shit-done/sdk/{dist,src}/fvgsd-*):
 //     default `remove`. Fresh install supplies replacements.
-//   - User-facing skill anchors (skills/vgsd-*/SKILL.md): default `keep`.
+//   - User-facing skill anchors (skills/fvgsd-*/SKILL.md): default `keep`.
 //     User-owned content is preserved.
 // Anything else: fall through to the hard assertion with an improved,
 // grouped, actionable error message.
 //
 // docs/installer-migrations.md#prompt-user-resolution for the spec.
-const RESOLUTION_ENV_VAR = 'GSD_INSTALLER_MIGRATION_RESOLVE';
+const RESOLUTION_ENV_VAR = 'FVGSD_INSTALLER_MIGRATION_RESOLVE';
 const VALID_CHOICES = ['keep', 'remove'];
 
 function installerMigrationActionLabel(action) {
@@ -109,19 +109,19 @@ function summarizeInstallerMigrationResult(result) {
 // on-disk `hooks/` directory in both directions: whitelist-but-missing
 // AND shipped-but-not-whitelisted both fail CI.
 const BUNDLED_GSD_HOOK_FILES = Object.freeze(new Set([
-  'hooks/gsd-check-update-worker.js',
-  'hooks/gsd-check-update.js',
-  'hooks/gsd-context-monitor.js',
-  'hooks/gsd-graphify-update.sh',
-  'hooks/gsd-phase-boundary.sh',
-  'hooks/gsd-prompt-guard.js',
-  'hooks/gsd-read-guard.js',
-  'hooks/gsd-read-injection-scanner.js',
-  'hooks/gsd-session-state.sh',
-  'hooks/gsd-statusline.js',
-  'hooks/gsd-update-banner.js',
-  'hooks/gsd-validate-commit.sh',
-  'hooks/gsd-workflow-guard.js',
+  'hooks/fvgsd/check-update-worker.js',
+  'hooks/fvgsd/check-update.js',
+  'hooks/fvgsd/context-monitor.js',
+  'hooks/fvgsd/graphify-update.sh',
+  'hooks/fvgsd/phase-boundary.sh',
+  'hooks/fvgsd/prompt-guard.js',
+  'hooks/fvgsd/read-guard.js',
+  'hooks/fvgsd/read-injection-scanner.js',
+  'hooks/fvgsd/session-state.sh',
+  'hooks/fvgsd/statusline.js',
+  'hooks/fvgsd/update-banner.js',
+  'hooks/fvgsd/validate-commit.sh',
+  'hooks/fvgsd/workflow-guard.js',
 ]));
 
 // Classify a blocked prompt-user action into one of the safe-default
@@ -138,7 +138,7 @@ function classifyPromptUserAction(action) {
   if (/^get-shit-done\/sdk\/(dist|src)\//.test(relPath)) {
     return { category: 'stale-sdk-build-artifact', choice: 'remove' };
   }
-  if (/^skills\/(?:vgsd|gsd)-[^/]+\/SKILL\.md$/.test(relPath)) {
+  if (/^skills\/(?:fvgsd|gsd)-[^/]+\/SKILL\.md$/.test(relPath)) {
     return { category: 'user-facing-skill', choice: 'keep' };
   }
   // #3610 / #3628: bundled GSD hooks shipped under `hooks/`. The whitelist
@@ -157,7 +157,7 @@ function classifyPromptUserAction(action) {
 // Convert a blocked prompt-user action into a concrete plan action.
 // `keep` → baseline-preserve-user (idempotent — already on disk).
 // `remove` → backup-and-remove (safe: keeps a rollback copy in the
-// migration journal under gsd-migration-journal/<runId>-backups/).
+// migration journal under fvgsd-migration-journal/<runId>-backups/).
 function materializeResolution(action, choice) {
   const base = {
     migrationId: action.migrationId,

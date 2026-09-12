@@ -1,7 +1,7 @@
 /**
  * Tests for verifier deferred-items filtering (#1624)
  *
- * Verifies that the gsd-verifier agent filters gaps addressed in later
+ * Verifies that the fvgsd-verifier agent filters gaps addressed in later
  * milestone phases, preventing false-positive gap reports.
  */
 
@@ -14,14 +14,14 @@ const ROOT = path.resolve(__dirname, '..');
 
 describe('verifier deferred-items filtering (#1624)', () => {
 
-  // ── gsd-verifier.md ────────────────────────────────────────────────────────
+  // ── fvgsd-verifier.md ────────────────────────────────────────────────────────
 
-  describe('agents/gsd-verifier.md', () => {
-    const verifierPath = path.join(ROOT, 'agents', 'gsd-verifier.md');
+  describe('agents/fvgsd-verifier.md', () => {
+    const verifierPath = path.join(ROOT, 'agents', 'fvgsd-verifier.md');
     let verifierContent;
 
     test('file exists', () => {
-      assert.ok(fs.existsSync(verifierPath), 'gsd-verifier.md should exist');
+      assert.ok(fs.existsSync(verifierPath), 'fvgsd-verifier.md should exist');
       verifierContent = fs.readFileSync(verifierPath, 'utf-8');
     });
 
@@ -29,7 +29,7 @@ describe('verifier deferred-items filtering (#1624)', () => {
       verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');
       assert.ok(
         verifierContent.includes('Step 9b') || verifierContent.includes('Filter Deferred'),
-        'gsd-verifier.md should contain Step 9b or "Filter Deferred" section'
+        'fvgsd-verifier.md should contain Step 9b or "Filter Deferred" section'
       );
     });
 
@@ -37,7 +37,7 @@ describe('verifier deferred-items filtering (#1624)', () => {
       verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');
       assert.ok(
         verifierContent.includes('roadmap analyze') || verifierContent.includes('roadmap.analyze'),
-        'Step 9b should reference roadmap analyze (CJS or gsd-sdk query) for loading full milestone data'
+        'Step 9b should reference roadmap analyze (CJS or fvgsd-sdk query) for loading full milestone data'
       );
     });
 

@@ -113,7 +113,7 @@ function validateShipPrBodySections(value) {
  * Merges (increasing priority):
  *   1. Hardcoded defaults — every key that loadConfig() resolves, plus mode/granularity
  *   2. User-level defaults from ~/.gsd/defaults.json (if present)
- *   3. userChoices — the settings the user explicitly selected during /vgsd:new-project
+ *   3. userChoices — the settings the user explicitly selected during /fvgsd:new-project
  *
  * Uses the canonical `git` namespace for branching keys (consistent with VALID_CONFIG_KEYS
  * and the settings workflow). loadConfig() handles both flat and nested formats, so this
@@ -250,7 +250,7 @@ function buildNewProjectConfig(userChoices) {
  * Command: create a fully-materialized .planning/config.json for a new project.
  *
  * Accepts user-chosen settings as a JSON string (the keys the user explicitly
- * configured during /vgsd:new-project). All remaining keys are filled from
+ * configured during /fvgsd:new-project). All remaining keys are filled from
  * hardcoded defaults and optional ~/.gsd/defaults.json.
  *
  * Idempotent: if config.json already exists, returns { created: false }.
@@ -663,7 +663,7 @@ function cmdConfigPath(cwd) {
  *
  * Wraps the Configuration Module's migrateOnDisk() for the CLI surface. This
  * is the Phase 2 acceptance-criteria deliverable for opt-in migration (#3536):
- * users can run `gsd-tools migrate-config` to apply all four legacy-key
+ * users can run `fvgsd-tools migrate-config` to apply all four legacy-key
  * migrations to their .planning/config.json without having to load any config
  * implicitly via another command.
  *
@@ -672,7 +672,7 @@ function cmdConfigPath(cwd) {
  */
 async function cmdMigrateConfig(cwd, raw) {
   const { migrateOnDisk } = require('./configuration.generated.cjs');
-  const ws = process.env.GSD_WORKSTREAM || null;
+  const ws = process.env.FVGSD_WORKSTREAM || null;
   const report = await migrateOnDisk(cwd, ws || undefined);
 
   if (raw) {

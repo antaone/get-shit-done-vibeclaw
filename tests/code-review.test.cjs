@@ -6,7 +6,7 @@
  * GSD Code Review Tests
  *
  * Validates all code review artifacts from Phases 1-4:
- * - Agent frontmatter (gsd-code-reviewer, gsd-code-fixer)
+ * - Agent frontmatter (fvgsd-code-reviewer, fvgsd-code-fixer)
  * - Command structure (code-review.md, code-review-fix.md)
  * - Workflow structure (code-review.md, code-review-fix.md)
  * - Config key registration (workflow.code_review, workflow.code_review_depth)
@@ -169,96 +169,96 @@ function parseSkillCallBody(body) {
 }
 
 // Plugin directory resolution (cross-platform safe)
-const PLUGIN_WORKFLOWS_DIR = process.env.GSD_PLUGIN_ROOT || path.join(os.homedir(), '.claude', 'get-shit-done', 'workflows');
+const PLUGIN_WORKFLOWS_DIR = process.env.FVGSD_PLUGIN_ROOT || path.join(os.homedir(), '.claude', 'get-shit-done', 'workflows');
 const PLUGIN_AVAILABLE = fs.existsSync(PLUGIN_WORKFLOWS_DIR);
 
 // --- CR-AGENT: code review agent frontmatter ---
 
 describe('CR-AGENT: code review agent frontmatter', () => {
-  test('gsd-code-reviewer.md has required frontmatter fields', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-reviewer.md'), 'utf-8');
+  test('fvgsd-code-reviewer.md has required frontmatter fields', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-reviewer.md'), 'utf-8');
     const frontmatter = content.split('---')[1] || '';
 
-    assert.ok(frontmatter.includes('name:'), 'gsd-code-reviewer missing name:');
-    assert.ok(frontmatter.includes('description:'), 'gsd-code-reviewer missing description:');
-    assert.ok(frontmatter.includes('tools:'), 'gsd-code-reviewer missing tools:');
-    assert.ok(frontmatter.includes('color:'), 'gsd-code-reviewer missing color:');
+    assert.ok(frontmatter.includes('name:'), 'fvgsd-code-reviewer missing name:');
+    assert.ok(frontmatter.includes('description:'), 'fvgsd-code-reviewer missing description:');
+    assert.ok(frontmatter.includes('tools:'), 'fvgsd-code-reviewer missing tools:');
+    assert.ok(frontmatter.includes('color:'), 'fvgsd-code-reviewer missing color:');
   });
 
-  test('gsd-code-fixer.md has required frontmatter fields', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-fixer.md has required frontmatter fields', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
     const frontmatter = content.split('---')[1] || '';
 
-    assert.ok(frontmatter.includes('name:'), 'gsd-code-fixer missing name:');
-    assert.ok(frontmatter.includes('description:'), 'gsd-code-fixer missing description:');
-    assert.ok(frontmatter.includes('tools:'), 'gsd-code-fixer missing tools:');
-    assert.ok(frontmatter.includes('color:'), 'gsd-code-fixer missing color:');
+    assert.ok(frontmatter.includes('name:'), 'fvgsd-code-fixer missing name:');
+    assert.ok(frontmatter.includes('description:'), 'fvgsd-code-fixer missing description:');
+    assert.ok(frontmatter.includes('tools:'), 'fvgsd-code-fixer missing tools:');
+    assert.ok(frontmatter.includes('color:'), 'fvgsd-code-fixer missing color:');
   });
 
-  test('gsd-code-reviewer.md has Read, Bash, Glob, Grep, Write tools', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-reviewer.md'), 'utf-8');
+  test('fvgsd-code-reviewer.md has Read, Bash, Glob, Grep, Write tools', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-reviewer.md'), 'utf-8');
     const frontmatter = content.split('---')[1] || '';
 
-    assert.ok(frontmatter.includes('Read'), 'gsd-code-reviewer missing Read tool');
-    assert.ok(frontmatter.includes('Bash'), 'gsd-code-reviewer missing Bash tool');
-    assert.ok(frontmatter.includes('Glob'), 'gsd-code-reviewer missing Glob tool');
-    assert.ok(frontmatter.includes('Grep'), 'gsd-code-reviewer missing Grep tool');
-    assert.ok(frontmatter.includes('Write'), 'gsd-code-reviewer missing Write tool');
+    assert.ok(frontmatter.includes('Read'), 'fvgsd-code-reviewer missing Read tool');
+    assert.ok(frontmatter.includes('Bash'), 'fvgsd-code-reviewer missing Bash tool');
+    assert.ok(frontmatter.includes('Glob'), 'fvgsd-code-reviewer missing Glob tool');
+    assert.ok(frontmatter.includes('Grep'), 'fvgsd-code-reviewer missing Grep tool');
+    assert.ok(frontmatter.includes('Write'), 'fvgsd-code-reviewer missing Write tool');
   });
 
-  test('gsd-code-fixer.md has Read, Edit, Write, Bash, Grep, Glob tools', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-fixer.md has Read, Edit, Write, Bash, Grep, Glob tools', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
     const frontmatter = content.split('---')[1] || '';
 
-    assert.ok(frontmatter.includes('Read'), 'gsd-code-fixer missing Read tool');
-    assert.ok(frontmatter.includes('Edit'), 'gsd-code-fixer missing Edit tool');
-    assert.ok(frontmatter.includes('Write'), 'gsd-code-fixer missing Write tool');
-    assert.ok(frontmatter.includes('Bash'), 'gsd-code-fixer missing Bash tool');
+    assert.ok(frontmatter.includes('Read'), 'fvgsd-code-fixer missing Read tool');
+    assert.ok(frontmatter.includes('Edit'), 'fvgsd-code-fixer missing Edit tool');
+    assert.ok(frontmatter.includes('Write'), 'fvgsd-code-fixer missing Write tool');
+    assert.ok(frontmatter.includes('Bash'), 'fvgsd-code-fixer missing Bash tool');
   });
 
-  test('gsd-code-reviewer.md does not have skills: in frontmatter', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-reviewer.md'), 'utf-8');
-    const frontmatter = content.split('---')[1] || '';
-
-    assert.ok(!frontmatter.includes('skills:'),
-      'gsd-code-reviewer has skills: in frontmatter — breaks Gemini CLI');
-  });
-
-  test('gsd-code-fixer.md does not have skills: in frontmatter', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-reviewer.md does not have skills: in frontmatter', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-reviewer.md'), 'utf-8');
     const frontmatter = content.split('---')[1] || '';
 
     assert.ok(!frontmatter.includes('skills:'),
-      'gsd-code-fixer has skills: in frontmatter — breaks Gemini CLI');
+      'fvgsd-code-reviewer has skills: in frontmatter — breaks Gemini CLI');
   });
 
-  test('gsd-code-fixer.md rollback uses git checkout (not Write tool)', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-fixer.md does not have skills: in frontmatter', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
+    const frontmatter = content.split('---')[1] || '';
+
+    assert.ok(!frontmatter.includes('skills:'),
+      'fvgsd-code-fixer has skills: in frontmatter — breaks Gemini CLI');
+  });
+
+  test('fvgsd-code-fixer.md rollback uses git checkout (not Write tool)', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
     assert.ok(content.includes('git checkout --'),
-      'gsd-code-fixer rollback should use git checkout -- {file} for atomic rollback');
+      'fvgsd-code-fixer rollback should use git checkout -- {file} for atomic rollback');
     assert.ok(!content.includes('PRE_FIX_CONTENT'),
-      'gsd-code-fixer should not use PRE_FIX_CONTENT in-memory capture (use git checkout instead)');
+      'fvgsd-code-fixer should not use PRE_FIX_CONTENT in-memory capture (use git checkout instead)');
   });
 
-  test('gsd-code-fixer.md success_criteria consistent with rollback strategy (git checkout)', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-fixer.md success_criteria consistent with rollback strategy (git checkout)', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
     const successCriteria = content.match(/<success_criteria>([\s\S]*?)<\/success_criteria>/)?.[1] || '';
     assert.ok(successCriteria.includes('git checkout'),
-      'gsd-code-fixer success_criteria must reference git checkout rollback');
+      'fvgsd-code-fixer success_criteria must reference git checkout rollback');
     assert.ok(!successCriteria.includes('Write tool with captured'),
-      'gsd-code-fixer success_criteria must not say Write tool for rollback');
+      'fvgsd-code-fixer success_criteria must not say Write tool for rollback');
   });
 
-  test('gsd-code-fixer.md flags logic-bug fixes for human review', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-fixer.md'), 'utf-8');
+  test('fvgsd-code-fixer.md flags logic-bug fixes for human review', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-fixer.md'), 'utf-8');
     assert.ok(content.includes('requires human verification'),
-      'gsd-code-fixer should flag logic-bug fixes as requiring human verification');
+      'fvgsd-code-fixer should flag logic-bug fixes as requiring human verification');
   });
 
-  test('gsd-code-reviewer.md REVIEW.md spec includes files_reviewed_list field', () => {
-    const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-code-reviewer.md'), 'utf-8');
+  test('fvgsd-code-reviewer.md REVIEW.md spec includes files_reviewed_list field', () => {
+    const content = fs.readFileSync(path.join(AGENTS_DIR, 'fvgsd-code-reviewer.md'), 'utf-8');
     assert.ok(content.includes('files_reviewed_list'),
-      'gsd-code-reviewer REVIEW.md frontmatter spec must include files_reviewed_list for --auto scope persistence');
+      'fvgsd-code-reviewer REVIEW.md frontmatter spec must include files_reviewed_list for --auto scope persistence');
   });
 });
 
@@ -341,11 +341,11 @@ describe('CR-WORKFLOW: code review workflow structure', () => {
       'code-review.md workflow missing check_config_gate step');
   });
 
-  test('code-review.md workflow references gsd-code-reviewer agent', () => {
+  test('code-review.md workflow references fvgsd-code-reviewer agent', () => {
     const content = fs.readFileSync(path.join(WORKFLOWS_DIR, 'code-review.md'), 'utf-8');
 
-    assert.ok(content.includes('gsd-code-reviewer'),
-      'code-review.md workflow does not reference gsd-code-reviewer agent');
+    assert.ok(content.includes('fvgsd-code-reviewer'),
+      'code-review.md workflow does not reference fvgsd-code-reviewer agent');
   });
 
   test('code-review-fix.md workflow has <step name="initialize">', () => {
@@ -355,11 +355,11 @@ describe('CR-WORKFLOW: code review workflow structure', () => {
       'code-review-fix.md workflow missing initialize step');
   });
 
-  test('code-review-fix.md workflow references gsd-code-fixer agent', () => {
+  test('code-review-fix.md workflow references fvgsd-code-fixer agent', () => {
     const content = fs.readFileSync(path.join(WORKFLOWS_DIR, 'code-review-fix.md'), 'utf-8');
 
-    assert.ok(content.includes('gsd-code-fixer'),
-      'code-review-fix.md workflow does not reference gsd-code-fixer agent');
+    assert.ok(content.includes('fvgsd-code-fixer'),
+      'code-review-fix.md workflow does not reference fvgsd-code-fixer agent');
   });
 
   test('code-review-fix.md workflow has iteration cap', () => {
@@ -508,8 +508,8 @@ describe('CR-INTEGRATION: workflow integration points', () => {
     // frontmatter-name form removed in PR #2819.
     const invocations = parseWorkflowSkillInvocations(content);
     const skillNames = invocations.map(inv => inv.skill);
-    assert.ok(skillNames.includes('gsd-code-review'),
-      `autonomous.md must invoke Skill(skill="gsd-code-review", ...); found skills: ${JSON.stringify(skillNames)}`);
+    assert.ok(skillNames.includes('fvgsd-code-review'),
+      `autonomous.md must invoke Skill(skill="fvgsd-code-review", ...); found skills: ${JSON.stringify(skillNames)}`);
     assert.ok(!skillNames.includes('gsd:code-review'),
       'autonomous.md must not use legacy colon form gsd:code-review (canonical is hyphen form)');
   });
@@ -522,7 +522,7 @@ describe('CR-INTEGRATION: workflow integration points', () => {
 
     const invocations = parseWorkflowSkillInvocations(content);
     const skillNames = invocations.map(inv => inv.skill);
-    assert.ok(!skillNames.includes('gsd-code-review-fix'),
+    assert.ok(!skillNames.includes('fvgsd-code-review-fix'),
       `autonomous.md must not invoke deleted gsd-code-review-fix skill (consolidated into --fix); found: ${JSON.stringify(skillNames)}`);
     assert.ok(!skillNames.includes('gsd:code-review-fix'),
       'autonomous.md must not use legacy colon form gsd:code-review-fix');
@@ -530,12 +530,12 @@ describe('CR-INTEGRATION: workflow integration points', () => {
     // Find a gsd-code-review invocation that carries the --fix flag (the
     // consolidated auto-fix entry point).
     const fixInvocation = invocations.find(inv => {
-      if (inv.skill !== 'gsd-code-review') return false;
+      if (inv.skill !== 'fvgsd-code-review') return false;
       const tokens = new Set((inv.args ?? '').split(/\s+/).filter(Boolean));
       return tokens.has('--fix');
     });
     assert.ok(fixInvocation,
-      `autonomous.md must invoke Skill(skill="gsd-code-review", args="... --fix ...") for auto-fix; found: ${JSON.stringify(invocations)}`);
+      `autonomous.md must invoke Skill(skill="fvgsd-code-review", args="... --fix ...") for auto-fix; found: ${JSON.stringify(invocations)}`);
   });
 
   test('autonomous.md contains --auto flag on consolidated --fix invocation (#2790)', () => {
@@ -547,11 +547,11 @@ describe('CR-INTEGRATION: workflow integration points', () => {
     // conflate --auto with --auto-foo.
     const invocations = parseWorkflowSkillInvocations(content);
     const fixInvocation = invocations.find(inv => {
-      if (inv.skill !== 'gsd-code-review') return false;
+      if (inv.skill !== 'fvgsd-code-review') return false;
       const tokens = new Set((inv.args ?? '').split(/\s+/).filter(Boolean));
       return tokens.has('--fix');
     });
-    assert.ok(fixInvocation, 'autonomous.md missing Skill(skill="gsd-code-review", args="... --fix ...") invocation');
+    assert.ok(fixInvocation, 'autonomous.md missing Skill(skill="fvgsd-code-review", args="... --fix ...") invocation');
     const argTokens = new Set((fixInvocation.args ?? '').split(/\s+/).filter(Boolean));
     assert.ok(argTokens.has('--auto'),
       `autonomous.md gsd-code-review-fix args missing --auto flag; got args="${fixInvocation.args}"`);

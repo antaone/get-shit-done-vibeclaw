@@ -8,9 +8,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 <available_agent_types>
 Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
-- gsd-project-researcher — Researches project-level technical decisions
-- gsd-research-synthesizer — Synthesizes findings from parallel research agents
-- gsd-roadmapper — Creates phased execution roadmaps
+- fvgsd-project-researcher — Researches project-level technical decisions
+- fvgsd-research-synthesizer — Synthesizes findings from parallel research agents
+- fvgsd-roadmapper — Creates phased execution roadmaps
 </available_agent_types>
 
 <auto_mode>
@@ -33,7 +33,7 @@ Check if `--auto` flag is present in $ARGUMENTS.
 **Document requirement:**
 Auto mode requires an idea document — either:
 
-- File reference: `/vgsd:new-project --auto @prd.md`
+- File reference: `/fvgsd:new-project --auto @prd.md`
 - Pasted/written text in the prompt
 
 If no document content provided, error:
@@ -42,8 +42,8 @@ If no document content provided, error:
 Error: --auto requires an idea document.
 
 Usage:
-  /vgsd:new-project --auto @your-idea.md
-  /vgsd:new-project --auto [paste or write your idea here]
+  /fvgsd:new-project --auto @your-idea.md
+  /fvgsd:new-project --auto [paste or write your idea here]
 
 The document should describe what you want to build.
 ```
@@ -57,11 +57,11 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-INIT=$(gsd-sdk query init.new-project)
+INIT=$(fvgsd-sdk query init.new-project)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(gsd-sdk query agent-skills gsd-project-researcher)
-AGENT_SKILLS_SYNTHESIZER=$(gsd-sdk query agent-skills gsd-research-synthesizer)
-AGENT_SKILLS_ROADMAPPER=$(gsd-sdk query agent-skills gsd-roadmapper)
+AGENT_SKILLS_RESEARCHER=$(fvgsd-sdk query agent-skills fvgsd-project-researcher)
+AGENT_SKILLS_SYNTHESIZER=$(fvgsd-sdk query agent-skills fvgsd-research-synthesizer)
+AGENT_SKILLS_ROADMAPPER=$(fvgsd-sdk query agent-skills fvgsd-roadmapper)
 ```
 
 Parse JSON for: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `project_exists`, `has_codebase_map`, `planning_exists`, `has_existing_code`, `has_package_file`, `is_brownfield`, `needs_codebase_map`, `has_git`, `git_worktree_root`, `in_nested_subdir`, `project_path`, `agents_installed`, `missing_agents`, `agent_runtime`, `agents_dir`, `required_agents`, `required_agents_installed`, `missing_required_agents`, `agent_skill_payloads_available`, `agent_skill_payload_agents`.
@@ -83,10 +83,10 @@ Agent skill payload agents:
 Skill payloads only provide prompt context. Named subagent spawns still require agent
 definitions to be installed for this runtime.
 
-Subagent spawns (gsd-project-researcher, gsd-research-synthesizer, gsd-roadmapper) will fail
+Subagent spawns (fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-roadmapper) will fail
 with "agent type not found" if `required_agents_installed` is false. Run the installer with --global to make agents available:
 
-  npx get-shit-done-cc@latest --global
+  npx fvgsd@latest --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```
@@ -115,7 +115,7 @@ if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION
 
 All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
 
-**If `project_exists` is true:** Error — project already initialized. Use `/vgsd:progress`.
+**If `project_exists` is true:** Error — project already initialized. Use `/fvgsd:progress`.
 
 **Git init (#3491 — never nest `.git` inside an existing worktree):**
 
@@ -136,13 +136,13 @@ Use AskUserQuestion:
 - header: "Codebase"
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
-  - "Map codebase first" — Run /vgsd:map-codebase to understand existing architecture (Recommended)
+  - "Map codebase first" — Run /fvgsd:map-codebase to understand existing architecture (Recommended)
   - "Skip mapping" — Proceed with project initialization
 
 **If "Map codebase first":**
 
 ```
-Run `/vgsd:map-codebase` first, then return to `/vgsd:new-project`
+Run `/fvgsd:map-codebase` first, then return to `/fvgsd:new-project`
 ```
 
 Exit command.
@@ -237,7 +237,7 @@ AskUserQuestion([
 
 **Round 3 — PR body onboarding:**
 
-Ask which optional PRD-style sections `/vgsd:ship` should append to generated PR bodies. These map to `ship.pr_body_sections`; selected sections are written with `"enabled": true`, unselected seeded sections are written with `"enabled": false` so the project can enable them later without editing `ship.md`.
+Ask which optional PRD-style sections `/fvgsd:ship` should append to generated PR bodies. These map to `ship.pr_body_sections`; selected sections are written with `"enabled": true`, unselected seeded sections are written with `"enabled": false` so the project can enable them later without editing `ship.md`.
 
 Prefer lean/agile PRD sections that make the delivered increment clear: user stories, acceptance criteria, Definition of Done or release criteria, risks, dependencies, and stakeholder review.
 
@@ -245,7 +245,7 @@ Prefer lean/agile PRD sections that make the delivered increment clear: user sto
 AskUserQuestion([
   {
     header: "PR Body",
-    question: "Which optional PRD-style sections should /vgsd:ship include in PR bodies?",
+    question: "Which optional PRD-style sections should /fvgsd:ship include in PR bodies?",
     multiSelect: true,
     options: [
       { label: "User Stories & Acceptance Criteria", description: "Append user-facing stories and acceptance checks from REQUIREMENTS.md" },
@@ -263,7 +263,7 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-gsd-sdk query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
+fvgsd-sdk query config-new-project '{"mode":"yolo","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":true|false,"auto_advance":true},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
 ```
 
 **If commit_docs = No:** Add `.planning/` to `.gitignore`.
@@ -272,13 +272,13 @@ gsd-sdk query config-new-project '{"mode":"yolo","granularity":"[selected]","par
 
 ```bash
 mkdir -p .planning
-gsd-sdk query commit "chore: add project config" --files .planning/config.json
+fvgsd-sdk query commit "chore: add project config" --files .planning/config.json
 ```
 
 **Persist auto-advance chain flag to config (survives context compaction):**
 
 ```bash
-gsd-sdk query config-set workflow._auto_chain_active true
+fvgsd-sdk query config-set workflow._auto_chain_active true
 ```
 
 Proceed to Step 4 (skip Steps 3 and 5).
@@ -305,8 +305,8 @@ If any of these exist, surface them before questioning:
 ⚡ Prior exploration detected:
 {if SPIKE_SKILL}  ✓ Spike findings skill: {path} — validated patterns from experiments
 {if SKETCH_SKILL}  ✓ Sketch findings skill: {path} — validated design decisions
-{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/vgsd:spike --wrap-up` to package findings
-{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/vgsd:sketch --wrap-up` to package findings
+{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/fvgsd:spike --wrap-up` to package findings
+{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/fvgsd:sketch --wrap-up` to package findings
 
 These findings will be incorporated into project context and available to planning agents.
 ```
@@ -463,14 +463,14 @@ Initialize with any decisions made during questioning:
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/vgsd-transition`):
+**After each phase transition** (via `/fvgsd-transition`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/vgsd:complete-milestone`):
+**After each milestone** (via `/fvgsd:complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -483,7 +483,7 @@ Do not compress. Capture everything gathered.
 
 ```bash
 mkdir -p .planning
-gsd-sdk query commit "docs: initialize project" --files .planning/PROJECT.md
+fvgsd-sdk query commit "docs: initialize project" --files .planning/PROJECT.md
 ```
 
 ## 5. Workflow Preferences
@@ -681,7 +681,7 @@ questions: [
 ]
 ```
 
-**PR body onboarding:** Ask which optional PRD-style sections `/vgsd:ship` should append to generated PR bodies. Use the same `ship.pr_body_sections` mapping as Step 2a: selected sections get `enabled: true`, seeded-but-unselected sections get `enabled: false`, and selecting none writes an empty list. Prefer lean/agile PRD sections that make user value, acceptance criteria, Definition of Done, and stakeholder traceability explicit.
+**PR body onboarding:** Ask which optional PRD-style sections `/fvgsd:ship` should append to generated PR bodies. Use the same `ship.pr_body_sections` mapping as Step 2a: selected sections get `enabled: true`, seeded-but-unselected sections get `enabled: false`, and selecting none writes an empty list. Prefer lean/agile PRD sections that make user value, acceptance criteria, Definition of Done, and stakeholder traceability explicit.
 
 Recommended options:
 
@@ -694,10 +694,10 @@ Create `.planning/config.json` with all settings (CLI fills in remaining default
 
 ```bash
 mkdir -p .planning
-gsd-sdk query config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
+fvgsd-sdk query config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]},"ship":{"pr_body_sections":[{"heading":"User Stories & Acceptance Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria","fallback":"- Acceptance criteria are covered by the linked requirements and verification evidence."},{"heading":"Risks & Dependencies","enabled":true|false,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."},{"heading":"Success Metrics & Release Criteria","enabled":true|false,"source":"REQUIREMENTS.md ## Definition of Done || VERIFICATION.md ## Release Criteria","fallback":"- Release when automated verification and required manual checks pass."},{"heading":"Stakeholder Review & Approval","enabled":true|false,"template":"- Product owner approval pending for {phase_name}."}]}}'
 ```
 
-**Note:** Run `/vgsd:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
+**Note:** Run `/fvgsd:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
@@ -711,7 +711,7 @@ gsd-sdk query config-new-project '{"mode":"[yolo|interactive]","granularity":"[s
 **Commit config.json:**
 
 ```bash
-gsd-sdk query commit "chore: add project config" --files .planning/config.json
+fvgsd-sdk query commit "chore: add project config" --files .planning/config.json
 ```
 
 ## 5.1. Sub-Repo Detection
@@ -797,7 +797,7 @@ Display spawning indicator:
   → Pitfalls research
 ```
 
-Spawn 4 parallel gsd-project-researcher agents with path references:
+Spawn 4 parallel fvgsd-project-researcher agents with path references:
 
 ```text
 Agent(prompt="<research_type>
@@ -836,9 +836,9 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 
 <output>
 Write to: .planning/research/STACK.md
-Use template: ~/.claude/get-shit-done/templates/research-project/STACK.md
+Use template: ~/.claude/fvgsd/templates/research-project/STACK.md
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Stack research")
+", subagent_type="fvgsd-project-researcher", model="{researcher_model}", description="Stack research")
 
 Agent(prompt="<research_type>
 Project Research — Features dimension for [domain].
@@ -876,9 +876,9 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 
 <output>
 Write to: .planning/research/FEATURES.md
-Use template: ~/.claude/get-shit-done/templates/research-project/FEATURES.md
+Use template: ~/.claude/fvgsd/templates/research-project/FEATURES.md
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Features research")
+", subagent_type="fvgsd-project-researcher", model="{researcher_model}", description="Features research")
 
 Agent(prompt="<research_type>
 Project Research — Architecture dimension for [domain].
@@ -916,9 +916,9 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 
 <output>
 Write to: .planning/research/ARCHITECTURE.md
-Use template: ~/.claude/get-shit-done/templates/research-project/ARCHITECTURE.md
+Use template: ~/.claude/fvgsd/templates/research-project/ARCHITECTURE.md
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Architecture research")
+", subagent_type="fvgsd-project-researcher", model="{researcher_model}", description="Architecture research")
 
 Agent(prompt="<research_type>
 Project Research — Pitfalls dimension for [domain].
@@ -956,9 +956,9 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 
 <output>
 Write to: .planning/research/PITFALLS.md
-Use template: ~/.claude/get-shit-done/templates/research-project/PITFALLS.md
+Use template: ~/.claude/fvgsd/templates/research-project/PITFALLS.md
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Pitfalls research")
+", subagent_type="fvgsd-project-researcher", model="{researcher_model}", description="Pitfalls research")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all 4 researcher Agent() calls above, do NOT read research files or synthesize content independently while the subagents are active. Wait for all 4 researchers to complete before spawning the synthesizer. This prevents duplicate work and wasted context.
@@ -982,10 +982,10 @@ ${AGENT_SKILLS_SYNTHESIZER}
 
 <output>
 Write to: .planning/research/SUMMARY.md
-Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
+Use template: ~/.claude/fvgsd/templates/research-project/SUMMARY.md
 Commit after writing.
 </output>
-", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
+", subagent_type="fvgsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -1159,7 +1159,7 @@ If "adjust": Return to scoping.
 **Commit requirements:**
 
 ```bash
-gsd-sdk query commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
+fvgsd-sdk query commit "docs: define v1 requirements" --files .planning/REQUIREMENTS.md
 ```
 
 ## 7.5. Project Structure Mode
@@ -1206,7 +1206,7 @@ Example MVP-mode emit for Phase 1:
 
 Pass `PROJECT_MODE` to the roadmapper so it applies the correct template.
 
-Spawn gsd-roadmapper agent with path references:
+Spawn fvgsd-roadmapper agent with path references:
 
 ```text
 Agent(prompt="
@@ -1234,7 +1234,7 @@ Create roadmap:
 
 Write files first, then return. This ensures artifacts persist even if context is lost.
 </instructions>
-", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
+", subagent_type="fvgsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -1322,7 +1322,7 @@ Use AskUserQuestion:
   Update the roadmap based on feedback. Edit files in place.
   Return ROADMAP REVISED with changes made.
   </revision>
-  ", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
+  ", subagent_type="fvgsd-roadmapper", model="{roadmapper_model}", description="Revise roadmap")
   ```
 
   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -1335,7 +1335,7 @@ Use AskUserQuestion:
 **Generate or refresh project instruction file before final commit:**
 
 ```bash
-gsd-sdk query generate-claude-md --output "$INSTRUCTION_FILE"
+fvgsd-sdk query generate-claude-md --output "$INSTRUCTION_FILE"
 ```
 
 This ensures new projects get the default GSD workflow-enforcement guidance and current project context in `$INSTRUCTION_FILE`.
@@ -1343,7 +1343,7 @@ This ensures new projects get the default GSD workflow-enforcement guidance and 
 **Commit roadmap (after approval or auto mode):**
 
 ```bash
-gsd-sdk query commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
+fvgsd-sdk query commit "docs: create roadmap ([N] phases)" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md "$INSTRUCTION_FILE"
 ```
 
 ## 9. Done
@@ -1377,14 +1377,14 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke SlashCommand("/vgsd:discuss-phase 1 --auto")
+Exit skill and invoke SlashCommand("/fvgsd:discuss-phase 1 --auto")
 
 **If interactive mode:**
 
 Check if Phase 1 has UI indicators (look for `**UI hint**: yes` in Phase 1 detail section of ROADMAP.md):
 
 ```bash
-PHASE1_SECTION=$(gsd-sdk query roadmap.get-phase 1 2>/dev/null)
+PHASE1_SECTION=$(fvgsd-sdk query roadmap.get-phase 1 2>/dev/null)
 PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 
@@ -1399,13 +1399,13 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 /clear then:
 
-/vgsd:discuss-phase 1 — gather context and clarify approach
+/fvgsd:discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /vgsd:ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /vgsd:plan-phase 1 — skip discussion, plan directly
+- /fvgsd:ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /fvgsd:plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1421,12 +1421,12 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 /clear then:
 
-/vgsd:discuss-phase 1 — gather context and clarify approach
+/fvgsd:discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /vgsd:plan-phase 1 — skip discussion, plan directly
+- /fvgsd:plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1462,14 +1462,14 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] Requirements gathered (from research or conversation)
 - [ ] User scoped each category (v1/v2/out of scope)
 - [ ] REQUIREMENTS.md created with REQ-IDs → **committed**
-- [ ] gsd-roadmapper spawned with context
+- [ ] fvgsd-roadmapper spawned with context
 - [ ] Roadmap files written immediately (not draft)
 - [ ] User feedback incorporated (if any)
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
 - [ ] `$INSTRUCTION_FILE` generated with GSD workflow guidance (AGENTS.md for Codex, CLAUDE.md otherwise)
-- [ ] User knows next step is `/vgsd:discuss-phase 1`
+- [ ] User knows next step is `/fvgsd:discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.
 

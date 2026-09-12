@@ -34,7 +34,7 @@ GSD has done one consolidation pass and shipped one install-time lever:
 - **Hard 100-char description budget**, enforced in CI by `scripts/lint-descriptions.cjs` and `npm run lint:descriptions`.
 - **`gsd update` (without `--minimal`)** as the documented upgrade path from minimal → full.
 
-The 100-char cap means **shrinking descriptions further is not a viable lever** — average is already 72.5 chars and the rare 99-char outliers exist because they earn their length (e.g. `vgsd:progress`, `vgsd:inbox`). Any future budget relief has to come from **emitting fewer skills**, not shorter ones.
+The 100-char cap means **shrinking descriptions further is not a viable lever** — average is already 72.5 chars and the rare 99-char outliers exist because they earn their length (e.g. `fvgsd:progress`, `fvgsd:inbox`). Any future budget relief has to come from **emitting fewer skills**, not shorter ones.
 
 ## 3. Audit findings
 
@@ -54,7 +54,7 @@ Hot nodes (counted by other-skill body references):
 | 6 | `new-project` | 2 | Bootstrap |
 | 6 | `plan-phase` | 2 | Main-loop step 2 |
 
-`phase` and `review` are the two skills whose absence would silently break dozens of others. **`phase` is referenced by 38 other skills but is not in the current minimal allowlist** — a latent gap worth raising. Confirm with a `--minimal` install + a `/vgsd:audit-fix` invocation whether it still works.
+`phase` and `review` are the two skills whose absence would silently break dozens of others. **`phase` is referenced by 38 other skills but is not in the current minimal allowlist** — a latent gap worth raising. Confirm with a `--minimal` install + a `/fvgsd:audit-fix` invocation whether it still works.
 
 ### 3.2 Functional clusters
 
@@ -114,19 +114,19 @@ gsd install --profile=core,audit,ui   # composable feature tags
 
 ### Option B — Runtime enable/disable command
 
-A `/vgsd:surface` (or `gsd surface` CLI) command that toggles which skills are visible to the runtime without touching installed files:
+A `/fvgsd:surface` (or `gsd surface` CLI) command that toggles which skills are visible to the runtime without touching installed files:
 
 ```
-/vgsd:surface list                # show enabled/disabled
-/vgsd:surface disable ui audit    # hide a cluster
-/vgsd:surface profile standard    # apply a named profile
+/fvgsd:surface list                # show enabled/disabled
+/fvgsd:surface disable ui audit    # hide a cluster
+/fvgsd:surface profile standard    # apply a named profile
 ```
 
-Implementation: write enable/disable state to `~/.claude/skills/<name>/SKILL.md.disabled` (rename) or maintain a `vgsd-surface.json` manifest the installer reads on every `update`.
+Implementation: write enable/disable state to `~/.claude/skills/<name>/SKILL.md.disabled` (rename) or maintain a `fvgsd-surface.json` manifest the installer reads on every `update`.
 
 | Dimension | Assessment |
 |---|---|
-| User UX | Discoverable through `/vgsd:help`. Lower commit than reinstall. Mirrors VS Code's enable/disable extension UX. |
+| User UX | Discoverable through `/fvgsd:help`. Lower commit than reinstall. Mirrors VS Code's enable/disable extension UX. |
 | Implementation cost | **Medium.** Need persistent state separate from install files, plus a re-apply loop on `gsd update`. |
 | Dependency safety | Same manifest requirement as Option A — disabling `phase` should warn that 38 skills depend on it. |
 | Token savings | High — user-driven; can match Option A's savings. |
@@ -140,10 +140,10 @@ Implementation: write enable/disable state to `~/.claude/skills/<name>/SKILL.md.
 Collapse semantically related skills into a single dispatcher with sub-modes:
 
 ```text
-vgsd-phase           → keeps existing
+fvgsd-phase           → keeps existing
 gsd-milestone {new|complete|summary|audit}        # was 4 skills (hypothetical)
 gsd-research  {sketch|spike|forensics|explore}    # was 4 skills (hypothetical)
-vgsd-workspace {pause|resume|capture|inbox|thread} # was 5 skills (hypothetical)
+fvgsd-workspace {pause|resume|capture|inbox|thread} # was 5 skills (hypothetical)
 ```
 
 (The hypothetical dispatchers above are written without the slash prefix to signal they are not shipped commands — Option C is a sketch, not a recommendation.)
@@ -190,7 +190,7 @@ Publish GSD as multiple npm packages: `get-shit-done-cc-core`, `get-shit-done-cc
 
 | Dimension | Assessment |
 |---|---|
-| User UX | Reasonable for advanced users; confusing for first-time installers. Needs a meta-package (`get-shit-done-cc`) that depends on the slim ones — analogous to VS Code extension packs. |
+| User UX | Reasonable for advanced users; confusing for first-time installers. Needs a meta-package (`fvgsd`) that depends on the slim ones — analogous to VS Code extension packs. |
 | Implementation cost | **High.** Multi-package build pipeline, version sync across packages, changelog routing, install-script forking. |
 | Dependency safety | npm semver carries the contract; cross-package refs become real `require()` calls. |
 | Token savings | Same as Option A in practice — token savings come from choosing not to install, not from the package boundary. |
@@ -207,7 +207,7 @@ Why this ordering:
 
 1. **A reuses an existing seam.** `install-profiles.cjs` is already the staging point; this is the lowest-risk way to ship meaningful relief in the next release.
 2. **A is composable.** Naming clusters as profiles is a forcing function for the dependency manifest, which we want anyway for the lint described in 3.1.
-3. **B follows A naturally.** Once profiles exist, the `/vgsd:surface` command is "apply a profile to a live install plus persist deltas." Without A, B has no profiles to apply.
+3. **B follows A naturally.** Once profiles exist, the `/fvgsd:surface` command is "apply a profile to a live install plus persist deltas." Without A, B has no profiles to apply.
 4. **C is independent and orthogonal.** It can happen in parallel as IA cleanup; it should not block A.
 5. **D and E are platform-level.** GSD ships A regardless; D/E are documented as cooperative asks so Anthropic sees them in context.
 
@@ -229,7 +229,7 @@ Drafted for filing at <https://docs.claude.com/feedback> or similar channel; cop
 
 ### Ask 4 — Disable/enable without uninstall
 
-> Today the only way to remove a skill from the listing is to delete its `SKILL.md`. Proposal: a `.disabled` suffix (e.g. `SKILL.md.disabled`) or a per-skill `enabled: false` frontmatter is treated as "not surfaced" by the harness. This lets plugins ship surface-toggle UIs (like our proposed `/vgsd:surface disable`) without touching install state.
+> Today the only way to remove a skill from the listing is to delete its `SKILL.md`. Proposal: a `.disabled` suffix (e.g. `SKILL.md.disabled`) or a per-skill `enabled: false` frontmatter is treated as "not surfaced" by the harness. This lets plugins ship surface-toggle UIs (like our proposed `/fvgsd:surface disable`) without touching install state.
 
 ## 7. Implementation sketch (for the ADR)
 
@@ -239,11 +239,11 @@ Phase 1 — profiles (ships with ADR-0010):
 2. Add a `requires:` frontmatter field to every skill that calls another skill in its body. Add a lint check in `scripts/lint-descriptions.cjs` (or a sibling `lint-skill-deps.cjs`) that fails CI if a skill body references another skill that isn't in its `requires` list, and that fails if any profile would ship a skill whose `requires` aren't satisfied.
 3. Extend the `bin/install.js` argument parser: `--profile=<name>` (mutually exclusive with `--minimal`), `--profile=core,audit` for composition. Keep `--minimal` as an alias for `--profile=core`.
 4. Interactive install: if no `--profile` is given and no runtime/location is forced, present an `AskUserQuestion`-style picker. (Cowork analog already in the install flow.)
-5. `gsd update` re-applies the recorded profile from a small marker file (`~/.claude/skills/.gsd-profile`).
+5. `gsd update` re-applies the recorded profile from a small marker file (`~/.claude/skills/.fvgsd-profile`).
 
 Phase 2 — runtime surface command (follow-up ADR or amendment):
 
-1. `/vgsd:surface` command writes to the profile marker and re-runs the staging step for the active runtime.
+1. `/fvgsd:surface` command writes to the profile marker and re-runs the staging step for the active runtime.
 2. Once Anthropic ships Ask 4, switch from file-deletion to `.disabled`-suffix toggling.
 
 ## 8. Follow-ups outside this scope
@@ -253,9 +253,9 @@ Phase 2 — runtime surface command (follow-up ADR or amendment):
 
 ## 9. Risks and unknowns
 
-- **The `phase` dispatcher gap in the existing minimal allowlist.** Confirm whether a fresh `--minimal` install + the documented main loop actually works end-to-end. If `discuss-phase`/`plan-phase`/`execute-phase` silently fall back to `/vgsd:phase`, the minimal allowlist is currently broken. Track as a separate bug if confirmed.
+- **The `phase` dispatcher gap in the existing minimal allowlist.** Confirm whether a fresh `--minimal` install + the documented main loop actually works end-to-end. If `discuss-phase`/`plan-phase`/`execute-phase` silently fall back to `/fvgsd:phase`, the minimal allowlist is currently broken. Track as a separate bug if confirmed.
 - **Profile naming bikeshed.** `core` / `standard` / `full` vs. `minimal` / `recommended` / `everything` vs. functional names (`planning`, `audit`, `research`). Settle in the ADR's Open Questions.
-- **Discoverability of disabled skills.** If `vgsd:audit-fix` isn't surfaced, a user asking "audit my project" won't get it suggested. `/vgsd:help` should list installed-but-not-surfaced skills with a one-line upgrade hint.
+- **Discoverability of disabled skills.** If `fvgsd:audit-fix` isn't surfaced, a user asking "audit my project" won't get it suggested. `/fvgsd:help` should list installed-but-not-surfaced skills with a one-line upgrade hint.
 - **Telemetry blind spot.** GSD doesn't currently know which skills users invoke, so "drop the long tail" is theoretical. Survey or self-reporting may be needed before drawing the `standard` profile line.
 
 ## 10. References

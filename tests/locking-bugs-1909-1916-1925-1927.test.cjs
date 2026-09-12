@@ -222,7 +222,7 @@ describe('#1925 TOCTOU: state commands use readModifyWriteStateMd', () => {
     // Each subprocess runs this wrapper, which:
     //   1. Writes its ready-signal so the orchestrator knows it is alive.
     //   2. Spins (Atomics.wait, 10 ms steps) until the barrier is removed.
-    //   3. Immediately calls gsd-tools to exercise the real lock contention.
+    //   3. Immediately calls fvgsd-tools to exercise the real lock contention.
     //
     // TOOLS_PATH and the caller-supplied args are injected via env vars to avoid
     // shell-quoting complexity when the tmpDir path contains spaces.
@@ -247,7 +247,7 @@ describe('#1925 TOCTOU: state commands use readModifyWriteStateMd', () => {
       '  Atomics.wait(sai, 0, 0, 10); // sleep 10 ms, then re-check',
       '}',
       '',
-      '// Barrier is down — execute the actual gsd-tools command.',
+      '// Barrier is down — execute the actual fvgsd-tools command.',
       'execFileSync(process.execPath, [TOOLS_PATH, "state", "update", FIELD_NAME, FIELD_VALUE, "--cwd", CWD_PATH], {',
       '  stdio: "pipe",',
       '});',
@@ -380,7 +380,7 @@ describe('#1925 TOCTOU: state commands use readModifyWriteStateMd', () => {
     // Each subprocess runs this wrapper, which:
     //   1. Writes its ready-signal so the orchestrator knows it is alive.
     //   2. Spins (Atomics.wait, 10 ms steps) until the barrier is removed.
-    //   3. Immediately calls gsd-tools to exercise the real lock contention.
+    //   3. Immediately calls fvgsd-tools to exercise the real lock contention.
     //
     // TOOLS_PATH and the caller-supplied args are injected via env vars to avoid
     // shell-quoting complexity when the tmpDir path contains spaces.
@@ -405,7 +405,7 @@ describe('#1925 TOCTOU: state commands use readModifyWriteStateMd', () => {
       '  Atomics.wait(sai, 0, 0, 10); // sleep 10 ms, then re-check',
       '}',
       '',
-      '// Barrier is down — execute the actual gsd-tools command.',
+      '// Barrier is down — execute the actual fvgsd-tools command.',
       'execFileSync(process.execPath, [TOOLS_PATH, "state", "add-blocker", "--text", BLOCKER_TEXT, "--cwd", CWD_PATH], {',
       '  stdio: "pipe",',
       '});',

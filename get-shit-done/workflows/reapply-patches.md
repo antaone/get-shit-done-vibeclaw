@@ -1,10 +1,10 @@
 # Reapply Local Patches Workflow
 
-Invoked by `/vgsd:update --reapply` (`commands/gsd/update.md`).
+Invoked by `/fvgsd:update --reapply` (`commands/gsd/update.md`).
 
 After a GSD update wipes and reinstalls files, this workflow merges user's previously saved local modifications back into the new version. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to reliably distinguish user customizations from version drift.
 
-**Critical invariant:** Every file in `gsd-local-patches/` was backed up because the installer's hash comparison detected it was modified. The workflow must NEVER conclude "no custom content" for any backed-up file — that is a logical contradiction. When in doubt, classify as CONFLICT requiring user review, not SKIP.
+**Critical invariant:** Every file in `fvgsd-local-patches/` was backed up because the installer's hash comparison detected it was modified. The workflow must NEVER conclude "no custom content" for any backed-up file — that is a logical contradiction. When in doubt, classify as CONFLICT requiring user review, not SKIP.
 
 <process>
 
@@ -24,55 +24,55 @@ PATCHES_DIR=""
 
 # Env overrides first — covers custom config directories used with --config-dir
 if [ -n "$KILO_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$KILO_CONFIG_DIR")/vgsd-local-patches"
+  candidate="$(expand_home "$KILO_CONFIG_DIR")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -n "$KILO_CONFIG" ]; then
-  candidate="$(dirname "$(expand_home "$KILO_CONFIG")")/vgsd-local-patches"
+  candidate="$(dirname "$(expand_home "$KILO_CONFIG")")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -n "$XDG_CONFIG_HOME" ]; then
-  candidate="$(expand_home "$XDG_CONFIG_HOME")/kilo/gsd-local-patches"
+  candidate="$(expand_home "$XDG_CONFIG_HOME")/kilo/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$OPENCODE_CONFIG_DIR")/vgsd-local-patches"
+  candidate="$(expand_home "$OPENCODE_CONFIG_DIR")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG" ]; then
-  candidate="$(dirname "$(expand_home "$OPENCODE_CONFIG")")/vgsd-local-patches"
+  candidate="$(dirname "$(expand_home "$OPENCODE_CONFIG")")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 elif [ -z "$PATCHES_DIR" ] && [ -n "$XDG_CONFIG_HOME" ]; then
-  candidate="$(expand_home "$XDG_CONFIG_HOME")/opencode/gsd-local-patches"
+  candidate="$(expand_home "$XDG_CONFIG_HOME")/opencode/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$GEMINI_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$GEMINI_CONFIG_DIR")/vgsd-local-patches"
+  candidate="$(expand_home "$GEMINI_CONFIG_DIR")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$CODEX_HOME" ]; then
-  candidate="$(expand_home "$CODEX_HOME")/vgsd-local-patches"
+  candidate="$(expand_home "$CODEX_HOME")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$CLAUDE_CONFIG_DIR" ]; then
-  candidate="$(expand_home "$CLAUDE_CONFIG_DIR")/vgsd-local-patches"
+  candidate="$(expand_home "$CLAUDE_CONFIG_DIR")/fvgsd-local-patches"
   if [ -d "$candidate" ]; then
     PATCHES_DIR="$candidate"
   fi
@@ -80,25 +80,25 @@ fi
 
 # Global install — detect runtime config directory defaults
 if [ -z "$PATCHES_DIR" ]; then
-  if [ -d "$HOME/.config/kilo/gsd-local-patches" ]; then
-    PATCHES_DIR="$HOME/.config/kilo/gsd-local-patches"
-  elif [ -d "$HOME/.config/opencode/gsd-local-patches" ]; then
-    PATCHES_DIR="$HOME/.config/opencode/gsd-local-patches"
-  elif [ -d "$HOME/.opencode/gsd-local-patches" ]; then
-    PATCHES_DIR="$HOME/.opencode/gsd-local-patches"
-  elif [ -d "$HOME/.gemini/gsd-local-patches" ]; then
-    PATCHES_DIR="$HOME/.gemini/gsd-local-patches"
-  elif [ -d "$HOME/.codex/gsd-local-patches" ]; then
-    PATCHES_DIR="$HOME/.codex/gsd-local-patches"
+  if [ -d "$HOME/.config/kilo/fvgsd-local-patches" ]; then
+    PATCHES_DIR="$HOME/.config/kilo/fvgsd-local-patches"
+  elif [ -d "$HOME/.config/opencode/fvgsd-local-patches" ]; then
+    PATCHES_DIR="$HOME/.config/opencode/fvgsd-local-patches"
+  elif [ -d "$HOME/.opencode/fvgsd-local-patches" ]; then
+    PATCHES_DIR="$HOME/.opencode/fvgsd-local-patches"
+  elif [ -d "$HOME/.gemini/fvgsd-local-patches" ]; then
+    PATCHES_DIR="$HOME/.gemini/fvgsd-local-patches"
+  elif [ -d "$HOME/.codex/fvgsd-local-patches" ]; then
+    PATCHES_DIR="$HOME/.codex/fvgsd-local-patches"
   else
-    PATCHES_DIR="$HOME/.claude/gsd-local-patches"
+    PATCHES_DIR="$HOME/.claude/fvgsd-local-patches"
   fi
 fi
 # Local install fallback — check all runtime directories
 if [ ! -d "$PATCHES_DIR" ]; then
   for dir in .config/kilo .kilo .config/opencode .opencode .gemini .codex .claude; do
-    if [ -d "./$dir/gsd-local-patches" ]; then
-      PATCHES_DIR="./$dir/gsd-local-patches"
+    if [ -d "./$dir/fvgsd-local-patches" ]; then
+      PATCHES_DIR="./$dir/fvgsd-local-patches"
       break
     fi
   done
@@ -111,7 +111,7 @@ Read `backup-meta.json` from the patches directory.
 ```
 No local patches found. Nothing to reapply.
 
-Local patches are automatically saved when you run /vgsd:update
+Local patches are automatically saved when you run /fvgsd:update
 after modifying any GSD workflow, command, or agent files.
 ```
 Exit.
@@ -120,7 +120,7 @@ Exit.
 
 The quality of the merge depends on having a **pristine baseline** — the original unmodified version of each file from the pre-update GSD release. This enables three-way comparison:
 - **Pristine baseline** (original GSD file before any user edits)
-- **User's version** (backed up in `gsd-local-patches/`)
+- **User's version** (backed up in `fvgsd-local-patches/`)
 - **New version** (freshly installed after update)
 
 Check for baseline sources in priority order:
@@ -163,9 +163,9 @@ git -C "$CONFIG_DIR" show "${BASELINE_COMMIT}:${file_path}"
 **Why this matters:** `git log --diff-filter=A` returns the commit that *first added* the file, which is the wrong baseline on repos that have been through multiple GSD update cycles. The `pristine_hashes` field in `backup-meta.json` records the SHA-256 of the file as it existed in the pre-update GSD release — matching against it finds the correct baseline regardless of how many updates have occurred.
 
 ### Option B: Pristine snapshot directory
-Check if a `gsd-pristine/` directory exists alongside `gsd-local-patches/`:
+Check if a `fvgsd-pristine/` directory exists alongside `fvgsd-local-patches/`:
 ```bash
-PRISTINE_DIR="$CONFIG_DIR/gsd-pristine"
+PRISTINE_DIR="$CONFIG_DIR/fvgsd-pristine"
 ```
 If it exists, the installer saved pristine copies at install time. Use these as the baseline.
 
@@ -192,9 +192,9 @@ If neither git history nor pristine snapshots are available, fall back to two-wa
 
 For each file in `backup-meta.json`:
 
-1. **Read the backed-up version** (user's modified copy from `gsd-local-patches/`)
+1. **Read the backed-up version** (user's modified copy from `fvgsd-local-patches/`)
 2. **Read the newly installed version** (current file after update)
-3. **If available, read the pristine baseline** (from git history or `gsd-pristine/`)
+3. **If available, read the pristine baseline** (from git history or `fvgsd-pristine/`)
 
 ### Three-way merge (when baseline is available)
 
@@ -217,7 +217,7 @@ When no pristine baseline is available, use these **strengthened heuristics**:
 For each file:
 a. Read both versions completely
 b. Identify ALL differences, then classify each as:
-   - **Mechanical drift** — path substitutions (e.g. `/Users/xxx/.claude/` → `$HOME/.claude/`), variable additions (`${GSD_WS}`, `${AGENT_SKILLS_*}`), error handling additions (`|| true`)
+   - **Mechanical drift** — path substitutions (e.g. `/Users/xxx/.claude/` → `$HOME/.claude/`), variable additions (`${FVGSD_WS}`, `${AGENT_SKILLS_*}`), error handling additions (`|| true`)
    - **User customization** — added steps/sections, removed sections, reordered content, changed behavior, added frontmatter fields, modified instructions
 
 c. **If ANY differences remain after filtering out mechanical drift → those are user customizations. Merge them.**
@@ -228,7 +228,7 @@ d. **If ALL differences appear to be mechanical drift → still flag as CONFLICT
 When the config directory is a git repo but the pristine install commit can't be found, use commit history to identify user changes:
 ```bash
 # Find non-update commits that touched this file
-git -C "$CONFIG_DIR" log --oneline --no-merges -- "{file_path}" | grep -v "vgsd:update\|vgsd-update\|GSD update\|gsd-install"
+git -C "$CONFIG_DIR" log --oneline --no-merges -- "{file_path}" | grep -v "fvgsd:update\|fvgsd-update\|GSD update\|gsd-install"
 ```
 Each matching commit represents an intentional user modification. Use the commit messages and diffs to understand what was changed and why.
 
@@ -275,10 +275,10 @@ Two layered gates. Both must pass before proceeding to cleanup.
 
 Run the deterministic verifier script. Do NOT rely solely on the free-text `verified: yes/no` Hunk Verification Table from Step 4 — bug #2969 traced repeated false-positive `verified: yes` reports to that table being filled in without an actual content-presence check. The script performs the check structurally and exits non-zero on any miss.
 
-Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${GSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
+Run the verifier as a child process (the fvgsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${FVGSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
 
 ```bash
-PRISTINE_DIR="${CONFIG_DIR}/vgsd-pristine"
+PRISTINE_DIR="${CONFIG_DIR}/fvgsd-pristine"
 
 # Build args as a bash array so paths with spaces survive expansion intact
 # (string-concat + unquoted expansion would split incorrectly on whitespace).
@@ -295,7 +295,7 @@ VERIFY_ARGS+=(--json)
 # Node warnings, deprecation notices, or stack traces do not corrupt the
 # JSON parse downstream. Stderr is preserved on the controlling terminal
 # for operator visibility.
-VERIFY_OUTPUT="$(node "${GSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs" "${VERIFY_ARGS[@]}")"
+VERIFY_OUTPUT="$(node "${FVGSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs" "${VERIFY_ARGS[@]}")"
 VERIFY_STATUS=$?
 ```
 
@@ -310,7 +310,7 @@ DRIFTED_FILES="$(echo "$VERIFY_OUTPUT"  | node -e "const d=JSON.parse(require('f
 
 ```text
 HALT: {DRIFTED_COUNT} file(s) were skipped by the deterministic verifier because the
-gsd-pristine/ snapshot on disk does not match the hash recorded in backup-meta.json
+fvgsd-pristine/ snapshot on disk does not match the hash recorded in backup-meta.json
 (pristine drift — the snapshot was refreshed to a newer GSD version after the backup
 was captured).  These files were NOT diff-verified; their user customisations may or
 may not have survived the merge.
@@ -324,9 +324,9 @@ Resolve before re-running:
         cp {patches_dir}/{file} {installed_path}  # then re-apply customisations
   (c) If the upstream changes are acceptable, update the backup-meta.json
       pristine_hashes entry for each drifted file to the current on-disk hash, then
-      re-run /vgsd:update --reapply to re-verify with the refreshed baseline.
+      re-run /fvgsd:update --reapply to re-verify with the refreshed baseline.
 
-Then re-run /vgsd:update --reapply to re-verify.
+Then re-run /fvgsd:update --reapply to re-verify.
 ```
 
 ```bash
@@ -353,7 +353,7 @@ Resolve before proceeding:
   (a) Re-merge the missing content into the installed file by hand, or
   (b) Restore from backup: cp {patches_dir}/{file} {installed_path}
 
-Then re-run /vgsd:update --reapply to re-verify.
+Then re-run /fvgsd:update --reapply to re-verify.
 ```
 
 Do not proceed to cleanup until the verifier exits 0.
@@ -370,7 +370,7 @@ The Hunk Verification Table produced in Step 4 must also be reviewed before proc
 ERROR: Hunk Verification Table is missing — Step 4 did not produce it.
 The deterministic verifier (5a) may still have passed, but a missing table
 means post-merge verification was not fully completed. Rerun
-/vgsd:update --reapply to retry with full verification.
+/fvgsd:update --reapply to retry with full verification.
 ```
 
 A missing table absent from the workflow output cannot bypass this gate.
@@ -396,8 +396,8 @@ Do not proceed to cleanup until both gates (5a and 5b) pass.
 ## Step 6: Cleanup option
 
 Ask user:
-- "Keep patch backups for reference?" → preserve `gsd-local-patches/`
-- "Clean up patch backups?" → remove `gsd-local-patches/` directory
+- "Keep patch backups for reference?" → preserve `fvgsd-local-patches/`
+- "Clean up patch backups?" → remove `fvgsd-local-patches/` directory
 
 ## Step 7: Report
 
@@ -418,7 +418,7 @@ Ask user:
 <success_criteria>
 - [ ] All backed-up patches processed — zero files left unhandled
 - [ ] No file classified as "no custom content" or "SKIP" — every backed-up file is definitionally modified
-- [ ] Three-way merge used when pristine baseline available (git history or gsd-pristine/)
+- [ ] Three-way merge used when pristine baseline available (git history or fvgsd-pristine/)
 - [ ] User modifications identified and merged into new version
 - [ ] Conflicts surfaced to user with both versions shown
 - [ ] Status reported for each file with summary of what was preserved

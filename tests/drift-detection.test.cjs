@@ -356,7 +356,7 @@ describe('sanitizePaths', () => {
 describe('last_mapped_commit frontmatter', () => {
   let tmp;
   beforeEach(() => {
-    tmp = createTempProject('gsd-drift-');
+    tmp = createTempProject('fvgsd-drift-');
     fs.mkdirSync(path.join(tmp, '.planning', 'codebase'), { recursive: true });
   });
   afterEach(() => cleanup(tmp));
@@ -486,7 +486,7 @@ describe('config-schema — drift keys', () => {
 describe('config-set drift validation via CLI', () => {
   let tmp;
   beforeEach(() => {
-    tmp = createTempGitProject('gsd-drift-cfg-');
+    tmp = createTempGitProject('fvgsd-drift-cfg-');
   });
   afterEach(() => cleanup(tmp));
 
@@ -538,10 +538,10 @@ describe('docs parity', () => {
 
 // ─── Mapper --paths flag documented ──────────────────────────────────────────
 
-describe('gsd-codebase-mapper --paths flag', () => {
+describe('fvgsd-codebase-mapper --paths flag', () => {
   test('agent doc mentions --paths', () => {
     const doc = fs.readFileSync(
-      path.join(__dirname, '..', 'agents', 'gsd-codebase-mapper.md'),
+      path.join(__dirname, '..', 'agents', 'fvgsd-codebase-mapper.md'),
       'utf8',
     );
     assert.ok(/--paths/.test(doc));
@@ -607,7 +607,7 @@ describe('execute-phase integrates codebase_drift_gate', () => {
 describe('verify codebase-drift CLI', () => {
   let tmp;
   beforeEach(() => {
-    tmp = createTempGitProject('gsd-drift-cli-');
+    tmp = createTempGitProject('fvgsd-drift-cli-');
     fs.mkdirSync(path.join(tmp, '.planning', 'codebase'), { recursive: true });
   });
   afterEach(() => cleanup(tmp));
@@ -654,7 +654,7 @@ describe('verify codebase-drift CLI', () => {
   });
 
   test('never exits non-zero when git repo is missing (non-blocking)', () => {
-    const nonGit = createTempProject('gsd-drift-nongit-');
+    const nonGit = createTempProject('fvgsd-drift-nongit-');
     try {
       const r = runGsdTools(['verify', 'codebase-drift'], nonGit);
       assert.strictEqual(r.success, true, 'must exit 0 even without git');

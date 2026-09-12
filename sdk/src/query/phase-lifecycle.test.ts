@@ -123,7 +123,7 @@ async function setupTestProject(
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-lifecycle-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-lifecycle-'));
 });
 
 afterEach(async () => {
@@ -1636,7 +1636,7 @@ describe('listDirectories — CR-3267 finding 1: non-ENOENT errors propagate', (
   it('propagates EACCES from readdir instead of returning []', async () => {
     const { listDirectories } = await import('./phase-filesystem-adapter.js');
     // Create a real directory then remove read permission
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-fs-acl-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-fs-acl-'));
     const inner = join(dir, 'phases');
     await mkdir(inner);
     try {
@@ -1655,7 +1655,7 @@ describe('listDirectories — CR-3267 finding 1: non-ENOENT errors propagate', (
     const { listDirectories } = await import('./phase-filesystem-adapter.js');
     // We can't easily race the real FS, but we can verify the function tolerates
     // a path that truly does not exist (existsSync returns false → early []).
-    const nonExistent = join(tmpdir(), 'gsd-does-not-exist-' + Date.now());
+    const nonExistent = join(tmpdir(), 'fvgsd-does-not-exist-' + Date.now());
     const result = await listDirectories(nonExistent);
     expect(result).toEqual([]);
   });
@@ -1666,7 +1666,7 @@ describe('listDirectories — CR-3267 finding 1: non-ENOENT errors propagate', (
 describe('readModifyWriteRoadmapMd — CR-3267 finding 4: non-ENOENT errors propagate', () => {
   it('propagates EACCES on ROADMAP.md readFile instead of treating as empty', async () => {
     const { readModifyWriteRoadmapMd } = await import('./phase-lifecycle.js');
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-roadmap-acl-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-roadmap-acl-'));
     const planningDir = join(dir, '.planning');
     await mkdir(planningDir, { recursive: true });
     const roadmapPath = join(planningDir, 'ROADMAP.md');
@@ -1684,7 +1684,7 @@ describe('readModifyWriteRoadmapMd — CR-3267 finding 4: non-ENOENT errors prop
 
   it('starts with empty content when ROADMAP.md is absent (ENOENT)', async () => {
     const { readModifyWriteRoadmapMd } = await import('./phase-lifecycle.js');
-    const dir = await mkdtemp(join(tmpdir(), 'gsd-roadmap-noent-'));
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-roadmap-noent-'));
     const planningDir = join(dir, '.planning');
     await mkdir(planningDir, { recursive: true });
     // No ROADMAP.md written — must default to '' and create it

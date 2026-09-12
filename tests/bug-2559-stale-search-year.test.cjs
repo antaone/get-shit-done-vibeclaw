@@ -6,7 +6,7 @@
 /**
  * Bug #2559: Stale document references in Research phase
  *
- * The gsd-phase-researcher and gsd-project-researcher agents instruct
+ * The fvgsd-phase-researcher and fvgsd-project-researcher agents instruct
  * WebSearch queries to always include "current year" (or a hardcoded
  * year). This biases results toward stale dated content as time passes
  * (e.g., a 2024 query run in 2026 returns stale results).
@@ -24,18 +24,18 @@ const PHASE_RESEARCHER = path.join(
   __dirname,
   '..',
   'agents',
-  'gsd-phase-researcher.md'
+  'fvgsd-phase-researcher.md'
 );
 const PROJECT_RESEARCHER = path.join(
   __dirname,
   '..',
   'agents',
-  'gsd-project-researcher.md'
+  'fvgsd-project-researcher.md'
 );
 
 const FILES = [
-  { label: 'gsd-phase-researcher.md', path: PHASE_RESEARCHER },
-  { label: 'gsd-project-researcher.md', path: PROJECT_RESEARCHER },
+  { label: 'fvgsd-phase-researcher.md', path: PHASE_RESEARCHER },
+  { label: 'fvgsd-project-researcher.md', path: PROJECT_RESEARCHER },
 ];
 
 describe('research agents do not inject year into web searches (#2559)', () => {

@@ -1,5 +1,5 @@
 ---
-name: vgsd:ultraplan-phase
+name: fvgsd:ultraplan-phase
 description: "[BETA] Offload plan phase to Claude Code's ultraplan cloud; review in browser and import back."
 argument-hint: "[phase-number]"
 allowed-tools:
@@ -11,12 +11,12 @@ requires: [import, phase, plan-phase]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "ultraplan-phase" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "ultraplan-phase" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -25,15 +25,15 @@ Parse the JSON response:
 Offload GSD's plan phase to Claude Code's ultraplan cloud infrastructure.
 
 Ultraplan drafts the plan in a remote cloud session while your terminal stays free.
-Review and comment on the plan in your browser, then import it back via /vgsd:import --from.
+Review and comment on the plan in your browser, then import it back via /fvgsd:import --from.
 
-⚠ BETA: ultraplan is in research preview. Use /vgsd:plan-phase for stable local planning.
+⚠ BETA: ultraplan is in research preview. Use /fvgsd:plan-phase for stable local planning.
 Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/ultraplan-phase.md
-@~/.claude/get-shit-done/references/ui-brand.md
+@~/.claude/fvgsd/workflows/ultraplan-phase.md
+@~/.claude/fvgsd/references/ui-brand.md
 </execution_context>
 
 <context>

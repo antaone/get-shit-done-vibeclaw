@@ -6,15 +6,15 @@
 
 ## コマンド構文
 
-- **Claude Code / Gemini / Copilot:** `/vgsd-command-name [args]`
-- **OpenCode / Kilo:** `/vgsd-command-name [args]`
-- **Codex:** `$vgsd-command-name [args]`
+- **Claude Code / Gemini / Copilot:** `/fvgsd-command-name [args]`
+- **OpenCode / Kilo:** `/fvgsd-command-name [args]`
+- **Codex:** `$fvgsd-command-name [args]`
 
 ---
 
 ## コアワークフローコマンド
 
-### `/vgsd-new-project`
+### `/fvgsd-new-project`
 
 詳細なコンテキスト収集を行い、新しいプロジェクトを初期化します。
 
@@ -26,13 +26,13 @@
 **生成物:** `PROJECT.md`、`REQUIREMENTS.md`、`ROADMAP.md`、`STATE.md`、`config.json`、`research/`、`CLAUDE.md`
 
 ```bash
-/vgsd-new-project                    # 対話モード
-/vgsd-new-project --auto @prd.md     # PRDから自動抽出
+/fvgsd-new-project                    # 対話モード
+/fvgsd-new-project --auto @prd.md     # PRDから自動抽出
 ```
 
 ---
 
-### `/vgsd-workspace --new`
+### `/fvgsd-workspace --new`
 
 リポジトリのコピーと独立した `.planning/` ディレクトリを持つ分離されたワークスペースを作成します。
 
@@ -40,7 +40,7 @@
 |------|-------------|
 | `--name <name>` | ワークスペース名（必須） |
 | `--repos repo1,repo2` | カンマ区切りのリポジトリパスまたは名前 |
-| `--path /target` | 対象ディレクトリ（デフォルト: `~/vgsd-workspaces/<name>`） |
+| `--path /target` | 対象ディレクトリ（デフォルト: `~/fvgsd-workspaces/<name>`） |
 | `--strategy worktree\|clone` | コピー戦略（デフォルト: `worktree`） |
 | `--branch <name>` | チェックアウトするブランチ（デフォルト: `workspace/<name>`） |
 | `--auto` | 対話的な質問をスキップ |
@@ -52,27 +52,27 @@
 **生成物:** `WORKSPACE.md`、`.planning/`、リポジトリコピー（worktreeまたはclone）
 
 ```bash
-/vgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
-/vgsd-workspace --new --name feature-b --repos . --strategy worktree  # 同一リポジトリの分離
-/vgsd-workspace --new --name spike --repos api,web --strategy clone   # フルクローン
+/fvgsd-workspace --new --name feature-b --repos hr-ui,ZeymoAPI
+/fvgsd-workspace --new --name feature-b --repos . --strategy worktree  # 同一リポジトリの分離
+/fvgsd-workspace --new --name spike --repos api,web --strategy clone   # フルクローン
 ```
 
 ---
 
-### `/vgsd-workspace --list`
+### `/fvgsd-workspace --list`
 
 アクティブなGSDワークスペースとそのステータスを一覧表示します。
 
-**スキャン対象:** `~/vgsd-workspaces/` 内の `WORKSPACE.md` マニフェスト
+**スキャン対象:** `~/fvgsd-workspaces/` 内の `WORKSPACE.md` マニフェスト
 **表示内容:** 名前、リポジトリ数、戦略、GSDプロジェクトのステータス
 
 ```bash
-/vgsd-workspace --list
+/fvgsd-workspace --list
 ```
 
 ---
 
-### `/vgsd-workspace --remove`
+### `/fvgsd-workspace --remove`
 
 ワークスペースを削除し、git worktreeをクリーンアップします。
 
@@ -83,12 +83,12 @@
 **安全性:** コミットされていない変更があるリポジトリの削除を拒否します。名前の確認が必要です。
 
 ```bash
-/vgsd-workspace --remove feature-b
+/fvgsd-workspace --remove feature-b
 ```
 
 ---
 
-### `/vgsd-discuss-phase`
+### `/fvgsd-discuss-phase`
 
 計画の前に実装に関する意思決定を記録します。
 
@@ -108,15 +108,15 @@
 **生成物:** `{phase}-CONTEXT.md`、`{phase}-DISCUSSION-LOG.md`（監査証跡）
 
 ```bash
-/vgsd-discuss-phase 1                # フェーズ1の対話的ディスカッション
-/vgsd-discuss-phase 3 --auto         # フェーズ3でデフォルトを自動選択
-/vgsd-discuss-phase --batch          # 現在のフェーズのバッチモード
-/vgsd-discuss-phase 2 --analyze      # トレードオフ分析付きディスカッション
+/fvgsd-discuss-phase 1                # フェーズ1の対話的ディスカッション
+/fvgsd-discuss-phase 3 --auto         # フェーズ3でデフォルトを自動選択
+/fvgsd-discuss-phase --batch          # 現在のフェーズのバッチモード
+/fvgsd-discuss-phase 2 --analyze      # トレードオフ分析付きディスカッション
 ```
 
 ---
 
-### `/vgsd-ui-phase`
+### `/fvgsd-ui-phase`
 
 フロントエンドフェーズのUIデザイン契約書を生成します。
 
@@ -128,12 +128,12 @@
 **生成物:** `{phase}-UI-SPEC.md`
 
 ```bash
-/vgsd-ui-phase 2                     # フェーズ2のデザイン契約書
+/fvgsd-ui-phase 2                     # フェーズ2のデザイン契約書
 ```
 
 ---
 
-### `/vgsd-plan-phase`
+### `/fvgsd-plan-phase`
 
 フェーズの調査、計画、検証を行います。
 
@@ -155,14 +155,14 @@
 **生成物:** `{phase}-RESEARCH.md`、`{phase}-{N}-PLAN.md`、`{phase}-VALIDATION.md`
 
 ```bash
-/vgsd-plan-phase 1                   # フェーズ1の調査＋計画＋検証
-/vgsd-plan-phase 3 --skip-research   # 調査なしで計画（馴染みのあるドメイン）
-/vgsd-plan-phase --auto              # 非対話型の計画
+/fvgsd-plan-phase 1                   # フェーズ1の調査＋計画＋検証
+/fvgsd-plan-phase 3 --skip-research   # 調査なしで計画（馴染みのあるドメイン）
+/fvgsd-plan-phase --auto              # 非対話型の計画
 ```
 
 ---
 
-### `/vgsd-execute-phase`
+### `/fvgsd-execute-phase`
 
 フェーズ内のすべてのプランをウェーブベースの並列化で実行するか、特定のウェーブを実行します。
 
@@ -175,13 +175,13 @@
 **生成物:** プランごとの `{phase}-{N}-SUMMARY.md`、gitコミット、フェーズ完了時に `{phase}-VERIFICATION.md`
 
 ```bash
-/vgsd-execute-phase 1                # フェーズ1を実行
-/vgsd-execute-phase 1 --wave 2       # ウェーブ2のみを実行
+/fvgsd-execute-phase 1                # フェーズ1を実行
+/fvgsd-execute-phase 1 --wave 2       # ウェーブ2のみを実行
 ```
 
 ---
 
-### `/vgsd-verify-work`
+### `/fvgsd-verify-work`
 
 自動診断付きのユーザー受入テスト。
 
@@ -193,31 +193,31 @@
 **生成物:** `{phase}-UAT.md`、問題が見つかった場合は修正プラン
 
 ```bash
-/vgsd-verify-work 1                  # フェーズ1のUAT
+/fvgsd-verify-work 1                  # フェーズ1のUAT
 ```
 
 ---
 
-### `/vgsd-progress --next`
+### `/fvgsd-progress --next`
 
 次の論理的なワークフローステップに自動的に進みます。プロジェクトの状態を読み取り、適切なコマンドを実行します。
 
 **前提条件:** `.planning/` ディレクトリが存在すること
 **動作:**
-- プロジェクトなし → `/vgsd-new-project` を提案
-- フェーズにディスカッションが必要 → `/vgsd-discuss-phase` を実行
-- フェーズに計画が必要 → `/vgsd-plan-phase` を実行
-- フェーズに実行が必要 → `/vgsd-execute-phase` を実行
-- フェーズに検証が必要 → `/vgsd-verify-work` を実行
-- 全フェーズ完了 → `/vgsd-complete-milestone` を提案
+- プロジェクトなし → `/fvgsd-new-project` を提案
+- フェーズにディスカッションが必要 → `/fvgsd-discuss-phase` を実行
+- フェーズに計画が必要 → `/fvgsd-plan-phase` を実行
+- フェーズに実行が必要 → `/fvgsd-execute-phase` を実行
+- フェーズに検証が必要 → `/fvgsd-verify-work` を実行
+- 全フェーズ完了 → `/fvgsd-complete-milestone` を提案
 
 ```bash
-/vgsd-progress --next                           # 次のステップを自動検出して実行
+/fvgsd-progress --next                           # 次のステップを自動検出して実行
 ```
 
 ---
 
-### `/vgsd-pause-work --report`
+### `/fvgsd-pause-work --report`
 
 作業サマリー、成果、推定リソース使用量を含むセッションレポートを生成します。
 
@@ -225,7 +225,7 @@
 **生成物:** `.planning/reports/SESSION_REPORT.md`
 
 ```bash
-/vgsd-pause-work --report                 # セッション後のサマリーを生成
+/fvgsd-pause-work --report                 # セッション後のサマリーを生成
 ```
 
 **レポートに含まれる内容:**
@@ -237,7 +237,7 @@
 
 ---
 
-### `/vgsd-ship`
+### `/fvgsd-ship`
 
 完了したフェーズの作業から自動生成された本文でPRを作成します。
 
@@ -246,12 +246,12 @@
 | `N` | いいえ | フェーズ番号またはマイルストーンバージョン（例: `4` または `v1.0`） |
 | `--draft` | いいえ | ドラフトPRとして作成 |
 
-**前提条件:** フェーズが検証済み（`/vgsd-verify-work` が合格）、`gh` CLIがインストールされ認証済みであること
+**前提条件:** フェーズが検証済み（`/fvgsd-verify-work` が合格）、`gh` CLIがインストールされ認証済みであること
 **生成物:** 計画アーティファクトからリッチな本文を持つGitHub PR、STATE.mdの更新
 
 ```bash
-/vgsd-ship 4                         # フェーズ4をシップ
-/vgsd-ship 4 --draft                 # ドラフトPRとしてシップ
+/fvgsd-ship 4                         # フェーズ4をシップ
+/fvgsd-ship 4 --draft                 # ドラフトPRとしてシップ
 ```
 
 **PR本文に含まれる内容:**
@@ -263,7 +263,7 @@
 
 ---
 
-### `/vgsd-ui-review`
+### `/fvgsd-ui-review`
 
 実装済みフロントエンドの事後的な6軸ビジュアル監査。
 
@@ -275,13 +275,13 @@
 **生成物:** `{phase}-UI-REVIEW.md`、`.planning/ui-reviews/` 内のスクリーンショット
 
 ```bash
-/vgsd-ui-review                      # 現在のフェーズを監査
-/vgsd-ui-review 3                    # フェーズ3を監査
+/fvgsd-ui-review                      # 現在のフェーズを監査
+/fvgsd-ui-review 3                    # フェーズ3を監査
 ```
 
 ---
 
-### `/vgsd-audit-uat`
+### `/fvgsd-audit-uat`
 
 全フェーズを横断した未処理のUATおよび検証項目の監査。
 
@@ -289,12 +289,12 @@
 **生成物:** カテゴリ分類された監査レポートと人間用テストプラン
 
 ```bash
-/vgsd-audit-uat
+/fvgsd-audit-uat
 ```
 
 ---
 
-### `/vgsd-audit-milestone`
+### `/fvgsd-audit-milestone`
 
 マイルストーンが完了定義を満たしたかを検証します。
 
@@ -302,12 +302,12 @@
 **生成物:** ギャップ分析付き監査レポート
 
 ```bash
-/vgsd-audit-milestone
+/fvgsd-audit-milestone
 ```
 
 ---
 
-### `/vgsd-complete-milestone`
+### `/fvgsd-complete-milestone`
 
 マイルストーンをアーカイブし、リリースをタグ付けします。
 
@@ -315,12 +315,12 @@
 **生成物:** `MILESTONES.md` エントリ、gitタグ
 
 ```bash
-/vgsd-complete-milestone
+/fvgsd-complete-milestone
 ```
 
 ---
 
-### `/vgsd-milestone-summary`
+### `/fvgsd-milestone-summary`
 
 チームのオンボーディングやレビューのために、マイルストーンのアーティファクトから包括的なプロジェクトサマリーを生成します。
 
@@ -340,13 +340,13 @@
 - 生成後に対話的なQ&Aを提供
 
 ```bash
-/vgsd-milestone-summary                # 現在のマイルストーンをサマリー
-/vgsd-milestone-summary v1.0           # 特定のマイルストーンをサマリー
+/fvgsd-milestone-summary                # 現在のマイルストーンをサマリー
+/fvgsd-milestone-summary v1.0           # 特定のマイルストーンをサマリー
 ```
 
 ---
 
-### `/vgsd-new-milestone`
+### `/fvgsd-new-milestone`
 
 次のバージョンサイクルを開始します。
 
@@ -359,24 +359,24 @@
 **生成物:** 更新された `PROJECT.md`、新しい `REQUIREMENTS.md`、新しい `ROADMAP.md`
 
 ```bash
-/vgsd-new-milestone                  # 対話モード
-/vgsd-new-milestone "v2.0 Mobile"    # 名前付きマイルストーン
-/vgsd-new-milestone --reset-phase-numbers "v2.0 Mobile"  # マイルストーン番号を1からリスタート
+/fvgsd-new-milestone                  # 対話モード
+/fvgsd-new-milestone "v2.0 Mobile"    # 名前付きマイルストーン
+/fvgsd-new-milestone --reset-phase-numbers "v2.0 Mobile"  # マイルストーン番号を1からリスタート
 ```
 
 ---
 
 ## フェーズ管理コマンド
 
-### `/vgsd-phase`
+### `/fvgsd-phase`
 
 ロードマップに新しいフェーズを追加します。
 
 ```bash
-/vgsd-phase                      # 対話型 — フェーズの説明を入力
+/fvgsd-phase                      # 対話型 — フェーズの説明を入力
 ```
 
-### `/vgsd-phase --insert`
+### `/fvgsd-phase --insert`
 
 小数番号を使用して、フェーズ間に緊急の作業を挿入します。
 
@@ -385,10 +385,10 @@
 | `N` | いいえ | このフェーズ番号の後に挿入 |
 
 ```bash
-/vgsd-phase --insert 3                 # フェーズ3と4の間に挿入 → 3.1を作成
+/fvgsd-phase --insert 3                 # フェーズ3と4の間に挿入 → 3.1を作成
 ```
 
-### `/vgsd-phase --remove`
+### `/fvgsd-phase --remove`
 
 将来のフェーズを削除し、後続のフェーズの番号を振り直します。
 
@@ -397,10 +397,10 @@
 | `N` | いいえ | 削除するフェーズ番号 |
 
 ```bash
-/vgsd-phase --remove 7                 # フェーズ7を削除、8→7、9→8等に番号振り直し
+/fvgsd-phase --remove 7                 # フェーズ7を削除、8→7、9→8等に番号振り直し
 ```
 
-### `/vgsd-discuss-phase --assumptions`
+### `/fvgsd-discuss-phase --assumptions`
 
 計画前にClaudeの意図するアプローチをプレビューします。
 
@@ -409,23 +409,23 @@
 | `N` | いいえ | フェーズ番号 |
 
 ```bash
-/vgsd-discuss-phase --assumptions 2       # フェーズ2の前提を確認
+/fvgsd-discuss-phase --assumptions 2       # フェーズ2の前提を確認
 ```
 
 
-### `/vgsd-plan-phase --research-phase`
+### `/fvgsd-plan-phase --research-phase`
 
-詳細なエコシステム調査のみを実行します（単体機能 — 通常は `/vgsd-plan-phase` を使用してください）。
+詳細なエコシステム調査のみを実行します（単体機能 — 通常は `/fvgsd-plan-phase` を使用してください）。
 
 | 引数 | 必須 | 説明 |
 |----------|----------|-------------|
 | `N` | いいえ | フェーズ番号 |
 
 ```bash
-/vgsd-plan-phase --research-phase 4               # フェーズ4のドメインを調査
+/fvgsd-plan-phase --research-phase 4               # フェーズ4のドメインを調査
 ```
 
-### `/vgsd-validate-phase`
+### `/fvgsd-validate-phase`
 
 遡及的にNyquistバリデーションのギャップを監査・補填します。
 
@@ -434,38 +434,38 @@
 | `N` | いいえ | フェーズ番号 |
 
 ```bash
-/vgsd-validate-phase 2               # フェーズ2のテストカバレッジを監査
+/fvgsd-validate-phase 2               # フェーズ2のテストカバレッジを監査
 ```
 
 ---
 
 ## ナビゲーションコマンド
 
-### `/vgsd-progress`
+### `/fvgsd-progress`
 
 ステータスと次のステップを表示します。
 
 ```bash
-/vgsd-progress                       # "今どこにいる？次は何？"
+/fvgsd-progress                       # "今どこにいる？次は何？"
 ```
 
-### `/vgsd-resume-work`
+### `/fvgsd-resume-work`
 
 前回のセッションから完全なコンテキストを復元します。
 
 ```bash
-/vgsd-resume-work                    # コンテキストリセットまたは新しいセッション後に使用
+/fvgsd-resume-work                    # コンテキストリセットまたは新しいセッション後に使用
 ```
 
-### `/vgsd-pause-work`
+### `/fvgsd-pause-work`
 
 フェーズの途中で中断する際にコンテキストのハンドオフを保存します。
 
 ```bash
-/vgsd-pause-work                     # continue-here.mdを作成
+/fvgsd-pause-work                     # continue-here.mdを作成
 ```
 
-### `/vgsd-manager`
+### `/fvgsd-manager`
 
 1つのターミナルから複数のフェーズを管理する対話的なコマンドセンター。
 
@@ -477,12 +477,12 @@
 - 1つのターミナルから複数フェーズの作業を並列化するパワーユーザー向け
 
 ```bash
-/vgsd-manager                        # コ��ンドセンターダッシュボードを開く
+/fvgsd-manager                        # コ��ンドセンターダッシュボードを開く
 ```
 
 ---
 
-### `/vgsd-manager --analyze-deps`
+### `/fvgsd-manager --analyze-deps`
 
 フェーズ依存関係を検出し、ROADMAP.md に `Depends on` エントリを提案します。(v1.32)
 
@@ -491,24 +491,24 @@
 **動作:** 依存関係提案テーブルを表示し、ユーザー確認後に ROADMAP.md の `Depends on` フィールドを更新します。
 
 ```bash
-/vgsd-manager --analyze-deps            # 依存関係の分析と提案
+/fvgsd-manager --analyze-deps            # 依存関係の分析と提案
 ```
 
 ---
 
-### `/vgsd-help`
+### `/fvgsd-help`
 
 すべてのコマンドと使用ガイドを表示します。
 
 ```bash
-/vgsd-help                           # クイックリファレンス
+/fvgsd-help                           # クイックリファレンス
 ```
 
 ---
 
 ## ユーティリティコマンド
 
-### `/vgsd-quick`
+### `/fvgsd-quick`
 
 GSDの保証付きでアドホックタスクを実行します。
 
@@ -521,13 +521,13 @@ GSDの保証付きでアドホックタスクを実行します。
 フラグは組み合わせ可能です。
 
 ```bash
-/vgsd-quick                          # 基本的なクイックタスク
-/vgsd-quick --discuss --research     # ディスカッション＋調査＋計画
-/vgsd-quick --full                   # プランチェックと検証付き
-/vgsd-quick --discuss --research --full  # すべてのオプションステージ
+/fvgsd-quick                          # 基本的なクイックタスク
+/fvgsd-quick --discuss --research     # ディスカッション＋調査＋計画
+/fvgsd-quick --full                   # プランチェックと検証付き
+/fvgsd-quick --discuss --research --full  # すべてのオプションステージ
 ```
 
-### `/vgsd-autonomous`
+### `/fvgsd-autonomous`
 
 残りのすべてのフェーズを自律的に実行します。
 
@@ -539,22 +539,22 @@ GSDの保証付きでアドホックタスクを実行します。
 | `--interactive` | 各フェーズのディスカスステップでユーザー確認を要求 |
 
 ```bash
-/vgsd-autonomous                     # 残りの全フェーズを実行
-/vgsd-autonomous --from 3            # フェーズ3から開始
-/vgsd-autonomous --to 5              # フェーズ5まで実行
-/vgsd-autonomous --from 3 --to 5     # フェーズ3〜5の範囲を実行
-/vgsd-autonomous --only 4            # フェーズ4のみを自律実行
+/fvgsd-autonomous                     # 残りの全フェーズを実行
+/fvgsd-autonomous --from 3            # フェーズ3から開始
+/fvgsd-autonomous --to 5              # フェーズ5まで実行
+/fvgsd-autonomous --from 3 --to 5     # フェーズ3〜5の範囲を実行
+/fvgsd-autonomous --only 4            # フェーズ4のみを自律実行
 ```
 
-### `/vgsd-fast`
+### `/fvgsd-fast`
 
 フリーテキストを適切なGSDコマンドにルーティングします。
 
 ```bash
-/vgsd-fast                             # その後、やりたいことを説明
+/fvgsd-fast                             # その後、やりたいことを説明
 ```
 
-### `/vgsd-capture`
+### `/fvgsd-capture`
 
 手軽にアイデアをキャプチャ — メモの追加、一覧表示、またはTodoへの昇格。
 
@@ -569,12 +569,12 @@ GSDの保証付きでアドホックタスクを実行します。
 | `--global` | メモ操作にグローバルスコープを使用 |
 
 ```bash
-/vgsd-capture "Consider caching strategy for API responses"
-/vgsd-capture list
-/vgsd-capture promote 3
+/fvgsd-capture "Consider caching strategy for API responses"
+/fvgsd-capture list
+/fvgsd-capture promote 3
 ```
 
-### `/vgsd-debug`
+### `/fvgsd-debug`
 
 永続的な状態を持つ体系的なデバッグ。
 
@@ -587,11 +587,11 @@ GSDの保証付きでアドホックタスクを実行します。
 | `--diagnose` | 修正を試みず調査のみを行う診断専用モード (v1.32) |
 
 ```bash
-/vgsd-debug "Login button not responding on mobile Safari"
-/vgsd-debug --diagnose "API returning 500 on /users endpoint"
+/fvgsd-debug "Login button not responding on mobile Safari"
+/fvgsd-debug --diagnose "API returning 500 on /users endpoint"
 ```
 
-### `/vgsd-capture`
+### `/fvgsd-capture`
 
 後で取り組むアイデアやタスクをキャプチャします。
 
@@ -600,18 +600,18 @@ GSDの保証付きでアドホックタスクを実行します。
 | `description` | いいえ | Todoの説明 |
 
 ```bash
-/vgsd-capture "Consider adding dark mode support"
+/fvgsd-capture "Consider adding dark mode support"
 ```
 
-### `/vgsd-capture --list`
+### `/fvgsd-capture --list`
 
 保留中のTodoを一覧表示し、取り組むものを選択します。
 
 ```bash
-/vgsd-capture --list
+/fvgsd-capture --list
 ```
 
-### `/vgsd-add-tests`
+### `/fvgsd-add-tests`
 
 完了したフェーズのテストを生成します。
 
@@ -620,18 +620,18 @@ GSDの保証付きでアドホックタスクを実行します。
 | `N` | いいえ | フェーズ番号 |
 
 ```bash
-/vgsd-add-tests 2                    # フェーズ2のテストを生成
+/fvgsd-add-tests 2                    # フェーズ2のテストを生成
 ```
 
-### `/vgsd-stats`
+### `/fvgsd-stats`
 
 プロジェクトの統計情報を表示します。
 
 ```bash
-/vgsd-stats                          # プロジェクトメトリクスダッシュボード
+/fvgsd-stats                          # プロジェクトメトリクスダッシュボード
 ```
 
-### `/vgsd-profile-user`
+### `/fvgsd-profile-user`
 
 Claude Codeのセッション分析から8つの次元（コミュニケーションスタイル、意思決定パターン、デバッグアプローチ、UXプリファレンス、ベンダー選択、フラストレーションのトリガー、学習スタイル、説明の深さ）にわたる開発者行動プロファイルを生成します。Claudeのレスポンスをパーソナライズするアーティファクトを生成します。
 
@@ -645,12 +645,12 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 - `CLAUDE.md` プロファイルセクション — Claude Codeが自動検出
 
 ```bash
-/vgsd-profile-user                   # セッションを分析してプロファイルを構築
-/vgsd-profile-user --questionnaire   # 対話型アンケートのフォールバック
-/vgsd-profile-user --refresh         # 新鮮な分析からの再生成
+/fvgsd-profile-user                   # セッションを分析してプロファイルを構築
+/fvgsd-profile-user --questionnaire   # 対話型アンケートのフォールバック
+/fvgsd-profile-user --refresh         # 新鮮な分析からの再生成
 ```
 
-### `/vgsd-health`
+### `/fvgsd-health`
 
 `.planning/` ディレクトリの整合性を検証します。
 
@@ -659,23 +659,23 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 | `--repair` | 回復可能な問題を自動修復 |
 
 ```bash
-/vgsd-health                         # 整合性チェック
-/vgsd-health --repair                # チェックして修復
+/fvgsd-health                         # 整合性チェック
+/fvgsd-health --repair                # チェックして修復
 ```
 
-### `/vgsd-cleanup`
+### `/fvgsd-cleanup`
 
 完了したマイルストーンの蓄積されたフェーズディレクトリをアーカイブします。
 
 ```bash
-/vgsd-cleanup
+/fvgsd-cleanup
 ```
 
 ---
 
 ## 診断コマンド
 
-### `/vgsd-forensics`
+### `/fvgsd-forensics`
 
 失敗またはスタックしたGSDワークフローの事後調査。
 
@@ -695,15 +695,15 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 - アクション可能な所見がある場合、GitHubイシューの作成を提案
 
 ```bash
-/vgsd-forensics                              # 対話型 — 問題の入力を促す
-/vgsd-forensics "Phase 3 execution stalled"  # 問題の説明付き
+/fvgsd-forensics                              # 対話型 — 問題の入力を促す
+/fvgsd-forensics "Phase 3 execution stalled"  # 問題の説明付き
 ```
 
 ---
 
 ## ワークストリーム管理
 
-### `/vgsd-workstreams`
+### `/fvgsd-workstreams`
 
 マイルストーンの異なる領域で並行作業するためのワークストリームを管理します。
 
@@ -723,28 +723,28 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 **生成物:** `.planning/` 配下のワークストリームディレクトリ、ワークストリームごとの状態追跡
 
 ```bash
-/vgsd-workstreams                    # すべてのワークストリームを一覧表示
-/vgsd-workstreams create backend-api # 新しいワークストリームを作成
-/vgsd-workstreams switch backend-api # アクティブなワークストリームを設定
-/vgsd-workstreams status backend-api # 詳細ステータス
-/vgsd-workstreams progress           # ワークストリーム横断の進捗概要
-/vgsd-workstreams complete backend-api  # 完了したワークストリームをアーカイブ
-/vgsd-workstreams resume backend-api    # ワークストリームでの作業を再開
+/fvgsd-workstreams                    # すべてのワークストリームを一覧表示
+/fvgsd-workstreams create backend-api # 新しいワークストリームを作成
+/fvgsd-workstreams switch backend-api # アクティブなワークストリームを設定
+/fvgsd-workstreams status backend-api # 詳細ステータス
+/fvgsd-workstreams progress           # ワークストリーム横断の進捗概要
+/fvgsd-workstreams complete backend-api  # 完了したワークストリームをアーカイブ
+/fvgsd-workstreams resume backend-api    # ワークストリームでの作業を再開
 ```
 
 ---
 
 ## 設定コマンド
 
-### `/vgsd-settings`
+### `/fvgsd-settings`
 
 ワークフロートグルとモデルプロファイルの対話的な設定。
 
 ```bash
-/vgsd-settings                       # 対話型設定
+/fvgsd-settings                       # 対話型設定
 ```
 
-### `/vgsd-config --profile`
+### `/fvgsd-config --profile`
 
 クイックプロファイル切り替え。
 
@@ -753,15 +753,15 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 | `profile` | **はい** | `quality`、`balanced`、`budget`、または `inherit` |
 
 ```bash
-/vgsd-config --profile budget             # budgetプロファイルに切り替え
-/vgsd-config --profile quality            # qualityプロファイルに切り替え
+/fvgsd-config --profile budget             # budgetプロファイルに切り替え
+/fvgsd-config --profile quality            # qualityプロファイルに切り替え
 ```
 
 ---
 
 ## ブラウンフィールドコマンド
 
-### `/vgsd-map-codebase`
+### `/fvgsd-map-codebase`
 
 並列マッパーエージェントで既存のコードベースを分析します。
 
@@ -770,35 +770,35 @@ Claude Codeのセッション分析から8つの次元（コミュニケーシ�
 | `area` | いいえ | マッピングを特定の領域にスコープ |
 
 ```bash
-/vgsd-map-codebase                   # コードベース全体を分析
-/vgsd-map-codebase auth              # auth領域にフォーカス
+/fvgsd-map-codebase                   # コードベース全体を分析
+/fvgsd-map-codebase auth              # auth領域にフォーカス
 ```
 
 ---
 
 ## アップデートコマンド
 
-### `/vgsd-update`
+### `/fvgsd-update`
 
 変更履歴のプレビュー付きでGSDをアップデートします。
 
 ```bash
-/vgsd-update                         # アップデートを確認してインストール
+/fvgsd-update                         # アップデートを確認してインストール
 ```
 
-### `/vgsd-update --reapply`
+### `/fvgsd-update --reapply`
 
 GSDアップデート後にローカルの変更を復元します。
 
 ```bash
-/vgsd-update --reapply               # ローカルの変更をマージバック
+/fvgsd-update --reapply               # ローカルの変更をマージバック
 ```
 
 ---
 
 ## 高速＆インラインコマンド
 
-### `/vgsd-fast`
+### `/fvgsd-fast`
 
 簡単なタスクをインラインで実行 — サブエージェントなし、計画のオーバーヘッドなし。タイポ修正、設定変更、小さなリファクタリング、忘れたコミットなどに最適。
 
@@ -806,18 +806,18 @@ GSDアップデート後にローカルの変更を復元します。
 |----------|----------|-------------|
 | `task description` | いいえ | 実行する内容（省略時はプロンプトで入力） |
 
-**`/vgsd-quick` の代替ではありません** — 調査、複数ステップの計画、または検証が必要な場合は `/vgsd-quick` を使用してください。
+**`/fvgsd-quick` の代替ではありません** — 調査、複数ステップの計画、または検証が必要な場合は `/fvgsd-quick` を使用してください。
 
 ```bash
-/vgsd-fast "fix typo in README"
-/vgsd-fast "add .env to gitignore"
+/fvgsd-fast "fix typo in README"
+/fvgsd-fast "add .env to gitignore"
 ```
 
 ---
 
 ## コード品質コマンド
 
-### `/vgsd-review`
+### `/fvgsd-review`
 
 外部AI CLIからのフェーズプランのクロスAIピアレビュー。
 
@@ -836,16 +836,16 @@ GSDアップデート後にローカルの変更を復元します。
 | `--cursor` | Cursorエージェントレビューを含める |
 | `--all` | 利用可能なすべてのCLIを含める |
 
-**生成物:** `{phase}-REVIEWS.md` — `/vgsd-plan-phase --reviews` で利用可能
+**生成物:** `{phase}-REVIEWS.md` — `/fvgsd-plan-phase --reviews` で利用可能
 
 ```bash
-/vgsd-review --phase 3 --all
-/vgsd-review --phase 2 --gemini
+/fvgsd-review --phase 3 --all
+/fvgsd-review --phase 2 --gemini
 ```
 
 ---
 
-### `/vgsd-pr-branch`
+### `/fvgsd-pr-branch`
 
 `.planning/` のコミットをフィルタリングしてクリーンなPRブランチを作成します。
 
@@ -856,13 +856,13 @@ GSDアップデート後にローカルの変更を復元します。
 **目的:** レビュアーにはコード変更のみを表示し、GSD計画アーティファクトは含めません。
 
 ```bash
-/vgsd-pr-branch                     # mainに対してフィルタリング
-/vgsd-pr-branch develop             # developに対してフィルタリング
+/fvgsd-pr-branch                     # mainに対してフィルタリング
+/fvgsd-pr-branch develop             # developに対してフィルタリング
 ```
 
 ---
 
-### `/vgsd-audit-uat`
+### `/fvgsd-audit-uat`
 
 全フェーズを横断した未処理のUATおよび検証項目の監査。
 
@@ -870,14 +870,14 @@ GSDアップデート後にローカルの変更を復元します。
 **生成物:** カテゴリ分類された監査レポートと人間用テストプラン
 
 ```bash
-/vgsd-audit-uat
+/fvgsd-audit-uat
 ```
 
 ---
 
 ## バックログ＆スレッドコマンド
 
-### `/vgsd-capture --backlog`
+### `/fvgsd-capture --backlog`
 
 999.x番号付けを使用して、バックログのパーキングロットにアイデアを追加します。
 
@@ -885,28 +885,28 @@ GSDアップデート後にローカルの変更を復元します。
 |----------|----------|-------------|
 | `description` | **はい** | バックログ項目の説明 |
 
-**999.x番号付け**により、バックログ項目はアクティブなフェーズシーケンスの外に保持されます。フェーズディレクトリは即座に作成されるため、`/vgsd-discuss-phase` や `/vgsd-plan-phase` がそれらに対して動作します。
+**999.x番号付け**により、バックログ項目はアクティブなフェーズシーケンスの外に保持されます。フェーズディレクトリは即座に作成されるため、`/fvgsd-discuss-phase` や `/fvgsd-plan-phase` がそれらに対して動作します。
 
 ```bash
-/vgsd-capture --backlog "GraphQL API layer"
-/vgsd-capture --backlog "Mobile responsive redesign"
+/fvgsd-capture --backlog "GraphQL API layer"
+/fvgsd-capture --backlog "Mobile responsive redesign"
 ```
 
 ---
 
-### `/vgsd-review-backlog`
+### `/fvgsd-review-backlog`
 
 バックログ項目をレビューし、アクティブなマイルストーンに昇格させます。
 
 **項目ごとのアクション:** 昇格（アクティブシーケンスに移動）、保持（バックログに残す）、削除。
 
 ```bash
-/vgsd-review-backlog
+/fvgsd-review-backlog
 ```
 
 ---
 
-### `/vgsd-capture --seed`
+### `/fvgsd-capture --seed`
 
 トリガー条件付きの将来のアイデアをキャプチャ — 適切なマイルストーンで自動的に表面化します。
 
@@ -917,15 +917,15 @@ GSDアップデート後にローカルの変更を復元します。
 シードはコンテキストの劣化を解決します：誰も読まないDeferredの一行メモの代わりに、シードは完全なWHY、いつ表面化すべきか、詳細への手がかりを保存します。
 
 **生成物:** `.planning/seeds/SEED-NNN-slug.md`
-**利用先:** `/vgsd-new-milestone`（シードをスキャンしてマッチするものを提示）
+**利用先:** `/fvgsd-new-milestone`（シードをスキャンしてマッチするものを提示）
 
 ```bash
-/vgsd-capture --seed "Add real-time collaboration when WebSocket infra is in place"
+/fvgsd-capture --seed "Add real-time collaboration when WebSocket infra is in place"
 ```
 
 ---
 
-### `/vgsd-thread`
+### `/fvgsd-thread`
 
 クロスセッション作業のための永続的なコンテキストスレッドを管理します。
 
@@ -935,12 +935,12 @@ GSDアップデート後にローカルの変更を復元します。
 | `name` | — | 名前で既存のスレッドを再開 |
 | `description` | — | 新しいスレッドを作成 |
 
-スレッドは、複数のセッションにまたがるが特定のフェーズに属さない作業のための軽量なクロスセッション知識ストアです。`/vgsd-pause-work` よりも軽量です。
+スレッドは、複数のセッションにまたがるが特定のフェーズに属さない作業のための軽量なクロスセッション知識ストアです。`/fvgsd-pause-work` よりも軽量です。
 
 ```bash
-/vgsd-thread                         # すべてのスレッドを一覧表示
-/vgsd-thread fix-deploy-key-auth     # スレッドを再開
-/vgsd-thread "Investigate TCP timeout in pasta service"  # 新規作成
+/fvgsd-thread                         # すべてのスレッドを一覧表示
+/fvgsd-thread fix-deploy-key-auth     # スレッドを再開
+/fvgsd-thread "Investigate TCP timeout in pasta service"  # 新規作成
 ```
 
 ---

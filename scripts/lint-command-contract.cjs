@@ -4,7 +4,7 @@
  *
  * Enforces the commands/gsd/*.md contract across all 65 command files:
  *
- *   1. name:        present, non-empty, matches vgsd: or vgsd- prefix
+ *   1. name:        present, non-empty, matches fvgsd: or fvgsd- prefix
  *   2. description: present, non-empty
  *   3. allowed-tools: block present, non-empty, all entries from CANONICAL_TOOLS
  *   4. execution_context @-refs: every @-reference resolves to an existing file on disk
@@ -20,7 +20,7 @@ const path = require('path');
 
 const ROOT          = path.join(__dirname, '..');
 const COMMANDS_DIR  = path.join(ROOT, 'commands', 'gsd');
-const GSD_ROOT      = path.join(ROOT, 'get-shit-done');
+const FVGSD_ROOT      = path.join(ROOT, 'get-shit-done');
 
 const {
   CANONICAL_TOOLS,
@@ -36,11 +36,11 @@ function check(filePath) {
   const fm       = parseFrontmatter(content);
   const violations = [];
 
-  // 1. name: present + vgsd: / vgsd- prefix
+  // 1. name: present + fvgsd: / fvgsd- prefix
   if (!fm.name || !fm.name.trim()) {
     violations.push('name: field missing or empty');
-  } else if (!/^vgsd[:-]/.test(fm.name.trim())) {
-    violations.push(`name: must start with "vgsd:" or "vgsd-", got "${fm.name.trim()}"`);
+  } else if (!/^fvgsd[:-]/.test(fm.name.trim())) {
+    violations.push(`name: must start with "fvgsd:" or "fvgsd-", got "${fm.name.trim()}"`);
   }
 
   // 2. description: present + non-empty
@@ -64,7 +64,7 @@ function check(filePath) {
   // 4+5. execution_context @-refs resolve + no trailing prose
   const refs = extractExecutionContextRefs(content);
   for (const { token, normalized, trailingProse } of refs) {
-    const absPath = path.join(GSD_ROOT, normalized);
+    const absPath = path.join(FVGSD_ROOT, normalized);
     if (!fs.existsSync(absPath)) {
       violations.push(`execution_context: @-ref "${normalized}" does not exist on disk`);
     }

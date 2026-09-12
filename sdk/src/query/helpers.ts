@@ -85,7 +85,7 @@ export function getRuntimeConfigDir(runtime: Runtime): string {
 
 /**
  * Detect the invoking runtime using issue #2402 precedence:
- *   1. `GSD_RUNTIME` env var
+ *   1. `FVGSD_RUNTIME` env var
  *   2. `config.runtime` field (from `.planning/config.json` when loaded)
  *   3. Fallback to `'claude'`
  *
@@ -93,7 +93,7 @@ export function getRuntimeConfigDir(runtime: Runtime): string {
  * stale env values don't hard-block workflows.
  */
 export function detectRuntime(config?: { runtime?: unknown }): Runtime {
-  const envValue = process.env.GSD_RUNTIME;
+  const envValue = process.env.FVGSD_RUNTIME;
   if (envValue && (SUPPORTED_RUNTIMES as readonly string[]).includes(envValue)) {
     return envValue as Runtime;
   }
@@ -108,7 +108,7 @@ export function detectRuntime(config?: { runtime?: unknown }): Runtime {
  * Resolve the GSD agents directory for a given runtime.
  *
  * Precedence:
- *   1. `GSD_AGENTS_DIR` — explicit SDK override (wins over runtime selection)
+ *   1. `FVGSD_AGENTS_DIR` — explicit SDK override (wins over runtime selection)
  *   2. `<getRuntimeConfigDir(runtime)>/agents` — installer-parity default (when the dir exists)
  *   3. `<projectDir>/.claude/agents` — repo-local fallback for `--local` Claude installs
  *      (only probed when the global runtime dir is absent or empty, and `projectDir` is given)
@@ -121,7 +121,7 @@ export function detectRuntime(config?: { runtime?: unknown }): Runtime {
  * but the SDK agent-detection path only probed the global directory.
  */
 export function resolveAgentsDir(runtime: Runtime = 'claude', projectDir?: string): string {
-  if (process.env.GSD_AGENTS_DIR) return process.env.GSD_AGENTS_DIR;
+  if (process.env.FVGSD_AGENTS_DIR) return process.env.FVGSD_AGENTS_DIR;
   const globalDir = join(getRuntimeConfigDir(runtime), 'agents');
   if (existsSync(globalDir)) return globalDir;
   // Repo-local fallback: <projectDir>/.claude/agents for --local Claude installs (#3751).
@@ -457,7 +457,7 @@ export function normalizeMd(content: string): string {
  */
 export function planningPaths(projectDir: string, workstream?: string): PlanningPaths {
   const envCtx = resolveWorkspaceContext();
-  // Validate env workstream before use: invalid GSD_WORKSTREAM falls back to
+  // Validate env workstream before use: invalid FVGSD_WORKSTREAM falls back to
   // root .planning/ (bug-2791 contract — invalid env must not crash or route
   // to a bad path; silent fallback to root preserves pre-#3269 behaviour).
   const validEnvWorkstream =

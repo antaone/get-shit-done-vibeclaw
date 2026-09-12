@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
@@ -30,7 +30,7 @@ function writeFragment(repo, name, type, pr, body) {
 }
 
 function createTaggedRepo() {
-  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-release-notes-'));
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-release-notes-'));
   run('git', ['init', '-q'], repo);
   run('git', ['config', 'user.email', 'test@example.com'], repo);
   run('git', ['config', 'user.name', 'Test User'], repo);
@@ -39,8 +39,8 @@ function createTaggedRepo() {
   run('git', ['commit', '-q', '-m', 'initial'], repo);
   run('git', ['tag', 'v1.0.0'], repo);
 
-  writeFragment(repo, 'fix-install-sdk', 'Fixed', 101, '**`gsd-sdk` now installs reliably** — persistent PATH is checked.');
-  writeFragment(repo, 'remove-intel-noise', 'Removed', 102, '**`gsd-intel-updater` no longer emits layout detection noise** — ordinary projects stay quiet.');
+  writeFragment(repo, 'fix-install-sdk', 'Fixed', 101, '**`fvgsd-sdk` now installs reliably** — persistent PATH is checked.');
+  writeFragment(repo, 'remove-intel-noise', 'Removed', 102, '**`fvgsd-intel-updater` no longer emits layout detection noise** — ordinary projects stay quiet.');
   run('git', ['add', '.changeset'], repo);
   run('git', ['commit', '-q', '-m', 'add changesets'], repo);
   run('git', ['tag', 'v1.0.1'], repo);
@@ -109,7 +109,7 @@ describe('changeset github release notes: tag-range renderer (#3382)', () => {
       fromRef: 'v1.0.0',
       toRef: 'v1.0.1',
       repoSlug: 'example/project',
-      installCommand: 'npx get-shit-done-cc@latest',
+      installCommand: 'npx fvgsd@latest',
     });
     assert.equal(fs.readFileSync(output, 'utf8'), generated.body);
   });

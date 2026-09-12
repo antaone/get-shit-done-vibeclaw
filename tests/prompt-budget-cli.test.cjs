@@ -11,7 +11,7 @@
 /**
  * prompt-budget-cli.test.cjs
  *
- * Integration tests for the `gsd-tools prompt-budget` CLI subcommand.
+ * Integration tests for the `fvgsd-tools prompt-budget` CLI subcommand.
  * Covers the 5 specified scenarios:
  *   1. Happy path: budget forces trim (research dropped)
  *   2. No-trim path: huge budget, metadata shows no omissions
@@ -53,7 +53,7 @@ const TEST_PLAN = [
 const TEST_RESEARCH = 'a'.repeat(8000); // ~2000 tokens — large enough to force trimming
 
 /**
- * Run gsd-tools with args as an array (safe for paths with spaces/dollars).
+ * Run fvgsd-tools with args as an array (safe for paths with spaces/dollars).
  * Returns { exitCode, stdout, stderr }.
  */
 function runCli(args, cwd) {

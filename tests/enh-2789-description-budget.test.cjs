@@ -133,7 +133,7 @@ describe('lint-descriptions.cjs', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lint-desc-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-lint-desc-test-'));
   });
 
   afterEach(() => {

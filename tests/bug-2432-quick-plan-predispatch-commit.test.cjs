@@ -84,7 +84,7 @@ describe('quick.md pre-dispatch PLAN.md commit (#2432)', () => {
     // QUICK_DIR is always set to ".planning/quick/..." (relative) so ${QUICK_DIR}/...PLAN.md
     // resolves relative to the worktree root, not the main repo absolute path.
     // Verify the executor prompt uses QUICK_DIR variable (not a hardcoded absolute path).
-    const executorTask = content.indexOf('subagent_type="gsd-executor"');
+    const executorTask = content.indexOf('subagent_type="fvgsd-executor"');
     assert.ok(executorTask !== -1, 'executor Task() spawn must exist');
     // Find the files_to_read block near the executor spawn
     const filesBlock = content.lastIndexOf('<files_to_read>', executorTask);

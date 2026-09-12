@@ -1,12 +1,12 @@
 # Custom PR Body Sections
 
-`/vgsd-ship` creates a pull request body from the planning artifacts for a verified phase. Projects can append extra PRD-style sections to that body with `ship.pr_body_sections` in `.planning/config.json`.
+`/fvgsd-ship` creates a pull request body from the planning artifacts for a verified phase. Projects can append extra PRD-style sections to that body with `ship.pr_body_sections` in `.planning/config.json`.
 
 Use this when your project needs the PR to carry more release context than the default GSD sections, such as user stories, acceptance criteria, risks, release criteria, or stakeholder approval notes.
 
 ## What GSD Always Includes
 
-Every generated `/vgsd-ship` PR body keeps the required core sections:
+Every generated `/fvgsd-ship` PR body keeps the required core sections:
 
 - `Summary`
 - `Changes`
@@ -18,7 +18,7 @@ Custom sections are append-only. They render after `Key Decisions`; they cannot 
 
 ## Configure Sections During Onboarding
 
-During `/vgsd-new-project`, GSD can seed optional PRD-style sections into `.planning/config.json`.
+During `/fvgsd-new-project`, GSD can seed optional PRD-style sections into `.planning/config.json`.
 
 Recommended onboarding choices:
 
@@ -27,14 +27,14 @@ Recommended onboarding choices:
 - `Success Metrics & Release Criteria` for Definition of Done, measurable outcomes, and release checks.
 - `Stakeholder Review & Approval` for sign-off traceability.
 
-Selected sections are written with `"enabled": true`. Seeded but unselected sections are written with `"enabled": false`, so you can enable them later without editing the shipped `/vgsd-ship` workflow.
+Selected sections are written with `"enabled": true`. Seeded but unselected sections are written with `"enabled": false`, so you can enable them later without editing the shipped `/fvgsd-ship` workflow.
 
 ## Configure Sections Manually
 
-Set `ship.pr_body_sections` with `gsd-sdk query config-set`:
+Set `ship.pr_body_sections` with `fvgsd-sdk query config-set`:
 
 ```bash
-gsd-sdk query config-set ship.pr_body_sections '[{"heading":"Risks & Dependencies","enabled":true,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."}]'
+fvgsd-sdk query config-set ship.pr_body_sections '[{"heading":"Risks & Dependencies","enabled":true,"source":"PLAN.md ## Risks || PLAN.md ## Dependencies","fallback":"- No known high-risk rollout dependencies."}]'
 ```
 
 You can also edit `.planning/config.json` directly:

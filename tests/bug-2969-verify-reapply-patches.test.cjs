@@ -1,6 +1,6 @@
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Bug #2969: /gsd-reapply-patches Step 5 hunk verification gate reports
@@ -30,7 +30,7 @@ const cp = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
 // Script lives at get-shit-done/bin/ so the installer ships it under
-// `${GSD_HOME}/get-shit-done/bin/` (issue #2994). The top-level scripts/
+// `${FVGSD_HOME}/get-shit-done/bin/` (issue #2994). The top-level scripts/
 // directory is not copied to user installs.
 const SCRIPT = path.join(ROOT, 'get-shit-done', 'bin', 'verify-reapply-patches.cjs');
 const { REASON } = require(SCRIPT);
@@ -71,7 +71,7 @@ function runVerifier({ includePristine = true } = {}) {
 }
 
 before(() => {
-  tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-2969-'));
+  tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2969-'));
   patchesDir = path.join(tmpRoot, 'patches');
   configDir = path.join(tmpRoot, 'installed');
   pristineDir = path.join(tmpRoot, 'pristine');

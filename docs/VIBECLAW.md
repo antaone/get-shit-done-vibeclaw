@@ -14,12 +14,12 @@ tool reads promoted repository state
 ```
 
 Normal GSD workflows continue to work without VibeClaw orchestration. Direct
-`vgsd` use still creates a standalone execution branch; nothing creates
-`.planning-vibe/` orchestration state until `vibe init` is run in a project.
+`fvgsd` use still creates a standalone execution branch; nothing creates
+`.planning-fvgsd-vibe/` orchestration state until `vibe init` is run in a project.
 
 ## GSD versus VibeClaw
 
-GSD remains the methodology and canonical workflow content. Its project documents stay in `.planning/`, VibeClaw exposes its commands under the collision-free `vgsd` namespace, and runtime-specific command/skill transformations still happen during installation.
+GSD remains the methodology and canonical workflow content. Its project documents stay in `.planning/`, VibeClaw exposes its commands under the collision-free `fvgsd` namespace, and runtime-specific command/skill transformations still happen during installation.
 
 VibeClaw manages cross-tool execution around GSD:
 
@@ -31,7 +31,7 @@ VibeClaw manages cross-tool execution around GSD:
 - normalized tool context;
 - completion, metrics, promotion, and history.
 
-That state lives in `.planning-vibe/`. VibeClaw stage contracts reference existing commands such as `/vgsd:plan-phase` and `/vgsd:execute-phase`; they do not create `plan-phase-codex`, `plan-phase-claude`, or other runtime copies.
+That state lives in `.planning-fvgsd-vibe/`. VibeClaw stage contracts reference existing commands such as `/fvgsd:plan-phase` and `/fvgsd:execute-phase`; they do not create `plan-phase-codex`, `plan-phase-claude`, or other runtime copies.
 
 ## Install surface
 
@@ -51,12 +51,12 @@ Installed runtimes also expose an AI-native entry point, so users do not need
 to translate Vibe operations into terminal commands:
 
 ```text
-/vgsd-vibe quick
-/vgsd-vibe debug --tool codex --tool claude
-$vgsd-vibe new-milestone --tool codex
+/fvgsd-vibe quick
+/fvgsd-vibe debug --tool codex --tool claude
+$fvgsd-vibe new-milestone --tool codex
 ```
 
-`vgsd-vibe` inspects Git, the current worktree, GSD planning state, active
+`fvgsd-vibe` inspects Git, the current worktree, GSD planning state, active
 runs, and existing candidates before it changes anything. It can continue
 directly, create one candidate, or prepare N candidates from the same reviewed
 base commit. Project, milestone, and phase commands map to the bundled
@@ -68,7 +68,7 @@ declared promoted input. Every other public command—including `quick`, `fast`,
 commands—gets a durable single-command workflow automatically.
 
 The installed command calls the runtime-local `get-shit-done/bin/vibe.cjs`, so
-it works wherever `vgsd` was installed; a globally linked `vibe` executable is
+it works wherever `fvgsd` was installed; a globally linked `vibe` executable is
 optional.
 
 ## Uninstall
@@ -79,48 +79,48 @@ installer refuses an uninstall when neither scope is supplied.
 
 ```bash
 # One runtime
-npx get-shit-done-cc@latest --codex --global --uninstall
-npx get-shit-done-cc@latest --gemini --local --uninstall
+npx fvgsd@latest --codex --global --uninstall
+npx fvgsd@latest --gemini --local --uninstall
 
 # Every supported runtime in one scope
-npx get-shit-done-cc@latest --all --global --uninstall
-npx get-shit-done-cc@latest --all --local --uninstall
+npx fvgsd@latest --all --global --uninstall
+npx fvgsd@latest --all --local --uninstall
 ```
 
 Use the corresponding flag for any other installed runtime. This removes only
 installer-managed commands, skills, agents, hooks, and manifests from the
 selected runtime configuration. It preserves unrelated configuration and does
 not delete repository source, Git history, `.planning/`, or
-`.planning-vibe/`.
+`.planning-fvgsd-vibe/`.
 
 For a source checkout that was made globally callable with `npm link`, remove
 the linked executables after uninstalling runtime artifacts:
 
 ```bash
-npm unlink --global get-shit-done-cc
+npm unlink --global fvgsd
 ```
 
 Retiring Vibe from a particular repository is intentionally separate. Before
 removing project state, inspect `vibe status`, preserve or promote any candidate
 results you need, and use `vibe cleanup <candidate-id>` for every completed
-candidate worktree. You may then remove the committed `.planning-vibe/` state
-and disposable `.vibe/` directory. Do not remove `.planning/` when retaining
+candidate worktree. You may then remove the committed `.planning-fvgsd-vibe/` state
+and disposable `.fvgsd-vibe/` directory. Do not remove `.planning/` when retaining
 the project's GSD plans and history, and do not remove Vibe state while a
 candidate contains unpromoted work.
 
 ## Command order: Vibe first, workflow second
 
 Yes: when you want branch/worktree isolation or competing tool runs, start on
-the integration branch with `vgsd-vibe`. Do not begin by running the mutating
+the integration branch with `fvgsd-vibe`. Do not begin by running the mutating
 target command on that branch.
 
 ```text
 integration worktree
-  -> run vgsd-vibe for the target workflow
+  -> run fvgsd-vibe for the target workflow
   -> choose direct, one candidate, or multiple candidates
   -> Vibe prepares local worktrees or publishes Git handoffs
   -> enter each local worktree or tracked worker branch
-  -> run that candidate's printed native vgsd command
+  -> run that candidate's printed native fvgsd command
   -> complete, compare, and explicitly promote one result
 ```
 
@@ -128,29 +128,29 @@ For example, the first command in Claude Code or another slash-command runtime
 is:
 
 ```text
-/vgsd-vibe quick --tool codex --tool claude
+/fvgsd-vibe quick --tool codex --tool claude
 ```
 
-Use `/vgsd:vibe quick --tool codex --tool claude` in Gemini CLI or
-`$vgsd-vibe quick --tool codex --tool claude` in Codex. The gateway reports a
+Use `/fvgsd:vibe quick --tool codex --tool claude` in Gemini CLI or
+`$fvgsd-vibe quick --tool codex --tool claude` in Codex. The gateway reports a
 local worktree or remote handoff and native target invocation for every
 candidate. Only then run the
-reported `$vgsd-quick`, `/vgsd:quick`, or `/vgsd-quick` inside its matching
+reported `$fvgsd-quick`, `/fvgsd:quick`, or `/fvgsd-quick` inside its matching
 worktree.
 
 There are two intentional operating modes:
 
 | Goal | First command | Result |
 | --- | --- | --- |
-| Orchestrated work | `vgsd-vibe` for the target workflow | Vibe initializes or resumes orchestration and prepares local candidate worktrees or guarded remote handoffs before the target runs |
-| Simple direct work | The target `vgsd` command | Before Vibe is initialized, GSD creates a protected standalone `vgsd/<runtime>/<command>/<execution-id>` branch |
+| Orchestrated work | `fvgsd-vibe` for the target workflow | Vibe initializes or resumes orchestration and prepares local candidate worktrees or guarded remote handoffs before the target runs |
+| Simple direct work | The target `fvgsd` command | Before Vibe is initialized, GSD creates a protected standalone `fvgsd/<runtime>/<command>/<execution-id>` branch |
 
-After `.planning-vibe/` exists, a mutating target command on the integration
-worktree is rejected. Return to the integration worktree, use `vgsd-vibe` to
+After `.planning-fvgsd-vibe/` exists, a mutating target command on the integration
+worktree is rejected. Return to the integration worktree, use `fvgsd-vibe` to
 prepare the target, and run it from the prepared candidate. Read-only control
 commands remain direct.
 
-`vgsd-vibe` is a gateway, not a permanent prefix inside the candidate. Invoke
+`fvgsd-vibe` is a gateway, not a permanent prefix inside the candidate. Invoke
 it from the integration worktree to prepare or manage work; invoke the printed
 target command from the candidate worktree to do the work.
 
@@ -164,9 +164,9 @@ run is active.
 | `local` (default) | Coordinator worktree, local terminal, SSH, remote IDE, or a container sharing the same paths | Exact absolute worktree, branch, base, candidate manifest, and tool | Candidate must be clean and committed when its contract requires a result commit |
 | `multi-machine` | Independent clones on separate machines | Published branch plus remote `vibe-handoff/...` identity tag, assigned command/tool, base ancestry, and live upstream checks | Every candidate needs a result commit and must be pushed before coordinator completion |
 
-The coordinator remains the owner of `.planning-vibe/`, candidate completion,
+The coordinator remains the owner of `.planning-fvgsd-vibe/`, candidate completion,
 comparison, and promotion. Worker machines execute only their assigned native
-`vgsd` command and push the result branch. This avoids trying to merge mutable
+`fvgsd` command and push the result branch. This avoids trying to merge mutable
 orchestration state from several clones.
 
 Enable Git handoffs before starting a run:
@@ -178,7 +178,7 @@ vibe mode multi-machine --remote origin
 Or request it through the installed gateway:
 
 ```text
-/vgsd-vibe quick --multi-machine --remote origin --tool codex --tool claude
+/fvgsd-vibe quick --multi-machine --remote origin --tool codex --tool claude
 ```
 
 Use `vibe mode show` to inspect the current mode and `vibe mode local` to return
@@ -201,9 +201,9 @@ credentials.
 
 ### Worker handoff
 
-Send the candidate branch and native invocation printed by `vgsd-vibe` to the
+Send the candidate branch and native invocation printed by `fvgsd-vibe` to the
 assigned worker. The coordinator does not need that worker's CLI executable,
-but the worker must have the matching tool plus the same VibeClaw-aware `vgsd`
+but the worker must have the matching tool plus the same VibeClaw-aware `fvgsd`
 surface installed. In an existing worker clone:
 
 ```bash
@@ -211,7 +211,7 @@ git fetch origin --tags
 git switch --track -c vibe/remote-quick/task/codex-001 origin/vibe/remote-quick/task/codex-001
 ```
 
-Then run the printed target command, for example `$vgsd-quick`. Its execution
+Then run the printed target command, for example `$fvgsd-quick`. Its execution
 guard checks the live remote before workflow work begins:
 
 - the local branch tracks the published candidate branch;
@@ -231,7 +231,7 @@ git commit -m "feat: complete remote quick candidate"
 git push origin HEAD:vibe/remote-quick/task/codex-001
 ```
 
-Do not edit `.planning-vibe/` or `.vibe/` on the worker branch. Protected-path
+Do not edit `.planning-fvgsd-vibe/` or `.fvgsd-vibe/` on the worker branch. Protected-path
 validation rejects those changes when the coordinator receives the result.
 
 ### Coordinator receive and promotion
@@ -256,8 +256,8 @@ advanced concurrently, the push fails instead of overwriting remote work.
 
 ## Greenfield and brownfield scenarios
 
-The examples below use the slash-command form. Substitute `/vgsd:vibe` in
-Gemini CLI or `$vgsd-vibe` in Codex.
+The examples below use the slash-command form. Substitute `/fvgsd:vibe` in
+Gemini CLI or `$fvgsd-vibe` in Codex.
 
 ### Greenfield A: empty directory, one candidate
 
@@ -265,13 +265,13 @@ Start in the directory that will become the project. A short product brief is
 recommended because it gives the first planning candidate a reviewed input.
 
 ```text
-/vgsd-vibe new-project --tool claude
+/fvgsd-vibe new-project --tool claude
 ```
 
 The gateway detects that Git or `HEAD` is missing. It inspects the directory,
 shows what would enter the baseline, initializes Git, and asks for approval
 before creating the baseline commit. It then initializes Vibe, prepares one
-candidate, and prints its worktree and `/vgsd-new-project` invocation. Open
+candidate, and prints its worktree and `/fvgsd-new-project` invocation. Open
 that worktree and run the printed target command there. When it finishes,
 return to the integration worktree to complete and promote the candidate.
 
@@ -284,12 +284,12 @@ first commit, and secrets or unrelated generated files must not be included.
 Use local mode when all three adapters can access one coordinator filesystem:
 
 ```text
-/vgsd-vibe new-project --tool gemini --tool codex --tool claude
+/fvgsd-vibe new-project --tool gemini --tool codex --tool claude
 ```
 
 After the reviewed baseline, Vibe creates three candidates from the same exact
-commit. Run the printed `/vgsd:new-project`, `$vgsd-new-project`, and
-`/vgsd-new-project` in the corresponding worktrees. Complete all candidates,
+commit. Run the printed `/fvgsd:new-project`, `$fvgsd-new-project`, and
+`/fvgsd-new-project` in the corresponding worktrees. Complete all candidates,
 compare their `.planning/` results, and promote one. Later workflow stages read
 only the promoted project foundation.
 
@@ -297,7 +297,7 @@ For three independent worker machines, configure a Git remote after the
 reviewed initial baseline, then turn on the handoff mode before preparation:
 
 ```text
-/vgsd-vibe new-project --multi-machine --remote origin --tool gemini --tool codex --tool claude
+/fvgsd-vibe new-project --multi-machine --remote origin --tool gemini --tool codex --tool claude
 ```
 
 Each worker fetches only its published candidate branch, runs its assigned
@@ -310,11 +310,11 @@ For a small experiment you may intentionally initialize Git yourself, create a
 reviewed baseline commit, skip Vibe, and run a target command first:
 
 ```text
-/vgsd-new-project
+/fvgsd-new-project
 ```
 
 That creates a standalone smart branch. When you later invoke
-`/vgsd-vibe plan-phase`, the gateway can initialize Vibe and import the local
+`/fvgsd-vibe plan-phase`, the gateway can initialize Vibe and import the local
 standalone execution provenance. This path is safe, but it does not retroactively
 turn the first execution into a competing Vibe candidate.
 
@@ -324,8 +324,8 @@ First map the existing code in isolation, promote the preferred map, and then
 create the project planning foundation:
 
 ```text
-/vgsd-vibe map-codebase --tool codex --tool claude
-/vgsd-vibe new-project --tool gemini --tool codex --tool claude
+/fvgsd-vibe map-codebase --tool codex --tool claude
+/fvgsd-vibe new-project --tool gemini --tool codex --tool claude
 ```
 
 Run the commands one at a time. Finish and promote the `map-codebase` run
@@ -340,10 +340,10 @@ If `.planning/` already contains the project and roadmap, start at the stage
 you actually need:
 
 ```text
-/vgsd-vibe discuss-phase --tool claude
-/vgsd-vibe plan-phase --tool codex --tool claude
-/vgsd-vibe execute-phase --tool codex --tool opencode
-/vgsd-vibe verify-work --tool codex
+/fvgsd-vibe discuss-phase --tool claude
+/fvgsd-vibe plan-phase --tool codex --tool claude
+/fvgsd-vibe execute-phase --tool codex --tool opencode
+/fvgsd-vibe verify-work --tool codex
 ```
 
 These are separate examples, not a command batch. An explicit entry at plan,
@@ -357,7 +357,7 @@ for legacy public command references such as `/gsd-plan-phase`,
 file, line, original token, and runtime-native replacement. With approval, run
 the reported `vibe entry migrate` action, review and commit that focused
 planning diff, and then prepare candidates. The migration is never folded into
-an unreviewed candidate base. Internal `gsd-tools` and `gsd-sdk` names, URLs,
+an unreviewed candidate base. Internal `fvgsd-tools` and `fvgsd-sdk` names, URLs,
 non-Markdown files, and unrelated prose are left untouched.
 
 ### Brownfield C: small fix, fast change, or investigation
@@ -366,11 +366,11 @@ General commands receive generated one-stage workflows, so they use the same
 candidate safety and promotion lifecycle:
 
 ```text
-/vgsd-vibe quick --tool codex
-/vgsd-vibe fast --tool claude
-/vgsd-vibe debug --tool codex --tool claude
-/vgsd-vibe audit-fix --tool opencode
-/vgsd-vibe code-review --tool gemini --tool claude
+/fvgsd-vibe quick --tool codex
+/fvgsd-vibe fast --tool claude
+/fvgsd-vibe debug --tool codex --tool claude
+/fvgsd-vibe audit-fix --tool opencode
+/fvgsd-vibe code-review --tool gemini --tool claude
 ```
 
 Choose one candidate for routine work or several candidates when alternative
@@ -384,7 +384,7 @@ Finish or resume any active run, switch the integration worktree to the branch
 that should receive the milestone, and start with:
 
 ```text
-/vgsd-vibe new-milestone --tool codex --tool claude
+/fvgsd-vibe new-milestone --tool codex --tool claude
 ```
 
 Both candidates start from the same promoted repository state. Promote the
@@ -396,7 +396,7 @@ Make sure the coordinator integration branch contains the reviewed brownfield
 baseline and is ready to publish, then start the run in multi-machine mode:
 
 ```text
-/vgsd-vibe execute-phase --multi-machine --remote origin --tool codex --tool opencode --tool claude
+/fvgsd-vibe execute-phase --multi-machine --remote origin --tool codex --tool opencode --tool claude
 ```
 
 Codex, OpenCode, and Claude can execute from independent clones on different
@@ -414,10 +414,10 @@ committed tracked changes, and passed relevant checks, return to the integration
 worktree and use the gateway again:
 
 ```text
-/vgsd-vibe status
-/vgsd-vibe complete <candidate-id>
-/vgsd-vibe candidates
-/vgsd-vibe promote <candidate-id>
+/fvgsd-vibe status
+/fvgsd-vibe complete <candidate-id>
+/fvgsd-vibe candidates
+/fvgsd-vibe promote <candidate-id>
 ```
 
 Promotion is never implied by workflow completion. With multiple candidates,
@@ -437,7 +437,7 @@ vibe init
 Initialization creates:
 
 ```text
-.planning-vibe/
+.planning-fvgsd-vibe/
 ├── config.yaml
 ├── routes/
 ├── workflows/
@@ -449,40 +449,40 @@ Initialization creates:
 └── state/
 ```
 
-It also adds `.vibe/` to `.git/info/exclude`. Candidate worktrees are stored under `.vibe/worktrees/`, so they cannot be committed accidentally. `.planning-vibe/` is not ignored: project routes and durable orchestration state are intended to be inspectable and committable.
+It also adds `.fvgsd-vibe/` to `.git/info/exclude`. Candidate worktrees are stored under `.fvgsd-vibe/worktrees/`, so they cannot be committed accidentally. `.planning-fvgsd-vibe/` is not ignored: project routes and durable orchestration state are intended to be inspectable and committable.
 
 Initialization is idempotent. It validates existing configuration, only creates
-missing bundled templates, and scans `vgsd/*` branches plus Git-local execution
+missing bundled templates, and scans `fvgsd/*` branches plus Git-local execution
 metadata. Any direct pre-Vibe work is recorded in
-`.planning-vibe/state/standalone-executions.json`.
+`.planning-fvgsd-vibe/state/standalone-executions.json`.
 
 Initialization itself does not rewrite GSD artifacts. Brownfield command
 namespace cleanup is a separate, explicit operation discovered by
 `vibe entry inspect <command> --runtime <runtime>` and applied with
 `vibe entry migrate <command> --runtime <runtime>` only after review.
 
-## vgsd execution-branch guard
+## fvgsd execution-branch guard
 
-Every public `vgsd` command begins with the same portable preflight. Installer
+Every public `fvgsd` command begins with the same portable preflight. Installer
 path conversion carries it to Claude Code, Gemini CLI, Codex, and the other
 supported runtimes.
 
 ```text
-vgsd command starts
+fvgsd command starts
   ├─ valid Vibe candidate → reuse candidate branch/worktree
   ├─ Vibe exists, not a candidate → block and require stage preparation
   ├─ matching standalone branch → reuse it
   ├─ standalone branch owned by another tool → block
-  └─ no Vibe setup → create vgsd/<runtime>/<command>/<execution-id>
+  └─ no Vibe setup → create fvgsd/<runtime>/<command>/<execution-id>
 ```
 
-The Vibe adapter supplies `VIBE_CANDIDATE_ID`, `VIBE_TOOL`, and `GSD_RUNTIME`
+The Vibe adapter supplies `VIBE_CANDIDATE_ID`, `VIBE_TOOL`, and `FVGSD_RUNTIME`
 to managed launches. The guard verifies those values against the candidate
 manifest, current branch, worktree path, tool assignment, and active candidate
 status. A branch name alone is not sufficient inside a Vibe-managed project.
 
 Standalone provenance is written below Git's common directory at
-`vgsd/executions/`. Raw runtime session IDs are hashed before storage. The
+`fvgsd/executions/`. Raw runtime session IDs are hashed before storage. The
 working tree is not dirtied by the metadata, and existing dirty files remain in
 place when Git switches to the new branch.
 
@@ -491,18 +491,18 @@ directory (this Codex example uses `.codex`; use `.claude` or `.gemini` for
 those installs):
 
 ```bash
-node "$HOME/.codex/get-shit-done/bin/gsd-tools.cjs" execution-branch inspect help --runtime codex
-node "$HOME/.codex/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure plan-phase --runtime codex
+node "$HOME/.codex/fvgsd/bin/fvgsd-tools.cjs" execution-branch inspect help --runtime codex
+node "$HOME/.codex/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure plan-phase --runtime codex
 ```
 
-Normally users do not run these directly; the installed `vgsd` command prompt
+Normally users do not run these directly; the installed `fvgsd` command prompt
 runs them before its workflow body.
 
 For a complete three-tool operating recipe using Gemini, Codex, and Claude Code, see [Multi-Tool Project-to-Milestone Walkthrough](MULTI-TOOL-WALKTHROUGH.md).
 
 ## Configuration
 
-The default `.planning-vibe/config.yaml` is:
+The default `.planning-fvgsd-vibe/config.yaml` is:
 
 ```yaml
 version: 1
@@ -511,7 +511,7 @@ default_route: cheap
 git:
   candidate_branches: true
   worktrees: auto
-  worktree_root: .vibe/worktrees
+  worktree_root: .fvgsd-vibe/worktrees
   promotion_strategy: fast-forward
   multi_machine: false
   remote: origin
@@ -699,7 +699,7 @@ vibe promote feature-014-execute-codex-003 --replace
 
 Replacement creates a new integration commit whose tree exactly matches the replacement candidate and whose parents preserve the current integration history and candidate history. VibeClaw never resets the integration branch and never silently blends two competing implementations. Replacement is blocked after a downstream stage has already been promoted.
 
-Dirty source changes block promotion. Changes inside `.planning-vibe/` are excluded from that check because live orchestration metadata is expected to evolve while candidates run.
+Dirty source changes block promotion. Changes inside `.planning-fvgsd-vibe/` are excluded from that check because live orchestration metadata is expected to evolve while candidates run.
 
 ## Complete example
 

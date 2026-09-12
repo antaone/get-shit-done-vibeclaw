@@ -75,7 +75,7 @@ function detectSubRepos(cwd) {
 /**
  * Remove stale gsd-* temp files/dirs older than maxAgeMs (default: 5 minutes).
  * Runs opportunistically before each new temp file write to prevent unbounded accumulation.
- * @param {string} prefix - filename prefix to match (e.g., 'gsd-')
+ * @param {string} prefix - filename prefix to match (e.g., 'fvgsd-')
  * @param {object} opts
  * @param {number} opts.maxAgeMs - max age in ms before removal (default: 5 min)
  * @param {boolean} opts.dirsOnly - if true, only remove directories (default: false)
@@ -85,20 +85,20 @@ function detectSubRepos(cwd) {
  * Created on first use. Keeps GSD temp files isolated from the system
  * temp directory so reap scans only GSD files (#1975).
  */
-const GSD_TEMP_DIR = path.join(require('os').tmpdir(), 'gsd');
+const FVGSD_TEMP_DIR = path.join(require('os').tmpdir(), 'gsd');
 
 function ensureGsdTempDir() {
-  platformEnsureDir(GSD_TEMP_DIR);
+  platformEnsureDir(FVGSD_TEMP_DIR);
 }
 
-function reapStaleTempFiles(prefix = 'gsd-', { maxAgeMs = 5 * 60 * 1000, dirsOnly = false } = {}) {
+function reapStaleTempFiles(prefix = 'fvgsd-', { maxAgeMs = 5 * 60 * 1000, dirsOnly = false } = {}) {
   try {
     ensureGsdTempDir();
     const now = Date.now();
-    const entries = fs.readdirSync(GSD_TEMP_DIR);
+    const entries = fs.readdirSync(FVGSD_TEMP_DIR);
     for (const entry of entries) {
       if (!entry.startsWith(prefix)) continue;
-      const fullPath = path.join(GSD_TEMP_DIR, entry);
+      const fullPath = path.join(FVGSD_TEMP_DIR, entry);
       try {
         const stat = fs.statSync(fullPath);
         if (now - stat.mtimeMs > maxAgeMs) {
@@ -128,7 +128,7 @@ function output(result, raw, rawValue) {
     if (json.length > 50000) {
       reapStaleTempFiles();
       ensureGsdTempDir();
-      const tmpPath = path.join(GSD_TEMP_DIR, `gsd-${Date.now()}.json`);
+      const tmpPath = path.join(FVGSD_TEMP_DIR, `fvgsd-${Date.now()}.json`);
       platformWriteSync(tmpPath, json);
       data = '@file:' + tmpPath;
     } else {
@@ -158,7 +158,7 @@ const ERROR_REASON = Object.freeze({
   CONFIG_NO_FILE: 'config_no_file',
   CONFIG_PARSE_FAILED: 'config_parse_failed',
   CONFIG_INVALID_KEY: 'config_invalid_key',
-  // SDK / gsd-tools dispatch
+  // SDK / fvgsd-tools dispatch
   SDK_FAIL_FAST: 'sdk_fail_fast',
   SDK_UNKNOWN_COMMAND: 'sdk_unknown_command',
   SDK_MISSING_ARG: 'sdk_missing_arg',
@@ -179,7 +179,7 @@ const ERROR_REASON = Object.freeze({
 
 /**
  * Process-level flag: when true, error() emits structured JSON to stderr
- * instead of plain "Error: <message>" text. Set by gsd-tools.cjs when the
+ * instead of plain "Error: <message>" text. Set by fvgsd-tools.cjs when the
  * CLI is invoked with `--json-errors`. Tests opt in to typed-IR error
  * assertions by passing that flag and parsing the JSON.
  *
@@ -280,8 +280,8 @@ function _deepMergeConfig(base, overlay) {
 function loadConfig(cwd, options = {}) {
   const activeWorkstream = Object.prototype.hasOwnProperty.call(options, 'workstream')
     ? options.workstream
-    : (process.env.GSD_WORKSTREAM || null);
-  // When GSD_WORKSTREAM is set, load root config first so workstream config
+    : (process.env.FVGSD_WORKSTREAM || null);
+  // When FVGSD_WORKSTREAM is set, load root config first so workstream config
   // can inherit from it. This prevents users from duplicating model_overrides,
   // workflow.*, etc. across every workstream config (#2714).
   const ws = activeWorkstream;
@@ -413,7 +413,7 @@ function loadConfig(cwd, options = {}) {
       if (!_warnedUnknownConfigKeys.has(warnKey)) {
         _warnedUnknownConfigKeys.add(warnKey);
         process.stderr.write(
-          `gsd-tools: warning: unknown config key(s) in .planning/config.json: ${unknownKeys.join(', ')} — these will be ignored\n`
+          `fvgsd-tools: warning: unknown config key(s) in .planning/config.json: ${unknownKeys.join(', ')} — these will be ignored\n`
         );
       }
     }
@@ -510,7 +510,7 @@ function loadConfig(cwd, options = {}) {
   } catch {
     // Fall back to ~/.gsd/defaults.json only for truly pre-project contexts (#1683)
     // If .planning/ exists, the project is initialized — just missing config.json.
-    // When GSD_WORKSTREAM is set and root config was loaded, the workstream config
+    // When FVGSD_WORKSTREAM is set and root config was loaded, the workstream config
     // doesn't exist — treat root config as the effective config for this workstream.
     if (fs.existsSync(planningDir(cwd, ws))) {
       if (rootParsed) {
@@ -521,7 +521,7 @@ function loadConfig(cwd, options = {}) {
       return defaults;
     }
     try {
-      const home = process.env.GSD_HOME || os.homedir();
+      const home = process.env.FVGSD_HOME || os.homedir();
       const globalDefaultsPath = path.join(home, '.gsd', 'defaults.json');
       const raw = platformReadSync(globalDefaultsPath);
       if (raw === null) throw new Error('missing');
@@ -626,9 +626,9 @@ function pruneOrphanedWorktrees(repoRoot) {
     const pruneResult = executeWorktreePrunePlan(plan);
     if (pruneResult && pruneResult.timedOut) {
       // AC2: surface structured warning instead of silently swallowing the timeout.
-      // Uses process.stderr.write to match the [gsd-tools] WARNING prefix style.
+      // Uses process.stderr.write to match the [fvgsd-tools] WARNING prefix style.
       process.stderr.write(
-        '[gsd-tools] WARNING: worktree health check degraded' +
+        '[fvgsd-tools] WARNING: worktree health check degraded' +
         ' — git worktree prune timed out after 10s.' +
         ' Orphaned worktree metadata may remain until the next successful run.\n'
       );
@@ -1089,17 +1089,17 @@ function getRoadmapPhaseInternal(cwd, phaseNum) {
 
 /**
  * Resolve the agents directory from the GSD install location.
- * gsd-tools.cjs lives at <configDir>/get-shit-done/bin/gsd-tools.cjs,
+ * fvgsd-tools.cjs lives at <configDir>/get-shit-done/bin/fvgsd-tools.cjs,
  * so agents/ is at <configDir>/agents/.
  *
- * GSD_AGENTS_DIR env var overrides the default path. Used in tests and for
- * installs where the agents directory is not co-located with gsd-tools.cjs.
+ * FVGSD_AGENTS_DIR env var overrides the default path. Used in tests and for
+ * installs where the agents directory is not co-located with fvgsd-tools.cjs.
  *
  * @returns {string} Absolute path to the agents directory
  */
 function getAgentsDir() {
-  if (process.env.GSD_AGENTS_DIR) {
-    return process.env.GSD_AGENTS_DIR;
+  if (process.env.FVGSD_AGENTS_DIR) {
+    return process.env.FVGSD_AGENTS_DIR;
   }
   // __dirname is get-shit-done/bin/lib/ → go up 3 levels to configDir
   return path.join(__dirname, '..', '..', '..', 'agents');
@@ -1109,8 +1109,8 @@ function getAgentsDir() {
  * Check which GSD agents are installed on disk.
  * Returns an object with installation status and details.
  *
- * Recognises both standard format (gsd-planner.md) and Copilot format
- * (gsd-planner.agent.md). Copilot renames agent files during install (#1512).
+ * Recognises both standard format (fvgsd-planner.md) and Copilot format
+ * (fvgsd-planner.agent.md). Copilot renames agent files during install (#1512).
  *
  * @returns {{ agents_installed: boolean, missing_agents: string[], installed_agents: string[], agents_dir: string }}
  */
@@ -1373,7 +1373,7 @@ function resolveModelInternal(cwd, agentType) {
  * without breaking back-compat.
  *
  * @param {string} cwd - Project directory.
- * @param {string} agentType - Agent name (e.g. 'gsd-verifier').
+ * @param {string} agentType - Agent name (e.g. 'fvgsd-verifier').
  * @param {number} [attempt=0] - 0 for first spawn; 1+ for escalation.
  *                               Capped internally at max_escalations.
  * @returns {string} Model alias (opus/sonnet/haiku) or full ID.
@@ -1902,7 +1902,7 @@ module.exports = {
   findProjectRoot,
   detectSubRepos,
   reapStaleTempFiles,
-  GSD_TEMP_DIR,
+  FVGSD_TEMP_DIR,
   MODEL_ALIAS_MAP,
   CONFIG_DEFAULTS,
   planningDir,

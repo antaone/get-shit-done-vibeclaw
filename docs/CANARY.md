@@ -20,13 +20,13 @@ A canary build NEVER becomes a `next` build directly, and a `next` build NEVER b
 
 ```bash
 # One-off invocation (npx)
-npx get-shit-done-cc@canary
+npx fvgsd@canary
 
 # Pin to the canary dist-tag globally
-npm install -g get-shit-done-cc@canary
+npm install -g fvgsd@canary
 
 # Pin to an exact canary version
-npm install -g get-shit-done-cc@1.50.0-canary.3
+npm install -g fvgsd@1.50.0-canary.3
 ```
 
 The CC installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
@@ -47,17 +47,17 @@ The CC installer's defensive purge rewrites stale config blocks left by older GS
 
 ```bash
 # Back to the current stable
-npm install -g get-shit-done-cc@latest
+npm install -g fvgsd@latest
 
 # Or to the next/RC train
-npm install -g get-shit-done-cc@next
+npm install -g fvgsd@next
 ```
 
 If you have a local project that interacted with canary-only features (for instance, an MVP-mode phase planned by 1.50.0-canary), the planner artifacts in `.planning/` remain valid — older GSD versions will just ignore the `**Mode:** mvp` field on phases.
 
 ## Reporting issues against canary
 
-File against the [issue tracker](https://github.com/gsd-build/get-shit-done/issues) with the `bug` template. Include the exact canary version (`get-shit-done-cc --version` reports it) so triage can route the report back into the `dev` stream rather than the stable stream.
+File against the [issue tracker](https://github.com/gsd-build/get-shit-done/issues) with the `bug` template. Include the exact canary version (`fvgsd --version` reports it) so triage can route the report back into the `dev` stream rather than the stable stream.
 
 ## Where to look next
 

@@ -3,7 +3,7 @@
 /**
  * Review Reviewer Selection Module
  *
- * Owns reviewer-selection policy projection for /vgsd:review:
+ * Owns reviewer-selection policy projection for /fvgsd:review:
  * explicit flags > --all > review.default_reviewers > all detected.
  */
 

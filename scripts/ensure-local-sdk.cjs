@@ -43,7 +43,7 @@ function ensureLocalSdk(options = {}) {
   if (fs.existsSync(paths.cli)) {
     return { built: false, reason: 'sdk_dist_present', cli: paths.cli };
   }
-  if (process.env.GSD_SKIP_LOCAL_SDK_BUILD === '1') {
+  if (process.env.FVGSD_SKIP_LOCAL_SDK_BUILD === '1') {
     return { built: false, reason: 'explicitly_skipped', cli: paths.cli };
   }
   if (!fs.existsSync(paths.packageJson) || !fs.existsSync(paths.lockfile)) {

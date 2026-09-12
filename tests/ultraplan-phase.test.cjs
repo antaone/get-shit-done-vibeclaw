@@ -57,7 +57,7 @@ describe('ultraplan-phase command references', () => {
 
   test('references the ultraplan-phase workflow', () => {
     assert.ok(
-      content.includes('@~/.claude/get-shit-done/workflows/ultraplan-phase.md'),
+      content.includes('@~/.claude/fvgsd/workflows/ultraplan-phase.md'),
       'command should reference ultraplan-phase workflow'
     );
   });
@@ -99,7 +99,7 @@ describe('ultraplan-phase workflow runtime gate', () => {
 
   test('error message references /gsd-plan-phase as local alternative', () => {
     assert.ok(
-      content.includes('gsd:plan-phase') || content.includes('gsd-plan-phase'),
+      content.includes('gsd:plan-phase') || content.includes('fvgsd-plan-phase'),
       'error message should direct users to /gsd-plan-phase as the local alternative'
     );
   });
@@ -110,13 +110,13 @@ describe('ultraplan-phase workflow runtime gate', () => {
 describe('ultraplan-phase workflow initialization', () => {
   const content = fs.readFileSync(WF_PATH, 'utf-8');
 
-  test('loads GSD phase context via gsd-sdk query init.plan-phase', () => {
-    assert.ok(content.includes('gsd-sdk query init.plan-phase'), 'workflow must load phase context via gsd-sdk query init.plan-phase');
+  test('loads GSD phase context via fvgsd-sdk query init.plan-phase', () => {
+    assert.ok(content.includes('fvgsd-sdk query init.plan-phase'), 'workflow must load phase context via fvgsd-sdk query init.plan-phase');
   });
 
   test('handles missing .planning directory', () => {
     assert.ok(
-      content.includes('gsd-new-project') || content.includes('/gsd-new-project') || content.includes('gsd:new-project'),
+      content.includes('fvgsd-new-project') || content.includes('/gsd-new-project') || content.includes('gsd:new-project'),
       'workflow should direct user to /gsd-new-project when .planning is missing'
     );
   });
@@ -166,7 +166,7 @@ describe('ultraplan-phase workflow return path', () => {
   });
 
   test('directs user to run /gsd-import --from after ultraplan completes', () => {
-    assert.ok(content.includes('gsd-import') || content.includes('gsd:import'), 'workflow must direct user to run /gsd:import --from with the saved file path');
+    assert.ok(content.includes('fvgsd-import') || content.includes('gsd:import'), 'workflow must direct user to run /gsd:import --from with the saved file path');
   });
 
   test('mentions the --from flag for gsd-import', () => {
@@ -175,7 +175,7 @@ describe('ultraplan-phase workflow return path', () => {
 
   test('return-path instructions appear before the /ultraplan trigger', () => {
     const ultraplanTriggerIndex = content.indexOf('/ultraplan');
-    const importIndex = content.indexOf('gsd-import');
+    const importIndex = content.indexOf('fvgsd-import');
     assert.ok(
       importIndex < ultraplanTriggerIndex,
       'return-path instructions (gsd-import) must appear before /ultraplan trigger so they are visible in scroll-back'

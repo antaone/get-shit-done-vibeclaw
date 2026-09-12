@@ -1,17 +1,17 @@
 /**
- * Bug #2851: plan-phase.md §13e calls bare `gsd-tools` — incomplete fix of #2245
+ * Bug #2851: plan-phase.md §13e calls bare `fvgsd-tools` — incomplete fix of #2245
  *
- * `gsd-tools` is NOT a published bin entry. The shipped invocation pattern is:
+ * `fvgsd-tools` is NOT a published bin entry. The shipped invocation pattern is:
  *
- *   node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" <subcommand> [args]
+ *   node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" <subcommand> [args]
  *
- * Some workflow markdown files leaked the bare `gsd-tools <subcommand>` form,
+ * Some workflow markdown files leaked the bare `fvgsd-tools <subcommand>` form,
  * which fails with `command not found` at runtime.
  *
  * This test parses every markdown file in get-shit-done/workflows/ structurally:
  * it tokenizes the content into fenced code blocks, then on each shell-block
- * line checks whether `gsd-tools` appears as a bare command (not preceded by
- * `node `, not part of the filename `gsd-tools.cjs`, not inside a comment).
+ * line checks whether `fvgsd-tools` appears as a bare command (not preceded by
+ * `node `, not part of the filename `fvgsd-tools.cjs`, not inside a comment).
  *
  * Per project rule: this test does NOT use grep/regex .includes() on raw file
  * content as the assertion surface. Instead, it splits into code-fenced blocks
@@ -66,7 +66,7 @@ function extractShellBlocks(content) {
 }
 
 /**
- * Check a single shell-block line for a bare `gsd-tools` command-position token.
+ * Check a single shell-block line for a bare `fvgsd-tools` command-position token.
  * Returns true if the line is a violation.
  */
 function lineHasBareGsdTools(line) {
@@ -83,7 +83,7 @@ function lineHasBareGsdTools(line) {
 
   // Unwrap command-substitution forms so the substituted command is in
   // command position. `$(cmd …)` and `` `cmd …` `` both run the inner string
-  // as a fresh command, so a bare `gsd-tools` inside them is just as broken
+  // as a fresh command, so a bare `fvgsd-tools` inside them is just as broken
   // as one at the start of the line. Iterate until stable for nested forms.
   let prev;
   do {
@@ -92,14 +92,14 @@ function lineHasBareGsdTools(line) {
   } while (l !== prev);
 
   // Tokenize on whitespace, semicolons, pipes, and && / ||
-  // Then walk tokens — a violation is a token that starts with `gsd-tools`
-  // followed by a word boundary (so `gsd-tools.cjs` does NOT match), and the
+  // Then walk tokens — a violation is a token that starts with `fvgsd-tools`
+  // followed by a word boundary (so `fvgsd-tools.cjs` does NOT match), and the
   // preceding token is NOT `node`.
   const segments = l.split(/(?:\s*(?:&&|\|\||;|\|)\s*)/);
   for (const seg of segments) {
     const tokens = seg.trim().split(/\s+/).filter(Boolean);
     if (tokens.length === 0) continue;
-    // Skip env var assignments at the start (FOO=bar gsd-tools …, tmp=1 gsd-tools …).
+    // Skip env var assignments at the start (FOO=bar fvgsd-tools …, tmp=1 fvgsd-tools …).
     // POSIX shell variable names are [A-Za-z_][A-Za-z0-9_]*; lowercase is valid.
     let cmdIdx = 0;
     while (cmdIdx < tokens.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(tokens[cmdIdx])) {
@@ -107,14 +107,14 @@ function lineHasBareGsdTools(line) {
     }
     if (cmdIdx >= tokens.length) continue;
     const cmd = tokens[cmdIdx];
-    // Match `gsd-tools` exactly (no extension), as command position.
-    if (cmd === 'gsd-tools') return true;
+    // Match `fvgsd-tools` exactly (no extension), as command position.
+    if (cmd === 'fvgsd-tools') return true;
   }
   return false;
 }
 
-describe('bug-2851: workflow files must not call bare `gsd-tools` (#2245 sweep regression)', () => {
-  test('no get-shit-done/workflows/*.md file contains a bare gsd-tools command', () => {
+describe('bug-2851: workflow files must not call bare `fvgsd-tools` (#2245 sweep regression)', () => {
+  test('no get-shit-done/workflows/*.md file contains a bare fvgsd-tools command', () => {
     const files = fs.readdirSync(WORKFLOWS_DIR).filter((f) => f.endsWith('.md'));
     assert.ok(files.length > 0, 'expected workflow files to exist');
 
@@ -135,8 +135,8 @@ describe('bug-2851: workflow files must not call bare `gsd-tools` (#2245 sweep r
     assert.deepStrictEqual(
       violations,
       [],
-      'Bare `gsd-tools` invocations found in workflow shell blocks. ' +
-        'Use `node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" <subcommand>` instead.\n' +
+      'Bare `fvgsd-tools` invocations found in workflow shell blocks. ' +
+        'Use `node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" <subcommand>` instead.\n' +
         violations.join('\n'),
     );
   });
@@ -151,7 +151,7 @@ describe('bug-2851: workflow files must not call bare `gsd-tools` (#2245 sweep r
           foundGapAnalysisCall = true;
           assert.match(
             line,
-            /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/gsd-tools\.cjs["']?\s+gap-analysis\b/,
+            /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/fvgsd-tools\.cjs["']?\s+gap-analysis\b/,
             `gap-analysis call must use canonical absolute-path invocation, got: ${line.trim()}`,
           );
         }

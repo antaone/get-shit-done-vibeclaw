@@ -14,7 +14,7 @@ import { GSDError, ErrorClassification, exitCodeFor } from '../errors.js';
 let tmpDir: string;
 
 beforeEach(async () => {
-  tmpDir = await mkdtemp(join(tmpdir(), 'gsd-cfg-'));
+  tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-cfg-'));
   await mkdir(join(tmpDir, '.planning'), { recursive: true });
 });
 
@@ -115,7 +115,7 @@ describe('resolveModel', () => {
       join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'balanced' }),
     );
-    const result = await resolveModel(['gsd-planner'], tmpDir);
+    const result = await resolveModel(['fvgsd-planner'], tmpDir);
     const data = result.data as Record<string, unknown>;
     expect(data).toHaveProperty('model');
     expect(data).toHaveProperty('profile', 'balanced');
@@ -128,7 +128,7 @@ describe('resolveModel', () => {
       join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'quality' }),
     );
-    const result = await resolveModel(['gsd-code-reviewer'], tmpDir);
+    const result = await resolveModel(['fvgsd-code-reviewer'], tmpDir);
     const data = result.data as Record<string, unknown>;
     expect(data).toHaveProperty('model', 'opus');
     expect(data).toHaveProperty('profile', 'quality');
@@ -165,10 +165,10 @@ describe('resolveModel', () => {
       join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({
         model_profile: 'balanced',
-        model_overrides: { 'gsd-planner': 'openai/gpt-5.4' },
+        model_overrides: { 'fvgsd-planner': 'openai/gpt-5.4' },
       }),
     );
-    const result = await resolveModel(['gsd-planner'], tmpDir);
+    const result = await resolveModel(['fvgsd-planner'], tmpDir);
     const data = result.data as Record<string, unknown>;
     expect(data).toHaveProperty('model', 'openai/gpt-5.4');
   });
@@ -182,7 +182,7 @@ describe('resolveModel', () => {
         resolve_model_ids: 'omit',
       }),
     );
-    const result = await resolveModel(['gsd-planner'], tmpDir);
+    const result = await resolveModel(['fvgsd-planner'], tmpDir);
     const data = result.data as Record<string, unknown>;
     expect(data).toHaveProperty('model', '');
   });
@@ -205,8 +205,8 @@ describe('resolveModel', () => {
       }),
     );
 
-    const planner = (await resolveModel(['gsd-planner'], tmpDir)).data as Record<string, unknown>;
-    const executor = (await resolveModel(['gsd-executor'], tmpDir)).data as Record<string, unknown>;
+    const planner = (await resolveModel(['fvgsd-planner'], tmpDir)).data as Record<string, unknown>;
+    const executor = (await resolveModel(['fvgsd-executor'], tmpDir)).data as Record<string, unknown>;
 
     expect(planner).toMatchObject({ model: 'gpt-5.5', profile: 'balanced', reasoning_effort: 'high' });
     expect(executor).toMatchObject({ model: 'gpt-5.3-codex', profile: 'balanced', reasoning_effort: 'medium' });
@@ -225,7 +225,7 @@ describe('resolveModel', () => {
       }),
     );
 
-    const executor = (await resolveModel(['gsd-executor'], tmpDir)).data as Record<string, unknown>;
+    const executor = (await resolveModel(['fvgsd-executor'], tmpDir)).data as Record<string, unknown>;
 
     expect(executor).toMatchObject({
       model: 'gpt-5.4',
@@ -250,7 +250,7 @@ describe('resolveModel', () => {
       }),
     );
 
-    const planner = (await resolveModel(['gsd-planner'], tmpDir)).data as Record<string, unknown>;
+    const planner = (await resolveModel(['fvgsd-planner'], tmpDir)).data as Record<string, unknown>;
 
     expect(planner).toMatchObject({
       model: 'openrouter/openai/gpt-5.5',
@@ -274,7 +274,7 @@ describe('resolveModel', () => {
         resolve_model_ids: true,
       }),
     );
-    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const result = await resolveModel(['fvgsd-executor'], tmpDir);
     expect(result.data).toEqual({ model: 'claude-sonnet-4-6', profile: 'balanced' });
   });
 
@@ -288,7 +288,7 @@ describe('resolveModel', () => {
         resolve_model_ids: true,
       }),
     );
-    const result = await resolveModel(['gsd-planner'], tmpDir);
+    const result = await resolveModel(['fvgsd-planner'], tmpDir);
     expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'quality' });
   });
 
@@ -302,8 +302,8 @@ describe('resolveModel', () => {
         resolve_model_ids: true,
       }),
     );
-    // gsd-verifier maps to 'haiku' under budget profile per model-catalog.json.
-    const result = await resolveModel(['gsd-verifier'], tmpDir);
+    // fvgsd-verifier maps to 'haiku' under budget profile per model-catalog.json.
+    const result = await resolveModel(['fvgsd-verifier'], tmpDir);
     expect(result.data).toEqual({ model: 'claude-haiku-4-5', profile: 'budget' });
   });
 
@@ -318,7 +318,7 @@ describe('resolveModel', () => {
         models: { execution: 'opus' },
       }),
     );
-    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const result = await resolveModel(['fvgsd-executor'], tmpDir);
     expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'budget' });
   });
 
@@ -331,7 +331,7 @@ describe('resolveModel', () => {
         runtime: 'claude',
       }),
     );
-    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const result = await resolveModel(['fvgsd-executor'], tmpDir);
     expect(result.data).toEqual({ model: 'sonnet', profile: 'balanced' });
   });
 
@@ -345,7 +345,7 @@ describe('resolveModel', () => {
         resolve_model_ids: 'omit',
       }),
     );
-    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const result = await resolveModel(['fvgsd-executor'], tmpDir);
     expect(result.data).toEqual({ model: '', profile: 'balanced' });
   });
 
@@ -357,33 +357,33 @@ describe('resolveModel', () => {
         model_profile: 'balanced',
         runtime: 'claude',
         resolve_model_ids: true,
-        model_overrides: { 'gsd-executor': 'custom-anthropic-id' },
+        model_overrides: { 'fvgsd-executor': 'custom-anthropic-id' },
       }),
     );
-    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const result = await resolveModel(['fvgsd-executor'], tmpDir);
     expect((result.data as Record<string, unknown>).model).toBe('custom-anthropic-id');
   });
 
   it('resolveModel uses workstream config when --ws is specified', async () => {
     const { resolveModel } = await import('./config-query.js');
-    // Root config: balanced profile → gsd-executor resolves to 'sonnet'
+    // Root config: balanced profile → fvgsd-executor resolves to 'sonnet'
     await writeFile(
       join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ model_profile: 'balanced' }),
     );
-    // Workstream config: quality profile → gsd-executor resolves to 'opus'
+    // Workstream config: quality profile → fvgsd-executor resolves to 'opus'
     await mkdir(join(tmpDir, '.planning', 'workstreams', 'frontend'), { recursive: true });
     await writeFile(
       join(tmpDir, '.planning', 'workstreams', 'frontend', 'config.json'),
       JSON.stringify({ model_profile: 'quality' }),
     );
 
-    const rootResult = await resolveModel(['gsd-executor'], tmpDir);
+    const rootResult = await resolveModel(['fvgsd-executor'], tmpDir);
     const rootData = rootResult.data as Record<string, unknown>;
     expect(rootData.profile).toBe('balanced');
     expect(rootData.model).toBe('sonnet');
 
-    const wsResult = await resolveModel(['gsd-executor'], tmpDir, 'frontend');
+    const wsResult = await resolveModel(['fvgsd-executor'], tmpDir, 'frontend');
     const wsData = wsResult.data as Record<string, unknown>;
     expect(wsData.profile).toBe('quality');
     expect(wsData.model).toBe('opus');
@@ -398,7 +398,7 @@ describe('MODEL_PROFILES', () => {
     // config-query.test.ts lives at sdk/src/query/ — three levels from repo root
     const repoRoot = resolve(fileURLToPath(new URL('../../../', import.meta.url)));
     const agentFiles = (await readdir(join(repoRoot, 'agents')))
-      .filter((f) => /^gsd-.*\.md$/.test(f))
+      .filter((f) => /^fvgsd-.*\.md$/.test(f))
       .map((f) => f.replace(/\.md$/, ''))
       .sort();
     expect(Object.keys(MODEL_PROFILES).sort()).toEqual(agentFiles);

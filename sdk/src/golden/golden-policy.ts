@@ -19,12 +19,12 @@ export function isMutationCanonicalCmd(canonical: string): boolean {
 }
 
 const MUTATION_DEFERRED_REASON =
-  'Listed in QUERY_MUTATION_COMMANDS — mutates `.planning/`, git, or profile files. Subprocess golden vs gsd-tools.cjs is covered where a tmp fixture or `--dry-run` exists in golden.integration.test.ts; otherwise handler parity lives in sdk/src/query/*-mutation.test.ts, commit.test.ts, phase-lifecycle.test.ts, workstream.test.ts, intel.test.ts, profile.test.ts, template.test.ts, docs-init.ts, or uat.test.ts as applicable.';
+  'Listed in QUERY_MUTATION_COMMANDS — mutates `.planning/`, git, or profile files. Subprocess golden vs fvgsd-tools.cjs is covered where a tmp fixture or `--dry-run` exists in golden.integration.test.ts; otherwise handler parity lives in sdk/src/query/*-mutation.test.ts, commit.test.ts, phase-lifecycle.test.ts, workstream.test.ts, intel.test.ts, profile.test.ts, template.test.ts, docs-init.ts, or uat.test.ts as applicable.';
 
-/** Registry commands with no `gsd-tools.cjs` analogue — cannot have subprocess JSON parity. */
+/** Registry commands with no `fvgsd-tools.cjs` analogue — cannot have subprocess JSON parity. */
 const NO_CJS_SUBPROCESS_REASON: Record<string, string> = {
   'phases.archive':
-    'No `gsd-tools.cjs` command for `phases archive` (SDK-only). Covered in sdk/src/query/phase-lifecycle.test.ts.',
+    'No `fvgsd-tools.cjs` command for `phases archive` (SDK-only). Covered in sdk/src/query/phase-lifecycle.test.ts.',
   'check.config-gates':
     'SDK-only decision-routing query (`.planning/research/decision-routing-audit.md` §3.3). Covered in sdk/src/query/config-gates.test.ts.',
   'check.phase-ready':
@@ -44,7 +44,7 @@ const NO_CJS_SUBPROCESS_REASON: Record<string, string> = {
   'check.ship-ready':
     'SDK-only decision-routing query (audit §3.9). Covered in sdk/src/query/check-ship-ready.test.ts.',
   'phase.list-plans':
-    'SDK-only listing helper for agents (no `gsd-tools.cjs` mirror). Covered in sdk/src/query/phase-list-queries.test.ts.',
+    'SDK-only listing helper for agents (no `fvgsd-tools.cjs` mirror). Covered in sdk/src/query/phase-list-queries.test.ts.',
   'phase.list-artifacts':
     'SDK-only artifact enumeration (no CJS mirror). Covered in sdk/src/query/phase-list-queries.test.ts.',
   'plan.task-structure':
@@ -52,7 +52,7 @@ const NO_CJS_SUBPROCESS_REASON: Record<string, string> = {
   'requirements.extract-from-plans':
     'SDK-only requirements aggregation (no CJS mirror). Covered in sdk/src/query/requirements-extract-from-plans.test.ts.',
   'commands':
-    'SDK-only registry introspection (no gsd-tools.cjs equivalent — the CJS layer has no self-describing verb). Covered in sdk/src/query/commands-list.test.ts. Closes #3121.',
+    'SDK-only registry introspection (no fvgsd-tools.cjs equivalent — the CJS layer has no self-describing verb). Covered in sdk/src/query/commands-list.test.ts. Closes #3121.',
   'phase.mvp-mode':
     'SDK-only MVP precedence resolver (CLI flag → roadmap → config → false). Centralizes the chain previously duplicated across plan-phase/execute-phase/verify-work/progress workflows. Covered in sdk/src/query/mvp.test.ts.',
   'task.is-behavior-adding':
@@ -76,7 +76,7 @@ function buildIntegrationCoveredSet(): Set<string> {
 }
 
 /**
- * Canonical commands with an explicit subprocess JSON check vs gsd-tools.cjs
+ * Canonical commands with an explicit subprocess JSON check vs fvgsd-tools.cjs
  * (golden.integration.test.ts + read-only-parity.integration.test.ts).
  */
 export const GOLDEN_PARITY_INTEGRATION_COVERED = buildIntegrationCoveredSet();

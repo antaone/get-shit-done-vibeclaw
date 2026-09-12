@@ -2,7 +2,7 @@
  * GSD Tools Tests - config.cjs
  *
  * CLI integration tests for config-ensure-section, config-set, and config-get
- * commands exercised through gsd-tools.cjs via execSync.
+ * commands exercised through fvgsd-tools.cjs via execSync.
  *
  * Requirements: TEST-13
  */
@@ -958,8 +958,8 @@ describe('config-path command (#2282)', () => {
     assert.ok(!result.output.includes('workstreams'), 'should not include workstreams in path');
   });
 
-  test('returns workstream config path when GSD_WORKSTREAM is set', () => {
-    const result = runGsdTools('config-path', tmpDir, { GSD_WORKSTREAM: 'my-stream' });
+  test('returns workstream config path when FVGSD_WORKSTREAM is set', () => {
+    const result = runGsdTools('config-path', tmpDir, { FVGSD_WORKSTREAM: 'my-stream' });
     assert.ok(result.success, `config-path failed: ${result.error}`);
     assert.ok(result.output.trim().replace(/\\/g, '/').includes('workstreams/my-stream/config.json'), `expected workstream config path, got: ${result.output}`);
   });

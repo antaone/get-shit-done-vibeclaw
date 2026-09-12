@@ -16,7 +16,7 @@ const {
   reapStaleTempFiles,
 } = require('../get-shit-done/bin/lib/core.cjs');
 
-const GSD_TEMP_DIR = path.join(os.tmpdir(), 'gsd');
+const FVGSD_TEMP_DIR = path.join(os.tmpdir(), 'gsd');
 
 // ─── Dedicated temp subdirectory ────────────────────────────────────────────
 
@@ -26,8 +26,8 @@ describe('dedicated gsd temp subdirectory', () => {
     // checking that reapStaleTempFiles scans the subdirectory.
 
     test('gsd temp subdirectory path is os.tmpdir()/gsd', () => {
-      // The GSD_TEMP_DIR constant should resolve to <tmpdir>/gsd
-      assert.strictEqual(GSD_TEMP_DIR, path.join(os.tmpdir(), 'gsd'));
+      // The FVGSD_TEMP_DIR constant should resolve to <tmpdir>/gsd
+      assert.strictEqual(FVGSD_TEMP_DIR, path.join(os.tmpdir(), 'gsd'));
     });
   });
 
@@ -35,13 +35,13 @@ describe('dedicated gsd temp subdirectory', () => {
     let testPrefix;
 
     beforeEach(() => {
-      testPrefix = `gsd-tempsub-test-${Date.now()}-`;
+      testPrefix = `fvgsd-tempsub-test-${Date.now()}-`;
       // Ensure the gsd subdirectory exists for test setup
-      fs.mkdirSync(GSD_TEMP_DIR, { recursive: true });
+      fs.mkdirSync(FVGSD_TEMP_DIR, { recursive: true });
     });
 
     test('removes stale files from gsd subdirectory', () => {
-      const stalePath = path.join(GSD_TEMP_DIR, `${testPrefix}stale.json`);
+      const stalePath = path.join(FVGSD_TEMP_DIR, `${testPrefix}stale.json`);
       fs.writeFileSync(stalePath, '{}');
       const oldTime = new Date(Date.now() - 10 * 60 * 1000);
       fs.utimesSync(stalePath, oldTime, oldTime);
@@ -52,7 +52,7 @@ describe('dedicated gsd temp subdirectory', () => {
     });
 
     test('preserves fresh files in gsd subdirectory', () => {
-      const freshPath = path.join(GSD_TEMP_DIR, `${testPrefix}fresh.json`);
+      const freshPath = path.join(FVGSD_TEMP_DIR, `${testPrefix}fresh.json`);
       fs.writeFileSync(freshPath, '{}');
 
       reapStaleTempFiles(testPrefix, { maxAgeMs: 5 * 60 * 1000 });
@@ -63,7 +63,7 @@ describe('dedicated gsd temp subdirectory', () => {
     });
 
     test('removes stale directories from gsd subdirectory', () => {
-      const staleDir = path.join(GSD_TEMP_DIR, `${testPrefix}dir`);
+      const staleDir = path.join(FVGSD_TEMP_DIR, `${testPrefix}dir`);
       fs.mkdirSync(staleDir, { recursive: true });
       const oldTime = new Date(Date.now() - 10 * 60 * 1000);
       fs.utimesSync(staleDir, oldTime, oldTime);
@@ -75,7 +75,7 @@ describe('dedicated gsd temp subdirectory', () => {
 
     test('creates gsd subdirectory if it does not exist', () => {
       // Use a unique nested path to avoid interfering with other tests
-      const uniqueSubdir = path.join(os.tmpdir(), `gsd-creation-test-${Date.now()}`);
+      const uniqueSubdir = path.join(os.tmpdir(), `fvgsd-creation-test-${Date.now()}`);
 
       // Verify it does not exist
       if (fs.existsSync(uniqueSubdir)) {
@@ -86,7 +86,7 @@ describe('dedicated gsd temp subdirectory', () => {
       // reapStaleTempFiles should not throw even if subdir does not exist
       // (it gets created or handled gracefully)
       assert.doesNotThrow(() => {
-        reapStaleTempFiles(`gsd-creation-test-${Date.now()}-`, { maxAgeMs: 0 });
+        reapStaleTempFiles(`fvgsd-creation-test-${Date.now()}-`, { maxAgeMs: 0 });
       });
     });
 

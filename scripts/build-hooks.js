@@ -24,27 +24,27 @@ const STAGE_DIR = path.join(HOOKS_DIR, `.dist-staging-${process.pid}`);
 
 // Hooks to copy (pure Node.js, no bundling needed)
 const HOOKS_TO_COPY = [
-  'gsd-check-update-worker.js',
-  'gsd-check-update.js',
-  'gsd-context-monitor.js',
-  'gsd-prompt-guard.js',
-  'gsd-read-guard.js',
-  'gsd-read-injection-scanner.js',
-  'gsd-statusline.js',
-  'gsd-update-banner.js',
-  'gsd-workflow-guard.js',
+  'fvgsd/check-update-worker.js',
+  'fvgsd/check-update.js',
+  'fvgsd/context-monitor.js',
+  'fvgsd/prompt-guard.js',
+  'fvgsd/read-guard.js',
+  'fvgsd/read-injection-scanner.js',
+  'fvgsd/statusline.js',
+  'fvgsd/update-banner.js',
+  'fvgsd/workflow-guard.js',
   // Community hooks (bash, opt-in via .planning/config.json hooks.community)
-  'gsd-session-state.sh',
-  'gsd-validate-commit.sh',
-  'gsd-phase-boundary.sh',
+  'fvgsd/session-state.sh',
+  'fvgsd/validate-commit.sh',
+  'fvgsd/phase-boundary.sh',
   // Graphify auto-update hook (#3347 / PR #3557 / #3579). Opt-in via
   // .planning/config.json graphify.auto_update; off by default.
-  'gsd-graphify-update.sh'
+  'fvgsd/graphify-update.sh'
 ];
 
 // Subdirectories under hooks/ whose contents must also ship to dist. Each
 // entry is copied as `hooks/<dir>/*` → `hooks/dist/<dir>/*` so detached
-// helpers (e.g. hooks/lib/gsd-graphify-rebuild.sh) resolve from the hook's
+// helpers (e.g. hooks/fvgsd/lib/graphify-rebuild.sh) resolve from the hook's
 // installed runtime path. See #3579.
 const HOOKS_SUBDIRS_TO_COPY = ['lib'];
 
@@ -178,7 +178,7 @@ function build() {
     renameAtomicWithRetry(stagedDest, dest, hook);
   }
 
-  // Copy whitelisted hook subdirectories (e.g. hooks/lib/) into dist so the
+  // Copy whitelisted hook subdirectories (e.g. hooks/fvgsd/lib/) into dist so the
   // installer's readdir-and-isFile loop in bin/install.js sees them and
   // detached hook helpers resolve from the installed runtime path (#3579).
   for (const subdir of HOOKS_SUBDIRS_TO_COPY) {

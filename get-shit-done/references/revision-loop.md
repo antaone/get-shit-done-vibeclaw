@@ -83,9 +83,9 @@ If issues persist after 3 revision cycles:
 
 | Workflow | Producer Agent | Checker Agent | Notes |
 |----------|---------------|---------------|-------|
-| plan-phase | gsd-planner | gsd-plan-checker | Revision prompt via planner-revision.md |
-| execute-phase | gsd-executor | gsd-verifier | Post-execution verification |
-| discuss-phase | orchestrator | gsd-plan-checker | Inline revision by orchestrator |
+| plan-phase | fvgsd-planner | fvgsd-plan-checker | Revision prompt via planner-revision.md |
+| execute-phase | fvgsd-executor | fvgsd-verifier | Post-execution verification |
+| discuss-phase | orchestrator | fvgsd-plan-checker | Inline revision by orchestrator |
 
 ---
 

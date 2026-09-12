@@ -2,7 +2,7 @@
  * GSD Tools Tests — detect-custom-files misses skills/ directory (#2942)
  *
  * After v1.39.0 skill consolidation (#2790), skills/ became a GSD-managed root.
- * GSD_MANAGED_DIRS was missing 'skills', so user-added skill directories like
+ * FVGSD_MANAGED_DIRS was missing 'skills', so user-added skill directories like
  * skills/custom-skill/SKILL.md were never walked and got silently destroyed
  * during /gsd-update.
  */
@@ -21,7 +21,7 @@ function sha256(content) {
 }
 
 /**
- * Write a fake gsd-file-manifest.json into configDir with the given file entries.
+ * Write a fake fvgsd-file-manifest.json into configDir with the given file entries.
  * Each entry is also written to disk so the directory structure exists.
  */
 function writeManifest(configDir, files) {
@@ -37,7 +37,7 @@ function writeManifest(configDir, files) {
     manifest.files[relPath] = sha256(content);
   }
   fs.writeFileSync(
-    path.join(configDir, 'gsd-file-manifest.json'),
+    path.join(configDir, 'fvgsd-file-manifest.json'),
     JSON.stringify(manifest, null, 2)
   );
 }
@@ -51,11 +51,11 @@ function writeCustomFile(configDir, relPath, content) {
   fs.writeFileSync(fullPath, content);
 }
 
-describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIRS (#2942)', () => {
+describe('detect-custom-files — skills/ directory missing from FVGSD_MANAGED_DIRS (#2942)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempDir('gsd-2942-skills-');
+    tmpDir = createTempDir('fvgsd-2942-skills-');
   });
 
   afterEach(() => {
@@ -65,7 +65,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
   // Test 1: detects custom skill in skills/<name>/SKILL.md
   test('detects custom skill file at skills/<name>/SKILL.md', () => {
     writeManifest(tmpDir, {
-      'skills/gsd-planner/SKILL.md': '# GSD Planner Skill\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
     // User-added custom skill — NOT in manifest
@@ -90,7 +90,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
   // Test 2: does not flag GSD-owned skills as custom (manifest-tracked path NOT in custom_files)
   test('does not flag GSD-owned skill as custom when it is tracked in manifest', () => {
     writeManifest(tmpDir, {
-      'skills/gsd-planner/SKILL.md': '# GSD Planner Skill\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
     // No extra files — only the manifest-tracked skill exists
@@ -105,7 +105,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
     const json = JSON.parse(result.output);
     assert.ok(Array.isArray(json.custom_files), 'custom_files should be an array');
     assert.ok(
-      !json.custom_files.includes('skills/gsd-planner/SKILL.md'),
+      !json.custom_files.includes('skills/fvgsd-planner/SKILL.md'),
       `GSD-owned skill should NOT be in custom_files; got: ${JSON.stringify(json.custom_files)}`
     );
   });
@@ -114,7 +114,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
   test('regression: still detects custom files in get-shit-done/workflows/', () => {
     writeManifest(tmpDir, {
       'get-shit-done/workflows/plan-phase.md': '# Plan Phase\n',
-      'skills/gsd-planner/SKILL.md': '# GSD Planner Skill\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
     writeCustomFile(tmpDir, 'get-shit-done/workflows/custom-workflow.md', '# My Custom Workflow\n');
@@ -136,7 +136,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
   // Test 4: custom_count matches custom_files.length
   test('custom_count matches custom_files.length when multiple custom skills exist', () => {
     writeManifest(tmpDir, {
-      'skills/gsd-planner/SKILL.md': '# GSD Planner Skill\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
     writeCustomFile(tmpDir, 'skills/test-custom/SKILL.md', '# Custom Skill One\n');
@@ -161,7 +161,7 @@ describe('detect-custom-files — skills/ directory missing from GSD_MANAGED_DIR
   // Test 5: manifest_found: true when manifest is present
   test('manifest_found is true when manifest is present', () => {
     writeManifest(tmpDir, {
-      'skills/gsd-planner/SKILL.md': '# GSD Planner Skill\n',
+      'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
     const result = runGsdTools(

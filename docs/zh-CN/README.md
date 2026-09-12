@@ -6,8 +6,8 @@
 
 **解决上下文衰减 —— 即 Claude 填充上下文窗口时发生的质量退化问题。**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
+[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
+[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -18,7 +18,7 @@
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 **支持 Mac、Windows 和 Linux。**
@@ -78,7 +78,7 @@ GSD 解决了这个问题。它是让 Claude Code 变得可靠的上下文工程
 ## 快速开始
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 安装程序会提示你选择：
@@ -86,20 +86,20 @@ npx get-shit-done-cc@latest
 2. **位置** —— 全局（所有项目）或本地（仅当前项目）
 
 验证安装：
-- Claude Code / Gemini: `/vgsd-help`
-- OpenCode: `/vgsd-help`
-- Kilo: `/vgsd-help`
-- Codex: `$vgsd-help`
+- Claude Code / Gemini: `/fvgsd-help`
+- OpenCode: `/fvgsd-help`
+- Kilo: `/fvgsd-help`
+- Codex: `$fvgsd-help`
 
 > [!NOTE]
-> Codex 安装使用技能（`skills/vgsd-*/SKILL.md`）而非自定义提示。
+> Codex 安装使用技能（`skills/fvgsd-*/SKILL.md`）而非自定义提示。
 
 ### 保持更新
 
 GSD 快速迭代。定期更新：
 
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 <details>
@@ -107,25 +107,25 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # 安装到 ~/.claude/
-npx get-shit-done-cc --claude --local    # 安装到 ./.claude/
+npx fvgsd --claude --global   # 安装到 ~/.claude/
+npx fvgsd --claude --local    # 安装到 ./.claude/
 
 # OpenCode
-npx get-shit-done-cc --opencode --global # 安装到 ~/.config/opencode/
+npx fvgsd --opencode --global # 安装到 ~/.config/opencode/
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # 安装到 ~/.gemini/
+npx fvgsd --gemini --global   # 安装到 ~/.gemini/
 
 # Kilo
-npx get-shit-done-cc --kilo --global     # 安装到 ~/.config/kilo/
-npx get-shit-done-cc --kilo --local      # 安装到 ./.kilo/
+npx fvgsd --kilo --global     # 安装到 ~/.config/kilo/
+npx fvgsd --kilo --local      # 安装到 ./.kilo/
 
 # Codex
-npx get-shit-done-cc --codex --global    # 安装到 ~/.codex/
-npx get-shit-done-cc --codex --local     # 安装到 ./.codex/
+npx fvgsd --codex --global    # 安装到 ~/.codex/
+npx fvgsd --codex --local     # 安装到 ./.codex/
 
 # 所有运行时
-npx get-shit-done-cc --all --global      # 安装到所有目录
+npx fvgsd --all --global      # 安装到所有目录
 ```
 
 使用 `--global`（`-g`）或 `--local`（`-l`）跳过位置提示。
@@ -196,12 +196,12 @@ claude --dangerously-skip-permissions
 
 ## 工作原理
 
-> **已有代码？** 先运行 `/vgsd-map-codebase`。它会生成并行代理分析你的技术栈、架构、约定和关注点。然后 `/vgsd-new-project` 就了解你的代码库了 —— 问题聚焦在你正在**添加**什么，规划会自动加载你的模式。
+> **已有代码？** 先运行 `/fvgsd-map-codebase`。它会生成并行代理分析你的技术栈、架构、约定和关注点。然后 `/fvgsd-new-project` 就了解你的代码库了 —— 问题聚焦在你正在**添加**什么，规划会自动加载你的模式。
 
 ### 1. 初始化项目
 
 ```
-/vgsd-new-project
+/fvgsd-new-project
 ```
 
 一条命令，一个流程。系统：
@@ -220,7 +220,7 @@ claude --dangerously-skip-permissions
 ### 2. 讨论阶段
 
 ```
-/vgsd-discuss-phase 1
+/fvgsd-discuss-phase 1
 ```
 
 **这是你塑造实现方式的地方。**
@@ -248,7 +248,7 @@ claude --dangerously-skip-permissions
 ### 3. 规划阶段
 
 ```
-/vgsd-plan-phase 1
+/fvgsd-plan-phase 1
 ```
 
 系统：
@@ -266,7 +266,7 @@ claude --dangerously-skip-permissions
 ### 4. 执行阶段
 
 ```
-/vgsd-execute-phase 1
+/fvgsd-execute-phase 1
 ```
 
 系统：
@@ -317,7 +317,7 @@ claude --dangerously-skip-permissions
 ### 5. 验证工作
 
 ```
-/vgsd-verify-work 1
+/fvgsd-verify-work 1
 ```
 
 **这是你确认它真的有效的地方。**
@@ -331,7 +331,7 @@ claude --dangerously-skip-permissions
 3. **自动诊断失败** —— 生成调试代理找根本原因
 4. **创建已验证的修复计划** —— 准备立即重新执行
 
-如果一切通过，继续。如果有东西坏了，不用手动调试 —— 只需再次运行 `/vgsd-execute-phase`，使用它创建的修复计划。
+如果一切通过，继续。如果有东西坏了，不用手动调试 —— 只需再次运行 `/fvgsd-execute-phase`，使用它创建的修复计划。
 
 **创建：** `{阶段号}-UAT.md`，如果发现问题则创建修复计划
 
@@ -340,31 +340,31 @@ claude --dangerously-skip-permissions
 ### 6. 循环 → 完成 → 下一个里程碑
 
 ```
-/vgsd-discuss-phase 2
-/vgsd-plan-phase 2
-/vgsd-execute-phase 2
-/vgsd-verify-work 2
+/fvgsd-discuss-phase 2
+/fvgsd-plan-phase 2
+/fvgsd-execute-phase 2
+/fvgsd-verify-work 2
 ...
-/vgsd-complete-milestone
-/vgsd-new-milestone
+/fvgsd-complete-milestone
+/fvgsd-new-milestone
 ```
 
 循环 **讨论 → 规划 → 执行 → 验证** 直到里程碑完成。
 
-如果你想在讨论期间更快速地输入，使用 `/vgsd-discuss-phase <n> --batch` 一次回答一组小问题，而不是一个一个来。使用 `--chain` 可以自动链式执行从讨论到规划+执行，中间不停顿。
+如果你想在讨论期间更快速地输入，使用 `/fvgsd-discuss-phase <n> --batch` 一次回答一组小问题，而不是一个一个来。使用 `--chain` 可以自动链式执行从讨论到规划+执行，中间不停顿。
 
 每个阶段都会获得你的输入（讨论）、适当的研究（规划）、干净的执行（执行）和人工验证（验证）。上下文保持新鲜。质量保持高水平。
 
-当所有阶段完成后，`/vgsd-complete-milestone` 归档里程碑并标记发布。
+当所有阶段完成后，`/fvgsd-complete-milestone` 归档里程碑并标记发布。
 
-然后 `/vgsd-new-milestone` 开始下一个版本 —— 与 `new-project` 相同的流程，但针对你现有的代码库。你描述接下来想构建什么，系统研究领域，你界定需求范围，它创建新的路线图。每个里程碑是一个干净的周期：定义 → 构建 → 发布。
+然后 `/fvgsd-new-milestone` 开始下一个版本 —— 与 `new-project` 相同的流程，但针对你现有的代码库。你描述接下来想构建什么，系统研究领域，你界定需求范围，它创建新的路线图。每个里程碑是一个干净的周期：定义 → 构建 → 发布。
 
 ---
 
 ### 快速模式
 
 ```
-/vgsd-quick
+/fvgsd-quick
 ```
 
 **用于不需要完整规划的临时任务。**
@@ -386,7 +386,7 @@ claude --dangerously-skip-permissions
 标志可组合：`--discuss --research --validate` 提供讨论 + 研究 + 计划检查 + 验证。
 
 ```
-/vgsd-quick
+/fvgsd-quick
 > 你想做什么？"在设置中添加深色模式切换"
 ```
 
@@ -483,58 +483,58 @@ lmn012o feat(08-02): 创建注册端点
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-new-project [--auto]` | 完整初始化：提问 → 研究 → 需求 → 路线图 |
-| `/vgsd-discuss-phase [N] [--auto] [--chain] [--power]` | 在规划前捕获实现决策（`--chain` 自动链式执行规划+执行，`--power` 文件批量输入） |
-| `/vgsd-plan-phase [N] [--auto]` | 阶段的研究 + 规划 + 验证 |
-| `/vgsd-execute-phase <N>` | 在并行波次中执行所有计划，完成后验证 |
-| `/vgsd-verify-work [N]` | 手动用户验收测试 ¹ |
-| `/vgsd-audit-milestone` | 验证里程碑达到了其完成定义 |
-| `/vgsd-complete-milestone` | 归档里程碑，标记发布 |
-| `/vgsd-new-milestone [name]` | 开始下一个版本：提问 → 研究 → 需求 → 路线图 |
+| `/fvgsd-new-project [--auto]` | 完整初始化：提问 → 研究 → 需求 → 路线图 |
+| `/fvgsd-discuss-phase [N] [--auto] [--chain] [--power]` | 在规划前捕获实现决策（`--chain` 自动链式执行规划+执行，`--power` 文件批量输入） |
+| `/fvgsd-plan-phase [N] [--auto]` | 阶段的研究 + 规划 + 验证 |
+| `/fvgsd-execute-phase <N>` | 在并行波次中执行所有计划，完成后验证 |
+| `/fvgsd-verify-work [N]` | 手动用户验收测试 ¹ |
+| `/fvgsd-audit-milestone` | 验证里程碑达到了其完成定义 |
+| `/fvgsd-complete-milestone` | 归档里程碑，标记发布 |
+| `/fvgsd-new-milestone [name]` | 开始下一个版本：提问 → 研究 → 需求 → 路线图 |
 
 ### 导航
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-progress` | 我在哪？接下来做什么？ |
-| `/vgsd-help` | 显示所有命令和使用指南 |
-| `/vgsd-update` | 更新 GSD 并预览变更日志 |
+| `/fvgsd-progress` | 我在哪？接下来做什么？ |
+| `/fvgsd-help` | 显示所有命令和使用指南 |
+| `/fvgsd-update` | 更新 GSD 并预览变更日志 |
 
 ### 现有代码库
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-map-codebase` | 在 new-project 之前分析现有代码库 |
+| `/fvgsd-map-codebase` | 在 new-project 之前分析现有代码库 |
 
 ### 阶段管理
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-phase` | 向路线图追加阶段 |
-| `/vgsd-phase --insert [N]` | 在阶段之间插入紧急工作 |
-| `/vgsd-phase --remove [N]` | 删除未来阶段，重新编号 |
-| `/vgsd-discuss-phase --assumptions [N]` | 规划前查看 Claude 的预期方法 |
-| `/vgsd-autonomous [--from N] [--to N] [--only N]` | 自主执行所有剩余阶段（`--to N` 执行到阶段 N 停止，`--only N` 只执行单个阶段） |
-| `/vgsd-manager --analyze-deps` | 检测阶段间依赖关系并建议 ROADMAP.md 的 `Depends on` 条目 |
+| `/fvgsd-phase` | 向路线图追加阶段 |
+| `/fvgsd-phase --insert [N]` | 在阶段之间插入紧急工作 |
+| `/fvgsd-phase --remove [N]` | 删除未来阶段，重新编号 |
+| `/fvgsd-discuss-phase --assumptions [N]` | 规划前查看 Claude 的预期方法 |
+| `/fvgsd-autonomous [--from N] [--to N] [--only N]` | 自主执行所有剩余阶段（`--to N` 执行到阶段 N 停止，`--only N` 只执行单个阶段） |
+| `/fvgsd-manager --analyze-deps` | 检测阶段间依赖关系并建议 ROADMAP.md 的 `Depends on` 条目 |
 
 ### 会话
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-pause-work` | 阶段中途停止时创建交接 |
-| `/vgsd-resume-work` | 从上次会话恢复 |
+| `/fvgsd-pause-work` | 阶段中途停止时创建交接 |
+| `/fvgsd-resume-work` | 从上次会话恢复 |
 
 ### 工具
 
 | 命令 | 作用 |
 |---------|--------------|
-| `/vgsd-settings` | 配置模型配置文件和工作流代理 |
-| `/vgsd-config --profile <profile>` | 切换模型配置文件（quality/balanced/budget/inherit） |
-| `/vgsd-capture [desc]` | 捕获想法留待后用 |
-| `/vgsd-capture --list` | 列出待处理事项 |
-| `/vgsd-debug [desc] [--diagnose]` | 带持久状态的系统化调试（`--diagnose` 仅诊断不修复） |
-| `/vgsd-quick [--full] [--discuss] [--research]` | 用 GSD 保证执行临时任务（`--full` 启用全部阶段，`--discuss` 先收集上下文，`--research` 规划前调查方法） |
-| `/vgsd-health [--repair]` | 验证 `.planning/` 目录完整性，用 `--repair` 自动修复 |
+| `/fvgsd-settings` | 配置模型配置文件和工作流代理 |
+| `/fvgsd-config --profile <profile>` | 切换模型配置文件（quality/balanced/budget/inherit） |
+| `/fvgsd-capture [desc]` | 捕获想法留待后用 |
+| `/fvgsd-capture --list` | 列出待处理事项 |
+| `/fvgsd-debug [desc] [--diagnose]` | 带持久状态的系统化调试（`--diagnose` 仅诊断不修复） |
+| `/fvgsd-quick [--full] [--discuss] [--research]` | 用 GSD 保证执行临时任务（`--full` 启用全部阶段，`--discuss` 先收集上下文，`--research` 规划前调查方法） |
+| `/fvgsd-health [--repair]` | 验证 `.planning/` 目录完整性，用 `--repair` 自动修复 |
 
 <sup>¹ 由 Reddit 用户 OracleGreyBeard 贡献</sup>
 
@@ -542,7 +542,7 @@ lmn012o feat(08-02): 创建注册端点
 
 ## 配置
 
-GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 期间配置或稍后用 `/vgsd-settings` 更新。完整配置模式、工作流开关、git 分支选项和每个代理的模型分解，请参阅[用户指南](USER-GUIDE.md#配置参考)。
+GSD 在 `.planning/config.json` 中存储项目设置。在 `/fvgsd-new-project` 期间配置或稍后用 `/fvgsd-settings` 更新。完整配置模式、工作流开关、git 分支选项和每个代理的模型分解，请参阅[用户指南](USER-GUIDE.md#配置参考)。
 
 ### 核心设置
 
@@ -563,10 +563,10 @@ GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 
 
 切换配置：
 ```
-/vgsd-config --profile budget
+/fvgsd-config --profile budget
 ```
 
-或通过 `/vgsd-settings` 配置。
+或通过 `/fvgsd-settings` 配置。
 
 ### 工作流代理
 
@@ -582,9 +582,9 @@ GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 
 | `security_enforcement` | `true` | 启用威胁模型安全验证 |
 | `response_language` | (无) | 代理响应的语言代码（如 `"zh"`、`"ja"`、`"ko"`） |
 
-使用 `/vgsd-settings` 切换这些，或每次调用时覆盖：
-- `/vgsd-plan-phase --skip-research`
-- `/vgsd-plan-phase --skip-verify`
+使用 `/fvgsd-settings` 切换这些，或每次调用时覆盖：
+- `/fvgsd-plan-phase --skip-research`
+- `/fvgsd-plan-phase --skip-verify`
 
 ### 执行
 
@@ -648,22 +648,22 @@ GSD 的代码库映射和分析命令读取文件以了解你的项目。**保�
 **安装后找不到命令？**
 - 重启运行时以重新加载命令/技能
 - 验证文件是否存在于 `~/.claude/commands/gsd/`（全局）或 `./.claude/commands/gsd/`（本地）
-- 对于 Codex，验证技能是否存在于 `~/.codex/skills/vgsd-*/SKILL.md`（全局）或 `./.codex/skills/vgsd-*/SKILL.md`（本地）
+- 对于 Codex，验证技能是否存在于 `~/.codex/skills/fvgsd-*/SKILL.md`（全局）或 `./.codex/skills/fvgsd-*/SKILL.md`（本地）
 
 **命令没有按预期工作？**
-- 运行 `/vgsd-help` 验证安装
-- 重新运行 `npx get-shit-done-cc` 重新安装
+- 运行 `/fvgsd-help` 验证安装
+- 重新运行 `npx fvgsd` 重新安装
 
 **更新到最新版本？**
 ```bash
-npx get-shit-done-cc@latest
+npx fvgsd@latest
 ```
 
 **使用 Docker 或容器化环境？**
 
 如果用波浪号路径（`~/.claude/...`）读取文件失败，在安装前设置 `CLAUDE_CONFIG_DIR`：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
 ```
 这确保使用绝对路径而不是 `~`，后者在容器中可能无法正确展开。
 
@@ -673,16 +673,16 @@ CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
 
 ```bash
 # 全局安装
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
+npx fvgsd --claude --global --uninstall
+npx fvgsd --opencode --global --uninstall
+npx fvgsd --kilo --global --uninstall
+npx fvgsd --codex --global --uninstall
 
 # 本地安装（当前项目）
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
+npx fvgsd --claude --local --uninstall
+npx fvgsd --opencode --local --uninstall
+npx fvgsd --kilo --local --uninstall
+npx fvgsd --codex --local --uninstall
 ```
 
 这删除所有 GSD 命令、代理、钩子和设置，同时保留你的其他配置。
@@ -691,7 +691,7 @@ npx get-shit-done-cc --codex --local --uninstall
 
 ## 社区移植
 
-OpenCode、Gemini CLI、Kilo 和 Codex 现在通过 `npx get-shit-done-cc` 原生支持。
+OpenCode、Gemini CLI、Kilo 和 Codex 现在通过 `npx fvgsd` 原生支持。
 
 这些社区移植开创了多运行时支持：
 

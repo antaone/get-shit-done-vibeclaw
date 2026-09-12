@@ -1,5 +1,5 @@
 ---
-name: vgsd:graphify
+name: fvgsd:graphify
 description: "Build, query, and inspect the project knowledge graph in .planning/graphs/"
 argument-hint: "[build|query <term>|status|diff]"
 allowed-tools:
@@ -9,19 +9,19 @@ requires: [config, fast, phase, update]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "graphify" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "graphify" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
 
 **STOP -- DO NOT READ THIS FILE. You are already reading it. This prompt was injected into your context by Claude Code's command system. Using the Read tool on this file wastes tokens. Begin executing Step 0 immediately.**
 
-**CJS-only (graphify):** `graphify` subcommands are not registered on `gsd-sdk query`. Use `node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `gsd-sdk query` where a handler exists.
+**CJS-only (graphify):** `graphify` subcommands are not registered on `fvgsd-sdk query`. Use `node $HOME/.claude/fvgsd/bin/fvgsd-tools.cjs graphify …` as documented in this command and in `docs/CLI-TOOLS.md`. Other tooling may still use `fvgsd-sdk query` where a handler exists.
 
 ## Step 0 -- Banner
 
@@ -37,7 +37,7 @@ Then proceed to Step 1.
 
 Check if graphify is enabled by reading `.planning/config.json` directly using the Read tool.
 
-**DO NOT use the gsd-tools config get-value command** -- it hard-exits on missing keys.
+**DO NOT use the fvgsd-tools config get-value command** -- it hard-exits on missing keys.
 
 1. Read `.planning/config.json` using the Read tool
 2. If the file does not exist: display the disabled message below and **STOP**
@@ -52,9 +52,9 @@ GSD > GRAPHIFY
 
 Knowledge graph is disabled. To activate:
 
-  node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs config-set graphify.enabled true
+  node $HOME/.claude/fvgsd/bin/fvgsd-tools.cjs config-set graphify.enabled true
 
-Then run /vgsd:graphify build to create the initial graph.
+Then run /fvgsd:graphify build to create the initial graph.
 ```
 
 ---
@@ -76,7 +76,7 @@ Parse `$ARGUMENTS` to determine the operation mode:
 ```
 GSD > GRAPHIFY
 
-Usage: /vgsd:graphify <mode>
+Usage: /fvgsd:graphify <mode>
 
 Modes:
   build           Build or rebuild the knowledge graph
@@ -90,13 +90,13 @@ Modes:
 Run:
 
 ```bash
-node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs graphify query <term>
+node $HOME/.claude/fvgsd/bin/fvgsd-tools.cjs graphify query <term>
 ```
 
 Parse the JSON output and display results:
 - If the output contains `"disabled": true`, display the disabled message from Step 1 and **STOP**
 - If the output contains `"error"` field, display the error message and **STOP**
-- If no nodes found, display: `No graph matches for '<term>'. Try /vgsd:graphify build to create or rebuild the graph.`
+- If no nodes found, display: `No graph matches for '<term>'. Try /fvgsd:graphify build to create or rebuild the graph.`
 - Otherwise, display matched nodes grouped by type, with edge relationships and confidence tiers (EXTRACTED/INFERRED/AMBIGUOUS)
 
 **STOP** after displaying results. Do not spawn an agent.
@@ -106,7 +106,7 @@ Parse the JSON output and display results:
 Run:
 
 ```bash
-node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs graphify status
+node $HOME/.claude/fvgsd/bin/fvgsd-tools.cjs graphify status
 ```
 
 Parse the JSON output and display:
@@ -130,7 +130,7 @@ Surface both so the agent can choose.
 Run:
 
 ```bash
-node $HOME/.claude/get-shit-done/bin/gsd-tools.cjs graphify diff
+node $HOME/.claude/fvgsd/bin/fvgsd-tools.cjs graphify diff
 ```
 
 Parse the JSON output and display:
@@ -148,7 +148,7 @@ If no snapshot exists, suggest running `build` twice (first to create, second to
 Run the pre-flight check first:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" graphify build
+node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" graphify build
 ```
 
 Parse the JSON output:
@@ -171,8 +171,8 @@ graphify update . \
   && cp graphify-out/graph.json .planning/graphs/graph.json \
   && cp graphify-out/graph.html .planning/graphs/graph.html \
   && cp graphify-out/GRAPH_REPORT.md .planning/graphs/GRAPH_REPORT.md \
-  && node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" graphify build snapshot \
-  && node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" graphify status
+  && node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" graphify build snapshot \
+  && node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" graphify status
 ```
 
 Do NOT pass `run_in_background: true`. Typical builds complete in 15-60 seconds and the entire chain must run foreground.
@@ -190,7 +190,7 @@ If the chain succeeds:
 
 ## MVP-Mode Node Rendering
 
-**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `gsd-sdk query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
+**MVP-mode rendering.** When a phase has `**Mode:** mvp` in ROADMAP.md (resolved via `fvgsd-sdk query roadmap.get-phase --pick mode`), render its graph node with two distinct visual signals:
 
 1. **Distinct fill color.** Use `#22c55e` (green) for MVP-mode phase nodes. Standard phases keep the default fill color. Two-channel signaling (color + label) handles color-blind and grayscale renders.
 2. **`MVP` label suffix.** Append ` (MVP)` to the node's label text. Example: a phase originally labeled `Phase 1: User Auth` renders as `Phase 1: User Auth (MVP)`.
@@ -207,4 +207,4 @@ When the phase mode is null/absent, render with the standard color and label —
 2. DO NOT pass `run_in_background: true` for the build chain -- the operation is fast and must complete in the foreground.
 3. DO NOT modify graph files directly -- always go through `graphify update .` and the snapshot CLI.
 4. DO NOT skip the config gate check.
-5. DO NOT use `gsd-tools config get-value` for the config gate -- it exits on missing keys.
+5. DO NOT use `fvgsd-tools config get-value` for the config gate -- it exits on missing keys.

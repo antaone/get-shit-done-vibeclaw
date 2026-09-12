@@ -47,7 +47,7 @@ describe('plan-phase UI-SPEC missing behavior', () => {
     const text = fs.readFileSync(workflowPath, 'utf8');
     const hasRecommendationPattern =
       text.includes('Recommended next step') &&
-      text.includes('gsd-ui-phase');
+      text.includes('fvgsd-ui-phase');
     assert.ok(
       hasRecommendationPattern,
       'plan-phase.md must include a "Recommended next step" recommendation for /gsd-ui-phase when UI-SPEC.md is missing'

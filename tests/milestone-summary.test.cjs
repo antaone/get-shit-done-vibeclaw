@@ -117,7 +117,7 @@ describe('milestone-summary workflow', () => {
     const content = fs.readFileSync(workflowPath, 'utf-8');
     assert.ok(
       content.includes('state record-session') || content.includes('state.record-session'),
-      'should update STATE.md via state record-session (CJS or gsd-sdk query)'
+      'should update STATE.md via state record-session (CJS or fvgsd-sdk query)'
     );
   });
 
@@ -205,7 +205,7 @@ describe('milestone-summary fixture-based artifact discovery', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-ms-test-'));
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-ms-test-'));
   });
 
   afterEach(() => {

@@ -3,8 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-describe('gsd-planner reachability_check step', () => {
-  const plannerPath = path.join(__dirname, '..', 'agents', 'gsd-planner.md');
+describe('fvgsd-planner reachability_check step', () => {
+  const plannerPath = path.join(__dirname, '..', 'agents', 'fvgsd-planner.md');
   let content;
 
   test('planner file exists', () => {

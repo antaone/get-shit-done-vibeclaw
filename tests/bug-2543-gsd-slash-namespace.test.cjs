@@ -16,7 +16,7 @@
  *
  * Exceptions:
  *   - CHANGELOG.md: historical entries document commands under their original names.
- *   - gsd-sdk / gsd-tools identifiers: never rewritten (not slash commands).
+ *   - fvgsd-sdk / fvgsd-tools identifiers: never rewritten (not slash commands).
  */
 
 const { test, describe } = require('node:test');
@@ -134,8 +134,8 @@ describe('slash-command namespace invariant (#3443)', () => {
         'transformer must be a no-op when input is already canonical');
     });
 
-    test('does not rewrite gsd-sdk or gsd-tools (not slash commands)', () => {
-      const input = 'Run /gsd-sdk query and /gsd-tools init.';
+    test('does not rewrite fvgsd-sdk or fvgsd-tools (not slash commands)', () => {
+      const input = 'Run /fvgsd-sdk query and /fvgsd-tools init.';
       assert.strictEqual(transformContent(input, liveCmdNames), input,
         'transformer must leave non-command identifiers alone');
     });
@@ -149,11 +149,11 @@ describe('slash-command namespace invariant (#3443)', () => {
 
   test('transformer leaves non-command identifiers untouched', () => {
     const { transformContent } = require(path.join(ROOT, 'scripts', 'fix-slash-commands.cjs'));
-    const sample = 'Use /gsd-sdk query and node bin/gsd-tools.cjs';
+    const sample = 'Use /fvgsd-sdk query and node bin/fvgsd-tools.cjs';
     assert.strictEqual(
       transformContent(sample, cmdNames),
       sample,
-      'gsd-sdk and gsd-tools are not slash commands and must remain untouched'
+      'fvgsd-sdk and fvgsd-tools are not slash commands and must remain untouched'
     );
   });
 });

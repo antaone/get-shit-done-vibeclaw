@@ -333,8 +333,8 @@ async function cmdExtractMessages(projectArg, options, raw, overridePath) {
     sessions = sessions.slice(0, options.limit);
   }
 
-  reapStaleTempFiles('gsd-pipeline-', { dirsOnly: true });
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-pipeline-'));
+  reapStaleTempFiles('fvgsd-pipeline-', { dirsOnly: true });
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-pipeline-'));
   const outputPath = path.join(tmpDir, 'extracted-messages.jsonl');
 
   let sessionsProcessed = 0;
@@ -512,8 +512,8 @@ async function cmdProfileSample(overridePath, options, raw) {
     }
   }
 
-  reapStaleTempFiles('gsd-profile-', { dirsOnly: true });
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-profile-'));
+  reapStaleTempFiles('fvgsd-profile-', { dirsOnly: true });
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-profile-'));
   const outputPath = path.join(tmpDir, 'profile-sample.jsonl');
   for (const msg of allMessages) {
     fs.appendFileSync(outputPath, JSON.stringify(msg) + '\n');

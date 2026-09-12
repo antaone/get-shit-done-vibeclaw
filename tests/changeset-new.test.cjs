@@ -1,5 +1,5 @@
 'use strict';
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert/strict');
@@ -15,7 +15,7 @@ const { generateFragmentName, scaffoldFragment, parseFragment } = (() => {
 })();
 
 let tmp;
-before(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-new-changeset-')); });
+before(() => { tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-new-changeset-')); });
 after(() => { fs.rmSync(tmp, { recursive: true, force: true }); });
 
 describe('changeset new: name generator + scaffold writer (#2975)', () => {

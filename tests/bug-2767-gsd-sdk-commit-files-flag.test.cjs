@@ -1,5 +1,5 @@
 /**
- * Bug #2767: Workflows pass paths positionally to `gsd-sdk query commit`.
+ * Bug #2767: Workflows pass paths positionally to `fvgsd-sdk query commit`.
  *
  * Runtime behavior under the buggy form (paths positional, no `--files`):
  *   1. positional path tokens are joined into the commit subject (commit.ts:110); and
@@ -16,7 +16,7 @@
  * regardless of any trailing comment. There is no required marker (`# message-only`
  * or otherwise); the absence of positional path tokens is the sole signal.
  *
- * Primary test: invoke the actual `gsd-sdk query commit[-to-subrepo]` binary
+ * Primary test: invoke the actual `fvgsd-sdk query commit[-to-subrepo]` binary
  * against a real tmp git project and assert the runtime behavior. Supplementary
  * test: a doc-lint that scans every shipped .md file to catch regressions of
  * the 50-file invocation cleanup landed in this PR. The behavioral tests are
@@ -41,7 +41,7 @@ function git(projectDir, args) {
 }
 
 /**
- * Invoke `gsd-sdk query <subcommand> <...args>` against a project dir.
+ * Invoke `fvgsd-sdk query <subcommand> <...args>` against a project dir.
  * Returns { exitCode, stdout, stderr, json } where json is the parsed handler
  * payload (the SDK prints a single JSON object to stdout for query handlers).
  */
@@ -54,7 +54,7 @@ function runSdkQuery(subcommand, args, projectDir) {
     stdout = execFileSync(process.execPath, [SDK_CLI, ...argv], {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env, GSD_SESSION_KEY: '' },
+      env: { ...process.env, FVGSD_SESSION_KEY: '' },
     });
   } catch (err) {
     exitCode = err.status ?? 1;
@@ -84,11 +84,11 @@ function gitFilesAt(projectDir) {
 
 // ─── Behavioral SDK tests ────────────────────────────────────────────────────
 
-describe('bug #2767 (behavioral): gsd-sdk query commit --files', () => {
+describe('bug #2767 (behavioral): fvgsd-sdk query commit --files', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempGitProject('gsd-2767-');
+    tmpDir = createTempGitProject('fvgsd-2767-');
     fs.writeFileSync(path.join(tmpDir, 'foo.md'), 'foo body\n');
     fs.writeFileSync(path.join(tmpDir, 'bar.md'), 'bar body\n');
     // .planning/ change that MUST NOT leak into the commit when --files is used.
@@ -171,7 +171,7 @@ describe('bug #2767 (behavioral): commit-to-subrepo requires --files', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = createTempGitProject('gsd-2767-sub-');
+    tmpDir = createTempGitProject('fvgsd-2767-sub-');
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
       JSON.stringify({ sub_repos: ['vendor/lib'] }, null, 2),
@@ -205,7 +205,7 @@ describe('bug #2767 (behavioral): commit-to-subrepo requires --files', () => {
 // landed by this PR — without it, a future contributor adding a new workflow
 // could reintroduce the positional form silently. allow-test-rule: doc-text
 // invocations cannot be exercised end-to-end (they are agent-prompt strings
-// rendered into chat, not invoked by gsd-tools.cjs), so a textual guard is
+// rendered into chat, not invoked by fvgsd-tools.cjs), so a textual guard is
 // the only available enforcement layer.
 
 const SCAN_DIRS = ['agents', 'commands', 'get-shit-done', 'docs', 'scripts'];
@@ -230,9 +230,9 @@ function extractInvocations(filePath) {
   const lines = text.split(/\r?\n/);
   const invocations = [];
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/(gsd-sdk\s+query\s+commit(?:-to-subrepo)?\b.*)$/);
+    const m = lines[i].match(/(fvgsd-sdk\s+query\s+commit(?:-to-subrepo)?\b.*)$/);
     if (!m) continue;
-    const tail = m[1].match(/^gsd-sdk\s+query\s+commit(?:-to-subrepo)?(.?)/);
+    const tail = m[1].match(/^fvgsd-sdk\s+query\s+commit(?:-to-subrepo)?(.?)/);
     if (tail && tail[1] === '`') continue;
     let cmd = m[1];
     let j = i;
@@ -301,7 +301,7 @@ describe('bug #2767 (supplementary doc-lint): no positional invocations in shipp
     assert.ok(allInvocations.length > 0, 'lint scanned 0 invocations — globs are wrong');
   });
 
-  test('every gsd-sdk query commit invocation either uses --files or has no path args', () => {
+  test('every fvgsd-sdk query commit invocation either uses --files or has no path args', () => {
     const broken = allInvocations.filter(({ cmd }) => !isWellFormed(cmd));
     if (broken.length > 0) {
       const detail = broken.map(({ file, line, cmd }) => {
@@ -309,7 +309,7 @@ describe('bug #2767 (supplementary doc-lint): no positional invocations in shipp
         return `  ${rel}:${line}\n    ${cmd}`;
       }).join('\n');
       assert.fail(
-        `${broken.length} \`gsd-sdk query commit\` invocation(s) pass paths positionally.\n` +
+        `${broken.length} \`fvgsd-sdk query commit\` invocation(s) pass paths positionally.\n` +
         `The behavioral test above proves what goes wrong at runtime; this lint catches\n` +
         `regressions in shipped workflow markdown.\n${detail}`
       );

@@ -398,7 +398,7 @@ export const stateSnapshot: QueryHandler = async (_args, projectDir, workstream)
   // Parse numeric fields
   const totalPhases = totalPhasesRaw ? parseInt(totalPhasesRaw, 10) : null;
   const totalPlansInPhase = totalPlansRaw ? parseInt(totalPlansRaw, 10) : null;
-  // Match gsd-tools `cmdStateSnapshot` (state.cjs): parseInt(progressRaw.replace('%',''), 10) — NaN → null
+  // Match fvgsd-tools `cmdStateSnapshot` (state.cjs): parseInt(progressRaw.replace('%',''), 10) — NaN → null
   let progressPercent: number | null = null;
   if (progressRaw) {
     const n = parseInt(progressRaw.replace(/%/g, ''), 10);

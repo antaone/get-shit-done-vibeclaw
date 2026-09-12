@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GSDError, ErrorClassification } from './errors.js';
 
-export type LegacySdkAsset = 'gsd-tools' | 'core-cjs';
+export type LegacySdkAsset = 'fvgsd-tools' | 'core-cjs';
 
 export interface LegacySdkAssetResolution {
   asset: LegacySdkAsset;
@@ -21,7 +21,7 @@ interface LegacySdkCompatibilityDeps {
 }
 
 export const BUNDLED_GSD_TOOLS_PATH = fileURLToPath(
-  new URL('../../get-shit-done/bin/gsd-tools.cjs', import.meta.url),
+  new URL('../../get-shit-done/bin/fvgsd-tools.cjs', import.meta.url),
 );
 
 export const BUNDLED_CORE_CJS_PATH = fileURLToPath(
@@ -37,12 +37,12 @@ export const BUNDLED_GSD_AGENTS_DIR = fileURLToPath(
 );
 
 const LEGACY_ASSET_SUBPATH: Record<LegacySdkAsset, string> = {
-  'gsd-tools': 'gsd-tools.cjs',
+  'fvgsd-tools': 'fvgsd-tools.cjs',
   'core-cjs': join('lib', 'core.cjs'),
 };
 
 const BUNDLED_LEGACY_ASSET_PATH: Record<LegacySdkAsset, string> = {
-  'gsd-tools': BUNDLED_GSD_TOOLS_PATH,
+  'fvgsd-tools': BUNDLED_GSD_TOOLS_PATH,
   'core-cjs': BUNDLED_CORE_CJS_PATH,
 };
 
@@ -99,13 +99,13 @@ export function probeLegacySdkAsset(
 }
 
 /**
- * Resolve the legacy `gsd-tools.cjs` executable path through the SDK Package Seam Module.
+ * Resolve the legacy `fvgsd-tools.cjs` executable path through the SDK Package Seam Module.
  *
  * Preserves historical behavior: if no probe exists, return the final fallback path so
  * downstream subprocess errors still show a concrete location.
  */
 export function resolveGsdToolsPath(projectDir: string, deps: LegacySdkCompatibilityDeps = {}): string {
-  const resolution = probeLegacySdkAsset('gsd-tools', projectDir, deps);
+  const resolution = probeLegacySdkAsset('fvgsd-tools', projectDir, deps);
   return resolution.path ?? resolution.fallbackPath;
 }
 
@@ -113,7 +113,7 @@ function missingLegacyCoreMessage(resolution: LegacySdkAssetResolution): string 
   return [
     'state load: get-shit-done/bin/lib/core.cjs not found.',
     `Checked: ${resolution.probes.join(', ')}`,
-    'Install GSD (e.g. npm i -g get-shit-done-cc) or clone with get-shit-done next to the SDK.',
+    'Install GSD (e.g. npm i -g fvgsd) or clone with get-shit-done next to the SDK.',
   ].join(' ');
 }
 

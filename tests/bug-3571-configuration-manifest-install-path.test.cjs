@@ -1,12 +1,12 @@
 /**
  * Regression test for #3571: configuration.generated.cjs used the source
- * checkout sdk/shared path only, which breaks installed gsd-tools.cjs because
+ * checkout sdk/shared path only, which breaks installed fvgsd-tools.cjs because
  * runtime installs copy get-shit-done/ but not sdk/.
  */
 
 'use strict';
 
-process.env.GSD_TEST_MODE = '1';
+process.env.FVGSD_TEST_MODE = '1';
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -21,7 +21,7 @@ const SDK_SHARED_DIR = path.join(REPO_ROOT, 'sdk', 'shared');
 const { install } = require('../bin/install.js');
 
 const { createTempDir } = require('./helpers.cjs');
-const makeTmpDir = () => createTempDir('gsd-3571-');
+const makeTmpDir = () => createTempDir('fvgsd-3571-');
 
 function silenceConsole(fn) {
   const original = {
@@ -52,8 +52,8 @@ describe('bug #3571: configuration generated manifests resolve in install layout
     savedHome = process.env.HOME;
     // On Windows, os.homedir() reads USERPROFILE; install() resolves via it.
     savedUserProfile = process.env.USERPROFILE;
-    savedExplicitConfigDir = process.env.GSD_EXPLICIT_CONFIG_DIR;
-    delete process.env.GSD_EXPLICIT_CONFIG_DIR;
+    savedExplicitConfigDir = process.env.FVGSD_EXPLICIT_CONFIG_DIR;
+    delete process.env.FVGSD_EXPLICIT_CONFIG_DIR;
   });
 
   afterEach(() => {
@@ -61,9 +61,9 @@ describe('bug #3571: configuration generated manifests resolve in install layout
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
     if (savedExplicitConfigDir === undefined) {
-      delete process.env.GSD_EXPLICIT_CONFIG_DIR;
+      delete process.env.FVGSD_EXPLICIT_CONFIG_DIR;
     } else {
-      process.env.GSD_EXPLICIT_CONFIG_DIR = savedExplicitConfigDir;
+      process.env.FVGSD_EXPLICIT_CONFIG_DIR = savedExplicitConfigDir;
     }
     fs.rmSync(tmpRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });

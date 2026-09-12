@@ -1,5 +1,5 @@
 ---
-name: vgsd:config
+name: fvgsd:config
 description: Configure GSD settings — workflow toggles, advanced knobs, integrations, and model profile
 argument-hint: "[--advanced | --integrations | --profile <name>]"
 allowed-tools:
@@ -11,12 +11,12 @@ requires: [code-review, review, settings]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "config" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "config" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -38,14 +38,14 @@ Mode routing:
 | (none) | Interactive 5-question common-case config prompt | settings |
 | --advanced | Power-user knobs: planning, execution, discussion, cross-AI, git, runtime | settings-advanced |
 | --integrations | API keys (Brave/Firecrawl/Exa), review CLI routing, agent skills | settings-integrations |
-| --profile &lt;name&gt; | Switch model profile without interactive prompt | gsd-sdk config-set-model-profile |
+| --profile &lt;name&gt; | Switch model profile without interactive prompt | fvgsd-sdk config-set-model-profile |
 
 </routing>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/settings.md
-@~/.claude/get-shit-done/workflows/settings-advanced.md
-@~/.claude/get-shit-done/workflows/settings-integrations.md
+@~/.claude/fvgsd/workflows/settings.md
+@~/.claude/fvgsd/workflows/settings-advanced.md
+@~/.claude/fvgsd/workflows/settings-integrations.md
 </execution_context>
 
 <context>
@@ -55,10 +55,10 @@ Parse the first token of $ARGUMENTS:
 - If it is `--advanced`: strip the flag, execute settings-advanced workflow
 - If it is `--integrations`: strip the flag, execute settings-integrations workflow
 - If it starts with `--profile`: extract the profile name (remainder after `--profile`), then:
-  1. **Pre-flight check (#2439):** verify `gsd-sdk` is on PATH via `command -v gsd-sdk`.
+  1. **Pre-flight check (#2439):** verify `fvgsd-sdk` is on PATH via `command -v fvgsd-sdk`.
      If absent, emit the install hint `Install GSD via 'npm i -g get-shit-done'` and stop —
-     do NOT invoke `gsd-sdk` directly (avoids the opaque `command not found: gsd-sdk` failure).
-  2. Run: `gsd-sdk query config-set-model-profile <profile-name> --raw` and display the output verbatim.
+     do NOT invoke `fvgsd-sdk` directly (avoids the opaque `command not found: fvgsd-sdk` failure).
+  2. Run: `fvgsd-sdk query config-set-model-profile <profile-name> --raw` and display the output verbatim.
 - Otherwise: execute settings workflow (no argument needed)
 </context>
 

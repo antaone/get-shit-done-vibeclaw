@@ -19,18 +19,18 @@ Read all files referenced by the invoking prompt's execution_context before star
 Bootstrap via manager init:
 
 ```bash
-INIT=$(gsd-sdk query init.manager)
+INIT=$(fvgsd-sdk query init.manager)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_count`, `in_progress_count`, `phases`, `recommended_actions`, `all_complete`, `waiting_signal`, `manager_flags`, and the optional trio `queued_milestone_version`, `queued_milestone_name`, `queued_phases` (added in SDK fix `2495-2496-2497` — may be absent on older SDK versions, treat missing as empty).
 
 `manager_flags` contains per-step passthrough flags from config:
-- `manager_flags.discuss` — appended to `/vgsd:discuss-phase` args (e.g. `"--auto --analyze"`)
+- `manager_flags.discuss` — appended to `/fvgsd:discuss-phase` args (e.g. `"--auto --analyze"`)
 - `manager_flags.plan` — appended to plan agent init command
 - `manager_flags.execute` — appended to execute agent init command
 
-These are empty strings by default. Set via: `gsd-sdk query config-set manager.flags.discuss "--auto --analyze"`
+These are empty strings by default. Set via: `fvgsd-sdk query config-set manager.flags.discuss "--auto --analyze"`
 
 **If error:** Display the error message and exit.
 
@@ -60,7 +60,7 @@ Proceed to dashboard step.
 **Every time this step is reached**, re-read state from disk to pick up changes from background agents:
 
 ```bash
-INIT=$(gsd-sdk query init.manager)
+INIT=$(fvgsd-sdk query init.manager)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -135,8 +135,8 @@ If `all_complete` is true:
 ╚══════════════════════════════════════════════════════════════╝
 
 All {phase_count} phases done. Ready for final steps:
-  → /vgsd:verify-work — run acceptance testing
-  → /vgsd:complete-milestone — archive and wrap up
+  → /fvgsd:verify-work — run acceptance testing
+  → /fvgsd:complete-milestone — archive and wrap up
 ```
 
 
@@ -146,8 +146,8 @@ Ask user via AskUserQuestion:
 - **options:** "Verify work" / "Complete milestone" / "Exit manager"
 
 Handle responses:
-- "Verify work": `Skill(skill="vgsd-verify-work")`  then loop to dashboard.
-- "Complete milestone": `Skill(skill="vgsd-complete-milestone")` then exit.
+- "Verify work": `Skill(skill="fvgsd-verify-work")`  then loop to dashboard.
+- "Complete milestone": `Skill(skill="fvgsd-complete-milestone")` then exit.
 - "Exit manager": Go to exit step.
 
 **If NOT all_complete**, build compound options from `recommended_actions`:
@@ -224,7 +224,7 @@ When the user selects a compound option:
 2. **Then run the inline discuss:**
 
 ```
-Skill(skill="vgsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
+Skill(skill="fvgsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step (background agents continue running).
@@ -234,7 +234,7 @@ After discuss completes, loop back to dashboard step (background agents continue
 Discussion is interactive — needs user input. Run inline with any configured flags:
 
 ```
-Skill(skill="vgsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
+Skill(skill="fvgsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step.
@@ -255,7 +255,7 @@ Goal: {goal}
 Manager flags: {manager_flags.plan}
 
 Run the plan-phase Skill with any configured manager flags:
-Skill(skill=\"vgsd-plan-phase\", args=\"{N} --auto {manager_flags.plan}\")
+Skill(skill=\"fvgsd-plan-phase\", args=\"{N} --auto {manager_flags.plan}\")
 
 This delegates to the full plan-phase pipeline including local patches, research, plan-checker, and all quality gates.
 
@@ -289,7 +289,7 @@ Goal: {goal}
 Manager flags: {manager_flags.execute}
 
 Run the execute-phase Skill with any configured manager flags:
-Skill(skill=\"vgsd-execute-phase\", args=\"{N} {manager_flags.execute}\")
+Skill(skill=\"fvgsd-execute-phase\", args=\"{N} {manager_flags.execute}\")
 
 This delegates to the full execute-phase pipeline including local patches, branching, wave-based execution, verification, and all quality gates.
 
@@ -335,7 +335,7 @@ Classify the error:
   - **question:** "Phase {N} failed — permission denied for `{tool_or_command}`. Want me to add it to settings.local.json so it's allowed?"
   - **options:** "Add permission and retry" / "Run this phase inline instead" / "Skip and continue"
   - "Add permission and retry": Use `Skill(skill="update-config")` to add the permission to `settings.local.json`, then re-spawn the background agent. Loop to dashboard.
-  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="vgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="vgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
 
 **Other errors** (git lock, file conflict, logic error, etc.):
@@ -343,7 +343,7 @@ Classify the error:
   - **question:** "Background agent for Phase {N} encountered an issue: {error}. What next?"
   - **options:** "Retry" / "Run inline instead" / "Skip and continue" / "View details"
   - "Retry": Re-spawn the same background agent. Loop to dashboard.
-  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="vgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="vgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
   - "View details": Read STATE.md blockers section, display, then re-present options.
 
@@ -363,11 +363,11 @@ Display final status with progress bar:
  {milestone_version} — {milestone_name}
  {PROGRESS_BAR} {progress_pct}%  ({completed_count}/{phase_count} phases)
 
- Resume anytime: /vgsd:manager
+ Resume anytime: /fvgsd:manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Note:** Any background agents still running will continue to completion. Their results will be visible on next `/vgsd:manager` or `/vgsd:progress` invocation.
+**Note:** Any background agents still running will continue to completion. Their results will be visible on next `/fvgsd:manager` or `/fvgsd:progress` invocation.
 
 </step>
 

@@ -103,7 +103,7 @@ export async function streamExtractMessages(
 }
 
 /**
- * Port of `cmdExtractMessages` — same JSON result as `gsd-tools extract-messages` (stdout object;
+ * Port of `cmdExtractMessages` — same JSON result as `fvgsd-tools extract-messages` (stdout object;
  * message lines are in `output_file` JSONL, not inlined).
  */
 export async function runExtractMessages(
@@ -206,7 +206,7 @@ export async function runExtractMessages(
     sessions = sessions.slice(0, options.limit);
   }
 
-  const tmpDir = mkdtempSync(join(tmpdir(), 'gsd-pipeline-'));
+  const tmpDir = mkdtempSync(join(tmpdir(), 'fvgsd-pipeline-'));
   const outputPath = join(tmpDir, 'extracted-messages.jsonl');
   appendFileSync(outputPath, '');
 

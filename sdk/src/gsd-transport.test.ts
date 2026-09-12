@@ -97,7 +97,7 @@ describe('GSDTransport', () => {
 
     const adapters = {
       dispatchNative: vi.fn(async () => {
-        throw new Error('gsd-tools timed out after 500ms: state load');
+        throw new Error('fvgsd-tools timed out after 500ms: state load');
       }),
       execSubprocessJson: vi.fn(async () => ({ ok: 'fallback' })),
       execSubprocessRaw: vi.fn(async () => 'fallback-raw'),

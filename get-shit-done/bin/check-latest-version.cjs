@@ -2,10 +2,10 @@
 'use strict';
 
 /**
- * Deterministic latest-version check for /vgsd-update (#2992).
+ * Deterministic latest-version check for /fvgsd-update (#2992).
  *
- * The /vgsd-update workflow's check_latest_version step was previously
- * prescribed in LLM-driven prose ("run `npm view get-shit-done-cc
+ * The /fvgsd-update workflow's check_latest_version step was previously
+ * prescribed in LLM-driven prose ("run `npm view fvgsd
  * version`"). The executing model could shortcut the prescription and
  * invent npm queries against wrong-shaped names (`@get-shit-done/cli`,
  * `get-shit-done-cli`, `gsd`), all of which 404 or — worse — return an
@@ -24,7 +24,7 @@ const { execNpm } = require('./lib/shell-command-projection.cjs');
 
 // Hardcoded. Do not parameterise — the whole point of this script is that
 // the package name is not a runtime choice for the caller.
-const PACKAGE_NAME = 'get-shit-done-cc';
+const PACKAGE_NAME = 'fvgsd';
 
 const CHECK_REASON = Object.freeze({
   OK: 'ok',
@@ -43,7 +43,7 @@ function checkLatestVersion(opts = {}) {
   // Windows shell-flag policy and timeout default). The injection point
   // remains spawnSync-shaped for test compatibility — the adapter below
   // translates { exitCode } → { status } so the consumer logic is unchanged.
-  // Bounded at 15s so a hung registry doesn't block /vgsd-update (#2993 CR).
+  // Bounded at 15s so a hung registry doesn't block /fvgsd-update (#2993 CR).
   const defaultSpawn = () => {
     const r = execNpm(['view', PACKAGE_NAME, 'version'], { timeout: 15_000 });
     return {

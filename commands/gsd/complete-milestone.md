@@ -1,6 +1,6 @@
 ---
 type: prompt
-name: vgsd:complete-milestone
+name: fvgsd:complete-milestone
 description: Archive completed milestone and prepare for next version
 argument-hint: <version>
 allowed-tools:
@@ -11,12 +11,12 @@ requires: [audit-milestone, discuss-phase, execute-phase, new-milestone, phase, 
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" execution-branch ensure "complete-milestone" --runtime __VGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "complete-milestone" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
 - If `allowed` is `false`, stop and show its `message` and `hint`.
-- If the hint names `vgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
+- If the hint names `fvgsd-vibe`, offer to route the requested command through that installed Vibe control surface instead of leaving the user with terminal-only steps.
 - If `action` is `created` or `adopted`, tell the user which `branch` is active once.
 - For `reused` or `inspected`, continue silently.
 </execution_branch_guard>
@@ -31,8 +31,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @~/.claude/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @~/.claude/get-shit-done/templates/milestone-archive.md (archive template)
+- @~/.claude/fvgsd/workflows/complete-milestone.md (main workflow)
+- @~/.claude/fvgsd/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>
@@ -54,10 +54,10 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 0. **Check for audit:**
 
    - Look for `.planning/v{{version}}-MILESTONE-AUDIT.md`
-   - If missing or stale: recommend `/vgsd:audit-milestone` first
+   - If missing or stale: recommend `/fvgsd:audit-milestone` first
    - If audit status is `gaps_found`: recommend closing the gaps inline
      (the audit output already enumerates them — insert closure phases
-     via `/vgsd:phase --insert <N>` plus the standard
+     via `/fvgsd:phase --insert <N>` plus the standard
      discuss/plan/execute chain) before proceeding.
    - If audit status is `passed`: proceed to step 1
 
@@ -65,14 +65,14 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
    ## Pre-flight Check
 
    {If no v{{version}}-MILESTONE-AUDIT.md:}
-   ⚠ No milestone audit found. Run `/vgsd:audit-milestone` first to verify
+   ⚠ No milestone audit found. Run `/fvgsd:audit-milestone` first to verify
    requirements coverage, cross-phase integration, and E2E flows.
 
    {If audit has gaps:}
    ⚠ Milestone audit found gaps. The audit output already enumerates the
    unsatisfied requirements, cross-phase issues, and broken flows — insert
-   a closure phase per gap with `/vgsd:phase --insert <N>` and run the
-   standard `/vgsd:discuss-phase` → `/vgsd:plan-phase` → `/vgsd:execute-phase`
+   a closure phase per gap with `/fvgsd:phase --insert <N>` and run the
+   standard `/fvgsd:discuss-phase` → `/fvgsd:plan-phase` → `/fvgsd:execute-phase`
    chain. Or proceed anyway to accept the gaps as tech debt.
 
    {If audit passed:}
@@ -126,7 +126,7 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
    - Ask about pushing tag
 
 8. **Offer next steps:**
-   - `/vgsd:new-milestone` — start next milestone (questioning → research → requirements → roadmap)
+   - `/fvgsd:new-milestone` — start next milestone (questioning → research → requirements → roadmap)
 
 </process>
 
@@ -150,5 +150,5 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 - **Archive before deleting:** Always create archive files before updating/deleting originals
 - **One-line summary:** Collapsed milestone in ROADMAP.md should be single line with link
 - **Context efficiency:** Archive keeps ROADMAP.md and REQUIREMENTS.md constant size per milestone
-- **Fresh requirements:** Next milestone starts with `/vgsd:new-milestone` which includes requirements definition
+- **Fresh requirements:** Next milestone starts with `/fvgsd:new-milestone` which includes requirements definition
   </critical_rules>

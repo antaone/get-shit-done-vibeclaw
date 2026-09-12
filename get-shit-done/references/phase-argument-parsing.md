@@ -9,12 +9,12 @@ From `$ARGUMENTS`:
 - Extract flags (prefixed with `--`)
 - Remaining text is description (for insert/add commands)
 
-## Using gsd-tools
+## Using fvgsd-tools
 
 The `find-phase` command handles normalization and validation in one step:
 
 ```bash
-PHASE_INFO=$(gsd-sdk query find-phase "${PHASE}")
+PHASE_INFO=$(fvgsd-sdk query find-phase "${PHASE}")
 ```
 
 Returns JSON with:
@@ -45,7 +45,7 @@ fi
 Use `roadmap get-phase` to validate phase exists:
 
 ```bash
-PHASE_CHECK=$(gsd-sdk query roadmap.get-phase "${PHASE}" --pick found)
+PHASE_CHECK=$(fvgsd-sdk query roadmap.get-phase "${PHASE}" --pick found)
 if [ "$PHASE_CHECK" = "false" ]; then
   echo "ERROR: Phase ${PHASE} not found in roadmap"
   exit 1
@@ -57,5 +57,5 @@ fi
 Use `find-phase` for directory lookup:
 
 ```bash
-PHASE_DIR=$(gsd-sdk query find-phase "${PHASE}" --raw)
+PHASE_DIR=$(fvgsd-sdk query find-phase "${PHASE}" --raw)
 ```

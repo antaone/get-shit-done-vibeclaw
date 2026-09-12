@@ -29,7 +29,7 @@ const assert = require('node:assert/strict');
 const {
   parseStateMd,
   formatGsdState,
-} = require('../hooks/gsd-statusline.js');
+} = require('../hooks/fvgsd/statusline.js');
 
 // ─── parseStateMd: new lifecycle fields ─────────────────────────────────────
 

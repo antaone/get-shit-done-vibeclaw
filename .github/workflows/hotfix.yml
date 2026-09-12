@@ -17,7 +17,7 @@ name: Hotfix Release
 # finalize:
 #   - install-smoke gate (cross-platform, parity with release.yml/release-sdk.yml)
 #   - Bundles SDK as both loose tree (sdk/dist/cli.js) and recoverable tarball
-#     (sdk-bundle/gsd-sdk.tgz) — parity with release-sdk.yml so a hotfix shipped
+#     (sdk-bundle/fvgsd-sdk.tgz) — parity with release-sdk.yml so a hotfix shipped
 #     during the @gsd-build-token outage carries the same payload shape.
 #   - Publishes to @latest, tags vX.YY.Z, re-points @next → vX.YY.Z, opens
 #     merge-back PR.
@@ -306,9 +306,9 @@ jobs:
         env:
           VERSION: ${{ inputs.version }}
         run: |
-          EXISTING=$(npm view get-shit-done-cc@"$VERSION" version 2>/dev/null || true)
+          EXISTING=$(npm view fvgsd@"$VERSION" version 2>/dev/null || true)
           if [ -n "$EXISTING" ]; then
-            echo "::warning::get-shit-done-cc@${VERSION} is already on the registry — entering reconciliation mode (skip publish, continue with tag/release/PR/dist-tag)."
+            echo "::warning::fvgsd@${VERSION} is already on the registry — entering reconciliation mode (skip publish, continue with tag/release/PR/dist-tag)."
             echo "skip_publish=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip_publish=false" >> "$GITHUB_OUTPUT"
@@ -339,7 +339,7 @@ jobs:
             exit 1
           fi
           mkdir -p ../sdk-bundle
-          mv "$TARBALL" ../sdk-bundle/gsd-sdk.tgz
+          mv "$TARBALL" ../sdk-bundle/fvgsd-sdk.tgz
           cd ..
           ls -la sdk-bundle/
 
@@ -359,7 +359,7 @@ jobs:
           }
           NODE
 
-      - name: Verify CC tarball will contain sdk-bundle/gsd-sdk.tgz
+      - name: Verify CC tarball will contain sdk-bundle/fvgsd-sdk.tgz
         run: |
           set -e
           TARBALL=$(npm pack --ignore-scripts 2>/dev/null | tail -1)
@@ -367,11 +367,11 @@ jobs:
             echo "::error::npm pack produced no tarball"
             exit 1
           fi
-          if ! tar -tzf "$TARBALL" | grep -q "package/sdk-bundle/gsd-sdk.tgz"; then
-            echo "::error::CC tarball is missing package/sdk-bundle/gsd-sdk.tgz"
+          if ! tar -tzf "$TARBALL" | grep -q "package/sdk-bundle/fvgsd-sdk.tgz"; then
+            echo "::error::CC tarball is missing package/sdk-bundle/fvgsd-sdk.tgz"
             exit 1
           fi
-          echo "✅ CC tarball contains sdk-bundle/gsd-sdk.tgz"
+          echo "✅ CC tarball contains sdk-bundle/fvgsd-sdk.tgz"
           rm -f "$TARBALL"
 
       - name: Dry-run publish validation
@@ -409,7 +409,7 @@ jobs:
           VERSION: ${{ inputs.version }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm dist-tag add "get-shit-done-cc@${VERSION}" next
+          npm dist-tag add "fvgsd@${VERSION}" next
           echo "✅ next dist-tag re-pointed to v${VERSION} (matches latest)"
 
       - name: Create GitHub Release (idempotent)
@@ -455,7 +455,7 @@ jobs:
         run: |
           PUBLISHED="NOT_FOUND"
           for delay in 5 10 20 30 45; do
-            PUBLISHED=$(npm view get-shit-done-cc@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
+            PUBLISHED=$(npm view fvgsd@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
             if [ "$PUBLISHED" = "$VERSION" ]; then
               break
             fi
@@ -466,12 +466,12 @@ jobs:
             echo "::error::Version $VERSION did not appear on the registry within timeout"
             exit 1
           fi
-          LATEST_VER=$(npm view get-shit-done-cc dist-tags.latest 2>/dev/null || echo "NOT_FOUND")
+          LATEST_VER=$(npm view fvgsd dist-tags.latest 2>/dev/null || echo "NOT_FOUND")
           if [ "$LATEST_VER" != "$VERSION" ]; then
             echo "::error::dist-tag 'latest' resolves to '$LATEST_VER', expected '$VERSION'"
             exit 1
           fi
-          echo "✓ Verified: get-shit-done-cc@$VERSION is live on @latest"
+          echo "✓ Verified: fvgsd@$VERSION is live on @latest"
 
       - name: Summary
         env:
@@ -489,7 +489,7 @@ jobs:
               echo "- Published to npm as \`latest\`"
               echo "- \`next\` dist-tag re-pointed to v${VERSION}"
               echo "- Tagged \`v${VERSION}\` (anchor for the next hotfix's cherry-pick base)"
-              echo "- SDK bundled at \`sdk-bundle/gsd-sdk.tgz\` inside CC tarball"
+              echo "- SDK bundled at \`sdk-bundle/fvgsd-sdk.tgz\` inside CC tarball"
               echo "- Merge-back PR opened against main"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

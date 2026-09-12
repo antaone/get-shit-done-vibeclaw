@@ -66,7 +66,7 @@ function parseRetryAfter(body: string): number | undefined {
 /**
  * Query-handler wrapper for `agent.classify-failure`. Reads the body to
  * classify from the joined positional args (typed via `--`) so workflow
- * shell snippets can pass it as `gsd-sdk query agent.classify-failure -- "$BODY"`.
+ * shell snippets can pass it as `fvgsd-sdk query agent.classify-failure -- "$BODY"`.
  */
 export async function agentClassifyFailure(
   args: string[],

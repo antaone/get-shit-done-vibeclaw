@@ -29,13 +29,13 @@ const PROJECTION_PATH = path.join(
 );
 
 function loadInstaller() {
-  process.env.GSD_TEST_MODE = '1';
+  process.env.FVGSD_TEST_MODE = '1';
   delete require.cache[require.resolve(INSTALL_PATH)];
   return require(INSTALL_PATH);
 }
 
 function createTempHome() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-home-'));
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-home-'));
 }
 
 function cleanup(dir) {

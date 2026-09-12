@@ -22,7 +22,7 @@
 ```
   ┌──────────────────────────────────────────────────┐
   │                   新建项目                        │
-  │  /vgsd-new-project                                │
+  │  /fvgsd-new-project                                │
   │  提问 -> 研究 -> 需求 -> 路线图                    │
   └─────────────────────────┬────────────────────────┘
                             │
@@ -30,19 +30,19 @@
              │      每个阶段:              │
              │                            │
              │  ┌────────────────────┐    │
-             │  │ /vgsd-discuss-phase │    │  <- 锁定偏好
+             │  │ /fvgsd-discuss-phase │    │  <- 锁定偏好
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /vgsd-plan-phase    │    │  <- 研究 + 规划 + 验证
+             │  │ /fvgsd-plan-phase    │    │  <- 研究 + 规划 + 验证
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /vgsd-execute-phase │    │  <- 并行执行
+             │  │ /fvgsd-execute-phase │    │  <- 并行执行
              │  └──────────┬─────────┘    │
              │             │              │
              │  ┌──────────▼─────────┐    │
-             │  │ /vgsd-verify-work   │    │  <- 手动 UAT
+             │  │ /fvgsd-verify-work   │    │  <- 手动 UAT
              │  └──────────┬─────────┘    │
              │             │              │
              │     下一阶段?────────────┘
@@ -50,8 +50,8 @@
              └─────────────┼──────────────┘
                             │
             ┌───────────────▼──────────────┐
-            │  /vgsd-audit-milestone        │
-            │  /vgsd-complete-milestone     │
+            │  /fvgsd-audit-milestone        │
+            │  /fvgsd-complete-milestone     │
             └───────────────┬──────────────┘
                             │
                    另一个里程碑?
@@ -59,14 +59,14 @@
                       是         否 -> 完成!
                        │
                ┌───────▼──────────────┐
-               │  /vgsd-new-milestone  │
+               │  /fvgsd-new-milestone  │
                └──────────────────────┘
 ```
 
 ### 规划代理协调
 
 ```
-  /vgsd-plan-phase N
+  /fvgsd-plan-phase N
          │
          ├── 阶段研究员 (x4 并行)
          │     ├── 技术栈研究员
@@ -107,14 +107,14 @@
 
 **输出：** `{阶段}-VALIDATION.md` —— 阶段的反馈契约。
 
-**禁用：** 在 `/vgsd-settings` 中设置 `workflow.nyquist_validation: false`，用于测试基础设施不是重点的快速原型阶段。
+**禁用：** 在 `/fvgsd-settings` 中设置 `workflow.nyquist_validation: false`，用于测试基础设施不是重点的快速原型阶段。
 
-### 追溯验证 (`/vgsd-validate-phase`)
+### 追溯验证 (`/fvgsd-validate-phase`)
 
 对于在 Nyquist 验证存在之前执行的阶段，或只有传统测试套件的现有代码库，追溯审计并填补覆盖缺口：
 
 ```
-  /vgsd-validate-phase N
+  /fvgsd-validate-phase N
          |
          +-- 检测状态 (VALIDATION.md 存在? SUMMARY.md 存在?)
          |
@@ -134,12 +134,12 @@
 
 审计器从不修改实现代码 —— 只修改测试文件和 VALIDATION.md。如果测试发现实现 bug，它会标记为升级让你处理。
 
-**何时使用：** 在启用了 Nyquist 之前规划的阶段执行后，或在 `/vgsd-audit-milestone` 发现 Nyquist 合规缺口后。
+**何时使用：** 在启用了 Nyquist 之前规划的阶段执行后，或在 `/fvgsd-audit-milestone` 发现 Nyquist 合规缺口后。
 
 ### 执行波次协调
 
 ```
-  /vgsd-execute-phase N
+  /fvgsd-execute-phase N
          │
          ├── 分析计划依赖
          │
@@ -154,13 +154,13 @@
                └── 根据阶段目标检查代码库
                      │
                      ├── 通过 -> VERIFICATION.md (成功)
-                     └── 失败 -> 问题记录到 /vgsd-verify-work
+                     └── 失败 -> 问题记录到 /fvgsd-verify-work
 ```
 
 ### 现有代码库工作流
 
 ```
-  /vgsd-map-codebase
+  /fvgsd-map-codebase
          │
          ├── 技术栈映射器     -> codebase/STACK.md
          ├── 架构映射器      -> codebase/ARCHITECTURE.md
@@ -168,7 +168,7 @@
          └── 关注点映射器   -> codebase/CONCERNS.md
                 │
         ┌───────▼──────────┐
-        │ /vgsd-new-project │  <- 问题聚焦于你正在添加的内容
+        │ /fvgsd-new-project │  <- 问题聚焦于你正在添加的内容
         └──────────────────┘
 ```
 
@@ -180,37 +180,37 @@
 
 | 命令 | 用途 | 何时使用 |
 |---------|---------|-------------|
-| `/vgsd-new-project` | 完整项目初始化：提问、研究、需求、路线图 | 新项目开始时 |
-| `/vgsd-new-project --auto @idea.md` | 从文档自动初始化 | 有现成的 PRD 或想法文档 |
-| `/vgsd-discuss-phase [N] [--chain] [--power]` | 捕获实现决策（`--chain` 自动链式，`--power` 文件批量输入） | 规划前，塑造构建方式 |
-| `/vgsd-plan-phase [N]` | 研究 + 规划 + 验证 | 执行阶段前 |
-| `/vgsd-execute-phase <N>` | 在并行波次中执行所有计划 | 规划完成后 |
-| `/vgsd-verify-work [N]` | 带自动诊断的手动 UAT | 执行完成后 |
-| `/vgsd-audit-milestone` | 验证里程碑达到其完成定义 | 完成里程碑前 |
-| `/vgsd-complete-milestone` | 归档里程碑，标记发布 | 所有阶段已验证 |
-| `/vgsd-new-milestone [name]` | 开始下一个版本周期 | 完成里程碑后 |
+| `/fvgsd-new-project` | 完整项目初始化：提问、研究、需求、路线图 | 新项目开始时 |
+| `/fvgsd-new-project --auto @idea.md` | 从文档自动初始化 | 有现成的 PRD 或想法文档 |
+| `/fvgsd-discuss-phase [N] [--chain] [--power]` | 捕获实现决策（`--chain` 自动链式，`--power` 文件批量输入） | 规划前，塑造构建方式 |
+| `/fvgsd-plan-phase [N]` | 研究 + 规划 + 验证 | 执行阶段前 |
+| `/fvgsd-execute-phase <N>` | 在并行波次中执行所有计划 | 规划完成后 |
+| `/fvgsd-verify-work [N]` | 带自动诊断的手动 UAT | 执行完成后 |
+| `/fvgsd-audit-milestone` | 验证里程碑达到其完成定义 | 完成里程碑前 |
+| `/fvgsd-complete-milestone` | 归档里程碑，标记发布 | 所有阶段已验证 |
+| `/fvgsd-new-milestone [name]` | 开始下一个版本周期 | 完成里程碑后 |
 
 ### 导航
 
 | 命令 | 用途 | 何时使用 |
 |---------|---------|-------------|
-| `/vgsd-progress` | 显示状态和下一步 | 任何时候 -- "我在哪?" |
-| `/vgsd-resume-work` | 从上次会话恢复完整上下文 | 开始新会话 |
-| `/vgsd-pause-work` | 保存上下文交接 | 阶段中途停止 |
-| `/vgsd-help` | 显示所有命令 | 快速参考 |
-| `/vgsd-update` | 更新 GSD 并预览变更日志 | 检查新版本 |
+| `/fvgsd-progress` | 显示状态和下一步 | 任何时候 -- "我在哪?" |
+| `/fvgsd-resume-work` | 从上次会话恢复完整上下文 | 开始新会话 |
+| `/fvgsd-pause-work` | 保存上下文交接 | 阶段中途停止 |
+| `/fvgsd-help` | 显示所有命令 | 快速参考 |
+| `/fvgsd-update` | 更新 GSD 并预览变更日志 | 检查新版本 |
 
 ### 阶段管理
 
 | 命令 | 用途 | 何时使用 |
 |---------|---------|-------------|
-| `/vgsd-phase` | 向路线图追加新阶段 | 初始规划后范围增长 |
-| `/vgsd-phase --insert [N]` | 插入紧急工作（小数编号） | 里程碑中途紧急修复 |
-| `/vgsd-phase --remove [N]` | 删除未来阶段并重新编号 | 移除某个功能 |
-| `/vgsd-discuss-phase --assumptions [N]` | 预览 Claude 的预期方法 | 规划前，验证方向 |
-| `/vgsd-plan-phase --research-phase [N]` | 仅深度生态研究 | 复杂或不熟悉的领域 |
-| `/vgsd-autonomous [--from N] [--to N] [--only N]` | 自主执行剩余阶段（`--to N` 到阶段 N 停止） | 批量自动处理 |
-| `/vgsd-manager --analyze-deps` | 检测阶段间依赖关系 | `/vgsd-manager` 前分析 |
+| `/fvgsd-phase` | 向路线图追加新阶段 | 初始规划后范围增长 |
+| `/fvgsd-phase --insert [N]` | 插入紧急工作（小数编号） | 里程碑中途紧急修复 |
+| `/fvgsd-phase --remove [N]` | 删除未来阶段并重新编号 | 移除某个功能 |
+| `/fvgsd-discuss-phase --assumptions [N]` | 预览 Claude 的预期方法 | 规划前，验证方向 |
+| `/fvgsd-plan-phase --research-phase [N]` | 仅深度生态研究 | 复杂或不熟悉的领域 |
+| `/fvgsd-autonomous [--from N] [--to N] [--only N]` | 自主执行剩余阶段（`--to N` 到阶段 N 停止） | 批量自动处理 |
+| `/fvgsd-manager --analyze-deps` | 检测阶段间依赖关系 | `/fvgsd-manager` 前分析 |
 
 ### 状态管理
 
@@ -225,20 +225,20 @@
 
 | 命令 | 用途 | 何时使用 |
 |---------|---------|-------------|
-| `/vgsd-map-codebase` | 分析现有代码库 | 在现有代码上运行 `/vgsd-new-project` 之前 |
-| `/vgsd-quick` | 带 GSD 保证的临时任务 | Bug 修复、小功能、配置更改 |
-| `/vgsd-debug [desc] [--diagnose]` | 带持久状态的系统化调试（`--diagnose` 仅诊断） | 出问题时 |
-| `/vgsd-capture [desc]` | 捕获想法留待后用 | 会话期间想到什么 |
-| `/vgsd-capture --list` | 列出待处理事项 | 查看捕获的想法 |
-| `/vgsd-settings` | 配置工作流开关和模型配置 | 更改模型、切换代理 |
-| `/vgsd-config --profile <profile>` | 快速切换配置 | 更改成本/质量权衡 |
-| `/vgsd-update --reapply` | 更新后恢复本地修改 | 如果你有本地编辑，在 `/vgsd-update` 后 |
+| `/fvgsd-map-codebase` | 分析现有代码库 | 在现有代码上运行 `/fvgsd-new-project` 之前 |
+| `/fvgsd-quick` | 带 GSD 保证的临时任务 | Bug 修复、小功能、配置更改 |
+| `/fvgsd-debug [desc] [--diagnose]` | 带持久状态的系统化调试（`--diagnose` 仅诊断） | 出问题时 |
+| `/fvgsd-capture [desc]` | 捕获想法留待后用 | 会话期间想到什么 |
+| `/fvgsd-capture --list` | 列出待处理事项 | 查看捕获的想法 |
+| `/fvgsd-settings` | 配置工作流开关和模型配置 | 更改模型、切换代理 |
+| `/fvgsd-config --profile <profile>` | 快速切换配置 | 更改成本/质量权衡 |
+| `/fvgsd-update --reapply` | 更新后恢复本地修改 | 如果你有本地编辑，在 `/fvgsd-update` 后 |
 
 ---
 
 ## 配置参考
 
-GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 期间配置或稍后用 `/vgsd-settings` 更新。
+GSD 在 `.planning/config.json` 中存储项目设置。在 `/fvgsd-new-project` 期间配置或稍后用 `/fvgsd-settings` 更新。
 
 ### 完整 config.json 模式
 
@@ -315,17 +315,17 @@ GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 
 
 | 代理 | `quality` | `balanced` | `budget` |
 |-------|-----------|------------|----------|
-| gsd-planner | Opus | Opus | Sonnet |
-| gsd-roadmapper | Opus | Sonnet | Sonnet |
-| gsd-executor | Opus | Sonnet | Sonnet |
-| gsd-phase-researcher | Opus | Sonnet | Haiku |
-| gsd-project-researcher | Opus | Sonnet | Haiku |
-| gsd-research-synthesizer | Sonnet | Sonnet | Haiku |
-| gsd-debugger | Opus | Sonnet | Sonnet |
-| gsd-codebase-mapper | Sonnet | Haiku | Haiku |
-| gsd-verifier | Sonnet | Sonnet | Haiku |
-| gsd-plan-checker | Sonnet | Sonnet | Haiku |
-| gsd-integration-checker | Sonnet | Sonnet | Haiku |
+| fvgsd-planner | Opus | Opus | Sonnet |
+| fvgsd-roadmapper | Opus | Sonnet | Sonnet |
+| fvgsd-executor | Opus | Sonnet | Sonnet |
+| fvgsd-phase-researcher | Opus | Sonnet | Haiku |
+| fvgsd-project-researcher | Opus | Sonnet | Haiku |
+| fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku |
+| fvgsd-debugger | Opus | Sonnet | Sonnet |
+| fvgsd-codebase-mapper | Sonnet | Haiku | Haiku |
+| fvgsd-verifier | Sonnet | Sonnet | Haiku |
+| fvgsd-plan-checker | Sonnet | Sonnet | Haiku |
+| fvgsd-integration-checker | Sonnet | Sonnet | Haiku |
 
 **配置理念：**
 - **quality** —— 所有决策代理使用 Opus，只读验证使用 Sonnet。有配额可用且工作关键时使用。
@@ -340,55 +340,55 @@ GSD 在 `.planning/config.json` 中存储项目设置。在 `/vgsd-new-project` 
 
 ```bash
 claude --dangerously-skip-permissions
-/vgsd-new-project            # 回答问题，配置，批准路线图
+/fvgsd-new-project            # 回答问题，配置，批准路线图
 /clear
-/vgsd-discuss-phase 1        # 锁定你的偏好
-/vgsd-plan-phase 1           # 研究 + 规划 + 验证
-/vgsd-execute-phase 1        # 并行执行
-/vgsd-verify-work 1          # 手动 UAT
+/fvgsd-discuss-phase 1        # 锁定你的偏好
+/fvgsd-plan-phase 1           # 研究 + 规划 + 验证
+/fvgsd-execute-phase 1        # 并行执行
+/fvgsd-verify-work 1          # 手动 UAT
 /clear
-/vgsd-discuss-phase 2        # 对每个阶段重复
+/fvgsd-discuss-phase 2        # 对每个阶段重复
 ...
-/vgsd-audit-milestone        # 检查所有内容已发布
-/vgsd-complete-milestone     # 归档，标记，完成
+/fvgsd-audit-milestone        # 检查所有内容已发布
+/fvgsd-complete-milestone     # 归档，标记，完成
 ```
 
 ### 从现有文档创建新项目
 
 ```bash
-/vgsd-new-project --auto @prd.md   # 从你的文档自动运行研究/需求/路线图
+/fvgsd-new-project --auto @prd.md   # 从你的文档自动运行研究/需求/路线图
 /clear
-/vgsd-discuss-phase 1               # 从这里开始正常流程
+/fvgsd-discuss-phase 1               # 从这里开始正常流程
 ```
 
 ### 现有代码库
 
 ```bash
-/vgsd-map-codebase           # 分析现有内容（并行代理）
-/vgsd-new-project            # 问题聚焦于你正在添加的内容
+/fvgsd-map-codebase           # 分析现有内容（并行代理）
+/fvgsd-new-project            # 问题聚焦于你正在添加的内容
 # （从这里开始正常阶段工作流）
 ```
 
 ### 快速 Bug 修复
 
 ```bash
-/vgsd-quick
+/fvgsd-quick
 > "修复移动端 Safari 上登录按钮无响应的问题"
 ```
 
 ### 中断后恢复
 
 ```bash
-/vgsd-progress               # 查看你停在哪和接下来做什么
+/fvgsd-progress               # 查看你停在哪和接下来做什么
 # 或
-/vgsd-resume-work            # 从上次会话完整恢复上下文
+/fvgsd-resume-work            # 从上次会话完整恢复上下文
 ```
 
 ### 准备发布
 
 ```bash
-/vgsd-audit-milestone        # 检查需求覆盖率，检测存根
-/vgsd-complete-milestone     # 归档，标记，完成
+/fvgsd-audit-milestone        # 检查需求覆盖率，检测存根
+/fvgsd-complete-milestone     # 归档，标记，完成
 ```
 
 ### 速度与质量预设
@@ -402,11 +402,11 @@ claude --dangerously-skip-permissions
 ### 里程碑中途范围变更
 
 ```bash
-/vgsd-phase              # 向路线图追加新阶段
+/fvgsd-phase              # 向路线图追加新阶段
 # 或
-/vgsd-phase --insert 3         # 在阶段 3 和 4 之间插入紧急工作
+/fvgsd-phase --insert 3         # 在阶段 3 和 4 之间插入紧急工作
 # 或
-/vgsd-phase --remove 7         # 移除阶段 7 并重新编号
+/fvgsd-phase --remove 7         # 移除阶段 7 并重新编号
 ```
 
 ---
@@ -415,15 +415,15 @@ claude --dangerously-skip-permissions
 
 ### "项目已初始化"
 
-你运行了 `/vgsd-new-project` 但 `.planning/PROJECT.md` 已存在。这是安全检查。如果你想重新开始，先删除 `.planning/` 目录。
+你运行了 `/fvgsd-new-project` 但 `.planning/PROJECT.md` 已存在。这是安全检查。如果你想重新开始，先删除 `.planning/` 目录。
 
 ### 长会话期间上下文退化
 
-在主要命令之间清除上下文窗口：Claude Code 中的 `/clear`。GSD 设计围绕全新上下文 —— 每个子代理获得干净的 200K 窗口。如果主会话质量下降，清除并使用 `/vgsd-resume-work` 或 `/vgsd-progress` 恢复状态。
+在主要命令之间清除上下文窗口：Claude Code 中的 `/clear`。GSD 设计围绕全新上下文 —— 每个子代理获得干净的 200K 窗口。如果主会话质量下降，清除并使用 `/fvgsd-resume-work` 或 `/fvgsd-progress` 恢复状态。
 
 ### 计划看起来错误或不一致
 
-在规划前运行 `/vgsd-discuss-phase [N]`。大多数计划质量问题来自 Claude 做出了 `CONTEXT.md` 本可以防止的假设。你也可以运行 `/vgsd-discuss-phase --assumptions [N]` 在提交计划前查看 Claude 打算做什么。
+在规划前运行 `/fvgsd-discuss-phase [N]`。大多数计划质量问题来自 Claude 做出了 `CONTEXT.md` 本可以防止的假设。你也可以运行 `/fvgsd-discuss-phase --assumptions [N]` 在提交计划前查看 Claude 打算做什么。
 
 ### 执行失败或产生存根
 
@@ -431,39 +431,39 @@ claude --dangerously-skip-permissions
 
 ### 忘记你在哪里
 
-运行 `/vgsd-progress`。它读取所有状态文件，准确告诉你位置和下一步。
+运行 `/fvgsd-progress`。它读取所有状态文件，准确告诉你位置和下一步。
 
 ### 执行后需要更改某些内容
 
-不要重新运行 `/vgsd-execute-phase`。使用 `/vgsd-quick` 进行针对性修复，或用 `/vgsd-verify-work` 通过 UAT 系统识别和修复问题。
+不要重新运行 `/fvgsd-execute-phase`。使用 `/fvgsd-quick` 进行针对性修复，或用 `/fvgsd-verify-work` 通过 UAT 系统识别和修复问题。
 
 ### STATE.md 不同步
 
 如果 STATE.md 显示不正确的阶段状态或位置，使用状态一致性命令：
 
 ```bash
-node gsd-tools.cjs state validate          # 检测 STATE.md 与文件系统之间的偏差
-node gsd-tools.cjs state sync --verify     # 预览 sync 将更改的内容
-node gsd-tools.cjs state sync              # 从磁盘重建 STATE.md
+node fvgsd-tools.cjs state validate          # 检测 STATE.md 与文件系统之间的偏差
+node fvgsd-tools.cjs state sync --verify     # 预览 sync 将更改的内容
+node fvgsd-tools.cjs state sync              # 从磁盘重建 STATE.md
 ```
 
 这些命令是 v1.32 新增的，替代了手动编辑 STATE.md。
 
 ### 研究门控（Research Gate）
 
-`/vgsd-plan-phase` 在规划开始前会检查 RESEARCH.md 是否存在未解决的开放问题。如果存在未解决的问题，规划将被阻止，系统会显示需要解决的具体问题。这防止了基于不完整信息构建计划。
+`/fvgsd-plan-phase` 在规划开始前会检查 RESEARCH.md 是否存在未解决的开放问题。如果存在未解决的问题，规划将被阻止，系统会显示需要解决的具体问题。这防止了基于不完整信息构建计划。
 
 ### 模型成本太高
 
-切换到 budget 配置：`/vgsd-config --profile budget`。如果领域对你（或 Claude）熟悉，通过 `/vgsd-settings` 禁用研究和计划检查代理。
+切换到 budget 配置：`/fvgsd-config --profile budget`。如果领域对你（或 Claude）熟悉，通过 `/fvgsd-settings` 禁用研究和计划检查代理。
 
 ### 处理敏感/私有项目
 
-在 `/vgsd-new-project` 期间或通过 `/vgsd-settings` 设置 `commit_docs: false`。将 `.planning/` 添加到 `.gitignore`。规划工件保留在本地，从不接触 git。
+在 `/fvgsd-new-project` 期间或通过 `/fvgsd-settings` 设置 `commit_docs: false`。将 `.planning/` 添加到 `.gitignore`。规划工件保留在本地，从不接触 git。
 
 ### GSD 更新覆盖了我的本地更改
 
-从 v1.17 开始，安装程序将本地修改的文件备份到 `gsd-local-patches/`。运行 `/vgsd-update --reapply` 将你的更改合并回来。
+从 v1.17 开始，安装程序将本地修改的文件备份到 `fvgsd-local-patches/`。运行 `/fvgsd-update --reapply` 将你的更改合并回来。
 
 ### 子代理似乎失败但工作已完成
 
@@ -475,15 +475,15 @@ node gsd-tools.cjs state sync              # 从磁盘重建 STATE.md
 
 | 问题 | 解决方案 |
 |---------|----------|
-| 丢失上下文 / 新会话 | `/vgsd-resume-work` 或 `/vgsd-progress` |
+| 丢失上下文 / 新会话 | `/fvgsd-resume-work` 或 `/fvgsd-progress` |
 | 阶段出错 | `git revert` 阶段提交，然后重新规划 |
-| 需要更改范围 | `/vgsd-phase`、`/vgsd-phase --insert` 或 `/vgsd-phase --remove` |
-| 出问题了 | `/vgsd-debug "描述"` |
+| 需要更改范围 | `/fvgsd-phase`、`/fvgsd-phase --insert` 或 `/fvgsd-phase --remove` |
+| 出问题了 | `/fvgsd-debug "描述"` |
 | STATE.md 不同步 | `state validate` 然后 `state sync` |
-| 快速针对性修复 | `/vgsd-quick` |
-| 计划与你的愿景不符 | `/vgsd-discuss-phase [N]` 然后重新规划 |
-| 成本过高 | `/vgsd-config --profile budget` 和 `/vgsd-settings` 关闭代理 |
-| 更新破坏了本地更改 | `/vgsd-update --reapply` |
+| 快速针对性修复 | `/fvgsd-quick` |
+| 计划与你的愿景不符 | `/fvgsd-discuss-phase [N]` 然后重新规划 |
+| 成本过高 | `/fvgsd-config --profile budget` 和 `/fvgsd-settings` 关闭代理 |
+| 更新破坏了本地更改 | `/fvgsd-update --reapply` |
 
 ---
 
@@ -499,13 +499,13 @@ node gsd-tools.cjs state sync              # 从磁盘重建 STATE.md
   STATE.md                # 决策、阻塞项、会话记忆
   config.json             # 工作流配置
   MILESTONES.md           # 已完成里程碑归档
-  research/               # 来自 /vgsd-new-project 的领域研究
+  research/               # 来自 /fvgsd-new-project 的领域研究
   todos/
     pending/              # 等待处理的捕获想法
     done/                 # 已完成的待办事项
   debug/                  # 活跃调试会话
     resolved/             # 已归档的调试会话
-  codebase/               # 现有代码库映射（来自 /vgsd-map-codebase）
+  codebase/               # 现有代码库映射（来自 /fvgsd-map-codebase）
   phases/
     XX-phase-name/
       XX-YY-PLAN.md       # 原子执行计划

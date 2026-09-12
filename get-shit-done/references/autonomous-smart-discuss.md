@@ -1,11 +1,11 @@
 # Smart Discuss — Autonomous Mode
 
-Smart discuss is the autonomous-optimized variant of `vgsd-discuss-phase`. It proposes grey area answers in batch tables — the user accepts or overrides per area — then writes an identical CONTEXT.md to what discuss-phase produces.
+Smart discuss is the autonomous-optimized variant of `fvgsd-discuss-phase`. It proposes grey area answers in batch tables — the user accepts or overrides per area — then writes an identical CONTEXT.md to what discuss-phase produces.
 
 **Inputs:** `PHASE_NUM` from execute_phase. Run init to get phase paths:
 
 ```bash
-PHASE_STATE=$(gsd-sdk query init.phase-op ${PHASE_NUM})
+PHASE_STATE=$(fvgsd-sdk query init.phase-op ${PHASE_NUM})
 ```
 
 Parse from JSON: `phase_dir`, `phase_slug`, `padded_phase`, `phase_name`.
@@ -94,7 +94,7 @@ Read the 3-5 most relevant files to understand existing patterns.
 **Get phase details:**
 
 ```bash
-DETAIL=$(gsd-sdk query roadmap.get-phase ${PHASE_NUM})
+DETAIL=$(fvgsd-sdk query roadmap.get-phase ${PHASE_NUM})
 ```
 
 Extract `goal`, `requirements`, `success_criteria` from the JSON response.
@@ -266,7 +266,7 @@ Write the file.
 **Commit:**
 
 ```bash
-gsd-sdk query commit "docs(${PADDED_PHASE}): smart discuss context" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
+fvgsd-sdk query commit "docs(${PADDED_PHASE}): smart discuss context" --files "${phase_dir}/${padded_phase}-CONTEXT.md"
 ```
 
 Display confirmation:

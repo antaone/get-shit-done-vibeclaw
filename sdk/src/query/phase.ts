@@ -92,7 +92,7 @@ export function describeNonCanonicalPlans(dirFiles: string[], matchedFiles: stri
     + `naming convention "{padded_phase}-{NN}-PLAN.md" (or bare "PLAN.md") and were skipped: `
     + offenders.map((f) => `"${f}"`).join(', ')
     + `. Rename to the canonical form (e.g. "01-01-PLAN.md") so the executor can detect them. `
-    + `See agents/gsd-planner.md write_phase_prompt step for the full contract.`
+    + `See agents/fvgsd-planner.md write_phase_prompt step for the full contract.`
   );
 }
 

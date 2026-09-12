@@ -11,7 +11,7 @@
  *
  * Fix (#3718, Approach A): gate logic moved to `bin/lib/ui-safety-gate.cjs` (Node.js).
  * Reads phase text from STDIN (not argv) to avoid OS ARG_MAX limits.
- * Invoked as: printf '%s' "$PHASE_SECTION" | node "${GSD_REPO_ROOT}/bin/lib/ui-safety-gate.cjs"
+ * Invoked as: printf '%s' "$PHASE_SECTION" | node "${FVGSD_REPO_ROOT}/bin/lib/ui-safety-gate.cjs"
  * Path anchored to repo root via `git rev-parse --show-toplevel`.
  *
  * Test strategy:
@@ -68,19 +68,19 @@ describe('Workflow .md structural guard (#3718)', () => {
     ['plan-phase.md', PLAN_PHASE_PATH],
     ['autonomous.md', AUTONOMOUS_PATH],
   ]) {
-    test(`${label} must invoke ui-safety-gate.cjs via stdin, anchored to GSD_REPO_ROOT`, () => {
+    test(`${label} must invoke ui-safety-gate.cjs via stdin, anchored to FVGSD_REPO_ROOT`, () => {
       const content = fs.readFileSync(filePath, 'utf-8');
       assert.ok(
         content.includes('ui-safety-gate.cjs'),
         `${label}: must reference ui-safety-gate.cjs for cross-shell portability (#3718)`
       );
       assert.ok(
-        content.includes('GSD_REPO_ROOT'),
-        `${label}: must anchor path to GSD_REPO_ROOT to avoid CWD-sensitive failure (#3718)`
+        content.includes('FVGSD_REPO_ROOT'),
+        `${label}: must anchor path to FVGSD_REPO_ROOT to avoid CWD-sensitive failure (#3718)`
       );
       assert.ok(
         content.includes('git rev-parse --show-toplevel'),
-        `${label}: must derive GSD_REPO_ROOT from git rev-parse --show-toplevel`
+        `${label}: must derive FVGSD_REPO_ROOT from git rev-parse --show-toplevel`
       );
       // Confirm stdin pipe usage (printf or echo piped to node)
       assert.ok(
