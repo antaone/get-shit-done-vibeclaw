@@ -64,10 +64,10 @@ function buildRules({ agentRoles, hookNames, helperNames }) {
     rules.push(tokenRule('bookkeeping', name, name.replace('gsd-', 'fvgsd-')));
   }
   rules.push({ id: 'vibe-paths', pattern: /(?<![A-Za-z0-9_-])\.planning-vibe(?![A-Za-z0-9_-])/g, replace: () => '.planning-fvgsd-vibe' });
-  rules.push({ id: 'vibe-paths', pattern: /(?<![A-Za-z0-9_-])\.vibe(?![A-Za-z0-9_-])/g, replace: () => '.fvgsd-vibe' });
+  rules.push({ id: 'vibe-paths', pattern: /(?<![A-Za-z0-9_.-])\.vibe(?![A-Za-z0-9_-])/g, replace: () => '.fvgsd-vibe' });
   rules.push({ id: 'profile-markers', pattern: /(?<![A-Za-z])GSD:profile-(start|end)/g, replace: (match, edge) => `FVGSD:profile-${edge}` });
   rules.push({ id: 'env-vars', pattern: /(?<![A-Za-z0-9_])GSD_([A-Z0-9_]+)/g, replace: (match, rest) => `FVGSD_${rest}` });
-  rules.push({ id: 'code-literals', codeOnly: true, pattern: /(['"`])gsd-/g, replace: (match, quote) => `${quote}fvgsd-` });
+  rules.push({ id: 'code-literals', codeOnly: true, pattern: /(['"`])gsd-(?!build\/)/g, replace: (match, quote) => `${quote}fvgsd-` });
   rules.push({ id: 'code-literals', codeOnly: true, pattern: /\^gsd-/g, replace: () => '^fvgsd-' });
   rules.push({ id: 'code-literals', codeOnly: true, pattern: /agents(\\?\.)gsd-/g, replace: (match, dot) => `agents${dot}fvgsd-` });
   return rules;

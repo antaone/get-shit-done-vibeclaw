@@ -94,6 +94,36 @@ test('rewriteText is idempotent', () => {
   assert.deepEqual(twice.replacements, []);
 });
 
+test('rewriteText keeps the upstream gsd-build slug in quoted code literals', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = "const repoSlug = 'gsd-build/get-shit-done';\n" +
+    'const upstream = "gsd-build/get-shit-done";\n' +
+    "const prefix = 'gsd-';\n";
+  const { text, replacements } = rewriteText(source, rules, { isCode: true });
+  assert.deepEqual(replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+    ['code-literals', "'gsd-", "'fvgsd-"],
+  ]);
+  assert.equal(text, "const repoSlug = 'gsd-build/get-shit-done';\n" +
+    'const upstream = "gsd-build/get-shit-done";\n' +
+    "const prefix = 'fvgsd-';\n");
+});
+
+test('rewriteText renames .vibe paths but leaves vibe branch ranges alone', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'git diff vibe/project-001/project/gemini-001..vibe/project-001/project/codex-002\n' +
+    "/.vibe/\nSee `.vibe/worktrees`.\nconst dir = '.vibe';\n";
+  for (const isCode of [false, true]) {
+    const { text, replacements } = rewriteText(source, rules, { isCode });
+    assert.deepEqual(replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+      ['vibe-paths', '.vibe', '.fvgsd-vibe'],
+      ['vibe-paths', '.vibe', '.fvgsd-vibe'],
+      ['vibe-paths', '.vibe', '.fvgsd-vibe'],
+    ]);
+    assert.equal(text, 'git diff vibe/project-001/project/gemini-001..vibe/project-001/project/codex-002\n' +
+      "/.fvgsd-vibe/\nSee `.fvgsd-vibe/worktrees`.\nconst dir = '.fvgsd-vibe';\n");
+  }
+});
+
 test('dry run reports totals and renames without writing', (t) => {
   const root = makeRepo(t);
   const before = Object.fromEntries(Object.keys(FIXTURE).map((rel) => [rel, hash(path.join(root, rel))]));
