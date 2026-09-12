@@ -30,21 +30,7 @@ It is built Claude Code first. The faster behaviors are switched on per runtime 
 
 ## Problem
 
-### Evidence from the maintainer's projects (git history, checked 2026-09-12)
-
-| Project | Planning-doc lines added | Code lines added (lockfiles excluded) |
-|---|---|---|
-| v1-corpenv | 342k | 268k |
-| v5consortium | 229k | 279k |
-| gsd-v2-ai-tms | 60k | 94k |
-| v1vibeclaw-cc | 115k | 244k |
-
-- **v5consortium phase 28 has 53 planning files.**
-  - Its CONTEXT.md is 156 lines with 15 locked decisions. With RESEARCH, PATTERNS and VALIDATION, the inputs total about 1,800 lines.
-  - Planning then wrote 4,120 lines across 21 PLANs, and execution wrote 3,012 lines across 20 SUMMARYs.
-- **gsd-v2-ai-tms phase 03** took about 39 hours of wall-clock time from CONTEXT to the last SUMMARY. Plan files were edited 15 times after they were first committed.
-- **v1vibeclaw-cc phase 04** (30 plans) spanned three days and gained new plans after VERIFICATION was written, i.e. gap-closure re-planning.
-- **Settings:** all four projects run research, plan-check, the verifier and validation, and three also run code review.
+Planning a phase can take hours, much of it spent writing, reviewing and re-validating plan documents, and execution adds hours of document ceremony on top. The causes are in the current workflows.
 
 ### Causes (as of commit 29f1b1a6)
 
@@ -107,7 +93,7 @@ These costs come from one assumption: an expensive model writes exhaustive plans
     └─ build.finalize                     → summary frontmatter, ID coverage, STATE/ROADMAP/REQUIREMENTS, commit
 ```
 
-`{P}` is the padded phase number used in existing file names (for example `28`). `{NN}` is `01` for the first build and the next free plan number for `--gaps`.
+`{P}` is the padded phase number used in existing file names (for example `03`). `{NN}` is `01` for the first build and the next free plan number for `--gaps`.
 
 ### Components
 
@@ -130,14 +116,14 @@ Returns JSON:
 
 ```json
 {
-  "phase": { "number": "28", "padded": "28", "name": "recruiting-funnel-reporting-quality-gate", "dir": ".planning/phases/28-recruiting-funnel-reporting-quality-gate" },
+  "phase": { "number": "3", "padded": "03", "name": "user-auth", "dir": ".planning/phases/03-user-auth" },
   "inputs": {
-    "context": ".planning/phases/28-…/28-CONTEXT.md",
-    "research": ".planning/phases/28-…/28-RESEARCH.md",
+    "context": ".planning/phases/03-user-auth/03-CONTEXT.md",
+    "research": ".planning/phases/03-user-auth/03-RESEARCH.md",
     "spec": null,
-    "ui_spec": ".planning/phases/28-…/28-UI-SPEC.md",
+    "ui_spec": null,
     "milestone_brief": null,
-    "requirement_ids": ["FUNL-02", "FUNL-03", "FUNL-04", "QA-01"]
+    "requirement_ids": ["AUTH-01", "AUTH-02"]
   },
   "commands": { "build": "npm run build", "typecheck": "npx tsc --noEmit", "lint": "npm run lint", "test": "npm test" },
   "runtime": { "name": "claude", "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": true, "agent_effort": true, "background_tasks": true, "workflow_scripts": true },
@@ -179,31 +165,31 @@ Everything in the frontmatter is read by code:
 
 ```yaml
 ---
-phase: 28-recruiting-funnel-reporting-quality-gate
+phase: 03-user-auth
 plan: 01
 type: execute
 kind: brief
 wave: 1
 depends_on: []
-files_modified: [src/reports/funnel.ts, src/reports/sources.ts]
+files_modified: [src/auth/session.ts, src/auth/password.ts, src/routes/auth/login.ts]
 autonomous: true
-requirements: [FUNL-02, FUNL-03, FUNL-04, QA-01]
+requirements: [AUTH-01, AUTH-02]
 user_setup: []
 gap_closure: false
 must_haves:
   truths:
-    - "The funnel report counts each candidate once per stage"
+    - "A user with valid credentials can sign in and stays signed in after a reload"
   artifacts: []   # same item format as get-shit-done/templates/phase-prompt.md
   key_links: []   # same item format as get-shit-done/templates/phase-prompt.md
 slices:
   - id: s1
-    goal: "Funnel stage definitions and aggregate writes"
-    owns: ["src/funnel/**", "migrations/*funnel*.sql"]
+    goal: "Session model and password hashing"
+    owns: ["src/auth/**", "migrations/*auth*.sql"]
     after: []
     strong: false
   - id: s2
-    goal: "Report surfaces and access control"
-    owns: ["src/reports/**", "app/reports/**"]
+    goal: "Login and logout routes"
+    owns: ["src/routes/auth/**", "app/login/**"]
     after: [s1]
     strong: false
 ---
@@ -220,15 +206,15 @@ What this phase delivers and why, in one to three paragraphs. The plan index rea
 Key design choices, interfaces shared between slices, and data flow.
 
 ## Slices
-### s1 — Funnel stage definitions and aggregate writes
-Owns: src/funnel/**, migrations/*funnel*.sql
+### s1 — Session model and password hashing
+Owns: src/auth/**, migrations/*auth*.sql
 Done when: …
 
 ## Decisions
 | Decision | Where it lands | Status |
 |---|---|---|
-| D-01 | s1: stage enum in src/funnel/stages.ts | planned |
-| D-07 | — | deferred: moved to phase 29 per CONTEXT |
+| D-01 | s1: argon2id hashing in src/auth/password.ts | planned |
+| D-04 | — | deferred: SSO moves to a later phase per CONTEXT |
 
 ## Checks
 build: npm run build · typecheck: npx tsc --noEmit · lint: npm run lint · test: npm test
@@ -280,7 +266,7 @@ effort: high
 
 ```text
 ## BRIEF RESULT
-brief: .planning/phases/28-…/28-01-PLAN.md
+brief: .planning/phases/03-user-auth/03-01-PLAN.md
 slices: [s1, s2, s3]
 user_setup: []
 ```
@@ -320,7 +306,7 @@ notes: |
   1. **Parallel.** When `spawn_agents`, `parallel_agents` and `worktree_isolation` are on and `workflow.build_parallel` is `auto`, up to `max_concurrent_agents` slices of a wave run at once, each spawned with worktree isolation.
   2. **Sequential.** When agents can be spawned but the parallel conditions aren't met, one slice agent runs at a time in the main worktree, in wave order.
   3. **Inline.** When `spawn_agents` is off, the lead follows the builder instructions itself, slice by slice.
-- **Merge.** `build.merge-wave --phase <P> --results <json>` merges each isolated slice branch into the current branch with `--no-ff`, in wave order. It then applies the cleanup logic behind the existing `worktree.cleanup-wave` query and returns `{ "merged": ["s2"], "conflicts": [{ "slice": "s3", "files": ["src/reports/index.ts"] }], "cleaned": ["<path>"] }`.
+- **Merge.** `build.merge-wave --phase <P> --results <json>` merges each isolated slice branch into the current branch with `--no-ff`, in wave order. It then applies the cleanup logic behind the existing `worktree.cleanup-wave` query and returns `{ "merged": ["s2"], "conflicts": [{ "slice": "s3", "files": ["src/routes/index.ts"] }], "cleaned": ["<path>"] }`.
   - On a conflict it aborts that merge, leaving the tree clean, and continues with the other slices.
   - The lead then spawns a builder in slice mode on the conflicting branch. Its goal is to merge the current branch in and resolve the conflict, and it gets both slices' notes.
   - That builder commits `fix({P}-{slice}): resolve merge with {other}`, and the lead calls `build.merge-wave` again for that slice.
@@ -397,7 +383,7 @@ notes: |
 **Summary file.** The lead writes the body of `{P}-{NN}-SUMMARY.md`, along with the schema-required `subsystem` and `tags`:
 
 ```markdown
-# Phase 28: Recruiting Funnel Reporting & Quality Gate — Build Summary
+# Phase 3: User Auth — Build Summary
 
 **One-line outcome.**
 
@@ -407,7 +393,7 @@ Per slice: what it delivered, with commit hashes.
 ## Decisions
 | Decision | Status | Notes |
 |---|---|---|
-| D-01 | done | stage enum in src/funnel/stages.ts |
+| D-01 | done | argon2id hashing in src/auth/password.ts |
 
 ## Deviations from the brief
 
@@ -415,7 +401,7 @@ Per slice: what it delivered, with commit hashes.
 Commands and results, including any pre-existing failures.
 
 ## Verification
-Status and a link to 28-VERIFICATION.md.
+Status and a link to 03-VERIFICATION.md.
 
 ## Follow-ups
 Remaining gaps, deferred human checks, deferred decisions.
@@ -538,7 +524,7 @@ Built after Stage 1 is in use and the brief, summary and query formats have sett
   - It then invokes the saved workflow by name, with `args`:
 
     ```json
-    { "phase": "28", "phase_dir": "…", "brief": "…", "base_commit": "…", "waves": [["s1"], ["s2", "s3"]], "slices": { "s1": { "goal": "…", "owns": ["…"], "strong": false } }, "commands": { "build": "…" }, "models": { "slice": "sonnet", "strong": "opus", "verifier": "sonnet" }, "max_parallel": 3, "fix_rounds": 2, "human_checks": "defer", "code_review": false }
+    { "phase": "03", "phase_dir": "…", "brief": "…", "base_commit": "…", "waves": [["s1"], ["s2", "s3"]], "slices": { "s1": { "goal": "…", "owns": ["…"], "strong": false } }, "commands": { "build": "…" }, "models": { "slice": "sonnet", "strong": "opus", "verifier": "sonnet" }, "max_parallel": 3, "fix_rounds": 2, "human_checks": "defer", "code_review": false }
     ```
 
   - Afterwards the command writes the summary and runs `build.finalize` as in Stage 1.
@@ -594,8 +580,8 @@ Assertions compare JSON output or parsed files, never source text or raw substri
 - **Existing checks:** the command contract lint, inventory manifest sync, command and agent docs parity, execution-branch guard check, alias drift check and configuration freshness check pass.
 
 **Acceptance (manual)**
-- Run `/fvsgd-build` on the next real phase of one of the maintainer's projects, after the fvsgd identity install.
-- Compare with v5consortium phase 28 on new planning files, wall-clock time (the summary's `build.started` and `build.completed` versus phase 28's git timestamps), fix rounds and verification status.
+- After installing fvsgd, run `/fvsgd-build` on a real phase of a project.
+- Compare it with that project's most recent phase built with plan-phase and execute-phase: new planning files, wall-clock time (the summary's `build.started` and `build.completed` versus that phase's git timestamps), fix rounds and verification status.
 
 ---
 
