@@ -12,6 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const IDENTITY = require('./identity.cjs');
 const { output, error, loadConfig } = require('./core.cjs');
 const { platformReadSync: safeReadFile, platformWriteSync, platformEnsureDir } = require('./shell-command-projection.cjs');
 const { getGlobalSkillDir } = require('./runtime-homes.cjs');
@@ -645,7 +646,7 @@ function cmdWriteProfile(cwd, options, raw) {
 
   let outputPath = options.output;
   if (!outputPath) {
-    outputPath = path.join(os.homedir(), '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    outputPath = path.join(os.homedir(), '.claude', IDENTITY.installDir, 'USER-PROFILE.md');
   } else if (!path.isAbsolute(outputPath)) {
     outputPath = path.join(cwd, outputPath);
   }

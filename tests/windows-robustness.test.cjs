@@ -21,9 +21,10 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const WORKFLOWS_DIR = path.join(__dirname, '..', 'get-shit-done', 'workflows');
-const HOOKS_DIR = path.join(__dirname, '..', 'hooks');
+const HOOKS_DIR = path.join(__dirname, '..', 'hooks', IDENTITY.hooksDir);
 
 /**
  * Extract bash code blocks from a markdown file.
@@ -145,10 +146,9 @@ describe('workflow shell robustness', () => {
 
 describe('hook stdin timeout patterns', () => {
   test('all JS hooks have stdin timeout guard', () => {
-    if (!fs.existsSync(HOOKS_DIR)) return;
-
     const hookFiles = fs.readdirSync(HOOKS_DIR)
       .filter(f => f.endsWith('.js'));
+    assert.ok(hookFiles.length > 0, `no JS hooks found under ${HOOKS_DIR}`);
 
     for (const hook of hookFiles) {
       const content = fs.readFileSync(path.join(HOOKS_DIR, hook), 'utf-8');
@@ -164,10 +164,9 @@ describe('hook stdin timeout patterns', () => {
   });
 
   test('no JS hooks use synchronous readFileSync on /dev/stdin', () => {
-    if (!fs.existsSync(HOOKS_DIR)) return;
-
     const hookFiles = fs.readdirSync(HOOKS_DIR)
       .filter(f => f.endsWith('.js'));
+    assert.ok(hookFiles.length > 0, `no JS hooks found under ${HOOKS_DIR}`);
 
     for (const hook of hookFiles) {
       const content = fs.readFileSync(path.join(HOOKS_DIR, hook), 'utf-8');

@@ -17,16 +17,17 @@ import {
   resolveLegacyWorkflowsDir,
 } from './sdk-package-compatibility.js';
 import { GSDError } from './errors.js';
+import { IDENTITY } from './identity.js';
 
 describe('SDK Package Seam Module', () => {
   const projectDir = '/work/project';
   const homeDir = '/users/tester';
 
   it('resolves legacy install-relative directories through one seam', () => {
-    expect(resolveLegacyInstallDir(homeDir)).toBe(join(homeDir, '.claude', 'get-shit-done'));
-    expect(resolveLegacyTemplatesDir(homeDir)).toBe(join(homeDir, '.claude', 'get-shit-done', 'templates'));
-    expect(resolveLegacyWorkflowsDir(homeDir)).toBe(join(homeDir, '.claude', 'get-shit-done', 'workflows'));
-    expect(resolveLegacyUserProfilePath(homeDir)).toBe(join(homeDir, '.claude', 'get-shit-done', 'USER-PROFILE.md'));
+    expect(resolveLegacyInstallDir(homeDir)).toBe(join(homeDir, '.claude', IDENTITY.installDir));
+    expect(resolveLegacyTemplatesDir(homeDir)).toBe(join(homeDir, '.claude', IDENTITY.installDir, 'templates'));
+    expect(resolveLegacyWorkflowsDir(homeDir)).toBe(join(homeDir, '.claude', IDENTITY.installDir, 'workflows'));
+    expect(resolveLegacyUserProfilePath(homeDir)).toBe(join(homeDir, '.claude', IDENTITY.installDir, 'USER-PROFILE.md'));
     expect(resolveBundledTemplatesDir()).toBe(BUNDLED_GSD_TEMPLATES_DIR);
     expect(resolveBundledAgentsDir()).toBe(BUNDLED_GSD_AGENTS_DIR);
   });
@@ -34,16 +35,16 @@ describe('SDK Package Seam Module', () => {
   it('probes legacy fvgsd-tools locations in bundled -> project -> home order', () => {
     const resolution = probeLegacySdkAsset('fvgsd-tools', projectDir, {
       homeDir,
-      existsSync: path => path === join(projectDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'),
+      existsSync: path => path === join(projectDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'),
     });
 
     expect(resolution.probes).toEqual([
       BUNDLED_GSD_TOOLS_PATH,
-      join(projectDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'),
-      join(homeDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'),
+      join(projectDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'),
+      join(homeDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'),
     ]);
-    expect(resolution.path).toBe(join(projectDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'));
-    expect(resolution.fallbackPath).toBe(join(homeDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'));
+    expect(resolution.path).toBe(join(projectDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'));
+    expect(resolution.fallbackPath).toBe(join(homeDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'));
   });
 
   it('returns concrete fallback fvgsd-tools path when no legacy probe exists', () => {
@@ -52,7 +53,7 @@ describe('SDK Package Seam Module', () => {
       existsSync: () => false,
     });
 
-    expect(path).toBe(join(homeDir, '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs'));
+    expect(path).toBe(join(homeDir, '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs'));
   });
 
   it('loads legacy core.cjs through one compatibility adapter', () => {
@@ -90,8 +91,8 @@ describe('SDK Package Seam Module', () => {
       expect(message).toContain('state load: get-shit-done/bin/lib/core.cjs not found.');
       expect(message).toContain('Checked:');
       expect(message).toContain(BUNDLED_CORE_CJS_PATH);
-      expect(message).toContain(join(projectDir, '.claude', 'get-shit-done', 'bin', 'lib', 'core.cjs'));
-      expect(message).toContain(join(homeDir, '.claude', 'get-shit-done', 'bin', 'lib', 'core.cjs'));
+      expect(message).toContain(join(projectDir, '.claude', IDENTITY.installDir, 'bin', 'lib', 'core.cjs'));
+      expect(message).toContain(join(homeDir, '.claude', IDENTITY.installDir, 'bin', 'lib', 'core.cjs'));
     }
   });
 });

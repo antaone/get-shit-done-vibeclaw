@@ -8,9 +8,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 import type { QueryHandler } from './utils.js';
+import { IDENTITY } from '../identity.js';
 
 const FVGSD_MANAGED_DIRS = [
-  'get-shit-done',
+  IDENTITY.installDir,
   'agents',
   join('commands', 'gsd'),
   'hooks',

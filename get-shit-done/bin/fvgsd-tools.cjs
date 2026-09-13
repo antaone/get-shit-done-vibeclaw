@@ -173,6 +173,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('./lib/identity.cjs');
 const core = require('./lib/core.cjs');
 const { error, findProjectRoot, ERROR_REASON } = core;
 const { getActiveWorkstream } = require('./lib/planning-workspace.cjs');
@@ -1411,7 +1412,7 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
       // GSD-managed directories to scan for user-added files.
       // These are the directories the installer wipes on update.
       const FVGSD_MANAGED_DIRS = [
-        'get-shit-done',
+        IDENTITY.installDir,
         'agents',
         path.join('commands', 'fvgsd'),
         path.join('commands', 'gsd'),

@@ -181,7 +181,12 @@ describe('Cline install (local)', () => {
   test('installed engine files have no leaked .claude paths', () => {
     install(false, 'cline');
     const engineDir = path.join(tmpDir, IDENTITY.installDir);
-    if (!fs.existsSync(engineDir)) return; // skip if engine not installed
+    assert.ok(fs.existsSync(engineDir), `engine directory must exist after install: ${engineDir}`);
+    // Sources reference ~/.claude/fvgsd/ now, so the install folder comes from IDENTITY;
+    // get-shit-done stays in the list as well.
+    const LEAK_ROOTS = `(?:${IDENTITY.installDir}|get-shit-done|commands|agents|hooks)`;
+    const LEAKED_INSTALL_PATH = new RegExp(`~\\/\\.claude\\/${LEAK_ROOTS}|HOME\\/\\.claude\\/${LEAK_ROOTS}`);
+    let scanned = 0;
 
     function scanDir(dir) {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -193,14 +198,16 @@ describe('Cline install (local)', () => {
           // CHANGELOG.md is a historical record and is not path-converted — skip it
           if (entry.name === 'CHANGELOG.md') continue;
           const content = fs.readFileSync(fullPath, 'utf8');
+          scanned++;
           // Check for GSD install paths that should have been substituted.
           // profile-pipeline.cjs intentionally references ~/.claude/projects (Claude Code
           // session data) as a runtime feature — that is not a leaked install path.
-          const hasLeaked = /~\/\.claude\/(?:get-shit-done|commands|agents|hooks)|HOME\/\.claude\/(?:get-shit-done|commands|agents|hooks)/.test(content);
+          const hasLeaked = LEAKED_INSTALL_PATH.test(content);
           assert.ok(!hasLeaked, `Found leaked GSD .claude install path in ${fullPath}`);
         }
       }
     }
     scanDir(engineDir);
+    assert.ok(scanned > 0, `no .md/.cjs/.js files scanned under ${engineDir}`);
   });
 });

@@ -13,6 +13,7 @@ const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const crypto = require('crypto');
 const { runGsdTools, createTempDir, cleanup } = require('./helpers.cjs');
 
@@ -113,11 +114,11 @@ describe('detect-custom-files — skills/ directory missing from FVGSD_MANAGED_D
   // Test 3: regression guard — still detects custom files in get-shit-done/workflows/
   test('regression: still detects custom files in get-shit-done/workflows/', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/plan-phase.md': '# Plan Phase\n',
+      [`${IDENTITY.installDir}/workflows/plan-phase.md`]: '# Plan Phase\n',
       'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
 
-    writeCustomFile(tmpDir, 'get-shit-done/workflows/custom-workflow.md', '# My Custom Workflow\n');
+    writeCustomFile(tmpDir, `${IDENTITY.installDir}/workflows/custom-workflow.md`, '# My Custom Workflow\n');
 
     const result = runGsdTools(
       ['detect-custom-files', '--config-dir', tmpDir],
@@ -128,7 +129,7 @@ describe('detect-custom-files — skills/ directory missing from FVGSD_MANAGED_D
 
     const json = JSON.parse(result.output);
     assert.ok(
-      json.custom_files.includes('get-shit-done/workflows/custom-workflow.md'),
+      json.custom_files.includes(`${IDENTITY.installDir}/workflows/custom-workflow.md`),
       `custom workflow should still be detected; got: ${JSON.stringify(json.custom_files)}`
     );
   });

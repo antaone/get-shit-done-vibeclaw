@@ -21,6 +21,7 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const RUNTIME_SCRIPT_PATH = path.join(ROOT, 'get-shit-done', 'bin', 'verify-reapply-patches.cjs');
@@ -64,7 +65,7 @@ describe('Bug #2994: reapply-patches workflow references the runtime-installed p
     const invocations = extractScriptInvocations(md);
     assert.ok(invocations.length > 0, 'sanity: expected at least one node ${FVGSD_HOME}/... invocation in reapply-patches.md');
 
-    const violations = invocations.filter(inv => !inv.relPath.startsWith('get-shit-done/'));
+    const violations = invocations.filter(inv => !inv.relPath.startsWith(`${IDENTITY.installDir}/`));
     assert.deepEqual(violations, [], `invocations under non-installed paths: ${JSON.stringify(violations)}`);
   });
 
@@ -74,7 +75,7 @@ describe('Bug #2994: reapply-patches workflow references the runtime-installed p
     const verifierInvocations = invocations.filter(inv => inv.relPath.endsWith('verify-reapply-patches.cjs'));
     assert.deepEqual(
       verifierInvocations.map(i => i.relPath),
-      ['get-shit-done/bin/verify-reapply-patches.cjs'],
+      [`${IDENTITY.installDir}/bin/verify-reapply-patches.cjs`],
       'workflow must call the runtime-installed verifier path exactly once',
     );
   });

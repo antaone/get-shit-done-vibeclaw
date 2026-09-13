@@ -8,6 +8,10 @@ const os = require('node:os');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
+const INSTALL_DIR = IDENTITY.installDir;
+// The installer copies the source tree get-shit-done/ into <config>/fvgsd/.
+const SOURCE_PREFIXES = { [INSTALL_DIR]: 'get-shit-done' };
 const { auditWorkflowScriptPaths, AUDIT_FINDING } = require(
   path.join(ROOT, 'scripts', 'audit-workflow-script-paths.cjs'),
 );
@@ -52,39 +56,41 @@ describe('Bug #2995: post-install script-paths audit (#2995)', () => {
   test('returns { ok: true, findings: [] } when workflow refs an existing, installed-path script', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'good.md': 'node "${FVGSD_HOME}/get-shit-done/bin/foo.cjs" --json\n',
+        'good.md': `node "\${FVGSD_HOME}/${INSTALL_DIR}/bin/foo.cjs" --json\n`,
       },
       files: ['get-shit-done/bin/foo.cjs'],
     });
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done', 'commands', 'agents', 'hooks'],
+      installedPrefixes: [INSTALL_DIR, 'commands', 'agents', 'hooks'],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.deepEqual(r, { ok: true, findings: [] });
   });
 });
 
 describe('Bug #2995: detection paths', () => {
-  const { auditWorkflowScriptPaths, AUDIT_FINDING } = require(require('node:path').join(__dirname, '..', 'scripts', 'audit-workflow-script-paths.cjs'));
+  const { auditWorkflowScriptPaths, AUDIT_FINDING, extractReferences } = require(require('node:path').join(__dirname, '..', 'scripts', 'audit-workflow-script-paths.cjs'));
 
   test('reports MISSING_FROM_REPO when the referenced file does not exist in the repo', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'foo.md': 'node "${FVGSD_HOME}/get-shit-done/bin/typo.cjs" --json\n',
+        'foo.md': `node "\${FVGSD_HOME}/${INSTALL_DIR}/bin/typo.cjs" --json\n`,
       },
       files: [],
     });
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done'],
+      installedPrefixes: [INSTALL_DIR],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.equal(r.ok, false);
     assert.equal(r.findings.length, 1);
     assert.deepEqual(r.findings[0], {
       workflow: 'foo.md',
-      path: 'get-shit-done/bin/typo.cjs',
+      path: `${INSTALL_DIR}/bin/typo.cjs`,
       kind: AUDIT_FINDING.MISSING_FROM_REPO,
     });
   });
@@ -99,7 +105,8 @@ describe('Bug #2995: detection paths', () => {
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done', 'commands', 'agents', 'hooks'],
+      installedPrefixes: [INSTALL_DIR, 'commands', 'agents', 'hooks'],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.equal(r.ok, false);
     assert.equal(r.findings.length, 1);
@@ -113,14 +120,15 @@ describe('Bug #2995: detection paths', () => {
   test('handles ${FVGSD_HOME:-$HOME/.claude}/... default-fallback syntax', () => {
     const { repoRoot, workflowsDir } = fixtureRepo({
       workflows: {
-        'a.md': 'node "${FVGSD_HOME:-$HOME/.claude}/get-shit-done/bin/x.cjs"\n',
+        'a.md': `node "\${FVGSD_HOME:-$HOME/.claude}/${INSTALL_DIR}/bin/x.cjs"\n`,
       },
       files: ['get-shit-done/bin/x.cjs'],
     });
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done'],
+      installedPrefixes: [INSTALL_DIR],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.deepEqual(r, { ok: true, findings: [] });
   });
@@ -130,8 +138,8 @@ describe('Bug #2995: detection paths', () => {
       workflows: {
         'multi.md': [
           'node "${FVGSD_HOME}/scripts/a.cjs"',
-          'node "${FVGSD_HOME}/get-shit-done/bin/b.cjs"',
-          'node "${FVGSD_HOME}/get-shit-done/bin/missing.cjs"',
+          `node "\${FVGSD_HOME}/${INSTALL_DIR}/bin/b.cjs"`,
+          `node "\${FVGSD_HOME}/${INSTALL_DIR}/bin/missing.cjs"`,
         ].join('\n') + '\n',
       },
       files: ['scripts/a.cjs', 'get-shit-done/bin/b.cjs'],
@@ -139,7 +147,8 @@ describe('Bug #2995: detection paths', () => {
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done'],
+      installedPrefixes: [INSTALL_DIR],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.equal(r.ok, false);
     assert.equal(r.findings.length, 2);
@@ -156,20 +165,21 @@ describe('Bug #2995: detection paths', () => {
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done'],
+      installedPrefixes: [INSTALL_DIR],
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     assert.deepEqual(r, { ok: true, findings: [] });
   });
 });
 
 describe('Bug #2995: real workflow audit', () => {
-  const { auditWorkflowScriptPaths, AUDIT_FINDING } = require(require('node:path').join(__dirname, '..', 'scripts', 'audit-workflow-script-paths.cjs'));
+  const { auditWorkflowScriptPaths, AUDIT_FINDING, extractReferences } = require(require('node:path').join(__dirname, '..', 'scripts', 'audit-workflow-script-paths.cjs'));
 
   // The set of top-level directories the installer (bin/install.js) actually
   // copies into ${configDir}/. Touching this set requires updating both
   // bin/install.js AND this constant — the parity is intentional.
   const INSTALLED_PREFIXES = [
-    'get-shit-done',  // workflows, references, bin/lib, templates
+    INSTALL_DIR,      // fvgsd/: workflows, references, bin/lib, templates (source tree get-shit-done/)
     'commands',       // commands/gsd/*.md (Claude Code local + Gemini global)
     'skills',         // skills/fvgsd-*/SKILL.md (Claude Code 2.1.88+ global, Codex, etc.)
     'agents',         // agents/fvgsd-*.md
@@ -184,10 +194,16 @@ describe('Bug #2995: real workflow audit', () => {
   const KNOWN_GAPS = new Set();
 
   test('no NEW workflow refs fail to resolve at the deployed path (KNOWN_GAPS allow-listed)', () => {
+    const realWorkflowsDir = require('node:path').join(ROOT, 'get-shit-done', 'workflows');
+    const refCount = fs.readdirSync(realWorkflowsDir)
+      .filter((f) => f.endsWith('.md'))
+      .reduce((n, f) => n + extractReferences(fs.readFileSync(path.join(realWorkflowsDir, f), 'utf8')).length, 0);
+    assert.ok(refCount > 0, 'sanity: expected at least one FVGSD_HOME script reference in get-shit-done/workflows');
     const r = auditWorkflowScriptPaths({
-      workflowsDir: require('node:path').join(ROOT, 'get-shit-done', 'workflows'),
+      workflowsDir: realWorkflowsDir,
       repoRoot: ROOT,
       installedPrefixes: INSTALLED_PREFIXES,
+      sourcePrefixes: SOURCE_PREFIXES,
     });
     const newGaps = r.findings.filter(
       (f) => !KNOWN_GAPS.has(`${f.workflow}|${f.path}|${f.kind}`),
@@ -219,7 +235,7 @@ describe('Bug #2995: real workflow audit', () => {
     const r = auditWorkflowScriptPaths({
       workflowsDir,
       repoRoot,
-      installedPrefixes: ['get-shit-done', 'agents', 'hooks', 'commands'],
+      installedPrefixes: [INSTALL_DIR, 'agents', 'hooks', 'commands'],
     });
     assert.equal(r.ok, false);
     const kinds = r.findings.filter((f) => f.path === 'scripts/missing.cjs').map((f) => f.kind).sort();

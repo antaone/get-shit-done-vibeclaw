@@ -23,6 +23,7 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 const crypto = require('node:crypto');
 
@@ -60,14 +61,13 @@ describe('Bug #2998: populatePristineDir is exported and writes pristine for mod
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2998-'));
     const pristineDir = path.join(tmp, 'fvgsd-pristine');
     try {
-      // Pick a real installed-side relPath from the package source. The
-      // install transforms map source `get-shit-done/<rel>` to installed
-      // `get-shit-done/<rel>` for skills-aware runtimes (like claude),
-      // so the relPath is the same on both sides.
-      const candidate = path.join('get-shit-done', 'workflows', 'reapply-patches.md');
-      const sourcePath = path.join(ROOT, candidate);
+      // Use the installed-side relPath, the way saveLocalPatches passes it from
+      // the manifest. The engine installs to `<config>/fvgsd/<rel>` from the
+      // package's `get-shit-done/<rel>` source tree, so the roots differ.
+      const candidate = path.join(IDENTITY.installDir, 'workflows', 'reapply-patches.md');
+      const sourcePath = path.join(ROOT, 'get-shit-done', 'workflows', 'reapply-patches.md');
       assert.equal(fs.existsSync(sourcePath), true,
-        `precondition: source file exists at ${candidate}`);
+        `precondition: source file exists at ${path.relative(ROOT, sourcePath)}`);
       const written = INSTALL.populatePristineDir({
         packageSrc: ROOT,
         pristineDir,
@@ -98,13 +98,13 @@ describe('Bug #2998: populatePristineDir is exported and writes pristine for mod
       const written = INSTALL.populatePristineDir({
         packageSrc: ROOT,
         pristineDir,
-        modified: ['get-shit-done/this-path-does-not-exist.md'],
+        modified: [`${IDENTITY.installDir}/this-path-does-not-exist.md`],
         runtime: 'claude',
         pathPrefix: '$HOME/.claude/',
         isGlobal: true,
       });
       assert.equal(written, 0, 'expected zero pristine files for non-existent source paths');
-      const out = path.join(pristineDir, 'get-shit-done/this-path-does-not-exist.md');
+      const out = path.join(pristineDir, `${IDENTITY.installDir}/this-path-does-not-exist.md`);
       assert.equal(fs.existsSync(out), false, 'pristine should not contain ghost paths');
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
@@ -118,7 +118,7 @@ describe('Bug #2998: populatePristineDir is exported and writes pristine for mod
     const tmp1 = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2998-d1-'));
     const tmp2 = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2998-d2-'));
     try {
-      const candidate = path.join('get-shit-done', 'workflows', 'reapply-patches.md');
+      const candidate = path.join(IDENTITY.installDir, 'workflows', 'reapply-patches.md');
       const ctx = {
         packageSrc: ROOT,
         modified: [candidate],
@@ -168,9 +168,9 @@ describe('Bug #2998 (#3004 CR): pristine expansion covers every manifest install
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-2998-mix-'));
     const pristineDir = path.join(tmp, 'fvgsd-pristine');
     try {
-      const a = path.join('get-shit-done', 'workflows', 'reapply-patches.md');
+      const a = path.join(IDENTITY.installDir, 'workflows', 'reapply-patches.md');
       const b = path.join('agents', 'fvgsd-planner.md');
-      assert.equal(fs.existsSync(path.join(ROOT, a)), true);
+      assert.equal(fs.existsSync(path.join(ROOT, 'get-shit-done', 'workflows', 'reapply-patches.md')), true);
       assert.equal(fs.existsSync(path.join(ROOT, b)), true);
       const written = INSTALL.populatePristineDir({
         packageSrc: ROOT,

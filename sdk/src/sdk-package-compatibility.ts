@@ -4,6 +4,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GSDError, ErrorClassification } from './errors.js';
+import { IDENTITY } from './identity.js';
 
 export type LegacySdkAsset = 'fvgsd-tools' | 'core-cjs';
 
@@ -47,7 +48,7 @@ const BUNDLED_LEGACY_ASSET_PATH: Record<LegacySdkAsset, string> = {
 };
 
 export function resolveLegacyInstallDir(homeDir: string = homedir()): string {
-  return join(homeDir, '.claude', 'get-shit-done');
+  return join(homeDir, '.claude', IDENTITY.installDir);
 }
 
 export function resolveLegacyTemplatesDir(homeDir: string = homedir()): string {
@@ -78,8 +79,8 @@ function legacyAssetProbes(asset: LegacySdkAsset, projectDir: string, homeDir: s
   const suffix = LEGACY_ASSET_SUBPATH[asset];
   return [
     BUNDLED_LEGACY_ASSET_PATH[asset],
-    join(projectDir, '.claude', 'get-shit-done', 'bin', suffix),
-    join(homeDir, '.claude', 'get-shit-done', 'bin', suffix),
+    join(projectDir, '.claude', IDENTITY.installDir, 'bin', suffix),
+    join(homeDir, '.claude', IDENTITY.installDir, 'bin', suffix),
   ];
 }
 

@@ -12,6 +12,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { runGsdTools, createTempProject, createTempGitProject, cleanup } = require('./helpers.cjs');
 
 const {
@@ -172,7 +173,7 @@ describe('generate-claude-md command', () => {
     assert.ok(content.includes('.cursor/skills/'));
     assert.ok(content.includes('.github/skills/'));
     assert.ok(content.includes('.codex/skills/'));
-    assert.ok(!content.includes('get-shit-done/skills'));
+    assert.ok(!content.includes(`${IDENTITY.installDir}/skills`));
   });
 });
 

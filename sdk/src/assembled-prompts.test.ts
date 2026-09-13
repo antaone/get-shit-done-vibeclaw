@@ -28,6 +28,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
 // Repo agent definitions (renamed fvgsd-*.md); keeps the factory off the machine's installed agents.
 const repoAgentsDir = join(__dirname, '..', '..', 'agents');
+// Repo install payload (workflows/, templates/); keeps the factory off ~/.claude.
+const repoInstallDir = join(__dirname, '..', '..', 'get-shit-done');
 
 // ─── Blocked patterns (aligned with headless-prompts.test.ts) ────────────────
 
@@ -98,7 +100,7 @@ describe('PromptFactory assembled output', () => {
   let factory: PromptFactory;
 
   beforeAll(() => {
-    factory = new PromptFactory({ sdkPromptsDir, agentsDir: repoAgentsDir });
+    factory = new PromptFactory({ sdkPromptsDir, agentsDir: repoAgentsDir, gsdInstallDir: repoInstallDir });
   });
 
   const phaseTypes = Object.values(PhaseType) as PhaseType[];

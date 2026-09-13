@@ -115,7 +115,7 @@ describe('bug #3288: model-catalog.cjs install-layout resolution', () => {
     // Build the old install layout manually:
     //   <tmpRoot>/.claude/get-shit-done/bin/lib/model-catalog.cjs  (copy of the real CJS)
     //   sdk/shared/model-catalog.json                              ABSENT
-    const gsdLibDir = path.join(tmpRoot, '.claude', 'get-shit-done', 'bin', 'lib');
+    const gsdLibDir = path.join(tmpRoot, '.claude', IDENTITY.installDir, 'bin', 'lib');
     fs.mkdirSync(gsdLibDir, { recursive: true });
 
     // Write a minimal model-catalog.cjs that uses ONLY the 3-level path (the old/broken path).
@@ -153,7 +153,7 @@ module.exports = { catalog };
     // Build the new install layout:
     //   <tmpRoot>/.claude/get-shit-done/bin/lib/model-catalog.cjs (copy of real CJS)
     //   <tmpRoot>/.claude/get-shit-done/bin/shared/model-catalog.json (co-located copy)
-    const gsdBinDir = path.join(tmpRoot, '.claude', 'get-shit-done', 'bin');
+    const gsdBinDir = path.join(tmpRoot, '.claude', IDENTITY.installDir, 'bin');
     const gsdLibDir = path.join(gsdBinDir, 'lib');
     const gsdSharedDir = path.join(gsdBinDir, 'shared');
     fs.mkdirSync(gsdLibDir, { recursive: true });

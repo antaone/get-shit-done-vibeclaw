@@ -25,6 +25,7 @@ import { homedir } from 'node:os';
 
 import type { GSDOptions, PlanResult, SessionOptions, GSDEvent, TransportHandler, PhaseRunnerOptions, PhaseRunnerResult, MilestoneRunnerOptions, MilestoneRunnerResult, RoadmapPhaseInfo } from './types.js';
 import { GSDEventType } from './types.js';
+import { IDENTITY } from './identity.js';
 import { parsePlan, parsePlanFile } from './plan-parser.js';
 import { loadConfig } from './config.js';
 import { GSDTools, resolveGsdToolsPath } from './fvgsd-tools.js';
@@ -286,7 +287,7 @@ export class GSD {
   private async loadAgentDefinition(): Promise<string | undefined> {
     const paths = [
       // Repo-local GSD installation
-      join(this.projectDir, '.claude', 'get-shit-done', 'agents', 'fvgsd-executor.md'),
+      join(this.projectDir, '.claude', IDENTITY.installDir, 'agents', 'fvgsd-executor.md'),
       // Repo-local agents directory
       join(this.projectDir, '.claude', 'agents', 'fvgsd-executor.md'),
       // Global home directory

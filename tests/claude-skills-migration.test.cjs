@@ -461,7 +461,7 @@ describe('writeManifest tracks skills/ for Claude', () => {
     fs.writeFileSync(path.join(skillDir, 'SKILL.md'), 'skill content');
 
     // Create get-shit-done directory (required by writeManifest)
-    const gsdDir = path.join(tmpDir, 'get-shit-done');
+    const gsdDir = path.join(tmpDir, IDENTITY.installDir);
     fs.mkdirSync(gsdDir, { recursive: true });
     fs.writeFileSync(path.join(gsdDir, 'test.md'), 'test');
 

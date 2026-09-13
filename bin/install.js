@@ -7777,7 +7777,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
 function populatePristineDir({ packageSrc, pristineDir, modified, runtime, pathPrefix, isGlobal }) {
   if (!modified || modified.length === 0) return 0;
   // Modified paths come from manifest.files which can live under several
-  // install roots: get-shit-done/, commands/gsd/, command/, skills/, agents/,
+  // install roots: fvgsd/, commands/gsd/, command/, skills/, agents/,
   // hooks/, plus runtime-specific root files (#3004 CR). Stage every
   // top-level dir that actually contains a modified path; root-level files
   // are copied directly without the transform pipeline (they don't need
@@ -7813,7 +7813,10 @@ function populatePristineDir({ packageSrc, pristineDir, modified, runtime, pathP
         }
         continue;
       }
-      const srcDir = path.join(packageSrc, top);
+      // The engine installs to <config>/<IDENTITY.installDir>/ from the package's
+      // get-shit-done/ source tree; every other install root keeps its source name.
+      const srcTop = top === IDENTITY.installDir ? 'get-shit-done' : top;
+      const srcDir = path.join(packageSrc, srcTop);
       const stageDir = path.join(stageRoot, top);
       if (!fs.existsSync(srcDir)) continue;
       copyWithPathReplacement(srcDir, stageDir, pathPrefix, runtime, false, isGlobal);
@@ -8820,7 +8823,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // Copy hooks from dist/ (bundled with dependencies)
     // Template paths for the target runtime (replaces '.claude' with correct config dir)
     const hooksSrc = path.join(src, 'hooks', 'dist');
-    if (fs.existsSync(hooksSrc)) {
+    if (fs.existsSync(path.join(hooksSrc, IDENTITY.hooksDir))) {
       const hooksDest = path.join(targetDir, 'hooks');
       fs.mkdirSync(hooksDest, { recursive: true });
       const configDirReplacement = getConfigDirFromHome(runtime, isGlobal);
@@ -8858,7 +8861,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           else if (entry.isFile()) templateHook(srcPath, destPath);
         }
       };
-      copyHookTree(hooksSrc, hooksDest);
+      // Only fvgsd's own subtree is installed; anything else left in a stale
+      // hooks/dist (for example a pre-rename flat build) is never copied.
+      copyHookTree(path.join(hooksSrc, IDENTITY.hooksDir), path.join(hooksDest, IDENTITY.hooksDir));
       if (verifyInstalled(hooksDest, 'hooks')) {
         console.log(`  ${green}✓${reset} Installed hooks (bundled)`);
         // Warn if expected community .sh hooks are missing (non-fatal)

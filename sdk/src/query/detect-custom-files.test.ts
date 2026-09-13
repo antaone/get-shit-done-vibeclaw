@@ -14,6 +14,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { detectCustomFiles } from './detect-custom-files.js';
+import { IDENTITY } from '../identity.js';
 
 function sha256(content: string): string {
   return createHash('sha256').update(content).digest('hex');
@@ -87,15 +88,15 @@ describe('detectCustomFiles — skills/ parity with CJS port (#3317)', () => {
 
   it('still detects custom files in get-shit-done/workflows/ (regression guard)', async () => {
     await writeManifest(tmpDir, {
-      'get-shit-done/workflows/plan-phase.md': '# Plan Phase\n',
+      [`${IDENTITY.installDir}/workflows/plan-phase.md`]: '# Plan Phase\n',
       'skills/fvgsd-planner/SKILL.md': '# GSD Planner Skill\n',
     });
-    await writeCustomFile(tmpDir, 'get-shit-done/workflows/custom-workflow.md', '# Custom\n');
+    await writeCustomFile(tmpDir, `${IDENTITY.installDir}/workflows/custom-workflow.md`, '# Custom\n');
 
     const { data } = await detectCustomFiles(['--config-dir', tmpDir], tmpDir);
     const result = data as DetectResult;
 
-    expect(result.custom_files).toContain('get-shit-done/workflows/custom-workflow.md');
+    expect(result.custom_files).toContain(`${IDENTITY.installDir}/workflows/custom-workflow.md`);
   });
 
   it('custom_count matches custom_files.length across multiple skills', async () => {

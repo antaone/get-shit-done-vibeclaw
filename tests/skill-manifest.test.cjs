@@ -6,6 +6,7 @@ const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 function writeSkill(rootDir, name, description, body = '') {
@@ -37,7 +38,7 @@ describe('skill-manifest', () => {
     writeSkill(path.join(homeDir, '.claude', 'skills'), 'global-claude', 'Global Claude skill');
     writeSkill(path.join(homeDir, '.codex', 'skills'), 'global-codex', 'Global Codex skill');
     writeSkill(
-      path.join(homeDir, '.claude', 'get-shit-done', 'skills'),
+      path.join(homeDir, '.claude', IDENTITY.installDir, 'skills'),
       'legacy-import',
       'Deprecated import-only skill'
     );
@@ -100,7 +101,7 @@ describe('skill-manifest', () => {
         deprecated: importedSkill.deprecated,
       },
       {
-        root: '.claude/get-shit-done/skills',
+        root: `.claude/${IDENTITY.installDir}/skills`,
         scope: 'import-only',
         installed: false,
         deprecated: true,

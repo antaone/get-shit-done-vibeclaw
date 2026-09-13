@@ -9,6 +9,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('os');
 const { execSync } = require('child_process');
 const { runGsdTools, createTempProject, createTempDir, cleanup } = require('./helpers.cjs');
@@ -362,9 +363,9 @@ describe('workspace command files', () => {
       for (const line of blk.split('\n')) {
         const t = line.trim();
         if (!t.startsWith('@')) continue;
-        // Normalize away the home-prefix and the `.claude/get-shit-done/` root
+        // Normalize away the home-prefix and the `.claude/fvgsd/` install root
         // so the test only cares about the workflow path tail.
-        const rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        const rel = t.replace(new RegExp(`^@~?\\/?(?:\\.claude\\/)?(?:${IDENTITY.installDir}\\/)?`), '');
         targets.push(rel);
       }
     }

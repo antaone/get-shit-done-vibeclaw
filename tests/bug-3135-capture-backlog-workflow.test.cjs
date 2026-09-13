@@ -21,6 +21,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const WORKFLOW = path.join(ROOT, 'get-shit-done', 'workflows', 'add-backlog.md');
@@ -115,7 +116,7 @@ describe('#3135: capture.md correctly routes --backlog to add-backlog workflow',
       for (const line of blk.split('\n')) {
         const t = line.trim();
         if (!t.startsWith('@')) continue;
-        const rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        const rel = t.replace(new RegExp(`^@~?\\/?(?:\\.claude\\/)?(?:${IDENTITY.installDir}\\/)?`), '');
         targets.push(rel);
       }
     }
@@ -136,7 +137,8 @@ describe('#3135: capture.md correctly routes --backlog to add-backlog workflow',
 
 describe('regression: every execution_context @-reference in commands/gsd/*.md resolves to an existing workflow file', () => {
   // Extract @-references from execution_context blocks, normalised to the
-  // get-shit-done/workflows/ relative tail so we can resolve them on disk.
+  // workflows/ relative tail (installed under fvgsd/) so we can resolve them
+  // against the source tree get-shit-done/workflows/ on disk.
   function extractWorkflowRefs(filePath) {
     const body = fs.readFileSync(filePath, 'utf8');
     const blocks = [
@@ -149,8 +151,8 @@ describe('regression: every execution_context @-reference in commands/gsd/*.md r
         if (!t.startsWith('@')) continue;
         // Only care about workflow references (skip non-workflow @-refs)
         if (!t.includes('/workflows/')) continue;
-        // Normalise: drop everything up to and including 'get-shit-done/'
-        const match = t.match(/get-shit-done\/(workflows\/.+\.md)/);
+        // Normalise: drop everything up to and including the install folder ('fvgsd/')
+        const match = t.match(new RegExp(`${IDENTITY.installDir}/(workflows/.+\\.md)`));
         if (match) refs.push(match[1]);
       }
     }
@@ -162,6 +164,11 @@ describe('regression: every execution_context @-reference in commands/gsd/*.md r
     .filter((f) => f.endsWith('.md'))
     .map((f) => path.join(COMMANDS_DIR, f));
 
+  let totalRefs = 0;
+  test('commands/gsd execution_context blocks yield workflow @-refs to check', () => {
+    assert.ok(totalRefs > 0, `no ${IDENTITY.installDir}/workflows/*.md @-refs extracted from commands/gsd/*.md`);
+  });
+
   for (const cmdFile of commandFiles) {
     const cmdName = path.basename(cmdFile);
     let refs;
@@ -170,6 +177,7 @@ describe('regression: every execution_context @-reference in commands/gsd/*.md r
     } catch {
       continue;
     }
+    totalRefs += refs.length;
     for (const ref of refs) {
       test(`${cmdName}: @-ref '${ref}' exists on disk`, () => {
         const absPath = path.join(ROOT, 'get-shit-done', ref);

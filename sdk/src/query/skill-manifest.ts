@@ -15,6 +15,7 @@ import { extractFrontmatterLeading } from './frontmatter.js';
 import { resolveGlobalSkillsBase, renderGlobalSkillsBaseDisplayPath } from './helpers.js';
 import type { QueryHandler } from './utils.js';
 import { resolveLegacySkillsDir } from '../sdk-package-compatibility.js';
+import { IDENTITY } from '../identity.js';
 
 export interface SkillManifestSkill {
   name: string;
@@ -69,7 +70,7 @@ export function buildSkillManifest(cwd: string, skillsDir: string | null = null)
       { root: renderGlobalSkillsBaseDisplayPath('claude'), path: resolveGlobalSkillsBase('claude')!, scope: 'global', kind: 'skills' as const },
       { root: renderGlobalSkillsBaseDisplayPath('codex'), path: resolveGlobalSkillsBase('codex')!, scope: 'global', kind: 'skills' as const },
       {
-        root: '.claude/get-shit-done/skills',
+        root: `.claude/${IDENTITY.installDir}/skills`,
         path: resolveLegacySkillsDir(),
         scope: 'import-only',
         kind: 'skills' as const,

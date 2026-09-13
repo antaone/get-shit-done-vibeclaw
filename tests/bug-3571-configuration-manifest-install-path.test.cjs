@@ -70,7 +70,7 @@ describe('bug #3571: configuration generated manifests resolve in install layout
   });
 
   test('co-located bin/shared manifests let configuration.generated.cjs load without sdk/shared', () => {
-    const gsdBinDir = path.join(tmpRoot, '.codex', 'get-shit-done', 'bin');
+    const gsdBinDir = path.join(tmpRoot, '.codex', IDENTITY.installDir, 'bin');
     const gsdLibDir = path.join(gsdBinDir, 'lib');
     const gsdSharedDir = path.join(gsdBinDir, 'shared');
     fs.mkdirSync(gsdLibDir, { recursive: true });

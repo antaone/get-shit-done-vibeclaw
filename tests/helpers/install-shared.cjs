@@ -8,6 +8,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 const assert = require('node:assert/strict');
@@ -79,10 +80,13 @@ function walk(dir) {
 }
 
 function simulateHookCopy(hooksSrc, hooksDest) {
-  fs.mkdirSync(hooksDest, { recursive: true });
-  for (const srcFile of walk(hooksSrc)) {
+  // Mirrors bin/install.js: only the fvgsd subtree of hooks/dist is installed.
+  const srcRoot = path.join(hooksSrc, IDENTITY.hooksDir);
+  const destRoot = path.join(hooksDest, IDENTITY.hooksDir);
+  fs.mkdirSync(destRoot, { recursive: true });
+  for (const srcFile of walk(srcRoot)) {
     if (!fs.statSync(srcFile).isFile()) continue;
-    const destFile = path.join(hooksDest, path.relative(hooksSrc, srcFile));
+    const destFile = path.join(destRoot, path.relative(srcRoot, srcFile));
     fs.mkdirSync(path.dirname(destFile), { recursive: true });
     if (srcFile.endsWith('.js')) {
       fs.writeFileSync(destFile, fs.readFileSync(srcFile, 'utf8'));

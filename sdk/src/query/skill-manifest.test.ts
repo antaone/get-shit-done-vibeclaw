@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { buildSkillManifest } from './skill-manifest.js';
 import { resolveGlobalSkillsBase, renderGlobalSkillsBaseDisplayPath } from './helpers.js';
 import { resolveLegacySkillsDir } from '../sdk-package-compatibility.js';
+import { IDENTITY } from '../identity.js';
 
 describe('skill-manifest', () => {
   it('resolves runtime-global skills roots through shared runtime policy', () => {
@@ -21,7 +22,7 @@ describe('skill-manifest', () => {
 
   it('resolves legacy import-only skills root through SDK Package Seam Module', () => {
     const manifest = buildSkillManifest('/tmp/project-that-does-not-exist');
-    const legacyRoot = manifest.roots.find(root => root.root === '.claude/get-shit-done/skills');
+    const legacyRoot = manifest.roots.find(root => root.root === `.claude/${IDENTITY.installDir}/skills`);
 
     expect(legacyRoot).toBeDefined();
     expect(legacyRoot?.path).toBe(resolveLegacySkillsDir());
@@ -57,6 +58,6 @@ describe('skill-manifest', () => {
   });
 
   it('legacy skills dir helper points at ~/.claude/fvgsd/skills', () => {
-    expect(resolveLegacySkillsDir()).toBe(join(homedir(), '.claude', 'get-shit-done', 'skills'));
+    expect(resolveLegacySkillsDir()).toBe(join(homedir(), '.claude', IDENTITY.installDir, 'skills'));
   });
 });

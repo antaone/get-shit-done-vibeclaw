@@ -10,6 +10,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 describe('generate-claude-md', () => {
@@ -169,9 +170,9 @@ describe('generate-claude-md skills section', () => {
     );
 
     const homeDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'fvgsd-claude-skills-home-'));
-    fs.mkdirSync(path.join(homeDir, '.claude', 'get-shit-done', 'skills', 'import-only'), { recursive: true });
+    fs.mkdirSync(path.join(homeDir, '.claude', IDENTITY.installDir, 'skills', 'import-only'), { recursive: true });
     fs.writeFileSync(
-      path.join(homeDir, '.claude', 'get-shit-done', 'skills', 'import-only', 'SKILL.md'),
+      path.join(homeDir, '.claude', IDENTITY.installDir, 'skills', 'import-only', 'SKILL.md'),
       '---\nname: import-only\ndescription: Deprecated import-only skill.\n---\n'
     );
 

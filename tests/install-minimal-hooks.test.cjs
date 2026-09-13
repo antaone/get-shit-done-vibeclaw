@@ -613,6 +613,11 @@ describe('install.js source correctness', () => {
 
   test('Codex hook path does not use get-shit-done/hooks/ subdirectory', () => {
     assert.ok(!src.includes("'get-shit-done', 'hooks', 'fvgsd/check-update"));
+    // install.js spells the install folder IDENTITY.installDir now, so also reject that
+    // spelling (and the literal folder names) ahead of 'hooks'.
+    const installFolderArg = `(?:'get-shit-done'|'${IDENTITY.installDir}'|IDENTITY\\.installDir)`;
+    const nestedHookPath = new RegExp(`${installFolderArg}\\s*,\\s*'hooks'\\s*,\\s*'${IDENTITY.hooksDir}/check-update`);
+    assert.ok(!nestedHookPath.test(src), 'Codex hook path must not nest hooks/ under the install folder');
   });
 
   test('cache invalidation uses ~/.cache/gsd/ path', () => {

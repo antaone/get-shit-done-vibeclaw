@@ -24,7 +24,6 @@ const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 
 // --- Test Environment Setup ---
@@ -169,7 +168,10 @@ function parseSkillCallBody(body) {
 }
 
 // Plugin directory resolution (cross-platform safe)
-const PLUGIN_WORKFLOWS_DIR = process.env.FVGSD_PLUGIN_ROOT || path.join(os.homedir(), '.claude', 'get-shit-done', 'workflows');
+// Defaults to the repo's canonical workflow source (what the installer copies to
+// <config>/fvgsd/workflows/) so these checks never read another install under ~/.claude.
+// Set FVGSD_PLUGIN_ROOT to run them against an installed workflows directory instead.
+const PLUGIN_WORKFLOWS_DIR = process.env.FVGSD_PLUGIN_ROOT || WORKFLOWS_DIR;
 const PLUGIN_AVAILABLE = fs.existsSync(PLUGIN_WORKFLOWS_DIR);
 
 // --- CR-AGENT: code review agent frontmatter ---
@@ -472,13 +474,13 @@ describe('CR-INTEGRATION: workflow integration points', () => {
   test('execute-phase.md does NOT contain ls.*REVIEW.md.*head pattern', { skip: !PLUGIN_AVAILABLE ? 'Plugin dir not installed' : false }, () => {
     const content = fs.readFileSync(path.join(PLUGIN_WORKFLOWS_DIR, 'execute-phase.md'), 'utf-8');
 
-    // Extract code_review_gate section to check
-    const gateMatch = content.match(/<step name="code_review_gate">([\s\S]*?)<\/step>/);
-    if (gateMatch) {
-      const gateContent = gateMatch[1];
-      assert.ok(!gateContent.match(/ls.*REVIEW\.md.*head/),
-        'execute-phase.md code_review_gate uses non-deterministic glob pattern (ls | head)');
-    }
+    // Extract code_review_gate section to check. The step tag carries attributes
+    // (required="true"), so allow them; a missing section fails instead of passing vacuously.
+    const gateMatch = content.match(/<step name="code_review_gate"[^>]*>([\s\S]*?)<\/step>/);
+    assert.ok(gateMatch, 'execute-phase.md has no <step name="code_review_gate"> section to check');
+    const gateContent = gateMatch[1];
+    assert.ok(!gateContent.match(/ls.*REVIEW\.md.*head/),
+      'execute-phase.md code_review_gate uses non-deterministic glob pattern (ls | head)');
   });
 
   test('quick.md contains code-review invocation', { skip: !PLUGIN_AVAILABLE ? 'Plugin dir not installed' : false }, () => {

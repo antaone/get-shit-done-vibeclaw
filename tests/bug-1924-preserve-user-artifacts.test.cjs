@@ -238,14 +238,14 @@ describe('#1924: profile-user.md backup path must be outside get-shit-done/', ()
 
     // The backup must NOT be inside get-shit-done/ because that directory is wiped on update
     assert.ok(
-      !content.includes('get-shit-done/USER-PROFILE.backup.md'),
+      !content.includes(`${IDENTITY.installDir}/USER-PROFILE.backup.md`),
       'backup path must NOT be inside get-shit-done/ — that directory is wiped on gsd-update'
     );
 
     // The backup should be at ~/.claude/USER-PROFILE.backup.md (outside get-shit-done/)
     assert.ok(
       content.includes('USER-PROFILE.backup.md') &&
-      !content.includes('/get-shit-done/USER-PROFILE.backup.md'),
+      !content.includes(`/${IDENTITY.installDir}/USER-PROFILE.backup.md`),
       'backup path must be outside get-shit-done/ (e.g. ~/.claude/USER-PROFILE.backup.md)'
     );
   });

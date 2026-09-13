@@ -22,6 +22,9 @@ const WORKFLOW_PATH = path.join(__dirname, '..', 'get-shit-done', 'workflows', '
 // allow-test-rule: source-text-is-the-product
 // quick.md is the AI instruction workflow — the `command -v fvgsd-sdk` guard IS the fix.
 // There is no behavioral equivalent: the check runs inside the AI agent, not in fvgsd-tools.
+// The npm package name the install hint must name.
+const PACKAGE_NAME = require('../package.json').name;
+
 describe('bug #2334: quick workflow fvgsd-sdk pre-flight check', () => {
   let content;
 
@@ -56,7 +59,10 @@ describe('bug #2334: quick workflow fvgsd-sdk pre-flight check', () => {
     const firstSdkCall = content.indexOf('fvgsd-sdk query init.quick', step2Start);
     const step2Section = content.slice(step2Start, firstSdkCall);
 
-    const hasInstallHint = step2Section.includes('fvgsd') || step2Section.includes('fvgsd-update') || step2Section.includes('/gsd-update');
+    // The package name is also the prefix of fvgsd-sdk (checked above), so a bare 'fvgsd'
+    // token always matches; require the npm install hint for the package itself.
+    const installsPackage = new RegExp(`npm (?:install|i) -g ${PACKAGE_NAME}(?![\\w-])`).test(step2Section);
+    const hasInstallHint = installsPackage || step2Section.includes('fvgsd-update') || step2Section.includes('/gsd-update');
     assert.ok(
       hasInstallHint,
       'Pre-flight error must include a hint on how to install query-capable fvgsd-sdk (npm install -g fvgsd or /gsd-update)'

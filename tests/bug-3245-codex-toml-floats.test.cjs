@@ -29,6 +29,7 @@ const { test, describe, before, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('os');
 const { execFileSync } = require('child_process');
 
@@ -401,8 +402,8 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
       );
     }
 
-    // VERSION — GSD writes get-shit-done/VERSION. Must be absent (wasn't there before).
-    const versionPath = path.join(codexHome, 'get-shit-done', 'VERSION');
+    // VERSION — GSD writes fvgsd/VERSION. Must be absent (wasn't there before).
+    const versionPath = path.join(codexHome, IDENTITY.installDir, 'VERSION');
     assert.strictEqual(
       fs.existsSync(versionPath),
       false,

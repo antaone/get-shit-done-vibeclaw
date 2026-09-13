@@ -4,6 +4,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('./identity.cjs');
 const { execGit, platformWriteSync, platformReadSync } = require('./shell-command-projection.cjs');
 const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, gitWorktreeInfoInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
 const { planningPaths, planningDir, planningRoot, findContextMdIn } = require('./planning-workspace.cjs');
@@ -1919,8 +1920,8 @@ function buildSkillManifest(cwd, skillsDir = null) {
       kind: 'skills',
     },
     {
-      root: '.claude/get-shit-done/skills',
-      path: path.join(os.homedir(), '.claude', 'get-shit-done', 'skills'),
+      root: `.claude/${IDENTITY.installDir}/skills`,
+      path: path.join(os.homedir(), '.claude', IDENTITY.installDir, 'skills'),
       scope: 'import-only',
       kind: 'skills',
       deprecated: true,

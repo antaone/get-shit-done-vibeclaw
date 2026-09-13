@@ -518,10 +518,10 @@ describe('regressions', () => {
       );
     });
 
-    test('hooks/dist/lib/graphify-rebuild.sh exists after build', () => {
+    test('hooks/dist/fvgsd/lib/graphify-rebuild.sh exists after build', () => {
       assert.ok(
         fs.existsSync(path.join(DIST_DIR_3579, 'fvgsd', 'lib', 'graphify-rebuild.sh')),
-        'expected hooks/dist/lib/graphify-rebuild.sh to exist after build (Gap 2)'
+        'expected hooks/dist/fvgsd/lib/graphify-rebuild.sh to exist after build (Gap 2)'
       );
     });
   });

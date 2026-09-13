@@ -236,7 +236,7 @@ describe('install/uninstall — hermes (nested skills/gsd/ layout)', () => {
     assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'gsd', 'help', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'gsd', 'DESCRIPTION.md')),
       'DESCRIPTION.md at category root');
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
     const manifest = writeManifest(targetDir, 'hermes');
@@ -247,7 +247,7 @@ describe('install/uninstall — hermes (nested skills/gsd/ layout)', () => {
 
     assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'gsd', 'help')));
     assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'gsd')));
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)));
   });
 
   test('installed SKILL.md frontmatter conforms to Hermes spec', () => {
@@ -325,7 +325,7 @@ describe('install/uninstall — qwen (flat skills/fvgsd-* layout)', () => {
     assert.strictEqual(result.configDir, fs.realpathSync(targetDir));
 
     assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help', 'SKILL.md')));
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
     const manifest = writeManifest(targetDir, 'qwen');
@@ -333,7 +333,7 @@ describe('install/uninstall — qwen (flat skills/fvgsd-* layout)', () => {
 
     uninstall(false, 'qwen');
     assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help')));
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)));
   });
 });
 
@@ -366,7 +366,7 @@ describe('install/uninstall — trae (flat skills/fvgsd-* layout)', () => {
     });
 
     assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help', 'SKILL.md')));
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
     const manifest = writeManifest(targetDir, 'trae');
@@ -374,7 +374,7 @@ describe('install/uninstall — trae (flat skills/fvgsd-* layout)', () => {
 
     uninstall(false, 'trae');
     assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help')));
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)));
   });
 });
 

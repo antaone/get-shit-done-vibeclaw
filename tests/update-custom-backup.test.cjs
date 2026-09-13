@@ -20,6 +20,7 @@ const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const crypto = require('crypto');
 const { runGsdTools, createTempDir, cleanup } = require('./helpers.cjs');
 
@@ -61,12 +62,12 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('detects a custom file added inside get-shit-done/workflows/', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
-      'get-shit-done/workflows/plan-phase.md': '# Plan Phase\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\n',
+      [`${IDENTITY.installDir}/workflows/plan-phase.md`]: '# Plan Phase\n',
     });
 
     // Add a custom file NOT in the manifest
-    const customFile = path.join(tmpDir, 'get-shit-done/workflows/my-custom-workflow.md');
+    const customFile = path.join(tmpDir, `${IDENTITY.installDir}/workflows/my-custom-workflow.md`);
     fs.writeFileSync(customFile, '# My Custom Workflow\n');
 
     const result = runGsdTools(
@@ -80,7 +81,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
     assert.ok(Array.isArray(json.custom_files), 'should return custom_files array');
     assert.ok(json.custom_files.length > 0, 'should detect at least one custom file');
     assert.ok(
-      json.custom_files.includes('get-shit-done/workflows/my-custom-workflow.md'),
+      json.custom_files.includes(`${IDENTITY.installDir}/workflows/my-custom-workflow.md`),
       `custom file should be listed; got: ${JSON.stringify(json.custom_files)}`
     );
   });
@@ -109,8 +110,8 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('reports zero custom files when all files are in manifest', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
-      'get-shit-done/references/gates.md': '# Gates\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\n',
+      [`${IDENTITY.installDir}/references/gates.md`]: '# Gates\n',
       'agents/fvgsd-executor.md': '# Executor\n',
     });
     // No extra files added
@@ -130,16 +131,16 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('returns custom_count equal to custom_files length', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\n',
     });
 
     // Add two custom files
     fs.writeFileSync(
-      path.join(tmpDir, 'get-shit-done/workflows/custom-a.md'),
+      path.join(tmpDir, `${IDENTITY.installDir}/workflows/custom-a.md`),
       '# Custom A\n'
     );
     fs.writeFileSync(
-      path.join(tmpDir, 'get-shit-done/workflows/custom-b.md'),
+      path.join(tmpDir, `${IDENTITY.installDir}/workflows/custom-b.md`),
       '# Custom B\n'
     );
 
@@ -158,12 +159,12 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('does not flag manifest files as custom even if content was modified', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\nOriginal\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\nOriginal\n',
     });
 
     // Modify the content of an existing manifest file
     fs.writeFileSync(
-      path.join(tmpDir, 'get-shit-done/workflows/execute-phase.md'),
+      path.join(tmpDir, `${IDENTITY.installDir}/workflows/execute-phase.md`),
       '# Execute Phase\nModified by user\n'
     );
 
@@ -178,14 +179,14 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
     // Modified manifest files are handled by saveLocalPatches (in install.js).
     // detect-custom-files only finds files NOT in the manifest at all.
     assert.ok(
-      !json.custom_files.includes('get-shit-done/workflows/execute-phase.md'),
+      !json.custom_files.includes(`${IDENTITY.installDir}/workflows/execute-phase.md`),
       'modified manifest files should NOT be listed as custom (that is saveLocalPatches territory)'
     );
   });
 
   test('handles missing manifest gracefully — treats all GSD-dir files as custom', () => {
     // No manifest. Add a file in a GSD-managed dir.
-    const workflowDir = path.join(tmpDir, 'get-shit-done/workflows');
+    const workflowDir = path.join(tmpDir, `${IDENTITY.installDir}/workflows`);
     fs.mkdirSync(workflowDir, { recursive: true });
     fs.writeFileSync(path.join(workflowDir, 'my-workflow.md'), '# My Workflow\n');
 
@@ -206,10 +207,10 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('detects custom files inside get-shit-done/references/', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/references/gates.md': '# Gates\n',
+      [`${IDENTITY.installDir}/references/gates.md`]: '# Gates\n',
     });
 
-    const customRef = path.join(tmpDir, 'get-shit-done/references/my-domain-probes.md');
+    const customRef = path.join(tmpDir, `${IDENTITY.installDir}/references/my-domain-probes.md`);
     fs.writeFileSync(customRef, '# My Domain Probes\n');
 
     const result = runGsdTools(
@@ -221,7 +222,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
     const json = JSON.parse(result.output);
     assert.ok(
-      json.custom_files.includes('get-shit-done/references/my-domain-probes.md'),
+      json.custom_files.includes(`${IDENTITY.installDir}/references/my-domain-probes.md`),
       `should detect custom reference; got: ${JSON.stringify(json.custom_files)}`
     );
   });
@@ -232,7 +233,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
   // GSD-owned skills (tracked in manifest) must NOT be flagged as custom.
   test('scans skills/ directory and detects user-added skills not in manifest (#2942)', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\n',
       'skills/fvgsd-planner/SKILL.md': '# GSD Planner\n',
     });
 
@@ -265,7 +266,7 @@ describe('detect-custom-files — update workflow backup detection (#1997)', () 
 
   test('does not scan command/ directory (installer does not wipe it)', () => {
     writeManifest(tmpDir, {
-      'get-shit-done/workflows/execute-phase.md': '# Execute Phase\n',
+      [`${IDENTITY.installDir}/workflows/execute-phase.md`]: '# Execute Phase\n',
     });
 
     // Simulate files in command/ dir not wiped by installer

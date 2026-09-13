@@ -45,14 +45,18 @@ function extractReferences(content) {
   return out;
 }
 
-function auditWorkflowScriptPaths({ workflowsDir, repoRoot, installedPrefixes }) {
+// sourcePrefixes maps an installed first segment to its source-tree directory,
+// e.g. { fvgsd: 'get-shit-done' }: the installer copies get-shit-done/ into
+// <config>/fvgsd/, so an fvgsd/bin/x.cjs reference is checked against get-shit-done/bin/x.cjs.
+function auditWorkflowScriptPaths({ workflowsDir, repoRoot, installedPrefixes, sourcePrefixes = {} }) {
   const findings = [];
   const installedSet = new Set(installedPrefixes);
   for (const file of listWorkflowFiles(workflowsDir)) {
     const content = fs.readFileSync(file, 'utf8');
     const workflow = path.basename(file);
     for (const ref of extractReferences(content)) {
-      const firstSegment = ref.split('/')[0];
+      const segments = ref.split('/');
+      const firstSegment = segments[0];
       // #2996 CR: emit BOTH findings simultaneously when a reference is
       // both outside an installed prefix AND missing from the repo. The
       // earlier `continue` short-circuited MISSING_FROM_REPO, so a
@@ -61,7 +65,10 @@ function auditWorkflowScriptPaths({ workflowsDir, repoRoot, installedPrefixes })
       if (!installedSet.has(firstSegment)) {
         findings.push({ workflow, path: ref, kind: AUDIT_FINDING.NOT_INSTALLED });
       }
-      const sourceFile = path.join(repoRoot, ref);
+      const sourceRel = Object.prototype.hasOwnProperty.call(sourcePrefixes, firstSegment)
+        ? [sourcePrefixes[firstSegment], ...segments.slice(1)].join('/')
+        : ref;
+      const sourceFile = path.join(repoRoot, sourceRel);
       if (!fs.existsSync(sourceFile)) {
         findings.push({ workflow, path: ref, kind: AUDIT_FINDING.MISSING_FROM_REPO });
       }

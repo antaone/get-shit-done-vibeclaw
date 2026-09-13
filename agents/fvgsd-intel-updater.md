@@ -64,7 +64,7 @@ The /fvgsd:map-codebase --query command has already confirmed that intel.enabled
 ```bash
 # Only run layout detection when analysing the GSD framework repo itself.
 if [[ "$(jq -r '.name // ""' package.json 2>/dev/null)" == "fvgsd" ]]; then
-  ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .claude/get-shit-done 2>/dev/null && echo "claude") || echo "unknown"
+  ls -d .kilo 2>/dev/null && echo "kilo" || (ls -d .claude/fvgsd 2>/dev/null && echo "claude") || echo "unknown"
 fi
 ```
 
@@ -76,9 +76,9 @@ Use the detected root (when applicable) to resolve all canonical paths below:
 |-------------|--------------------------|----------------|
 | Agent files | `agents/*.md` | `.kilo/agents/*.md` |
 | Command files | `commands/gsd/*.md` | `.kilo/command/*.md` |
-| CLI tooling | `get-shit-done/bin/` | `.kilo/get-shit-done/bin/` |
-| Workflow files | `get-shit-done/workflows/` | `.kilo/get-shit-done/workflows/` |
-| Reference docs | `get-shit-done/references/` | `.kilo/get-shit-done/references/` |
+| CLI tooling | `get-shit-done/bin/` | `.kilo/fvgsd/bin/` |
+| Workflow files | `get-shit-done/workflows/` | `.kilo/fvgsd/workflows/` |
+| Reference docs | `get-shit-done/references/` | `.kilo/fvgsd/references/` |
 | Hook files | `hooks/*.js` | `.kilo/hooks/*.js` |
 
 When analyzing this project, use ONLY the canonical source locations matching the detected layout. Do not fall back to the standard layout paths if the `.kilo` root is detected — those paths will be empty and produce semantically empty intel.

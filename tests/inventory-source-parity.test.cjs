@@ -11,6 +11,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const INVENTORY = fs.readFileSync(path.join(ROOT, 'docs', 'INVENTORY.md'), 'utf8');
@@ -32,9 +33,9 @@ function backtickNames(text, ext) {
   return names;
 }
 
-/** Extract agent names from `| gsd-xxx | ...` rows (no backticks). */
+/** Extract agent names from `| fvgsd-xxx | ...` rows (no backticks). */
 function agentNames(text) {
-  const re = /^\|\s*(gsd-[a-z0-9-]+)\s*\|/gm;
+  const re = new RegExp(`^\\|\\s*(${IDENTITY.agentPrefix}[a-z0-9-]+)\\s*\\|`, 'gm');
   const names = [];
   let m;
   while ((m = re.exec(text)) !== null) names.push(m[1]);
@@ -53,6 +54,9 @@ function commandSourcePaths(text) {
 describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry guard)', () => {
   describe('Agents', () => {
     const names = agentNames(section('Agents'));
+    test('parses at least one Agents row', () => {
+      assert.ok(names.length > 0, 'no agent rows parsed from the INVENTORY.md Agents section');
+    });
     for (const name of names) {
       test(name, () => {
         const p = path.join(ROOT, 'agents', name + '.md');
@@ -66,6 +70,9 @@ describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry g
 
   describe('Commands', () => {
     const paths = commandSourcePaths(section('Commands'));
+    test('parses at least one Commands source path', () => {
+      assert.ok(paths.length > 0, 'no command source paths parsed from the INVENTORY.md Commands section');
+    });
     for (const rel of paths) {
       test(rel, () => {
         const p = path.join(ROOT, rel);
@@ -79,6 +86,9 @@ describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry g
 
   describe('Workflows', () => {
     const names = backtickNames(section('Workflows'), 'md');
+    test('parses at least one Workflows row', () => {
+      assert.ok(names.length > 0, 'no workflow rows parsed from the INVENTORY.md Workflows section');
+    });
     for (const name of names) {
       test(name, () => {
         const p = path.join(ROOT, 'get-shit-done', 'workflows', name);
@@ -92,6 +102,9 @@ describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry g
 
   describe('References', () => {
     const names = backtickNames(section('References'), 'md');
+    test('parses at least one References row', () => {
+      assert.ok(names.length > 0, 'no reference rows parsed from the INVENTORY.md References section');
+    });
     for (const name of names) {
       test(name, () => {
         const p = path.join(ROOT, 'get-shit-done', 'references', name);
@@ -105,6 +118,9 @@ describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry g
 
   describe('CLI Modules', () => {
     const names = backtickNames(section('CLI Modules'), 'cjs');
+    test('parses at least one CLI Modules row', () => {
+      assert.ok(names.length > 0, 'no CLI module rows parsed from the INVENTORY.md CLI Modules section');
+    });
     for (const name of names) {
       test(name, () => {
         const p = path.join(ROOT, 'get-shit-done', 'bin', 'lib', name);
@@ -119,6 +135,9 @@ describe('INVENTORY.md declared artifacts exist on the filesystem (ghost-entry g
   describe('Hooks', () => {
     const jsNames = backtickNames(section('Hooks'), 'js');
     const shNames = backtickNames(section('Hooks'), 'sh');
+    test('parses at least one Hooks row', () => {
+      assert.ok(jsNames.length + shNames.length > 0, 'no hook rows parsed from the INVENTORY.md Hooks section');
+    });
     for (const name of [...jsNames, ...shNames]) {
       test(name, () => {
         const p = path.join(ROOT, 'hooks', name);

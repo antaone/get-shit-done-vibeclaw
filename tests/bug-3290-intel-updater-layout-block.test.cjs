@@ -58,6 +58,9 @@ function walkMd(dir) {
 
 // ─── Group A — gating contract ───────────────────────────────────────────────
 
+// The npm package name the framework-repo gate compares against.
+const PACKAGE_NAME = require('../package.json').name;
+
 describe('bug #3290 — Group A: layout-detection block must be gated or absent', () => {
   let content;
 
@@ -88,7 +91,9 @@ describe('bug #3290 — Group A: layout-detection block must be gated or absent'
       // A valid gate checks package.json name or an equivalent positive signal
       // that the current project IS the GSD framework's own repo.
       const hasFrameworkGate =
-        content.includes('fvgsd') ||
+        // The package name is also the command prefix, so look for the quoted name the
+        // gate compares against; a bare 'fvgsd' token appears all over the agent.
+        content.includes(`"${PACKAGE_NAME}"`) ||
         content.includes('is-this-the-framework') ||
         content.includes('framework repo') ||
         content.includes('Only run') ||

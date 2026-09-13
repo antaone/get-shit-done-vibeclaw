@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir, homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { IDENTITY } from './identity.js';
 
 const BUNDLED_GSD_TOOLS_PATH = fileURLToPath(
   new URL('../../get-shit-done/bin/fvgsd-tools.cjs', import.meta.url),
@@ -393,7 +394,7 @@ describe('GSDTools', () => {
 
   describe('resolveGsdToolsPath()', () => {
     it('prefers bundled fvgsd-tools over project .claude when the bundled file exists', async () => {
-      const localBinDir = join(tmpDir, '.claude', 'get-shit-done', 'bin');
+      const localBinDir = join(tmpDir, '.claude', IDENTITY.installDir, 'bin');
       await mkdir(localBinDir, { recursive: true });
       await writeFile(join(localBinDir, 'fvgsd-tools.cjs'), '// stub');
 
@@ -409,13 +410,13 @@ describe('GSDTools', () => {
       const result = resolveGsdToolsPath(tmpDir);
       const expected = existsSync(BUNDLED_GSD_TOOLS_PATH)
         ? BUNDLED_GSD_TOOLS_PATH
-        : join(homedir(), '.claude', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
+        : join(homedir(), '.claude', IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs');
 
       expect(result).toBe(expected);
     });
 
     it('uses explicit gsdToolsPath when provided (overrides bundled / .claude resolution)', async () => {
-      const localBinDir = join(tmpDir, '.claude', 'get-shit-done', 'bin');
+      const localBinDir = join(tmpDir, '.claude', IDENTITY.installDir, 'bin');
       await mkdir(localBinDir, { recursive: true });
       const scriptPath = join(localBinDir, 'fvgsd-tools.cjs');
       await writeFile(
