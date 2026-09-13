@@ -1,6 +1,6 @@
 # Canary Stream
 
-fvgsd has no npm channels: R28 removed every npm-publish workflow, so there is no `canary`, `next`, or `latest` dist-tag to install from. A pre-release build is simply a branch or commit checked out in your fvgsd clone and installed with `node bin/install.js`. This page describes tracking the long-lived `dev` integration branch — GSD's earliest preview line — before its work has any expectation of stability.
+fvgsd is not published to npm, so there is no `canary`, `next`, or `latest` dist-tag to install from. A pre-release build is simply a branch or commit checked out in your fvgsd clone and installed with `node bin/install.js`. This page describes tracking the long-lived `dev` integration branch — GSD's earliest preview line — before its work has any expectation of stability.
 
 ## Stream policy
 
@@ -24,10 +24,11 @@ git fetch origin
 git checkout dev
 git pull --ff-only
 npm install
+npm run build:hooks
 node bin/install.js --claude --global
 ```
 
-Pin to an exact canary commit instead of `dev` by checking out its SHA before running the installer. The installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
+Pin to an exact canary commit instead of `dev` by checking out its SHA, then re-running `npm install`, `npm run build:hooks`, and `node bin/install.js` above. The installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
 
 ## When to install canary
 
@@ -48,17 +49,21 @@ Pin to an exact canary commit instead of `dev` by checking out its SHA before ru
 git checkout main
 git pull --ff-only
 npm install
+npm run build:hooks
 node bin/install.js --claude --global
 
-# Or pin to a specific RC tag instead of `main`
+# Or pin to a specific RC tag instead of `main` — same reinstall after checkout
 git checkout vX.Y.Z-rc.N
+npm install
+npm run build:hooks
+node bin/install.js --claude --global
 ```
 
 If you have a local project that interacted with canary-only features (for instance, an MVP-mode phase planned by 1.50.0-canary), the planner artifacts in `.planning/` remain valid — older GSD versions will just ignore the `**Mode:** mvp` field on phases.
 
 ## Reporting issues against canary
 
-File against the [issue tracker](https://github.com/gsd-build/get-shit-done/issues) with the `bug` template. Include the exact canary version (`fvgsd --version` reports it) so triage can route the report back into the `dev` stream rather than the stable stream.
+File against the [issue tracker](https://github.com/antaone/get-shit-done-vibeclaw/issues) with the `bug` template. Include the exact canary version (`fvgsd --version` reports it) so triage can route the report back into the `dev` stream rather than the stable stream.
 
 ## Where to look next
 

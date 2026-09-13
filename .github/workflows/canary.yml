@@ -1,11 +1,12 @@
 # Release stream policy:
-#   dev   → @canary  (this workflow — preview builds for the long-lived integration branch)
-#   main  → @next    (RC train, see release.yml)
-#   main  → @latest  (stable cuts, see release.yml)
+#   dev   → canary  (this workflow — preview builds for the long-lived integration branch)
+#   main  → next    (RC train, see release.yml)
+#   main  → latest  (stable cuts, see release.yml)
 #
-# Streams do not mix. The publish/tag steps below gate on `refs/heads/dev` so a
-# workflow_dispatch run on any other branch (including main) completes the
-# build/test/dry-run validation but does not publish or tag.
+# fvgsd has no npm channel, so a stream here is just a naming convention for
+# the git tag. Streams do not mix. The tag step below gates on
+# `refs/heads/dev` so a workflow_dispatch run on any other branch (including
+# main) completes the build/test validation but does not tag.
 
 name: Canary
 

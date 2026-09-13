@@ -5,7 +5,7 @@ VibeClaw is a repository-backed orchestration layer for running one GSD workflow
 <!-- rename-identity:off -->
 ## fvgsd
 
-This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `npm install && npm run build:hooks && node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
 <!-- rename-identity:on -->
 
 Gemini can research, Codex can plan, OpenCode and Claude Code Router can produce competing implementations, and Codex can verify the selected result. The tools never message each other. They coordinate through durable repository state, explicit Git commits, and human-controlled promotion.
@@ -24,7 +24,7 @@ VibeClaw repository state
       +-- Grok Build
 ```
 
-VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing `.planning/` projects and GSD workflow behavior continue to work normally; this fork exposes the commands under `fvgsd` so it can coexist with upstream GSD. Orchestration is an optional layer enabled per project with `vibe init`.
+VibeClaw extends [Get Shit Done (GSD)](https://github.com/gsd-build/get-shit-done). Existing `.planning/` projects and GSD workflow behavior continue to work normally; this fork exposes the commands under `fvgsd` so it can coexist with upstream GSD. Orchestration is an optional layer enabled per project with `fvgsd-vibe init`.
 
 ## Why VibeClaw
 
@@ -54,6 +54,7 @@ There is no agent-to-agent chat, negotiation, message queue, or automatic winner
 git clone https://github.com/antaone/get-shit-done-vibeclaw.git
 cd get-shit-done-vibeclaw
 npm install
+npm run build:hooks
 npm link
 ```
 
@@ -62,7 +63,7 @@ when `sdk/dist/cli.js` is missing. A separate `cd sdk && npm run build` step is
 not required. To troubleshoot or rebuild it explicitly, run
 `npm run build:sdk` from the repository root.
 
-`npm link` exposes the `vibe`, `fvgsd`, `fvgsd-tools`, and `fvgsd-sdk` commands locally. You can also run VibeClaw without linking:
+`npm link` exposes the `fvgsd-vibe`, `fvgsd`, `fvgsd-tools`, and `fvgsd-sdk` commands locally. You can also run VibeClaw without linking:
 
 ```bash
 node bin/vibe.js --help
@@ -135,8 +136,8 @@ npm unlink --global fvgsd
 
 Removing Vibe orchestration from a repository is a separate, destructive
 operation. First promote or otherwise preserve any candidate work you need,
-check `vibe status`, and clean each completed candidate with
-`vibe cleanup <candidate-id>`. Only then remove the committed
+check `fvgsd-vibe status`, and clean each completed candidate with
+`fvgsd-vibe cleanup <candidate-id>`. Only then remove the committed
 `.planning-fvgsd-vibe/` directory and disposable `.fvgsd-vibe/` worktree directory. Keep
 `.planning/` if you want the brownfield GSD history to remain available.
 
@@ -188,7 +189,7 @@ context or changes project state. The result depends on the current project:
 Standalone branch creation preserves uncommitted files and stores provenance
 under Git's local common directory, not in the working tree. It records the
 runtime, command, execution identity, source branch, and base commit without
-storing the raw session ID. Run `vibe init` later and VibeClaw imports those
+storing the raw session ID. Run `fvgsd-vibe init` later and VibeClaw imports those
 records into `.planning-fvgsd-vibe/state/standalone-executions.json`.
 
 This makes direct usage safe too. For example, Codex running
@@ -240,7 +241,7 @@ For an existing codebase, run `/fvgsd-map-codebase` before `/fvgsd-new-project`.
 - persistent progress, pause/resume state, workstreams, backlogs, and context threads;
 - configuration, model profiles, dynamic routing, hooks, and a TypeScript SDK.
 
-GSD can be used without orchestration. If you do not run `vibe init`, no
+GSD can be used without orchestration. If you do not run `fvgsd-vibe init`, no
 `.planning-fvgsd-vibe/` store is created; `fvgsd` still protects direct work with a
 standalone smart branch as described above.
 
@@ -266,7 +267,7 @@ audits, and other public `fvgsd` commands through one or more candidates:
 
 Use `/fvgsd:vibe ...` in Gemini CLI and `$fvgsd-vibe ...` in Codex. The skill
 uses the Vibe CLI copied into the same runtime installation as `fvgsd`, so it
-does not depend on a separate terminal `vibe` command being on `PATH`.
+does not depend on a separate terminal `fvgsd-vibe` command being on `PATH`.
 
 For greenfield work, invoke `fvgsd-vibe` in the new project directory. It can
 inspect the files, initialize Git, and ask for approval before creating the
@@ -299,31 +300,31 @@ branch. See [Multi-machine Git handoffs](docs/VIBECLAW.md#execution-modes-local-
 The equivalent lower-level CLI path, useful for automation and operators, is:
 
 ```bash
-vibe init
-vibe mode multi-machine --remote origin  # optional; default is local
-vibe route list
-vibe route use cheap
-vibe run start feature-development --id feature-014
+fvgsd-vibe init
+fvgsd-vibe mode multi-machine --remote origin  # optional; default is local
+fvgsd-vibe route list
+fvgsd-vibe route use cheap
+fvgsd-vibe run start feature-development --id feature-014
 ```
 
 Prepare the route-selected research candidate:
 
 ```bash
-vibe stage prepare research
-vibe context
+fvgsd-vibe stage prepare research
+fvgsd-vibe context
 ```
 
 The prepare command creates a candidate manifest, an exact-base branch, an isolated worktree, and runtime-neutral JSON and Markdown context. Work manually in the printed worktree or ask VibeClaw to construct a managed launch:
 
 ```bash
-vibe stage launch <candidate-id>
-vibe stage launch <candidate-id> --execute
+fvgsd-vibe stage launch <candidate-id>
+fvgsd-vibe stage launch <candidate-id> --execute
 ```
 
 After the assigned work is finished, persist artifacts and complete the candidate:
 
 ```bash
-vibe stage complete <candidate-id> \
+fvgsd-vibe stage complete <candidate-id> \
   --summary "Research complete" \
   --artifact .planning/research.md
 ```
@@ -331,9 +332,9 @@ vibe stage complete <candidate-id> \
 Completion does not advance the workflow. Inspect and promote explicitly:
 
 ```bash
-vibe candidates research
-vibe promote <candidate-id>
-vibe next
+fvgsd-vibe candidates research
+fvgsd-vibe promote <candidate-id>
+fvgsd-vibe next
 ```
 
 ## Competing implementations
@@ -341,20 +342,20 @@ vibe next
 Any stage can have multiple independent candidates. For example:
 
 ```bash
-vibe stage prepare execute --tool opencode
-vibe stage prepare execute --tool claude-router
-vibe stage prepare execute --tool codex
+fvgsd-vibe stage prepare execute --tool opencode
+fvgsd-vibe stage prepare execute --tool claude-router
+fvgsd-vibe stage prepare execute --tool codex
 ```
 
 All three candidates consume the same promoted plan and start at the same recorded base commit, but use separate branches and worktrees. After each tool commits its implementation:
 
 ```bash
-vibe stage complete feature-014-execute-opencode-001 --summary "OpenCode implementation"
-vibe stage complete feature-014-execute-claude-router-002 --summary "Claude Router implementation"
-vibe stage complete feature-014-execute-codex-003 --summary "Codex implementation"
+fvgsd-vibe stage complete feature-014-execute-opencode-001 --summary "OpenCode implementation"
+fvgsd-vibe stage complete feature-014-execute-claude-router-002 --summary "Claude Router implementation"
+fvgsd-vibe stage complete feature-014-execute-codex-003 --summary "Codex implementation"
 
-vibe status
-vibe promote feature-014-execute-claude-router-002
+fvgsd-vibe status
+fvgsd-vibe promote feature-014-execute-claude-router-002
 ```
 
 The next verification candidate consumes only the promoted implementation.
@@ -413,7 +414,7 @@ expected output, and promotion status without previous chat history.
 
 ## Safe Git promotion
 
-Candidate branches are not promoted project state until the operator runs `vibe promote`.
+Candidate branches are not promoted project state until the operator runs `fvgsd-vibe promote`.
 
 - First promotion uses a fast-forward from the exact expected integration commit.
 - Replacing a selected candidate requires `--replace`.
@@ -424,19 +425,19 @@ Candidate branches are not promoted project state until the operator runs `vibe 
 ## CLI
 
 ```text
-vibe init
-vibe mode show|local|multi-machine [--remote <name>]
-vibe route list|show|use
-vibe run start|resume|show|list
-vibe status
-vibe next [--prepare]
-vibe stage prepare|launch|complete
-vibe context [candidate-id]
-vibe candidates [stage]
-vibe promote <candidate-id> [--replace]
-vibe history
-vibe cleanup <candidate-id> [--delete-branch]
-vibe tool list|detect
+fvgsd-vibe init
+fvgsd-vibe mode show|local|multi-machine [--remote <name>]
+fvgsd-vibe route list|show|use
+fvgsd-vibe run start|resume|show|list
+fvgsd-vibe status
+fvgsd-vibe next [--prepare]
+fvgsd-vibe stage prepare|launch|complete
+fvgsd-vibe context [candidate-id]
+fvgsd-vibe candidates [stage]
+fvgsd-vibe promote <candidate-id> [--replace]
+fvgsd-vibe history
+fvgsd-vibe cleanup <candidate-id> [--delete-branch]
+fvgsd-vibe tool list|detect
 ```
 
 Lifecycle and inspection commands support `--json`, including structured error output, for scripts and future dashboards.
@@ -452,7 +453,7 @@ Lifecycle and inspection commands support `--json`, including structured error o
 | `gemini` | Gemini CLI | Non-interactive |
 | `grok` | Grok Build | Interactive |
 
-Manual operation is always supported: prepare a candidate, open its worktree in your editor, run the assigned tool yourself, and then complete and promote through `vibe`.
+Manual operation is always supported: prepare a candidate, open its worktree in your editor, run the assigned tool yourself, and then complete and promote through `fvgsd-vibe`.
 
 ## Development
 

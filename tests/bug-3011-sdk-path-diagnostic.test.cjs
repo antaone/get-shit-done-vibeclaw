@@ -131,13 +131,16 @@ describe('Bug #3011: formatSdkPathDiagnostic — fallback when shimDir is null',
     assert.equal(ir.shimLocationLine, '');
   });
 
-  test('action lines fall back to npm install -g advice', () => {
+  test('action lines fall back to a clone-install hint', () => {
     const ir = formatSdkPathDiagnostic({
       shimDir: null,
       platform: 'win32',
       runDir: 'C:\\some\\path',
     });
-    assert.ok(ir.actionLines.some(l => l.includes('npm install -g fvgsd')));
+    // fvgsd is not published to npm (R51): the fallback hint must run the
+    // installer from a clone, not `npm install -g`.
+    assert.ok(ir.actionLines.some(l => l.includes('node bin/install.js')));
+    assert.ok(!ir.actionLines.some(l => l.includes('npm install -g')));
   });
 });
 
@@ -152,7 +155,10 @@ describe('Bug #3011: formatSdkPathDiagnostic — npx-cache detection', () => {
     assert.ok(ir.npxNoteLines.length >= 2,
       `expected npx note lines, got: ${JSON.stringify(ir.npxNoteLines)}`);
     assert.ok(ir.npxNoteLines.some(l => l.includes('npx')));
-    assert.ok(ir.npxNoteLines.some(l => l.includes('npm install -g')));
+    // fvgsd is not published to npm (R51): the persistent-shim hint must run
+    // the installer from a clone, not `npm install -g`.
+    assert.ok(ir.npxNoteLines.some(l => l.includes('node bin/install.js')));
+    assert.ok(!ir.npxNoteLines.some(l => l.includes('npm install -g')));
   });
 
   test('detects Windows npx cache path', () => {

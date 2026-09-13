@@ -233,9 +233,9 @@ Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_mod
   {missing_agents joined with newline}
 
 Subagent spawns (fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-roadmapper) will fail
-with "agent type not found". Run the installer with --global to make agents available:
+with "agent type not found". Run the installer with --global to make agents available (fvgsd is not on npm — run this from your fvgsd clone):
 
-  npx fvgsd@latest --global
+  node bin/install.js --<runtime> --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```

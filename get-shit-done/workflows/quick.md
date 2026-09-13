@@ -128,8 +128,8 @@ If `$VALIDATE_MODE` only:
 if ! command -v fvgsd-sdk &>/dev/null; then
   echo "⚠ fvgsd-sdk not found in PATH — /fvgsd:quick requires it."
   echo ""
-  echo "Install the query-capable GSD SDK CLI:"
-  echo "  npm install -g fvgsd"
+  echo "Install the query-capable GSD SDK CLI (fvgsd is not on npm — run this from your fvgsd clone):"
+  echo "  node bin/install.js --<runtime> --<scope>"
   echo ""
   echo "Or update GSD to get the latest packages:"
   echo "  /fvgsd:update"

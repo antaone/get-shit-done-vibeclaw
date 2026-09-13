@@ -90,27 +90,53 @@ const RENAME_IDENTITY_ON = 'rename-identity:on';
 // Splits text into alternating segments so rules can be applied to the
 // "active" segments only. A segment is "protected" once a line containing
 // RENAME_IDENTITY_OFF is seen, up to and including the next line containing
-// RENAME_IDENTITY_ON (an unterminated region protects to end of file). The
-// split is on line boundaries only (keeping each line's own terminator, LF
-// or CRLF, attached to that line) so byte-for-byte reassembly is exact.
+// RENAME_IDENTITY_ON — including the same line, when both markers appear on
+// one line (#M5). The split is on line boundaries only (keeping each line's
+// own terminator, LF or CRLF, attached to that line) so byte-for-byte
+// reassembly is exact.
+//
+// Fails closed (throws) on an unterminated region — a `:off` with no
+// matching `:on` before end of file — rather than silently protecting
+// everything after it. A dry run is used as a rename-safety gate (R48), so
+// silently reporting empty totals for an unterminated region would hide the
+// exact problem the gate exists to catch (#M5).
 function splitProtectedRegions(text) {
   const lines = text.split(/(?<=\n)/);
   const segments = [];
   let current = [];
   let protectedRegion = false;
   for (const line of lines) {
-    current.push(line);
     if (!protectedRegion && line.includes(RENAME_IDENTITY_OFF)) {
-      segments.push({ protected: false, text: current.slice(0, -1).join('') });
-      current = [line];
+      if (current.length) segments.push({ protected: false, text: current.join('') });
+      current = [];
+      const offIndex = line.indexOf(RENAME_IDENTITY_OFF);
+      const onIndex = line.indexOf(RENAME_IDENTITY_ON, offIndex);
+      if (onIndex !== -1) {
+        // Both markers on one line: a self-contained protected segment.
+        // Stay unprotected for whatever follows on the next line.
+        segments.push({ protected: true, text: line });
+        continue;
+      }
+      current.push(line);
       protectedRegion = true;
-    } else if (protectedRegion && line.includes(RENAME_IDENTITY_ON)) {
+      continue;
+    }
+    if (protectedRegion && line.includes(RENAME_IDENTITY_ON)) {
+      current.push(line);
       segments.push({ protected: true, text: current.join('') });
       current = [];
       protectedRegion = false;
+      continue;
     }
+    current.push(line);
   }
-  if (current.length) segments.push({ protected: protectedRegion, text: current.join('') });
+  if (protectedRegion) {
+    throw new Error(
+      `rename-identity: unterminated "${RENAME_IDENTITY_OFF}" region — ` +
+      `no matching "${RENAME_IDENTITY_ON}" line before end of file`,
+    );
+  }
+  if (current.length) segments.push({ protected: false, text: current.join('') });
   return segments;
 }
 

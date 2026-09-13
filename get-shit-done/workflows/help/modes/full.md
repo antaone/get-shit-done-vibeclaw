@@ -17,8 +17,8 @@ Display the complete GSD command reference. Output ONLY the reference content. D
 
 GSD evolves fast. Update periodically:
 
-```bash
-npx fvgsd@latest
+```
+/fvgsd-update
 ```
 
 ## Core Workflow
@@ -560,7 +560,7 @@ Update GSD to latest version with changelog preview.
 - Displays changelog entries for versions you've missed
 - Highlights breaking changes
 - Confirms before running install
-- Better than raw `npx fvgsd`
+- Better than manually running the clone's `node bin/install.js`
 
 Usage: `/fvgsd:update`
 

@@ -1048,13 +1048,9 @@ Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 
 **Update Banner (opt-in, when GSD statusline isn't used):**
 
-When the user declines (or keeps a non-GSD) statusline, the installer offers a SessionStart banner that surfaces update availability without occupying statusline real estate. The banner reads `~/.cache/fvgsd/update-check.json` (written by `fvgsd/check-update-worker.js`) and emits one line only when an update is available:
+fvgsd's background update check is disabled — fvgsd is not published to npm, so there is nothing to poll. When the user declines (or keeps a non-GSD) statusline, the installer offers an opt-in SessionStart banner (`hooks/fvgsd/update-banner.js`); it reads `~/.cache/fvgsd/update-check.json` (written by `fvgsd/check-update-worker.js`), which always reports no update available, so the banner stays silent. Rate-limits "check failed" diagnostics to once per 24 hours regardless. Use `/fvgsd-update` to check for and apply updates.
 
-```text
-GSD update available: 1.39.0 → 1.40.0. Run /fvgsd-update.
-```
-
-The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone, or by deleting the SessionStart entry that references `fvgsd/update-banner.js`.
+Removed cleanly by running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone, or by deleting the SessionStart entry that references `fvgsd/update-banner.js`.
 
 ### 38. Developer Profiling
 
@@ -2771,12 +2767,11 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ### 128. Update Banner Opt-In
 
-**Purpose:** Surface update availability to users who have declined or bypassed the GSD statusline, without requiring the statusline.
+**Purpose:** Historically surfaced update availability to users who had declined or bypassed the GSD statusline. The background update check is now disabled (fvgsd is not published to npm), so this hook — like the statusline's own indicator — stays silent; update with `/fvgsd-update` instead.
 
 **Behavior:**
 - At install time, if the installer detects no GSD statusline, it offers an opt-in `SessionStart` hook.
-- The hook reads the existing `~/.cache/fvgsd/update-check.json` cache — the same cache used by the statusline — and prints a banner only when an update is available.
-- Silent when up-to-date.
+- The hook reads the existing `~/.cache/fvgsd/update-check.json` cache — the same cache used by the statusline — which always reports no update available, so the banner never prints.
 - Failure diagnostics rate-limited to once per 24 h.
 - Cleanly removed by running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone.
 

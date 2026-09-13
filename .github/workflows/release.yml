@@ -112,7 +112,7 @@ jobs:
             echo "- Type: **Minor** (will start with RC pre-releases)" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Next: run this workflow with \`rc\` action to publish a pre-release to \`next\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Next: run this workflow with \`rc\` action to create a pre-release" >> "$GITHUB_STEP_SUMMARY"
 
   install-smoke-rc:
     needs: validate-version

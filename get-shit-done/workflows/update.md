@@ -22,7 +22,7 @@ Capture `NEW`. If it equals `RECORDED_COMMIT`, report "fvgsd is up to date" and 
 
 <step name="reinstall">
 ```bash
-(cd "$REPO" && npm install)
+(cd "$REPO" && npm install && npm run build:hooks)
 node "$REPO/bin/install.js" --<runtime> --<scope>
 ```
 Run the install line once per runtime in `runtimes`, with `--global` or `--local` from `scope`.
@@ -40,6 +40,7 @@ Show the commits and remind the user to restart their runtime session.
 cd <your fvgsd clone>
 git pull --ff-only
 npm install
+npm run build:hooks
 node bin/install.js --claude --global   # repeat for each runtime you use
 ```
 </step>

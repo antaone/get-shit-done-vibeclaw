@@ -158,6 +158,55 @@ test('rewriteText skips text between rename-identity:off/:on markers', () => {
   }
 });
 
+test('rewriteText throws on an unterminated rename-identity:off region', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'Run /vgsd-help.\n' +
+    '<!-- rename-identity:off -->\n' +
+    'No matching on-marker below — /gsd-* and /vgsd-* here, then EOF.\n';
+  assert.throws(
+    () => rewriteText(source, rules, { isCode: false }),
+    /unterminated.*rename-identity:off/,
+  );
+});
+
+test('rewriteText treats both markers on one line as a self-contained protected segment', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'Run /vgsd-help first.\n' +
+    '<!-- rename-identity:off --> keep /gsd-* and /vgsd-* here <!-- rename-identity:on -->\n' +
+    'Then see /vgsd-status.\n';
+  for (const isCode of [false, true]) {
+    const { text, replacements } = rewriteText(source, rules, { isCode });
+    assert.deepEqual(replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+      ['fork-prefix', 'vgsd', 'fvgsd'],
+      ['fork-prefix', 'vgsd', 'fvgsd'],
+    ]);
+    assert.equal(text, 'Run /fvgsd-help first.\n' +
+      '<!-- rename-identity:off --> keep /gsd-* and /vgsd-* here <!-- rename-identity:on -->\n' +
+      'Then see /fvgsd-status.\n');
+    assert.deepEqual(rewriteText(text, rules, { isCode }).replacements, []);
+  }
+});
+
+test('rewriteText skips a rename-identity:off/:on region delimited by CRLF line endings', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'Run /vgsd-help first.\r\n' +
+    '<!-- rename-identity:off -->\r\n' +
+    'Keep /gsd-* and /vgsd-* here.\r\n' +
+    '<!-- rename-identity:on -->\r\n' +
+    'Then see /vgsd-status.\r\n';
+  const { text, replacements } = rewriteText(source, rules, { isCode: false });
+  assert.deepEqual(replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+    ['fork-prefix', 'vgsd', 'fvgsd'],
+    ['fork-prefix', 'vgsd', 'fvgsd'],
+  ]);
+  assert.equal(text, 'Run /fvgsd-help first.\r\n' +
+    '<!-- rename-identity:off -->\r\n' +
+    'Keep /gsd-* and /vgsd-* here.\r\n' +
+    '<!-- rename-identity:on -->\r\n' +
+    'Then see /fvgsd-status.\r\n');
+  assert.deepEqual(rewriteText(text, rules, { isCode: false }).replacements, []);
+});
+
 test('planRenames maps the SDK tools module', () => {
   assert.deepEqual(planRenames(['sdk/src/gsd-tools.ts']), [
     { from: 'sdk/src/gsd-tools.ts', to: 'sdk/src/fvgsd-tools.ts' },

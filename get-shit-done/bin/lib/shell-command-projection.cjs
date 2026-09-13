@@ -348,12 +348,12 @@ function formatSdkPathDiagnostic({ shimDir, platform, runDir }) {
   } else {
     actionLines.push('Could not locate a writable PATH directory to install the shim.');
     actionLines.push('Install globally to materialize the bin symlink:');
-    actionLines.push('npm install -g fvgsd');
+    actionLines.push('node bin/install.js --<runtime> --global (run from your fvgsd clone)');
   }
   const npxNoteLines = isNpx
     ? [
-        "Note: you're running via npx. For a persistent shim,",
-        'install globally instead: npm install -g fvgsd',
+        "Note: you're running via a linked/npx-style invocation. For a persistent shim,",
+        'install globally instead: node bin/install.js --<runtime> --global (run from your fvgsd clone)',
       ]
     : [];
   return { shimLocationLine, actionLines, shellActions, npxNoteLines, isNpx, isWin32 };

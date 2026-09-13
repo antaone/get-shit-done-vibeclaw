@@ -1,25 +1,25 @@
 # Versioning & Release Strategy
 
-GSD follows [Semantic Versioning 2.0.0](https://semver.org/) with three release tiers mapped to npm dist-tags.
+GSD follows [Semantic Versioning 2.0.0](https://semver.org/) with three release tiers. fvgsd is not published to npm, so every tier produces a git tag rather than an npm dist-tag; installing means cloning and checking out that tag.
 
 ## Release Tiers
 
-| Tier | What ships | Version format | npm tag | Branch | Install |
+| Tier | What ships | Version format | Git tag | Branch | Install |
 |------|-----------|---------------|---------|--------|---------|
-| **Patch** | Bug fixes only | `1.27.1` | `latest` | `hotfix/1.27.1` | `npx fvgsd@latest` |
-| **Minor** | Fixes + enhancements | `1.28.0` | `latest` (after RC) | `release/1.28.0` | `npx fvgsd@next` (RC) |
-| **Major** | Fixes + enhancements + features | `2.0.0` | `latest` (after beta) | `release/2.0.0` | `npx fvgsd@next` (beta) |
+| **Patch** | Bug fixes only | `1.27.1` | `v1.27.1` | `hotfix/1.27.1` | clone, checkout `v1.27.1`, `node bin/install.js` |
+| **Minor** | Fixes + enhancements | `1.28.0` | `v1.28.0` (after RC) | `release/1.28.0` | clone, checkout the `v1.28.0-rc.N` tag (RC) or `v1.28.0` |
+| **Major** | Fixes + enhancements + features | `2.0.0` | `v2.0.0` (after beta) | `release/2.0.0` | clone, checkout the `v2.0.0-beta.N` tag (beta) or `v2.0.0` |
 
-## npm Dist-Tags
+## Release Streams
 
-Only two tags, following Angular/Next.js convention:
+fvgsd has no npm channel, so there are no dist-tags — only git tags and branches:
 
-| Tag | Meaning | Installed by |
+| Stream | Meaning | Installed by |
 |-----|---------|-------------|
-| `latest` | Stable production release | `npm install fvgsd` (default) |
-| `next` | Pre-release (RC or beta) | `npm install fvgsd@next` (opt-in) |
+| stable | Latest tagged release on `main` | clone, checkout `main` (or its latest tag), `node bin/install.js` |
+| pre-release | RC or beta tag on a `release/*` branch | clone, checkout that tag, `node bin/install.js` |
 
-The version string (`-rc.1` vs `-beta.1`) communicates stability level. Users never get pre-releases unless they explicitly opt in.
+The version string (`-rc.1` vs `-beta.1`) communicates stability level. Users only get a pre-release if they explicitly check out its tag.
 
 ## Semver Rules
 
@@ -47,16 +47,16 @@ Major: 2.0.0-beta.1 →  2.0.0-beta.2 →  2.0.0
 ```
 main                              ← stable, always deployable
   │
-  ├── hotfix/1.27.1               ← patch: cherry-pick fix from main, publish to latest
+  ├── hotfix/1.27.1               ← patch: cherry-pick fix from main, tag when finalized
   │
   ├── release/1.28.0              ← minor: accumulate fixes + enhancements, RC cycle
-  │     ├── v1.28.0-rc.1          ← tag: published to next
-  │     └── v1.28.0               ← tag: promoted to latest
+  │     ├── v1.28.0-rc.1          ← tag: pre-release
+  │     └── v1.28.0                ← tag: stable
   │
   ├── release/2.0.0               ← major: features + breaking changes, beta cycle
-  │     ├── v2.0.0-beta.1         ← tag: published to next
-  │     ├── v2.0.0-beta.2         ← tag: published to next
-  │     └── v2.0.0                ← tag: promoted to latest
+  │     ├── v2.0.0-beta.1         ← tag: pre-release
+  │     ├── v2.0.0-beta.2         ← tag: pre-release
+  │     └── v2.0.0                ← tag: stable
   │
   ├── fix/1200-bug-description    ← bug fix branch (merges to main)
   ├── feat/925-feature-name       ← feature branch (merges to main)
@@ -86,19 +86,19 @@ A hotfix `vX.YY.Z` cumulatively includes everything in `vX.YY.{Z-1}` plus every 
    - Runs `install-smoke` cross-platform gate.
    - Runs full test suite + coverage.
    - Builds SDK, bundles `sdk-bundle/fvgsd-sdk.tgz` inside the CC tarball (parity with `release-sdk.yml`).
-   - Tags `v1.27.1`, publishes to `@latest`, re-points `@next → v1.27.1`.
+   - Tags `v1.27.1` and creates a GitHub Release.
    - Opens merge-back PR against `main`.
 
-**Path B — `release-sdk.yml` (stopgap, one-shot):**
+**Path B — `release-sdk.yml` (one-shot, SDK-bundling variant):**
 
-Active while the `@fvgsd/sdk` npm token is unavailable; bundles the SDK inside the CC tarball.
+Bundles the SDK inside the CC tarball in the same run.
 
 1. Trigger `release-sdk.yml` with `action=hotfix`, `version=1.27.1`, `auto_cherry_pick=true`.
    - The `prepare` job creates the branch and cherry-picks (same logic as Path A).
    - `install-smoke` runs against the new branch.
-   - The `release` job tags, publishes to `@latest`, re-points `@next`, opens merge-back PR.
+   - The `release` job tags and creates a GitHub Release.
    - Idempotent: if `hotfix/1.27.1` already exists (e.g. you ran `hotfix.yml create` first), the prepare job checks it out and re-runs cherry-pick as a no-op.
-2. `dry_run=true` exercises the full pipeline without pushing the branch or publishing.
+2. `dry_run=true` exercises the full pipeline without pushing the branch or tagging.
 
 ### Minor Release (Standard Cycle)
 
@@ -106,10 +106,10 @@ For accumulated fixes and enhancements.
 
 1. Trigger `release.yml` with action `create` and version (e.g., `1.28.0`)
 2. Workflow creates `release/1.28.0` branch from main, bumps package.json
-3. Trigger `release.yml` with action `rc` to publish `1.28.0-rc.1` to `next`
-4. Test the RC: `npx fvgsd@next`
-5. If issues found: fix on release branch, publish `rc.2`, `rc.3`, etc.
-6. Trigger `release.yml` with action `finalize` — publishes `1.28.0` to `latest`
+3. Trigger `release.yml` with action `rc` to tag `1.28.0-rc.1` as a GitHub pre-release
+4. Test the RC: clone, checkout the `v1.28.0-rc.1` tag, `node bin/install.js`
+5. If issues found: fix on release branch, tag `rc.2`, `rc.3`, etc.
+6. Trigger `release.yml` with action `finalize` — tags `1.28.0` and creates the stable GitHub Release
 7. Merge release branch to main
 
 ### Major Release
@@ -117,9 +117,9 @@ For accumulated fixes and enhancements.
 Same as minor but uses `-beta.N` instead of `-rc.N`, signaling a longer testing cycle.
 
 1. Trigger `release.yml` with action `create` and version (e.g., `2.0.0`)
-2. Trigger `release.yml` with action `rc` to publish `2.0.0-beta.1` to `next`
-3. If issues found: fix on release branch, publish `beta.2`, `beta.3`, etc.
-4. Trigger `release.yml` with action `finalize` -- publishes `2.0.0` to `latest`
+2. Trigger `release.yml` with action `rc` to tag `2.0.0-beta.1` as a GitHub pre-release
+3. If issues found: fix on release branch, tag `beta.2`, `beta.3`, etc.
+4. Trigger `release.yml` with action `finalize` -- tags `2.0.0` and creates the stable GitHub Release
 5. Merge release branch to main
 
 ## Conventional Commits
@@ -134,16 +134,3 @@ Branch names map to commit types:
 | `chore/` | `chore:` | none |
 | `docs/` | `docs:` | none |
 | `refactor/` | `refactor:` | none |
-
-## Publishing Commands (Reference)
-
-```bash
-# Stable release (sets latest tag automatically)
-npm publish
-
-# Pre-release (must use --tag to avoid overwriting latest)
-npm publish --tag next
-
-# Verify what latest and next point to
-npm dist-tag ls fvgsd
-```

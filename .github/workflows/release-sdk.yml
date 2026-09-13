@@ -5,13 +5,14 @@
 # (dev | next | latest) per run, and creates a GitHub Release. bin/fvgsd-sdk.js
 # resolves sdk/dist/cli.js from inside the installed CC package, so the
 # bundled copy is sufficient for full functionality — CC users never consume
-# @fvgsd/sdk directly. This workflow additionally bakes a bundled
-# gsd-sdk-<version>.tgz at sdk-bundle/fvgsd-sdk.tgz inside the CC tarball as
-# a recoverable artifact.
+# @fvgsd/sdk directly. This workflow additionally bundles a
+# gsd-sdk-<version>.tgz at sdk-bundle/fvgsd-sdk.tgz inside the CC tarball,
+# then verifies and deletes that local tarball — it is not uploaded as a
+# workflow artifact.
 #
-# Existing canary.yml and release.yml are intentionally untouched; both tag
-# and create a GitHub Release the same way, without this workflow's SDK
-# tarball bundling.
+# canary.yml tags dev-branch builds (no GitHub Release); release.yml tags
+# main-branch builds and creates one. This workflow's distinct value is the
+# SDK tarball bundling above, for either stream.
 #
 # Tracking issues: #2925 (initial workflow), #2929 (CI-gate parity with release.yml)
 
@@ -21,7 +22,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'publish = normal dev/next/latest publish; hotfix = create hotfix/X.YY.Z branch from latest vX.YY.* tag, cherry-pick fix:/chore:/test: from main, publish to @latest'
+        description: 'publish = normal dev/next/latest build; hotfix = create hotfix/X.YY.Z branch from latest vX.YY.* tag, cherry-pick fix:/chore:/test: from main, tag latest'
         required: true
         type: choice
         default: publish
@@ -459,7 +460,7 @@ jobs:
           INPUT_OVERRIDE: ${{ inputs.version }}
         run: |
           set -e
-          # Hotfix forces version=inputs.version and dist-tag=latest.
+          # Hotfix forces version=inputs.version and stream=latest.
           if [ "$ACTION" = "hotfix" ]; then
             if [ -z "$INPUT_OVERRIDE" ]; then
               echo "::error::action=hotfix requires the 'version' input"
@@ -469,7 +470,7 @@ jobs:
             EFFECTIVE_TAG="latest"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
             echo "tag=$EFFECTIVE_TAG" >> "$GITHUB_OUTPUT"
-            echo "→ Hotfix: will publish v${VERSION} to dist-tag '${EFFECTIVE_TAG}'"
+            echo "→ Hotfix: will tag v${VERSION} (stream '${EFFECTIVE_TAG}')"
             exit 0
           fi
           RAW=$(node -p "require('./package.json').version")
@@ -503,10 +504,10 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
-          echo "→ Will publish v${VERSION} to dist-tag '${INPUT_TAG}'"
+          echo "→ Will tag v${VERSION} (stream '${INPUT_TAG}')"
 
       # Tolerant tag-existence check (matches release.yml pattern). An
-      # operator re-running after a mid-flight publish-step failure should
+      # operator re-running after a mid-flight tag-step failure should
       # not be blocked just because the tag step succeeded last time. Only
       # error if the existing tag points at a different commit than HEAD.
       - name: Check git tag (skip if matches HEAD, error if mismatched)
@@ -674,12 +675,12 @@ jobs:
         run: |
           {
             if [ "$ACTION" = "hotfix" ]; then
-              echo "## Release SDK Bundle (hotfix): v${VERSION} → @${TAG}"
+              echo "## Release SDK Bundle (hotfix): v${VERSION} (stream '${TAG}')"
               echo ""
               echo "- Base (cumulative-fix anchor): \`${BASE_TAG}\`"
               echo "- Branch: \`${BRANCH}\`"
             else
-              echo "## Release SDK Bundle: v${VERSION} → @${TAG}"
+              echo "## Release SDK Bundle: v${VERSION} (stream '${TAG}')"
             fi
             echo ""
             if [ "$DRY_RUN" = "true" ]; then

@@ -84,9 +84,9 @@ Skill payloads only provide prompt context. Named subagent spawns still require 
 definitions to be installed for this runtime.
 
 Subagent spawns (fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-roadmapper) will fail
-with "agent type not found" if `required_agents_installed` is false. Run the installer with --global to make agents available:
+with "agent type not found" if `required_agents_installed` is false. Run the installer with --global to make agents available (fvgsd is not on npm — run this from your fvgsd clone):
 
-  npx fvgsd@latest --global
+  node bin/install.js --<runtime> --global
 
 Proceeding without research subagents — roadmap will be generated inline.
 ```

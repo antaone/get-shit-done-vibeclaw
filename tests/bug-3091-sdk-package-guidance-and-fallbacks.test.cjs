@@ -12,9 +12,12 @@ function read(rel) {
 }
 
 describe('bug #3091: sdk install guidance and agent fallbacks use query-capable CLI', () => {
-  test('quick workflow install hint references fvgsd (not @fvgsd/sdk)', () => {
+  test('quick workflow install hint runs the installer from a clone (not npm)', () => {
     const content = read('get-shit-done/workflows/quick.md');
-    assert.ok(content.includes('npm install -g fvgsd'));
+    // fvgsd is not published to npm (R51): the hint must run the installer
+    // from a clone, not `npm install -g` for any package.
+    assert.ok(content.includes('node bin/install.js'));
+    assert.ok(!content.includes('npm install -g fvgsd'));
     assert.ok(!content.includes('npm install -g @fvgsd/sdk'));
   });
 

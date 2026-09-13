@@ -16,9 +16,9 @@ name: Hotfix Release
 #
 # finalize:
 #   - install-smoke gate (cross-platform, parity with release.yml/release-sdk.yml)
-#   - Bundles SDK as both loose tree (sdk/dist/cli.js) and recoverable tarball
-#     (sdk-bundle/fvgsd-sdk.tgz) — parity with release-sdk.yml so a hotfix shipped
-#     during the @gsd-build-token outage carries the same payload shape.
+#   - Bundles SDK as both loose tree (sdk/dist/cli.js) and a recoverable tarball
+#     (sdk-bundle/fvgsd-sdk.tgz) — parity with release-sdk.yml so a hotfix
+#     carries the same payload shape as a full release.
 #   - Tags vX.YY.Z, creates a GitHub Release, opens a merge-back PR.
 
 on:

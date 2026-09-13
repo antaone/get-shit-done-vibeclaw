@@ -44,7 +44,7 @@ Topics: `workflow` · `planning` · `execute` · `quick` · `debug` · `capture`
 
 ## Update GSD
 
-```bash
-npx fvgsd@latest
+```
+/fvgsd-update
 ```
 </reference>

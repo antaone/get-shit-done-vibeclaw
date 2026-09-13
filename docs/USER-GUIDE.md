@@ -1340,31 +1340,15 @@ Since v1.17, the installer backs up locally modified files to `fvgsd-local-patch
 
 ### Manual Update Without `/fvgsd-update`
 
-fvgsd is not published to npm. If `/fvgsd-update` can't reach the clone's remote (network restrictions) or can't find an install record, see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure run from the clone.
+fvgsd is not published to npm. If `/fvgsd-update` can't find an install record (for example, before the first install), see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure run from the clone. If the clone's remote itself is unreachable, neither path can pull — restore connectivity first.
 
 ### Surface GSD Update Notifications Without GSD's Statusline
 
-GSD checks for new versions in the background and writes the result to `~/.cache/fvgsd/update-check.json`. By default, GSD's statusline (`hooks/fvgsd/statusline.js`) reads that cache and shows the update indicator. If you use a different statusline (for example `ccstatusline`) or none at all, the update info is invisible.
-
-**Opt-in fix:** during interactive install, when you decline (or keep your existing) statusline, the installer offers a one-time prompt:
-
-```text
-Optional: GSD update banner
-  1) No banner (default)
-  2) Install update banner
-```
-
-Choose `2` (or type `y`/`yes`) and the installer registers `hooks/fvgsd/update-banner.js` as a `SessionStart` hook. From the next session onward, GSD prints a one-line `systemMessage` only when the cache reports an update available:
-
-```text
-GSD update available: 1.39.0 → 1.40.0. Run /fvgsd-update.
-```
-
-The banner is silent when no update is available. If the cache file is corrupt, GSD emits one diagnostic line (`GSD update check failed.`) and stays silent for 24 hours so a broken cache does not nag every session.
+fvgsd's background update check is disabled — fvgsd is not published to npm, so there is no registry to poll. The cache at `~/.cache/fvgsd/update-check.json` always reports no update available, so both GSD's statusline indicator (`hooks/fvgsd/statusline.js`) and the opt-in `SessionStart` banner (`hooks/fvgsd/update-banner.js`, if installed) stay silent. Use `/fvgsd-update` to check for and apply updates instead of relying on either indicator.
 
 **Opt-out / removal:** delete the SessionStart hook entry that references `fvgsd/update-banner.js` from your runtime's `settings.json` (Claude Code: `~/.claude/settings.json`; Gemini: `~/.gemini/settings.json`). Running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone removes both the script and the registration in one pass.
 
-The banner is not offered when GSD's statusline is installed — that channel already surfaces update info, so re-prompting would be noise.
+The banner is not offered when GSD's statusline is installed, since that channel is the same disabled check — installing both would be redundant.
 
 ### Workflow Diagnostics (`/fvgsd-forensics`)
 

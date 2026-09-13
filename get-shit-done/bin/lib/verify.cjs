@@ -821,11 +821,11 @@ function cmdValidateHealth(cwd, options, raw) {
       if (agentStatus.installed_agents.length === 0) {
         addIssue('warning', 'W010',
           `No GSD agents found in ${agentStatus.agents_dir} — Task(subagent_type="fvgsd-*") will fall back to general-purpose`,
-          'Run the GSD installer: npx fvgsd@latest');
+          'Run the installer from your fvgsd clone: node bin/install.js --<runtime> --global');
       } else {
         addIssue('warning', 'W010',
           `Missing ${agentStatus.missing_agents.length} GSD agents: ${agentStatus.missing_agents.join(', ')} — affected workflows will fall back to general-purpose`,
-          'Run the GSD installer: npx fvgsd@latest');
+          'Run the installer from your fvgsd clone: node bin/install.js --<runtime> --global');
       }
     }
   } catch { /* intentionally empty — agent check is non-blocking */ }
