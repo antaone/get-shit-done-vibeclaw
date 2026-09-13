@@ -316,15 +316,30 @@ describe('installer migration install integration', { concurrency: false }, () =
   });
 
   test('blocks install before materialization when baseline needs explicit user choice', () => {
+    // Upstream GSD's hook belongs to that install: on its own it never blocks.
+    const foreignOnlyDir = path.join(tmpRoot, '.codex-foreign-only');
+    writeFile(foreignOnlyDir, 'hooks/gsd-retired-hook.txt', 'old gsd hook\n');
+    const foreignOnly = runInstallerCli('codex', foreignOnlyDir);
+    assert.equal(foreignOnly.status, 0, foreignOnly.stderr || foreignOnly.stdout);
+    assert.equal(fs.readFileSync(path.join(foreignOnlyDir, 'hooks/gsd-retired-hook.txt'), 'utf8'), 'old gsd hook\n');
+
+    const ownRetiredHook = `hooks/${IDENTITY.hooksDir}/retired-hook.txt`;
+    writeFile(codexHome, ownRetiredHook, 'old fvgsd hook\n');
     writeFile(codexHome, 'hooks/gsd-retired-hook.txt', 'old gsd hook\n');
 
+    let blocked = null;
     assert.throws(
       () => captureConsole(() =>
         withEnv('CODEX_HOME', codexHome, () => install(true, 'codex'))
       ),
-      /installer migration blocked/
+      (error) => {
+        blocked = error.blocked;
+        return /installer migration blocked/.test(error.message);
+      }
     );
 
+    assert.deepEqual(blocked.map((action) => action.relPath), [ownRetiredHook]);
+    assert.equal(fs.readFileSync(path.join(codexHome, ownRetiredHook), 'utf8'), 'old fvgsd hook\n');
     assert.equal(fs.readFileSync(path.join(codexHome, 'hooks/gsd-retired-hook.txt'), 'utf8'), 'old gsd hook\n');
     assert.equal(fs.existsSync(path.join(codexHome, 'skills')), false);
     assert.equal(fs.existsSync(path.join(codexHome, IDENTITY.installDir, 'VERSION')), false);
@@ -471,19 +486,32 @@ describe('installer migration install integration', { concurrency: false }, () =
     });
 
     test(`blocks ambiguous GSD-looking user-choice artifacts for ${runtime}`, () => {
+      // The same kind of file inside upstream's install folder belongs to that
+      // install: on its own it never blocks install.
+      const foreignOnlyDir = path.join(tmpRoot, `.${runtime}-foreign-only`);
+      fs.mkdirSync(foreignOnlyDir, { recursive: true });
+      writeFile(foreignOnlyDir, 'get-shit-done/gsd-retired-tool.cjs', 'old ambiguous artifact\n');
+      const foreignOnly = runInstallerCli(runtime, foreignOnlyDir);
+      assert.equal(foreignOnly.status, 0, foreignOnly.stderr || foreignOnly.stdout);
+      assert.equal(
+        fs.readFileSync(path.join(foreignOnlyDir, 'get-shit-done/gsd-retired-tool.cjs'), 'utf8'),
+        'old ambiguous artifact\n'
+      );
+
       const targetDir = path.join(tmpRoot, `.${runtime}-blocked`);
+      const ownRetiredTool = `${IDENTITY.installDir}/${IDENTITY.commandPrefix}-retired-tool.cjs`;
       fs.mkdirSync(targetDir, { recursive: true });
-      writeFile(targetDir, 'get-shit-done/gsd-retired-tool.cjs', 'old ambiguous artifact\n');
+      writeFile(targetDir, ownRetiredTool, 'old ambiguous artifact\n');
 
       const result = runInstallerCli(runtime, targetDir);
 
       assert.notEqual(result.status, 0, 'install should fail before materialization');
       const output = stripAnsi(`${result.stdout}\n${result.stderr}`);
       assert.match(output, /Installer migrations/);
-      assert.match(output, /blocked\s+get-shit-done\/gsd-retired-tool\.cjs/);
+      assert.match(output, new RegExp(`blocked\\s+${ownRetiredTool.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
       assert.match(output, /installer migration blocked/);
       assert.equal(
-        fs.readFileSync(path.join(targetDir, 'get-shit-done/gsd-retired-tool.cjs'), 'utf8'),
+        fs.readFileSync(path.join(targetDir, ownRetiredTool), 'utf8'),
         'old ambiguous artifact\n'
       );
       assert.equal(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')), false);

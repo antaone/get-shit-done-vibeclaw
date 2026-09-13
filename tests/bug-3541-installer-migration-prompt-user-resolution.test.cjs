@@ -32,6 +32,7 @@ const {
 } = require('../get-shit-done/bin/lib/installer-migrations.cjs');
 const {
   assertInstallerMigrationsUnblocked,
+  classifyPromptUserAction,
   resolveInstallerMigrationPromptsForNonTty,
 } = require('../get-shit-done/bin/lib/installer-migration-report.cjs');
 const { createTempDir, cleanup } = require('./helpers.cjs');
@@ -72,12 +73,17 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
 
   test('Test A: non-TTY default resolution removes stale SDK artifacts and keeps user skills', () => {
     // Stale SDK build artifact: replicates the 1.41.2 → 1.42.2 upgrade where
-    // 24 stale `get-shit-done/sdk/{dist,src}/fvgsd-*` files leaked into the
-    // baseline because the new manifest no longer classifies them as managed.
-    writeFile(configDir, 'get-shit-done/sdk/dist/gsd-old-bundle.js', 'stale sdk bundle\n');
+    // 24 stale `sdk/{dist,src}/` files inside the install folder leaked into
+    // the baseline because the new manifest no longer classifies them as managed.
+    const staleSdkArtifact = 'fvgsd/sdk/dist/fvgsd-old-bundle.js';
+    writeFile(configDir, staleSdkArtifact, 'stale sdk bundle\n');
     // User-facing skill: replicates `skills/gsd-roadmap/SKILL.md` from the
     // same incident — user-owned content that must be preserved.
     writeFile(configDir, 'skills/fvgsd-roadmap/SKILL.md', '# Roadmap skill\nuser content\n');
+    // The same kind of file inside upstream's install folder belongs to that
+    // install: the baseline proposes nothing for it, so nothing resolves it.
+    const foreignSdkArtifact = 'get-shit-done/sdk/dist/gsd-old-bundle.js';
+    writeFile(configDir, foreignSdkArtifact, 'stale sdk bundle\n');
 
     // Plant an empty manifest so both files classify as `stale-gsd-looking`
     // (they look like GSD artifacts but are not manifest-managed).
@@ -95,8 +101,13 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
     const blockedPaths = (result.blocked || []).map((a) => a.relPath).sort();
     assert.deepEqual(
       blockedPaths,
-      ['get-shit-done/sdk/dist/gsd-old-bundle.js', 'skills/fvgsd-roadmap/SKILL.md'],
+      [staleSdkArtifact, 'skills/fvgsd-roadmap/SKILL.md'].sort(),
       'precondition: both stale-looking files should be flagged for explicit user choice'
+    );
+    assert.deepEqual(
+      result.plan.actions.filter((a) => a.relPath === foreignSdkArtifact),
+      [],
+      "upstream's SDK file gets no baseline action"
     );
 
     // Now run the non-TTY resolver. It must classify-and-default each
@@ -111,7 +122,7 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
     );
 
     const byPath = new Map(resolved.resolutions.map((r) => [r.relPath, r]));
-    const sdkResolution = byPath.get('get-shit-done/sdk/dist/gsd-old-bundle.js');
+    const sdkResolution = byPath.get(staleSdkArtifact);
     const skillResolution = byPath.get('skills/fvgsd-roadmap/SKILL.md');
 
     assert.ok(sdkResolution, 'SDK artifact resolution logged');
@@ -235,5 +246,19 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
     assert.equal((resolved.result.plan.blocked || []).length, 0);
     assert.equal((resolved.result.plan.actions || []).length, 1);
     assert.equal(resolved.result.plan.actions[0].type, 'baseline-preserve-user');
+  });
+
+  test('Test D: safe defaults cover only fvgsd surfaces, never upstream install files', () => {
+    assert.deepEqual(
+      classifyPromptUserAction({ relPath: 'fvgsd/sdk/dist/fvgsd-old-bundle.js' }),
+      { category: 'stale-sdk-build-artifact', choice: 'remove' }
+    );
+    assert.deepEqual(
+      classifyPromptUserAction({ relPath: 'skills/fvgsd-roadmap/SKILL.md' }),
+      { category: 'user-facing-skill', choice: 'keep' }
+    );
+    // The same shapes in upstream GSD's install folder and skills belong to that install.
+    assert.equal(classifyPromptUserAction({ relPath: 'get-shit-done/sdk/dist/gsd-old-bundle.js' }), null);
+    assert.equal(classifyPromptUserAction({ relPath: 'skills/gsd-roadmap/SKILL.md' }), null);
   });
 });

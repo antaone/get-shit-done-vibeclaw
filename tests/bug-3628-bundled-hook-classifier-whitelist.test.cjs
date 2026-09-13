@@ -78,12 +78,13 @@ describe('bug #3628: BUNDLED_GSD_HOOK_FILES is an explicit whitelist', () => {
     }
   });
 
-  test('every fvgsd-*.{js,sh,cjs,mjs} file in hooks/ is in BUNDLED_GSD_HOOK_FILES (no shipping drift)', () => {
+  test('every {js,sh,cjs,mjs} file directly in hooks/fvgsd/ is in BUNDLED_GSD_HOOK_FILES (no shipping drift)', () => {
     const hooksDir = path.join(__dirname, '..', 'hooks');
     const onDisk = fs
       .readdirSync(path.join(hooksDir, 'fvgsd'), { withFileTypes: true })
       .filter((e) => e.isFile() && /\.(?:js|sh|cjs|mjs)$/.test(e.name))
       .map((e) => `hooks/fvgsd/${e.name}`);
+    assert.ok(onDisk.length > 0, 'hooks/fvgsd/ holds no hook files, so this drift check would check nothing');
     for (const relPath of onDisk) {
       assert.ok(
         BUNDLED_GSD_HOOK_FILES.has(relPath),
@@ -124,9 +125,9 @@ describe('bug #3628: classifyPromptUserAction whitelists shipped bundled hooks',
     });
   }
 
-  test('still does NOT classify nested fvgsd-* directories (existing #3610 boundary preserved)', () => {
+  test('still does NOT classify files in subfolders of hooks/fvgsd/ (existing #3610 boundary preserved)', () => {
     assert.strictEqual(
-      classifyPromptUserAction({ relPath: 'hooks/gsd-helpers/index.js' }),
+      classifyPromptUserAction({ relPath: 'hooks/fvgsd/lib/git-cmd.js' }),
       null,
     );
   });

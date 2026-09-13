@@ -117,12 +117,12 @@ describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () 
     );
   });
 
-  test('does NOT classify deeper paths under hooks/fvgsd/* (e.g. hooks/fvgsd/lib/) as bundled-gsd-hook', () => {
-    // The bundled GSD distribution has hooks/fvgsd/lib/ (helper modules). Those
-    // are managed differently — verify the classifier limits itself to
-    // top-level hooks/gsd-<name>.<ext> files, not nested directories.
+  test('does NOT classify files in subfolders of hooks/fvgsd/ (e.g. hooks/fvgsd/lib/) as bundled-gsd-hook', () => {
+    // The bundled distribution has hooks/fvgsd/lib/ (helper modules). Those
+    // are managed differently — verify the classifier limits itself to the
+    // hook files directly inside hooks/fvgsd/, not nested directories.
     const result = classifyPromptUserAction({
-      relPath: 'hooks/gsd-helpers/index.js',
+      relPath: 'hooks/fvgsd/lib/git-cmd.js',
     });
     assert.strictEqual(result, null);
   });

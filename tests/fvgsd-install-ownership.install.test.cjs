@@ -17,7 +17,8 @@ const { cleanup } = require('./helpers.cjs');
 const { snapshot } = require('./helpers/foreign-installs.cjs');
 const { INSTALL_SCRIPT, BUILD_SCRIPT, HOOKS_DIST, installerEnv } = require('./helpers/install-shared.cjs');
 
-// Seeded before install.
+// Seeded before install, so each test also shows that install leaves them alone,
+// including the foreign hook next to hooks/fvgsd/.
 const FOREIGN = [
   'commands/gsd/help.md',
   'commands/gsd/dev-preferences.md',
@@ -27,10 +28,8 @@ const FOREIGN = [
   'skills/gsd/help/SKILL.md',
   'command/gsd-help.md',
   'hooks/lib/git-cmd.js',
+  'hooks/gsd-statusline.js',
 ];
-// Seeded after install, since what this file checks is uninstall; how install treats
-// foreign hook files is covered by the coexistence test.
-const FOREIGN_HOOK = 'hooks/gsd-statusline.js';
 
 function tempRoot(t, name) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), `${IDENTITY.tempPrefix}ownership-${name}-`)));
@@ -92,7 +91,6 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
       const ownHookPrefix = `${ownHooksDir.replace(/\\/g, '/')}/`;
       assert.equal(hookCommands(readSettings(configDir)).some((command) => command.includes(ownHookPrefix)), true);
 
-      const foreign = { ...seeded, ...seed(configDir, [FOREIGN_HOOK]) };
       // An fvgsd hook registered for another config dir belongs to that install.
       const otherInstallCommand = `node "${path.join(root, 'other', 'hooks', IDENTITY.hooksDir, 'check-update.js').replace(/\\/g, '/')}"`;
       const settings = readSettings(configDir);
@@ -100,7 +98,7 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
       fs.writeFileSync(path.join(configDir, 'settings.json'), `${JSON.stringify(settings, null, 2)}\n`);
 
       runInstaller(root, [`--${runtime}`, '--global', '--config-dir', configDir, '--uninstall']);
-      assert.deepEqual(snapshot(configDir, [...FOREIGN, FOREIGN_HOOK]), foreign);
+      assert.deepEqual(snapshot(configDir, FOREIGN), seeded);
       assert.equal(fs.existsSync(ownHooksDir), false);
       assert.deepEqual(hookCommands(readSettings(configDir)), [otherInstallCommand]);
     });
@@ -115,9 +113,8 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
     assert.deepEqual(snapshot(configDir, FOREIGN), seeded);
     assert.equal(hookCommands(readSettings(configDir)).some((command) => command.includes(`/hooks/${IDENTITY.hooksDir}/`)), true);
 
-    const foreign = { ...seeded, ...seed(configDir, [FOREIGN_HOOK]) };
     runInstaller(root, ['--claude', '--local', '--uninstall']);
-    assert.deepEqual(snapshot(configDir, [...FOREIGN, FOREIGN_HOOK]), foreign);
+    assert.deepEqual(snapshot(configDir, FOREIGN), seeded);
     assert.equal(fs.existsSync(path.join(configDir, 'commands', IDENTITY.commandPrefix)), false);
     assert.equal(fs.existsSync(path.join(configDir, 'hooks', IDENTITY.hooksDir)), false);
     assert.deepEqual(hookCommands(readSettings(configDir)), []);
@@ -132,5 +129,102 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
 
     runInstaller(root, ['--claude', '--global', '--config-dir', configDir, '--uninstall']);
     assert.deepEqual(hookCommands(readSettings(configDir)), []);
+  });
+
+  test('cline --global: fvgsd records the .clinerules it writes, updates it on reinstall while unchanged, and removes it on uninstall', (t) => {
+    const root = tempRoot(t, 'cline');
+    const configDir = path.join(root, 'config');
+    const clinerules = path.join(configDir, '.clinerules');
+    const manifestPath = path.join(configDir, IDENTITY.manifestFile);
+
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir]);
+    const written = fs.readFileSync(clinerules, 'utf8');
+    assert.equal(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).files['.clinerules'], snapshot(configDir, ['.clinerules'])['.clinerules']);
+
+    // Rules an older fvgsd wrote, still as its manifest recorded them, are replaced on reinstall.
+    fs.writeFileSync(clinerules, 'older fvgsd rules\n');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    manifest.files['.clinerules'] = snapshot(configDir, ['.clinerules'])['.clinerules'];
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir]);
+    assert.equal(fs.readFileSync(clinerules, 'utf8'), written);
+
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir, '--uninstall']);
+    assert.equal(fs.existsSync(clinerules), false);
+    assert.equal(fs.existsSync(manifestPath), false);
+  });
+
+  test('cline --global: a .clinerules fvgsd did not write stays byte-identical through install and uninstall', (t) => {
+    const root = tempRoot(t, 'cline-foreign');
+    const configDir = path.join(root, 'config');
+    const foreign = seed(configDir, ['.clinerules']);
+
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir]);
+    assert.deepEqual(snapshot(configDir, ['.clinerules']), foreign);
+    assert.equal('.clinerules' in JSON.parse(fs.readFileSync(path.join(configDir, IDENTITY.manifestFile), 'utf8')).files, false);
+
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir, '--uninstall']);
+    assert.deepEqual(snapshot(configDir, ['.clinerules']), foreign);
+  });
+
+  describe('Gemini experimental.enableAgents: fvgsd takes back only the flag it set', () => {
+    function gemini(root, configDir, extra = []) {
+      runInstaller(root, ['--gemini', '--global', '--config-dir', configDir, ...extra]);
+    }
+    function flagRecord(configDir) {
+      const manifestPath = path.join(configDir, IDENTITY.manifestFile);
+      return fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, 'utf8')).geminiAgentsFlag : undefined;
+    }
+    function seedSettings(configDir, settings) {
+      fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(path.join(configDir, 'settings.json'), `${JSON.stringify(settings, null, 2)}\n`);
+      return readSettings(configDir);
+    }
+
+    test('fvgsd alone: install adds the flag and its record, reinstall keeps the record, uninstall removes both', (t) => {
+      const root = tempRoot(t, 'gemini-flag-alone');
+      const configDir = path.join(root, 'config');
+      const before = seedSettings(configDir, { theme: 'Dracula' });
+
+      gemini(root, configDir);
+      assert.deepEqual(readSettings(configDir).experimental, { enableAgents: true });
+      assert.deepEqual(flagRecord(configDir), { createdExperimental: true });
+
+      gemini(root, configDir);
+      assert.deepEqual(flagRecord(configDir), { createdExperimental: true });
+
+      gemini(root, configDir, ['--uninstall']);
+      assert.equal(flagRecord(configDir), undefined);
+      assert.deepEqual(readSettings(configDir), before);
+    });
+
+    for (const enableAgents of [true, false]) {
+      test(`enableAgents already ${enableAgents}: install and uninstall leave it as written and record nothing`, (t) => {
+        const root = tempRoot(t, `gemini-flag-${enableAgents}`);
+        const configDir = path.join(root, 'config');
+        const before = seedSettings(configDir, { experimental: { enableAgents } });
+
+        gemini(root, configDir);
+        assert.deepEqual(readSettings(configDir).experimental, before.experimental);
+        assert.equal(flagRecord(configDir), undefined);
+
+        gemini(root, configDir, ['--uninstall']);
+        assert.deepEqual(readSettings(configDir), before);
+      });
+    }
+
+    for (const foreign of ['agents/gsd-planner.md', 'get-shit-done/VERSION']) {
+      test(`fvgsd set the flag, then ${foreign} appears: uninstall keeps the flag`, (t) => {
+        const root = tempRoot(t, 'gemini-flag-kept');
+        const configDir = path.join(root, 'config');
+
+        gemini(root, configDir);
+        assert.deepEqual(flagRecord(configDir), { createdExperimental: true });
+        seed(configDir, [foreign]);
+
+        gemini(root, configDir, ['--uninstall']);
+        assert.deepEqual(readSettings(configDir).experimental, { enableAgents: true });
+      });
+    }
   });
 });

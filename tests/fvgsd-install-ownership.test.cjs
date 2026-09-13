@@ -16,6 +16,8 @@ const {
   uninstallRuntimeArtifacts,
   listOwnHookFiles,
   buildCodexHookWindowsShimIR,
+  removeInstallerMigrationRecords,
+  removeRecordedClinerules,
 } = require('../bin/install.js');
 const { isManagedHookCommand, isManagedHookBasename } = require('../get-shit-done/bin/lib/shell-command-projection.cjs');
 const { loadSkillsManifest, resolveProfile } = require('../get-shit-done/bin/lib/install-profiles.cjs');
@@ -71,4 +73,52 @@ test('the uninstall hook list is every file install writes under hooks/fvgsd/', 
   const ownHookFiles = listOwnHookFiles();
   assert.deepEqual(ownHookFiles, expected);
   assert.equal(ownHookFiles.includes(`${IDENTITY.hooksDir}/check-update-worker.js`), true);
+});
+
+test('uninstall removes fvgsd migration records and keeps journal backups and gsd bookkeeping', (t) => {
+  const configDir = createTempDir('fvgsd-own-migration-records-');
+  t.after(() => cleanup(configDir));
+  const run = `${IDENTITY.migrationJournalDir}/2026-05-11T00-00-00-000Z-0123456789abcdef`;
+  const records = [IDENTITY.installStateFile, `${run}.json`, `${run}-rollback/hooks/${IDENTITY.hooksDir}/old-hook.js`];
+  const backups = [`${run}-backups/hooks/${IDENTITY.hooksDir}/old-hook.js`];
+  // Upstream GSD's migration bookkeeping, under its own names.
+  const foreign = ['gsd-install-state.json', 'gsd-migration-journal/2026-05-11T00-00-00-000Z-0123456789abcdef.json'];
+  for (const rel of [...records, ...backups, ...foreign]) {
+    fs.mkdirSync(path.dirname(path.join(configDir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(configDir, rel), `${rel}\n`);
+  }
+  const kept = snapshot(configDir, [...backups, ...foreign]);
+
+  assert.equal(removeInstallerMigrationRecords(configDir), 3);
+  assert.deepEqual(listFiles(configDir), [...backups, ...foreign].sort());
+  assert.deepEqual(snapshot(configDir, [...backups, ...foreign]), kept);
+  assert.equal(fs.existsSync(path.join(configDir, `${run}-rollback`)), false);
+
+  // Once no backups are left, the journal folder goes too.
+  fs.rmSync(path.join(configDir, `${run}-backups`), { recursive: true });
+  removeInstallerMigrationRecords(configDir);
+  assert.equal(fs.existsSync(path.join(configDir, IDENTITY.migrationJournalDir)), false);
+});
+
+test('uninstall removes .clinerules only while it matches the hash the fvgsd manifest recorded', (t) => {
+  const configDir = createTempDir('fvgsd-own-clinerules-');
+  t.after(() => cleanup(configDir));
+  const clinerules = path.join(configDir, '.clinerules');
+  const recordInManifest = (files) => fs.writeFileSync(path.join(configDir, IDENTITY.manifestFile), JSON.stringify({ files }));
+
+  fs.writeFileSync(clinerules, 'fvgsd rules\n');
+  recordInManifest(snapshot(configDir, ['.clinerules']));
+  assert.equal(removeRecordedClinerules(configDir), true);
+  assert.equal(fs.existsSync(clinerules), false);
+
+  // Edited after install: stays as the user left it.
+  fs.writeFileSync(clinerules, 'fvgsd rules\nmy own rule\n');
+  assert.equal(removeRecordedClinerules(configDir), false);
+  assert.equal(fs.readFileSync(clinerules, 'utf8'), 'fvgsd rules\nmy own rule\n');
+
+  // Not recorded in fvgsd's manifest: stays.
+  recordInManifest({});
+  fs.writeFileSync(clinerules, 'fvgsd rules\n');
+  assert.equal(removeRecordedClinerules(configDir), false);
+  assert.equal(fs.readFileSync(clinerules, 'utf8'), 'fvgsd rules\n');
 });

@@ -93,10 +93,10 @@ function userHook(command) {
 test('records a first-time baseline while preserving user-owned artifacts', () => {
   const configDir = createTempInstall();
   try {
-    writeFile(configDir, 'get-shit-done/workflows/plan.md', 'managed workflow\n');
-    writeFile(configDir, 'get-shit-done/USER-PROFILE.md', 'user profile\n');
+    writeFile(configDir, 'fvgsd/workflows/plan.md', 'managed workflow\n');
+    writeFile(configDir, 'fvgsd/USER-PROFILE.md', 'user profile\n');
     writeManifest(configDir, {
-      'get-shit-done/workflows/plan.md': sha256('managed workflow\n'),
+      'fvgsd/workflows/plan.md': sha256('managed workflow\n'),
     });
 
     const result = runInstallerMigrations({
@@ -109,8 +109,8 @@ test('records a first-time baseline while preserving user-owned artifacts', () =
     });
 
     assert.deepEqual(result.appliedMigrationIds, ['2026-05-11-first-time-baseline-scan']);
-    assert.equal(fs.readFileSync(path.join(configDir, 'get-shit-done/workflows/plan.md'), 'utf8'), 'managed workflow\n');
-    assert.equal(fs.readFileSync(path.join(configDir, 'get-shit-done/USER-PROFILE.md'), 'utf8'), 'user profile\n');
+    assert.equal(fs.readFileSync(path.join(configDir, 'fvgsd/workflows/plan.md'), 'utf8'), 'managed workflow\n');
+    assert.equal(fs.readFileSync(path.join(configDir, 'fvgsd/USER-PROFILE.md'), 'utf8'), 'user profile\n');
 
     assert.deepEqual(
       result.plan.actions.map((action) => ({
@@ -121,12 +121,12 @@ test('records a first-time baseline while preserving user-owned artifacts', () =
       [
         {
           type: 'record-baseline',
-          relPath: 'get-shit-done/workflows/plan.md',
+          relPath: 'fvgsd/workflows/plan.md',
           classification: 'managed-pristine',
         },
         {
           type: 'baseline-preserve-user',
-          relPath: 'get-shit-done/USER-PROFILE.md',
+          relPath: 'fvgsd/USER-PROFILE.md',
           classification: 'user-owned',
         },
       ]
@@ -142,6 +142,8 @@ test('records a first-time baseline while preserving user-owned artifacts', () =
 test('preserves unknown files discovered in known install surfaces by default', () => {
   const configDir = createTempInstall();
   try {
+    writeFile(configDir, 'fvgsd/custom-user-notes.md', 'user notes\n');
+    // hooks/ outside hooks/fvgsd/ is shared with other installs, so it is not a scanned surface.
     writeFile(configDir, 'hooks/custom-user-hook.js', 'user hook\n');
     writeManifest(configDir, {});
 
@@ -164,11 +166,12 @@ test('preserves unknown files discovered in known install surfaces by default', 
       [
         {
           type: 'baseline-preserve-user',
-          relPath: 'hooks/custom-user-hook.js',
+          relPath: 'fvgsd/custom-user-notes.md',
           classification: 'unknown',
         },
       ]
     );
+    assert.equal(fs.readFileSync(path.join(configDir, 'fvgsd/custom-user-notes.md'), 'utf8'), 'user notes\n');
     assert.equal(fs.readFileSync(path.join(configDir, 'hooks/custom-user-hook.js'), 'utf8'), 'user hook\n');
     assert.deepEqual(readInstallState(configDir).appliedMigrations.map((entry) => entry.id), [
       '2026-05-11-first-time-baseline-scan',
@@ -186,11 +189,14 @@ test('preserves user-owned skill files during baseline without hashing their con
     cleanup(configDir);
   });
 
+  writeFile(configDir, 'skills/fvgsd-dev-preferences/SKILL.md', 'user skill\n');
+  // A skill without the fvgsd- prefix belongs to the user or another install and is not scanned.
   writeFile(configDir, 'skills/custom-user-skill/SKILL.md', 'user skill\n');
   writeManifest(configDir, {});
-  const userSkillPath = path.join(configDir, 'skills/custom-user-skill/SKILL.md');
+  const userSkillPaths = ['skills/fvgsd-dev-preferences/SKILL.md', 'skills/custom-user-skill/SKILL.md']
+    .map((relPath) => path.resolve(configDir, relPath));
   fs.openSync = (filePath, ...args) => {
-    if (path.resolve(String(filePath)) === path.resolve(userSkillPath)) {
+    if (userSkillPaths.includes(path.resolve(String(filePath)))) {
       throw new Error('user-owned skill content should not be hashed during baseline');
     }
     return originalOpenSync.call(fs, filePath, ...args);
@@ -215,7 +221,7 @@ test('preserves user-owned skill files during baseline without hashing their con
     [
       {
         type: 'baseline-preserve-user',
-        relPath: 'skills/custom-user-skill/SKILL.md',
+        relPath: 'skills/fvgsd-dev-preferences/SKILL.md',
         classification: 'user-owned',
         currentHash: null,
       },
@@ -226,6 +232,8 @@ test('preserves user-owned skill files during baseline without hashing their con
 test('blocks stale GSD-looking baseline artifacts for explicit user choice', () => {
   const configDir = createTempInstall();
   try {
+    writeFile(configDir, 'hooks/fvgsd/retired-hook.js', 'old fvgsd hook\n');
+    // Upstream's hook next to hooks/fvgsd/ belongs to that install and is never offered for removal.
     writeFile(configDir, 'hooks/gsd-retired-hook.js', 'old gsd hook\n');
     writeManifest(configDir, {});
 
@@ -241,7 +249,9 @@ test('blocks stale GSD-looking baseline artifacts for explicit user choice', () 
     assert.deepEqual(result.appliedMigrationIds, []);
     assert.equal(result.journalRelPath, null);
     assert.equal(fs.existsSync(path.join(configDir, INSTALL_STATE_NAME)), false);
+    assert.equal(fs.readFileSync(path.join(configDir, 'hooks/fvgsd/retired-hook.js'), 'utf8'), 'old fvgsd hook\n');
     assert.equal(fs.readFileSync(path.join(configDir, 'hooks/gsd-retired-hook.js'), 'utf8'), 'old gsd hook\n');
+    assert.deepEqual(result.plan.actions.map((action) => action.relPath), ['hooks/fvgsd/retired-hook.js']);
     assert.deepEqual(
       result.blocked.map((action) => ({
         type: action.type,
@@ -252,7 +262,7 @@ test('blocks stale GSD-looking baseline artifacts for explicit user choice', () 
       [
         {
           type: 'prompt-user',
-          relPath: 'hooks/gsd-retired-hook.js',
+          relPath: 'hooks/fvgsd/retired-hook.js',
           classification: 'stale-gsd-looking',
           choices: ['keep', 'remove'],
         },

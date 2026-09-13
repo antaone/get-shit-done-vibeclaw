@@ -6768,6 +6768,127 @@ function validateHookFields(settings) {
 }
 
 /**
+ * Remove the installer-migration records this install keeps in its config dir:
+ * the install state, and in the migration journal each run's record and its
+ * rollback copies. Backups a migration took of user-modified files
+ * (`<run>-backups/`) stay, so the journal folder goes only when nothing is left
+ * in it. Returns the number of entries removed.
+ */
+function removeInstallerMigrationRecords(targetDir) {
+  let removed = 0;
+  const statePath = path.join(targetDir, IDENTITY.installStateFile);
+  if (fs.existsSync(statePath)) {
+    fs.rmSync(statePath, { force: true });
+    removed++;
+  }
+  const journalDir = path.join(targetDir, IDENTITY.migrationJournalDir);
+  if (!fs.existsSync(journalDir)) return removed;
+  for (const entry of fs.readdirSync(journalDir, { withFileTypes: true })) {
+    const isRunRecord = entry.isFile() && entry.name.endsWith('.json');
+    const isRollbackCopy = entry.isDirectory() && entry.name.endsWith('-rollback');
+    if (!isRunRecord && !isRollbackCopy) continue;
+    fs.rmSync(path.join(journalDir, entry.name), { recursive: true, force: true });
+    removed++;
+  }
+  try { fs.rmdirSync(journalDir); } catch (_) { /* still holds backups of user-modified files */ }
+  return removed;
+}
+
+/**
+ * This install's file manifest, or null when it is missing or unreadable.
+ */
+function readOwnManifest(configDir) {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(configDir, MANIFEST_NAME), 'utf8'));
+  } catch (_) {
+    return null;
+  }
+}
+
+/**
+ * Whether relPath is listed in this install's manifest and still holds the
+ * content recorded there, that is, it is still the file this install wrote.
+ */
+function matchesManifestRecord(configDir, relPath) {
+  const manifest = readOwnManifest(configDir);
+  const recordedHash = manifest && manifest.files ? manifest.files[relPath] : null;
+  const fullPath = path.join(configDir, relPath);
+  return Boolean(recordedHash) && fs.existsSync(fullPath) && fileHash(fullPath) === recordedHash;
+}
+
+/**
+ * Remove the .clinerules file a Cline install wrote, only while it still matches
+ * the hash this install's manifest recorded for it: a file edited since, or one
+ * the manifest doesn't list, stays. Returns whether the file was removed.
+ */
+function removeRecordedClinerules(targetDir) {
+  if (!matchesManifestRecord(targetDir, '.clinerules')) return false;
+  fs.unlinkSync(path.join(targetDir, '.clinerules'));
+  return true;
+}
+
+// Upstream GSD's install folder inside a runtime config dir (VibeClaw installs used it too).
+const FOREIGN_INSTALL_DIR = 'get-shit-done';
+
+/**
+ * Gemini CLI loads custom sub-agents only with experimental.enableAgents set.
+ * settings.json is shared with other installs and the user, so the key is set
+ * only when it is absent; a key with any value stays as written. Returns the
+ * record to keep in the manifest when this install set the key (noting whether
+ * it also created the experimental object), or null when it left settings alone.
+ */
+function claimGeminiAgentsFlag(settings) {
+  if (settings.experimental === undefined) {
+    settings.experimental = { enableAgents: true };
+    return { createdExperimental: true };
+  }
+  const experimental = settings.experimental;
+  const isObject = experimental !== null && typeof experimental === 'object' && !Array.isArray(experimental);
+  if (!isObject || Object.prototype.hasOwnProperty.call(experimental, 'enableAgents')) return null;
+  experimental.enableAgents = true;
+  return { createdExperimental: false };
+}
+
+/**
+ * Keep claimGeminiAgentsFlag's record in this install's manifest; writeManifest
+ * carries it across reinstalls, which find the key already set.
+ */
+function recordGeminiAgentsFlag(configDir, record) {
+  const manifestPath = path.join(configDir, MANIFEST_NAME);
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.geminiAgentsFlag = record;
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+}
+
+/**
+ * Whether anything besides this install may still use Gemini's sub-agents: an
+ * agent file without this install's prefix, or upstream's install folder.
+ */
+function otherGeminiAgentsUserRemains(configDir) {
+  if (fs.existsSync(path.join(configDir, FOREIGN_INSTALL_DIR))) return true;
+  const agentsDir = path.join(configDir, 'agents');
+  if (!fs.existsSync(agentsDir)) return false;
+  return fs.readdirSync(agentsDir, { withFileTypes: true })
+    .some((entry) => entry.isFile() && !entry.name.startsWith(IDENTITY.agentPrefix));
+}
+
+/**
+ * On uninstall, take back experimental.enableAgents only when the manifest
+ * record says this install set it and no other agents user remains. The
+ * experimental object goes too when this install created it and nothing else is
+ * left in it. Returns whether settings changed.
+ */
+function releaseGeminiAgentsFlag(settings, record, configDir) {
+  const experimental = settings.experimental;
+  const isObject = experimental !== null && typeof experimental === 'object' && !Array.isArray(experimental);
+  if (!record || !isObject || !Object.prototype.hasOwnProperty.call(experimental, 'enableAgents')) return false;
+  if (otherGeminiAgentsUserRemains(configDir)) return false;
+  delete experimental.enableAgents;
+  if (record.createdExperimental && Object.keys(experimental).length === 0) delete settings.experimental;
+  return true;
+}
+
+/**
  * Uninstall GSD from the specified directory for a specific runtime
  * Removes only GSD-specific files/directories, preserves user content
  * @param {boolean} isGlobal - Whether to uninstall from global or local
@@ -7102,6 +7223,16 @@ function uninstall(isGlobal, runtime = 'claude') {
       delete settings.hooks;
     }
 
+    // Gemini's experimental.enableAgents is shared: take it back only when this
+    // install set it (its manifest record, read before the manifest goes below).
+    if (isGemini) {
+      const manifest = readOwnManifest(targetDir);
+      if (releaseGeminiAgentsFlag(settings, manifest && manifest.geminiAgentsFlag, targetDir)) {
+        settingsModified = true;
+        console.log(`  ${green}✓${reset} Removed experimental.enableAgents from settings`);
+      }
+    }
+
     if (settingsModified) {
       writeSettings(settingsPath, settings);
       removedCount++;
@@ -7188,6 +7319,20 @@ function uninstall(isGlobal, runtime = 'claude') {
         // Ignore JSON parse errors
       }
     }
+  }
+
+  // Cline's .clinerules is checked against the manifest, so this runs before
+  // the manifest itself is removed below.
+  if (runtime === 'cline' && removeRecordedClinerules(targetDir)) {
+    removedCount++;
+    console.log(`  ${green}✓${reset} Removed .clinerules`);
+  }
+
+  // The installer-migration state and journal are this install's own
+  // bookkeeping; backups of user-modified files in the journal stay.
+  if (removeInstallerMigrationRecords(targetDir) > 0) {
+    removedCount++;
+    console.log(`  ${green}✓${reset} Removed installer migration records`);
   }
 
   // Remove the file manifest that the installer wrote at install time.
@@ -7652,12 +7797,10 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
       }
     }
   }
-  // Track .clinerules file in manifest for Cline installs
-  if (isCline) {
-    const clinerulesDest = path.join(configDir, '.clinerules');
-    if (fs.existsSync(clinerulesDest)) {
-      manifest.files['.clinerules'] = fileHash(clinerulesDest);
-    }
+  // Track .clinerules for Cline installs, only when this install wrote it: a
+  // .clinerules it left as written belongs to another install or the user.
+  if (isCline && options.clinerulesWritten) {
+    manifest.files['.clinerules'] = fileHash(path.join(configDir, '.clinerules'));
   }
 
   // Track hook files so saveLocalPatches() can detect user modifications
@@ -7670,6 +7813,13 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
         manifest.files[`hooks/${IDENTITY.hooksDir}/${rel}`] = hash;
       }
     }
+  }
+
+  // Carry an earlier install's record that it set Gemini's
+  // experimental.enableAgents (see claimGeminiAgentsFlag) across reinstalls.
+  const previousManifest = readOwnManifest(configDir);
+  if (previousManifest && previousManifest.geminiAgentsFlag) {
+    manifest.geminiAgentsFlag = previousManifest.geminiAgentsFlag;
   }
 
   fs.writeFileSync(path.join(configDir, MANIFEST_NAME), JSON.stringify(manifest, null, 2));
@@ -8306,6 +8456,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // agentsSrc is declared here (let, not const) because installCodexConfig() inside the
   // Codex config block below also references it, and that block is outside the try scope.
   let agentsSrc = path.join(src, 'agents');
+  // Set by the Cline branch below when this install writes .clinerules, so the
+  // file manifest records it only then.
+  let clinerulesWritten = false;
   try {
   installerMigrationResult = runInstallerMigrations({
     configDir: targetDir,
@@ -8445,9 +8598,31 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       failures.push('command/fvgsd-*');
     }
   } else if (isCline) {
-    // Cline is rules-based — commands are embedded in .clinerules (generated below).
+    // Cline is rules-based — commands are embedded in .clinerules, written here
+    // with the other install files so the file manifest written below records it.
     // No skills/commands directory needed. Engine is installed via copyWithPathReplacement.
-    console.log(`  ${green}✓${reset} Cline: commands will be available via .clinerules`);
+    // .clinerules may belong to another install or the user, so it is written only
+    // when absent, or when it still holds what this install's manifest recorded.
+    const clinerulesDest = path.join(targetDir, '.clinerules');
+    const clinerules = [
+      '# GSD — Get Shit Done',
+      '',
+      `- GSD workflows live in \`${IDENTITY.installDir}/workflows/\`. Load the relevant workflow when`,
+      '  the user runs a `/fvgsd-*` command.',
+      '- GSD agents live in `agents/`. Use the matching agent when spawning subagents.',
+      `- GSD tools are at \`${IDENTITY.installDir}/bin/fvgsd-tools.cjs\`. Run with \`node\`.`,
+      '- Planning artifacts live in `.planning/`. Never edit them outside a GSD workflow.',
+      '- Do not apply GSD workflows unless the user explicitly asks for them.',
+      '- When a GSD command triggers a deliverable (feature, fix, docs), offer the next',
+      '  step to the user using Cline\'s ask_user tool after completing it.',
+    ].join('\n') + '\n';
+    if (!fs.existsSync(clinerulesDest) || matchesManifestRecord(targetDir, '.clinerules')) {
+      fs.writeFileSync(clinerulesDest, clinerules);
+      clinerulesWritten = true;
+      console.log(`  ${green}✓${reset} Cline: commands will be available via .clinerules`);
+    } else {
+      console.log(`  ${yellow}i${reset} Left the existing .clinerules as written; Cline won't load fvgsd's rules from it`);
+    }
   } else if (isGemini) {
     // #3037: when running --local --gemini and a GSD-managed user-scope
     // command directory already exists at ~/.gemini/commands/gsd/, skip
@@ -8826,7 +9001,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   // Write file manifest for future modification detection
-  writeManifest(targetDir, runtime, { mode: _effectiveInstallMode });
+  writeManifest(targetDir, runtime, { mode: _effectiveInstallMode, clinerulesWritten });
   console.log(`  ${green}✓${reset} Wrote file manifest (${MANIFEST_NAME})`);
 
   // Report any backed-up local patches
@@ -9268,22 +9443,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   if (isCline) {
-    // Cline uses .clinerules — generate a rules file with GSD system instructions
-    const clinerulesDest = path.join(targetDir, '.clinerules');
-    const clinerules = [
-      '# GSD — Get Shit Done',
-      '',
-      `- GSD workflows live in \`${IDENTITY.installDir}/workflows/\`. Load the relevant workflow when`,
-      '  the user runs a `/fvgsd-*` command.',
-      '- GSD agents live in `agents/`. Use the matching agent when spawning subagents.',
-      `- GSD tools are at \`${IDENTITY.installDir}/bin/fvgsd-tools.cjs\`. Run with \`node\`.`,
-      '- Planning artifacts live in `.planning/`. Never edit them outside a GSD workflow.',
-      '- Do not apply GSD workflows unless the user explicitly asks for them.',
-      '- When a GSD command triggers a deliverable (feature, fix, docs), offer the next',
-      '  step to the user using Cline\'s ask_user tool after completing it.',
-    ].join('\n') + '\n';
-    fs.writeFileSync(clinerulesDest, clinerules);
-    console.log(`  ${green}✓${reset} Wrote .clinerules`);
+    // Cline's .clinerules was written with the other install files, before the manifest.
     persistActiveProfileMarker();
     return { settingsPath: null, settings: null, statuslineCommand: null, updateBannerCommand: null, runtime, configDir: targetDir };
   }
@@ -9372,14 +9532,16 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     console.warn(`  ${yellow}⚠${reset}  Skipping managed JS hook registration — Node executable path unavailable (process.execPath is empty). See #2979 / #3002.`);
   }
 
-  // Enable experimental agents for Gemini CLI (required for custom sub-agents)
+  // Enable experimental agents for Gemini CLI (required for custom sub-agents).
+  // settings.json is shared, so the key is set only when absent, and the manifest
+  // records that this install set it (see claimGeminiAgentsFlag).
   if (isGemini) {
-    if (!settings.experimental) {
-      settings.experimental = {};
-    }
-    if (!settings.experimental.enableAgents) {
-      settings.experimental.enableAgents = true;
+    const agentsFlagRecord = claimGeminiAgentsFlag(settings);
+    if (agentsFlagRecord) {
+      recordGeminiAgentsFlag(targetDir, agentsFlagRecord);
       console.log(`  ${green}✓${reset} Enabled experimental agents`);
+    } else if (!(settings.experimental && settings.experimental.enableAgents === true)) {
+      console.log(`  ${yellow}i${reset} Left experimental.enableAgents in settings.json as written; fvgsd's Gemini agents stay disabled until it is true`);
     }
   }
 
@@ -11398,6 +11560,8 @@ module.exports = {
     installRuntimeArtifacts,
     uninstallRuntimeArtifacts,
     listOwnHookFiles,
+    removeInstallerMigrationRecords,
+    removeRecordedClinerules,
   };
 
 // Main logic — only run when not loaded as a module for testing

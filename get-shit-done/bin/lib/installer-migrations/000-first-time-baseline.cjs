@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../identity.cjs');
 
 const BASELINE_MIGRATION_ID = '2026-05-11-first-time-baseline-scan';
 
@@ -12,38 +13,44 @@ const BASELINE_MIGRATION_ID = '2026-05-11-first-time-baseline-scan';
 // The registry rows are based on each runtime's upstream loader docs where
 // available. Source-limited rows are intentionally conservative: scan generated
 // files GSD materializes, but do not infer ownership of undocumented host config.
+//
+// The config dir can also hold other installs next to this one, so only this
+// install's own surfaces are scanned: its install folder, its commands and hooks
+// folders, and inside the shared skills/, agents/ and command/ folders only
+// entries carrying its own prefix (isOwnSurfacePath).
+const OWN_HOOKS = `hooks/${IDENTITY.hooksDir}`;
+const OWN_COMMANDS = `commands/${IDENTITY.commandPrefix}`;
 const RUNTIME_SURFACES = {
-  claude: ['get-shit-done', 'commands/fvgsd', 'commands/gsd', 'skills', 'agents', 'hooks', 'settings.json'],
-  codex: ['get-shit-done', 'skills', 'agents', 'hooks', 'config.toml', 'hooks.json'],
-  gemini: ['get-shit-done', 'commands/fvgsd', 'commands/gsd', 'hooks'],
-  opencode: ['get-shit-done', 'command', 'skills', 'agents'],
-  kilo: ['get-shit-done', 'command', 'skills', 'agents'],
-  copilot: ['get-shit-done', 'skills', 'agents'],
-  antigravity: ['get-shit-done', 'skills', 'agents'],
-  cursor: ['get-shit-done', 'skills', 'agents'],
-  windsurf: ['get-shit-done', 'skills', 'agents', 'rules'],
-  augment: ['get-shit-done', 'skills', 'agents'],
-  trae: ['get-shit-done', 'skills', 'agents', 'rules'],
-  qwen: ['get-shit-done', 'skills', 'agents'],
-  hermes: ['get-shit-done', 'skills/fvgsd', 'skills/gsd', 'agents'],
-  cline: ['get-shit-done', 'skills', 'agents'],
-  codebuddy: ['get-shit-done', 'skills', 'agents'],
+  claude: [IDENTITY.installDir, OWN_COMMANDS, 'skills', 'agents', OWN_HOOKS, 'settings.json'],
+  codex: [IDENTITY.installDir, 'skills', 'agents', OWN_HOOKS, 'config.toml', 'hooks.json'],
+  gemini: [IDENTITY.installDir, OWN_COMMANDS, OWN_HOOKS],
+  opencode: [IDENTITY.installDir, 'command', 'skills', 'agents'],
+  kilo: [IDENTITY.installDir, 'command', 'skills', 'agents'],
+  copilot: [IDENTITY.installDir, 'skills', 'agents'],
+  antigravity: [IDENTITY.installDir, 'skills', 'agents'],
+  cursor: [IDENTITY.installDir, 'skills', 'agents'],
+  windsurf: [IDENTITY.installDir, 'skills', 'agents', 'rules'],
+  augment: [IDENTITY.installDir, 'skills', 'agents'],
+  trae: [IDENTITY.installDir, 'skills', 'agents', 'rules'],
+  qwen: [IDENTITY.installDir, 'skills', 'agents'],
+  hermes: [IDENTITY.installDir, `skills/${IDENTITY.commandPrefix}`, 'agents'],
+  cline: [IDENTITY.installDir, 'skills', 'agents'],
+  codebuddy: [IDENTITY.installDir, 'skills', 'agents'],
 };
 
-const COMMON_SURFACES = ['get-shit-done', 'skills', 'agents', 'hooks'];
+const COMMON_SURFACES = [IDENTITY.installDir, 'skills', 'agents', OWN_HOOKS];
 const INTERNAL_TOP_LEVEL_NAMES = new Set([
-  'fvgsd-file-manifest.json',
-  'fvgsd-install-state.json',
+  IDENTITY.manifestFile,
+  IDENTITY.installStateFile,
   'fvgsd-migration-backups',
-  'fvgsd-migration-journal',
+  IDENTITY.migrationJournalDir,
 ]);
 const USER_OWNED_PATHS = new Set([
-  'get-shit-done/USER-PROFILE.md',
-  'commands/fvgsd/dev-preferences.md',
-  'commands/gsd/dev-preferences.md',
-  'skills/fvgsd-dev-preferences/SKILL.md',
-  'skills/fvgsd-dev-preferences/SKILL.md',
+  `${IDENTITY.installDir}/USER-PROFILE.md`,
+  `${OWN_COMMANDS}/dev-preferences.md`,
+  `skills/${IDENTITY.commandPrefix}-dev-preferences/SKILL.md`,
 ]);
+const OWN_NAME_PATTERN = new RegExp(`^${IDENTITY.commandPrefix}[-_]`);
 let knownGeneratedAgentNames = null;
 
 function normalizeRelPath(relPath) {
@@ -71,6 +78,17 @@ function walkFiles(root, relDir, files) {
   }
 }
 
+// skills/, agents/ and command/ are shared with other installs and the user;
+// only entries carrying this install's prefix belong to it. Every other scanned
+// surface is this install's own folder or a config file it writes into.
+function isOwnSurfacePath(relPath) {
+  const [top, second, third] = relPath.split('/');
+  if (top === 'skills') return Boolean(second) && (second.startsWith(`${IDENTITY.commandPrefix}-`) || (second === IDENTITY.commandPrefix && Boolean(third)));
+  if (top === 'agents') return Boolean(second) && second.startsWith(IDENTITY.agentPrefix);
+  if (top === 'command') return Boolean(second) && second.startsWith(`${IDENTITY.commandPrefix}-`);
+  return true;
+}
+
 function scanBaselineFiles(configDir, runtime) {
   const relPaths = new Set();
   for (const surface of baselineInstallSurfaces(runtime)) {
@@ -84,15 +102,11 @@ function scanBaselineFiles(configDir, runtime) {
       relPaths.add(normalized);
     }
   }
-  return [...relPaths];
+  return [...relPaths].filter(isOwnSurfacePath);
 }
 
 function isUserOwnedBaselinePath(relPath) {
-  if (USER_OWNED_PATHS.has(relPath)) return true;
-  const parts = relPath.split('/');
-  if (parts[0] === 'skills' && parts[1] && !parts[1].startsWith('fvgsd-') && !parts[1].startsWith('fvgsd-')) return true;
-  if (parts[0] === 'agents' && parts[1] && !parts[1].startsWith('fvgsd-')) return true;
-  return false;
+  return USER_OWNED_PATHS.has(relPath);
 }
 
 function listKnownGeneratedAgentNames() {
@@ -125,14 +139,14 @@ function isKnownGeneratedAgentPath(relPath, runtime) {
   return listKnownGeneratedAgentNames().has(agentName);
 }
 
+// Looks like a file this install generated: named with its prefix, inside a
+// prefixed skills/ or agents/ entry, or anywhere under its hooks folder (hook
+// files there carry no name prefix).
 function isStaleGsdLookingPath(relPath) {
-  const baseName = path.posix.basename(relPath);
-  if (/^(?:fvgsd|gsd)[-_]/.test(baseName)) return true;
-  const parts = relPath.split('/');
-  if ((parts[0] === 'skills' || parts[0] === 'agents') && parts[1] && /^(?:fvgsd|gsd)-/.test(parts[1])) {
-    return true;
-  }
-  return false;
+  if (relPath.startsWith(`${OWN_HOOKS}/`)) return true;
+  if (OWN_NAME_PATTERN.test(path.posix.basename(relPath))) return true;
+  const [top, second] = relPath.split('/');
+  return (top === 'skills' || top === 'agents') && Boolean(second) && second.startsWith(`${IDENTITY.commandPrefix}-`);
 }
 
 function baselineActionRank(action) {

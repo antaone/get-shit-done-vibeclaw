@@ -11,16 +11,19 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { isDeepStrictEqual } = require('node:util');
 const { spawnSync } = require('node:child_process');
 
 const { INSTALL_SCRIPT, RUNTIME_META, installerEnv, runMinimalInstall } = require('./helpers/install-shared.cjs');
-const { seedForeignInstalls, listFiles, snapshot } = require('./helpers/foreign-installs.cjs');
+const { FOREIGN_MARKERS, seedForeignInstalls, listFiles, snapshot } = require('./helpers/foreign-installs.cjs');
 const MATCHERS = require('./fixtures/foreign-installer-matchers.json');
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const installer = require('../bin/install.js');
 
+// Shared files fvgsd also writes into. STRUCTURED ones are compared by parsed
+// content; SHARED_TEXT ones by the bytes of the foreign region after install and
+// by the whole file's bytes after uninstall.
 const STRUCTURED = new Set(['settings.json', 'hooks.json', 'opencode.json', 'kilo.json', 'gsd-file-manifest.json', 'config.toml']);
+const SHARED_TEXT = new Set(['config.toml', 'copilot-instructions.md']);
 
 function runInstaller(runtime, root, configDir, extra = []) {
   const r = spawnSync(process.execPath, [INSTALL_SCRIPT, `--${runtime}`, '--global', '--config-dir', configDir, ...extra], {
@@ -31,9 +34,23 @@ function runInstaller(runtime, root, configDir, extra = []) {
   assert.equal(r.status, 0, `${runtime} ${extra.join(' ')} exited ${r.status}\n${r.stdout}\n${r.stderr}`);
 }
 
+function readText(configDir, rel) {
+  return fs.readFileSync(path.join(configDir, rel), 'utf8');
+}
+
 function parsed(configDir, rel) {
-  const text = fs.readFileSync(path.join(configDir, rel), 'utf8');
+  const text = readText(configDir, rel);
   return rel === 'config.toml' ? installer.parseTomlToObject(text) : JSON.parse(text);
+}
+
+// The text from `open` through `close`, or through the end of the file when no
+// close marker is given; null when a marker is missing.
+function region(text, open, close) {
+  const start = text.indexOf(open);
+  if (start === -1) return null;
+  if (!close) return text.slice(start);
+  const end = text.indexOf(close, start);
+  return end === -1 ? null : text.slice(start, end + close.length);
 }
 
 function hookCommands(settings) {
@@ -56,16 +73,17 @@ function matchesForeignInstaller(value) {
 
 describe('fvgsd installs next to gsd and vgsd', () => {
   for (const runtime of Object.keys(RUNTIME_META)) {
-    test(`${runtime}: install and uninstall leave gsd and vgsd untouched`, { todo: 'passes after Task 9' }, () => {
+    test(`${runtime}: install and uninstall leave gsd and vgsd untouched`, () => {
       const root = fs.mkdtempSync(path.join(os.tmpdir(), `${IDENTITY.tempPrefix}coexist-${runtime}-`));
       try {
         const configDir = path.join(root, 'config');
         const seeded = seedForeignInstalls(configDir, runtime);
-        const plain = seeded.filter((rel) => !STRUCTURED.has(rel));
+        const plain = seeded.filter((rel) => !STRUCTURED.has(rel) && !SHARED_TEXT.has(rel));
         const before = {
           files: listFiles(configDir),
           hashes: snapshot(configDir, plain),
           parsed: Object.fromEntries(seeded.filter((rel) => STRUCTURED.has(rel)).map((rel) => [rel, parsed(configDir, rel)])),
+          text: Object.fromEntries(seeded.filter((rel) => SHARED_TEXT.has(rel)).map((rel) => [rel, readText(configDir, rel)])),
         };
 
         runInstaller(runtime, root, configDir);
@@ -82,10 +100,20 @@ describe('fvgsd installs next to gsd and vgsd', () => {
         const owned = [...Object.keys(manifest.files), ...commands.filter((command) => !seededCommands.includes(command))];
 
         if (runtime === 'codex') {
-          const config = parsed(configDir, 'config.toml');
-          assert.deepEqual(config.agents['gsd-planner'], before.parsed['config.toml'].agents['gsd-planner']);
+          const configText = readText(configDir, 'config.toml');
+          const config = installer.parseTomlToObject(configText);
+          const seededConfig = before.parsed['config.toml'];
+          assert.equal(
+            region(configText, FOREIGN_MARKERS.codexConfig),
+            region(before.text['config.toml'], FOREIGN_MARKERS.codexConfig),
+            'codex: install changed config.toml from the GSD marker to the end of the file',
+          );
+          for (const key of ['model', 'features', 'profiles']) {
+            assert.deepEqual(config[key], seededConfig[key], `codex: install changed config.toml ${key}`);
+          }
+          assert.deepEqual(config.agents['gsd-planner'], seededConfig.agents['gsd-planner']);
           owned.push(...Object.keys(config.agents).filter((name) => name !== 'gsd-planner').map((name) => `agents.${name}`));
-          const layout = installer.codexConfigLayout(fs.readFileSync(path.join(configDir, 'config.toml'), 'utf8'));
+          const layout = installer.codexConfigLayout(configText);
           const gsdMarker = layout.markers.find((marker) => marker.owner === 'gsd');
           const ownSections = layout.agentSections.filter((section) => section.name.startsWith(IDENTITY.agentPrefix));
           assert.equal(ownSections.length > 0, true);
@@ -94,6 +122,16 @@ describe('fvgsd installs next to gsd and vgsd', () => {
           for (const command of hookCommands(before.parsed['hooks.json'])) {
             assert.equal(hooksJsonCommands.includes(command), true, `hooks.json lost ${command}`);
           }
+        }
+
+        if (runtime === 'copilot') {
+          const instructions = readText(configDir, 'copilot-instructions.md');
+          assert.equal(instructions.includes(IDENTITY.copilotInstructionsMarker), true, 'copilot: install wrote no fvgsd block to copilot-instructions.md');
+          assert.equal(
+            region(instructions, FOREIGN_MARKERS.copilotOpen, FOREIGN_MARKERS.copilotClose),
+            region(before.text['copilot-instructions.md'], FOREIGN_MARKERS.copilotOpen, FOREIGN_MARKERS.copilotClose),
+            "copilot: install changed upstream's block in copilot-instructions.md",
+          );
         }
 
         if (runtime === 'opencode' || runtime === 'kilo') {
@@ -112,7 +150,10 @@ describe('fvgsd installs next to gsd and vgsd', () => {
         assert.deepEqual(listFiles(configDir), before.files);
         assert.deepEqual(snapshot(configDir, plain), before.hashes);
         for (const [rel, value] of Object.entries(before.parsed)) {
-          assert.equal(isDeepStrictEqual(parsed(configDir, rel), value), true, `${rel} differs after uninstall`);
+          assert.deepEqual(parsed(configDir, rel), value, `${runtime}: ${rel} differs after uninstall`);
+        }
+        for (const [rel, text] of Object.entries(before.text)) {
+          assert.equal(readText(configDir, rel), text, `${runtime}: ${rel} is not byte-identical after uninstall`);
         }
       } finally {
         fs.rmSync(root, { recursive: true, force: true });
@@ -143,8 +184,8 @@ describe('shipped prompt references anchor into the installed fvgsd folder', () 
       // adds). This is the non-vacuous guard: today's bare `get-shit-done/...`
       // mentions aren't anchored yet, so several counts below are not yet met.
       const CHECKS = [
-        { installed: ['agents', 'fvgsd-planner.md'], minRefs: 22 },
-        { installed: ['skills', 'fvgsd-surface', 'SKILL.md'], minRefs: 4 },
+        { installed: ['agents', `${IDENTITY.agentPrefix}planner.md`], minRefs: 22 },
+        { installed: ['skills', `${IDENTITY.commandPrefix}-surface`, 'SKILL.md'], minRefs: 4 },
         { installed: [IDENTITY.installDir, 'workflows', 'autonomous.md'], minRefs: 2 },
         { installed: [IDENTITY.installDir, 'workflows', 'plan-phase.md'], minRefs: 13 },
         { installed: [IDENTITY.installDir, 'workflows', 'settings-integrations.md'], minRefs: 1 },
@@ -156,27 +197,31 @@ describe('shipped prompt references anchor into the installed fvgsd folder', () 
         { installed: [IDENTITY.installDir, 'references', 'mvp-concepts.md'], minRefs: 1 },
       ];
 
+      // Collected across every file and asserted once, so a failing run names
+      // every file that falls short and every reference that doesn't resolve.
+      const shortfalls = [];
+      const unresolved = [];
       for (const { installed, minRefs } of CHECKS) {
         const label = installed.join('/');
         const abs = path.join(configDir, ...installed);
-        assert.ok(fs.existsSync(abs), `installed copy missing: ${label}`);
+        if (!fs.existsSync(abs)) {
+          shortfalls.push({ file: label, minRefs, found: 'installed copy missing' });
+          continue;
+        }
 
         const content = fs.readFileSync(abs, 'utf8');
         // Strip a single trailing '.' — sentence-ending punctuation right after
         // a file extension (e.g. "...tdd.md.") is not part of the path.
         const refs = (content.match(ANCHORED_REF) || []).map((ref) => ref.replace(/\.$/, ''));
-
-        assert.ok(
-          refs.length >= minRefs,
-          `${label}: expected >= ${minRefs} anchored fvgsd references, found ${refs.length} (${JSON.stringify(refs)})`,
-        );
+        if (refs.length < minRefs) shortfalls.push({ file: label, minRefs, found: refs.length, refs });
 
         for (const ref of refs) {
           const relParts = ref.slice('$HOME/'.length).split('/');
-          const target = path.join(configDir, ...relParts);
-          assert.ok(fs.existsSync(target), `${label}: reference "${ref}" does not resolve to a real file (${target})`);
+          if (!fs.existsSync(path.join(configDir, ...relParts))) unresolved.push({ file: label, ref });
         }
       }
+      assert.deepEqual(shortfalls, [], 'installed files with fewer anchored fvgsd references than expected');
+      assert.deepEqual(unresolved, [], 'anchored fvgsd references that do not resolve to a real file');
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

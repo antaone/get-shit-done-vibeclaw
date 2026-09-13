@@ -10,6 +10,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
+// Markers upstream GSD's installer writes into files it shares with other installs.
+const FOREIGN_MARKERS = Object.freeze({
+  codexConfig: '# GSD Agent Configuration — managed by get-shit-done installer',
+  copilotOpen: '<!-- GSD Configuration — managed by get-shit-done installer -->',
+  copilotClose: '<!-- /GSD Configuration -->',
+});
+
 function writeFile(root, rel, content) {
   const full = path.join(root, rel);
   fs.mkdirSync(path.dirname(full), { recursive: true });
@@ -48,23 +55,70 @@ function seedForeignInstalls(configDir, runtime) {
     'settings.json': `${JSON.stringify(settings, null, 2)}\n`,
   };
   if (runtime === 'codex') {
+    // Shapes fvgsd's merge and strip must keep byte for byte: a blank line after a
+    // table header, a run of blank lines between tables, blank lines inside a
+    // multiline string, and the trailing blank line GSD's installer leaves.
     files['config.toml'] = [
       'model = "gpt-5"',
       '',
       '[features]',
+      '',
       'codex_hooks = true',
       '',
-      '# GSD Agent Configuration — managed by get-shit-done installer',
+      '',
+      '[profiles.work]',
+      'developer_instructions = """',
+      'First paragraph.',
+      '',
+      '',
+      'Second paragraph.',
+      '"""',
+      '',
+      FOREIGN_MARKERS.codexConfig,
       '',
       '[agents.gsd-planner]',
       'description = "GSD planner"',
       'config_file = "agents/gsd-planner.toml"',
+      '',
       '',
     ].join('\n');
     files['agents/gsd-planner.toml'] = 'developer_instructions = "plan"\n';
     files['hooks.json'] = `${JSON.stringify({
       hooks: { SessionStart: [{ hooks: [{ type: 'command', command: hookCommand(configDir, 'gsd-check-update.js') }] }] },
     }, null, 2)}\n`;
+  }
+  if (runtime === 'copilot') {
+    // User text followed by upstream's managed block, the way upstream's installer
+    // leaves a user's file after appending its block to it.
+    files['copilot-instructions.md'] = [
+      '# Team Copilot rules',
+      '',
+      'Prefer small, reviewed changes.',
+      '',
+      FOREIGN_MARKERS.copilotOpen,
+      '# Instructions for GSD',
+      '',
+      '- Use the get-shit-done skill when the user asks for GSD or uses a `gsd-*` command.',
+      '- Load the matching skill from `skills/gsd-*` before acting on a GSD command.',
+      FOREIGN_MARKERS.copilotClose,
+      '',
+    ].join('\n');
+  }
+  if (runtime === 'gemini') {
+    // Upstream GSD's Gemini installer turns on sub-agents in the shared settings.json.
+    files['settings.json'] = `${JSON.stringify({ ...settings, experimental: { enableAgents: true } }, null, 2)}\n`;
+  }
+  if (runtime === 'cline') {
+    // Upstream GSD's plain-text rules file at the config root.
+    files['.clinerules'] = [
+      '# GSD — Get Shit Done',
+      '',
+      '- GSD workflows live in `get-shit-done/workflows/`. Load the relevant workflow when',
+      '  the user runs a `/gsd-*` command.',
+      '- GSD agents live in `agents/`. Use the matching agent when spawning subagents.',
+      '- GSD tools are at `get-shit-done/bin/gsd-tools.cjs`. Run with `node`.',
+      '',
+    ].join('\n');
   }
   if (runtime === 'opencode' || runtime === 'kilo') {
     const key = `${configDir.replace(/\\/g, '/')}/get-shit-done/*`;
@@ -93,4 +147,4 @@ function snapshot(configDir, relPaths) {
   ]));
 }
 
-module.exports = { seedForeignInstalls, listFiles, snapshot };
+module.exports = { FOREIGN_MARKERS, seedForeignInstalls, listFiles, snapshot };

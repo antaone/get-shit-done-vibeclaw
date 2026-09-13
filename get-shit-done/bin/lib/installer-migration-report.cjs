@@ -1,11 +1,13 @@
 'use strict';
 
+const IDENTITY = require('./identity.cjs');
+
 // Resolution environment variable surface for #3541 — when the installer
 // runs without a TTY (typical /fvgsd:update path via Claude Code or any
 // scripted update), prompt-user migration actions cannot be answered
 // interactively. We resolve them by classification:
-//   - Stale SDK build artifacts (get-shit-done/sdk/{dist,src}/fvgsd-*):
-//     default `remove`. Fresh install supplies replacements.
+//   - Stale SDK build artifacts (fvgsd/sdk/{dist,src}/): default `remove`.
+//     Fresh install supplies replacements.
 //   - User-facing skill anchors (skills/fvgsd-*/SKILL.md): default `keep`.
 //     User-owned content is preserved.
 // Anything else: fall through to the hard assertion with an improved,
@@ -124,21 +126,26 @@ const BUNDLED_GSD_HOOK_FILES = Object.freeze(new Set([
   'hooks/fvgsd/workflow-guard.js',
 ]));
 
+// Both patterns name only this install's own surfaces, so a file in another
+// install's folder or skill never gets a safe default.
+const STALE_SDK_ARTIFACT_PATTERN = new RegExp(`^${IDENTITY.installDir}/sdk/(dist|src)/`);
+const USER_FACING_SKILL_PATTERN = new RegExp(`^skills/${IDENTITY.commandPrefix}-[^/]+/SKILL\\.md$`);
+
 // Classify a blocked prompt-user action into one of the safe-default
 // categories. Returns null when no safe default applies — caller must
 // fall back to the hard assertion / interactive prompt for those.
 //
-// Stale SDK build artifacts live under get-shit-done/sdk/{dist,src}/
+// Stale SDK build artifacts live under the install folder's sdk/{dist,src}/
 // and are regenerated on every install, so removing them is lossless.
 // User-facing skill anchors are the .md files that surface as commands
 // to the user — these are user-owned and must be kept.
 function classifyPromptUserAction(action) {
   const relPath = action && action.relPath;
   if (typeof relPath !== 'string' || !relPath) return null;
-  if (/^get-shit-done\/sdk\/(dist|src)\//.test(relPath)) {
+  if (STALE_SDK_ARTIFACT_PATTERN.test(relPath)) {
     return { category: 'stale-sdk-build-artifact', choice: 'remove' };
   }
-  if (/^skills\/(?:fvgsd|gsd)-[^/]+\/SKILL\.md$/.test(relPath)) {
+  if (USER_FACING_SKILL_PATTERN.test(relPath)) {
     return { category: 'user-facing-skill', choice: 'keep' };
   }
   // #3610 / #3628: bundled GSD hooks shipped under `hooks/`. The whitelist
