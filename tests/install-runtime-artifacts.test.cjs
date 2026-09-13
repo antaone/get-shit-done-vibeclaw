@@ -261,10 +261,10 @@ describe('Contract 6: unknown runtime is rejected', () => {
   });
 });
 
-// ─── Section 12: Legacy migrations in installRuntimeArtifacts ────────────────
+// ─── Section 12: gsd and older layouts left in place ────────────────────────
 
-describe('installRuntimeArtifacts — legacy migrations run before layout copy', () => {
-  test('claude: legacy commands/gsd/dev-preferences.md migrated AND new skills written', (t) => {
+describe('installRuntimeArtifacts — gsd and older layouts left in place', () => {
+  test('claude: commands/gsd/dev-preferences.md preserved AND new skills written', (t) => {
     const configDir = createTempDir('fvgsd-legacy-install-');
     t.after(() => cleanup(configDir));
 
@@ -274,12 +274,12 @@ describe('installRuntimeArtifacts — legacy migrations run before layout copy',
 
     installRuntimeArtifacts('claude', configDir, 'global', RESOLVED_CORE);
 
-    assert.ok(!fs.existsSync(legacyDir));
-    assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')));
+    assert.equal(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# My dev prefs\n');
+    assert.ok(!fs.existsSync(path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd-help', 'SKILL.md')));
   });
 
-  test('hermes: legacy flat skills/fvgsd-*/ removed AND new nested skills/fvgsd/<stem>/ written', (t) => {
+  test('hermes: flat skills/fvgsd-*/ preserved AND new nested skills/fvgsd/<stem>/ written', (t) => {
     const configDir = createTempDir('fvgsd-legacy-hermes-install-');
     t.after(() => cleanup(configDir));
 
@@ -289,13 +289,13 @@ describe('installRuntimeArtifacts — legacy migrations run before layout copy',
 
     installRuntimeArtifacts('hermes', configDir, 'global', RESOLVED_CORE);
 
-    assert.ok(!fs.existsSync(legacyFlatHelp));
+    assert.equal(fs.readFileSync(path.join(legacyFlatHelp, 'SKILL.md'), 'utf8'), '# legacy help\n');
     assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd', 'help', 'SKILL.md')));
   });
 });
 
-describe('uninstallRuntimeArtifacts — legacy cleanup runs before layout removal', () => {
-  test('hermes: both flat and nested layouts removed', (t) => {
+describe('uninstallRuntimeArtifacts — gsd and older layouts left in place', () => {
+  test('hermes: flat skills/fvgsd-*/ and nested skills/gsd/ preserved', (t) => {
     const { uninstallRuntimeArtifacts } = require('../bin/install.js');
     const configDir = createTempDir('fvgsd-legacy-uninstall-hermes-');
     t.after(() => cleanup(configDir));
@@ -315,12 +315,12 @@ describe('uninstallRuntimeArtifacts — legacy cleanup runs before layout remova
 
     uninstallRuntimeArtifacts('hermes', configDir, 'global');
 
-    assert.ok(!fs.existsSync(flatHelp));
-    assert.ok(!fs.existsSync(nestedGsd));
+    assert.ok(fs.existsSync(path.join(flatHelp, 'SKILL.md')));
+    assert.ok(fs.existsSync(path.join(nestedGsd, 'help', 'SKILL.md')));
     assert.ok(fs.existsSync(path.join(userSkill, 'SKILL.md')));
   });
 
-  test('claude: legacy commands/gsd/ cleaned AND new skills/ entries removed', (t) => {
+  test('claude: commands/gsd/ preserved AND fvgsd skills/ entries removed', (t) => {
     const { uninstallRuntimeArtifacts } = require('../bin/install.js');
     const configDir = createTempDir('fvgsd-legacy-uninstall-claude-');
     t.after(() => cleanup(configDir));
@@ -341,7 +341,7 @@ describe('uninstallRuntimeArtifacts — legacy cleanup runs before layout remova
     uninstallRuntimeArtifacts('claude', configDir, 'global');
 
     assert.ok(!fs.existsSync(gsdHelp));
-    assert.ok(!fs.existsSync(legacyDir));
+    assert.ok(fs.existsSync(path.join(legacyDir, 'help.md')));
     assert.ok(fs.existsSync(path.join(userSkill, 'SKILL.md')));
   });
 });

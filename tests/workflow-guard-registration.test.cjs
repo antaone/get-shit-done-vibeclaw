@@ -10,15 +10,23 @@
  * PreToolUse hook entry in install.js. This test ensures the registration block
  * exists with the correct structure.
  *
- * Also tests the broader anti-pattern: every hook in gsdHooks that is a JS
- * PreToolUse/PostToolUse hook should have a corresponding registration block.
+ * Also tests the broader anti-pattern: every managed JS hook the installer ships
+ * (the settings.json hooks among the files it writes under hooks/fvgsd/) should
+ * have a corresponding registration block.
  */
+process.env.FVGSD_TEST_MODE = '1';
+
 const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
+const { listOwnHookFiles } = require('../bin/install.js');
+const { isManagedHookBasename } = require('../get-shit-done/bin/lib/shell-command-projection.cjs');
 
 const INSTALL_JS = path.join(__dirname, '..', 'bin', 'install.js');
+const BUILT_HOOKS_DIR = path.join(__dirname, '..', 'hooks', 'dist', 'fvgsd');
+const BUILD_HOOKS_SCRIPT = path.join(__dirname, '..', 'scripts', 'build-hooks.js');
 
 describe('workflow-guard hook registration (#1767)', () => {
   test('install.js constructs a command path variable for fvgsd/workflow-guard.js', () => {
@@ -68,23 +76,20 @@ describe('workflow-guard hook registration (#1767)', () => {
 });
 
 describe('hook registration completeness anti-pattern guard', () => {
-  test('every JS hook in gsdHooks has a command construction in install.js', () => {
+  test('every managed JS hook the installer ships has a command construction in install.js', () => {
+    if (!fs.existsSync(BUILT_HOOKS_DIR)) {
+      execFileSync(process.execPath, [BUILD_HOOKS_SCRIPT], { stdio: 'pipe' });
+    }
     const content = fs.readFileSync(INSTALL_JS, 'utf-8');
-    // Extract gsdHooks array entries
-    const hooksMatch = content.match(/gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(hooksMatch, 'gsdHooks array must exist in install.js');
-
-    const hookNames = hooksMatch[1]
-      .match(/'([^']+)'/g)
-      .map(h => h.replace(/'/g, ''));
-
-    const jsHooks = hookNames.filter(h => h.endsWith('.js'));
+    // JS hooks among the files install writes under hooks/fvgsd/ that settings.json registers
+    const jsHooks = listOwnHookFiles().filter((hook) =>
+      hook.endsWith('.js') && isManagedHookBasename(hook, { surface: 'settings-json' }));
+    assert.ok(jsHooks.length > 0, 'the installer must ship managed JS hooks');
 
     const missing = [];
     for (const hook of jsHooks) {
       // Each JS hook should have a buildHookCommand or 'node ' command construction
-      // that references the hook filename (not just the gsdHooks array or uninstall filter)
-      const hookBase = hook.replace('.js', '');
+      // that references the hook filename (not just the uninstall filter)
       const lines = content.split('\n').filter(line =>
         line.includes(hook) &&
         (line.includes('buildHookCommand') || line.includes("'node '"))
@@ -97,7 +102,7 @@ describe('hook registration completeness anti-pattern guard', () => {
     assert.strictEqual(
       missing.length, 0,
       [
-        'Every JS hook in gsdHooks must have a command construction in install.js.',
+        'Every managed JS hook the installer ships must have a command construction in install.js.',
         'Missing registration for:',
         ...missing.map(h => `  - ${h}`),
       ].join('\n')

@@ -160,69 +160,50 @@ describe('#1924: dev-preferences.md preserved across re-install (global Claude)'
     cleanup(tmpDir);
   });
 
-  test('dev-preferences.md is preserved when commands/gsd/ is cleaned up during re-install', () => {
+  test('dev-preferences.md in commands/gsd/ is preserved across re-install', () => {
     // First install (creates skills/ structure for global Claude)
     runInstaller(tmpDir);
 
-    // User runs /gsd-profile-user — it creates dev-preferences.md in commands/gsd/
+    // An upstream GSD install's /gsd-profile-user writes dev-preferences.md in commands/gsd/
     const commandsGsdDir = path.join(tmpDir, 'commands', 'gsd');
     fs.mkdirSync(commandsGsdDir, { recursive: true });
     const devPrefsPath = path.join(commandsGsdDir, 'dev-preferences.md');
     const originalContent = '# Dev Preferences\n\nI prefer TDD. I like short functions.\n';
     fs.writeFileSync(devPrefsPath, originalContent);
 
-    // Re-run installer (simulating gsd-update).
-    // In the layout-driven path (B2), legacy commands/gsd/ is removed and
-    // dev-preferences.md is migrated to skills/gsd-dev-preferences/SKILL.md (#2973).
+    // Re-run the installer (simulating an fvgsd update). commands/gsd/ is GSD's,
+    // so fvgsd neither removes it nor migrates dev-preferences.md out of it.
     runInstaller(tmpDir);
 
-    // Content is migrated to the new canonical skills location (#2973).
-    // The old commands/gsd/ path is cleaned up; the skill file carries the content.
-    const devPrefSkillPath = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(
-      fs.existsSync(devPrefSkillPath),
-      'dev-preferences.md must be migrated to skills/gsd-dev-preferences/SKILL.md — gsd-update legacy cleanup must not silently drop user-generated content'
-    );
-
-    const afterContent = fs.readFileSync(devPrefSkillPath, 'utf8');
     assert.strictEqual(
-      afterContent,
+      fs.readFileSync(devPrefsPath, 'utf8'),
       originalContent,
-      'migrated dev-preferences content must be identical to the original'
+      'dev-preferences.md in commands/gsd/ must be left byte-identical'
+    );
+    assert.ok(
+      !fs.existsSync(path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd-dev-preferences/'
     );
   });
 
-  test('legacy non-user GSD commands are still cleaned up during re-install', () => {
+  test('GSD commands in commands/gsd/ are preserved during re-install', () => {
     // First install
     runInstaller(tmpDir);
 
-    // Simulate a legacy GSD command file being left in commands/gsd/
+    // An upstream GSD install's command file in commands/gsd/
     const commandsGsdDir = path.join(tmpDir, 'commands', 'gsd');
     fs.mkdirSync(commandsGsdDir, { recursive: true });
-    const legacyFile = path.join(commandsGsdDir, 'next.md');
-    fs.writeFileSync(legacyFile, '---\nname: gsd:next\n---\n\nLegacy content.');
-
-    // But dev-preferences.md is also there (user-generated)
-    const devPrefsContent = '# Dev Preferences\n\nMy preferences.\n';
-    const devPrefsPath = path.join(commandsGsdDir, 'dev-preferences.md');
-    fs.writeFileSync(devPrefsPath, devPrefsContent);
+    const gsdCommandFile = path.join(commandsGsdDir, 'next.md');
+    const gsdCommandContent = '---\nname: gsd:next\n---\n\nLegacy content.';
+    fs.writeFileSync(gsdCommandFile, gsdCommandContent);
 
     // Re-install
     runInstaller(tmpDir);
 
-    // In the layout-driven path (B2), commands/gsd/ is fully removed but
-    // dev-preferences.md content is migrated to the new canonical skill location.
-    const devPrefSkillPath = path.join(tmpDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(
-      fs.existsSync(devPrefSkillPath),
-      'dev-preferences.md content must be migrated to skills/gsd-dev-preferences/SKILL.md'
-    );
-
-    // The legacy GSD command (next.md) is NOT user-generated, must be removed
-    // (it would exist only as a skill now in skills/gsd-next/SKILL.md)
-    assert.ok(
-      !fs.existsSync(legacyFile),
-      'legacy GSD command next.md in commands/gsd/ must be removed during cleanup'
+    assert.strictEqual(
+      fs.readFileSync(gsdCommandFile, 'utf8'),
+      gsdCommandContent,
+      'GSD command next.md in commands/gsd/ must be left byte-identical'
     );
   });
 });

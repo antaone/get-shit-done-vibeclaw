@@ -131,7 +131,7 @@ describe('VibeClaw public command namespace', () => {
     }
   });
 
-  test('reinstall removes legacy public artifacts and preserves dev preferences under fvgsd', (t) => {
+  test('reinstall preserves commands/gsd and writes the fvgsd namespace without migrating into it', (t) => {
     const configDir = createTempDir('fvgsd-upgrade-');
     t.after(() => cleanup(configDir));
 
@@ -142,11 +142,9 @@ describe('VibeClaw public command namespace', () => {
 
     installRuntimeArtifacts('gemini', configDir, 'global', PROFILE);
 
-    assert.ok(!fs.existsSync(legacyCommands));
+    assert.equal(fs.readFileSync(path.join(legacyCommands, 'help.md'), 'utf8'), '# old help\n');
+    assert.equal(fs.readFileSync(path.join(legacyCommands, 'dev-preferences.md'), 'utf8'), '# preferences\n');
     assert.ok(fs.existsSync(path.join(configDir, 'commands', 'fvgsd', 'help.md')));
-    assert.equal(
-      fs.readFileSync(path.join(configDir, 'commands', 'fvgsd', 'dev-preferences.md'), 'utf8'),
-      '# preferences\n',
-    );
+    assert.equal(fs.existsSync(path.join(configDir, 'commands', 'fvgsd', 'dev-preferences.md')), false);
   });
 });

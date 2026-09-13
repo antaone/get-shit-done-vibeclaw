@@ -405,9 +405,9 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
   });
 });
 
-// ─── Legacy cleanup during install ──────────────────────────────────────────
+// ─── commands/gsd/ during install ───────────────────────────────────────────
 
-describe('Legacy commands/gsd/ cleanup', () => {
+describe('commands/gsd/ during install', () => {
   let tmpDir;
 
   beforeEach(() => {
@@ -418,21 +418,21 @@ describe('Legacy commands/gsd/ cleanup', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('install removes legacy commands/gsd/ directory when present', () => {
+  test('install preserves an existing commands/gsd/ directory', () => {
     const { configDir } = setupConfigDir(tmpDir, {
       'next.md': '---\nname: fvgsd:next\ndescription: Advance\n---\n\nBody.',
     });
 
-    // Create a mock legacy commands/gsd/ directory inside configDir
+    // Create a mock commands/gsd/ directory, as an upstream GSD install leaves it, inside configDir
     const legacyDir = path.join(configDir, 'commands', 'gsd');
     fs.mkdirSync(legacyDir, { recursive: true });
     fs.writeFileSync(path.join(legacyDir, 'next.md'), 'legacy content');
 
-    // installRuntimeArtifacts calls _runLegacyInstallMigrations which removes
-    // commands/gsd/ for claude runtime (it's the legacy location for global).
+    // installRuntimeArtifacts calls _runLegacyInstallMigrations, which leaves
+    // commands/gsd/ alone: it belongs to GSD, not fvgsd.
     installRuntimeArtifacts('claude', configDir, 'global', resolvedProfileFull);
 
-    assert.ok(!fs.existsSync(legacyDir), 'legacy commands/gsd/ removed');
+    assert.equal(fs.readFileSync(path.join(legacyDir, 'next.md'), 'utf8'), 'legacy content', 'commands/gsd/ preserved');
     assert.ok(
       fs.existsSync(path.join(configDir, 'skills', 'fvgsd-next', 'SKILL.md')),
       'new skill installed'

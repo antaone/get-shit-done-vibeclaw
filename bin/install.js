@@ -107,6 +107,12 @@ const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = '<!-- /GSD Configuration -->';
 // git-cmd.js does not start with "fvgsd-" (shared classifier for #3129), graphify-rebuild.sh does.
 const FVGSD_HOOK_LIB_FILES = ['git-cmd.js', 'graphify-rebuild.sh'];
 
+// Hook files installed for Codex: only those its hook configuration registers (#2153).
+// Codex primarily needs fvgsd/check-update.js for the SessionStart update-check hook.
+// We deliberately do *not* copy fvgsd/graphify-update.sh or hooks/fvgsd/lib/ for Codex
+// (graphify auto-update support for Codex is out of scope for #3579).
+const CODEX_HOOKS_TO_COPY = ['fvgsd/check-update.js'];
+
 const CODEX_AGENT_SANDBOX = {
   'fvgsd-executor': 'workspace-write',
   'fvgsd-planner': 'workspace-write',
@@ -796,9 +802,10 @@ function rewriteLegacyManagedNodeHookCommands(settings, absoluteRunner, opts) {
           scriptPath = m[6] || m[7] || m[8] || '';
         }
 
-        // Take the basename — match against MANAGED_HOOK_FILES by exact
-        // equality, not substring containment. Handles both forward and
-        // backslash separators (Windows).
+        // Take the last two path segments (hooks/fvgsd/<hook> → fvgsd/<hook>)
+        // and match them against the managed hook set by exact equality, not
+        // substring containment. Handles both forward and backslash separators
+        // (Windows).
         if (!isManagedHookBasename(scriptPath, { surface: 'settings-json' })) continue;
 
         const projectedCommand = projectLegacySettingsHookCommand({
@@ -1054,8 +1061,7 @@ function buildCodexHookWindowsShimIR(scriptAbsPath, absoluteRunnerToken) {
   // hook path normalisations in this codebase).
   const targetAbs = scriptAbsPath.replace(/\\/g, '/');
   const scriptQuoted = JSON.stringify(targetAbs);
-  // .cmd shim lives alongside the .js file, replacing the extension.
-  const cmdPath = scriptAbsPath.replace(/\.js$/, '.cmd');
+  const cmdPath = codexHookShimPath(scriptAbsPath);
   // The hook command written to hooks.json is just the .cmd path (double-quoted
   // for spaces-in-path safety). cmd.exe executes .cmd files natively via
   // CreateProcess — no runner prefix required.
@@ -1077,6 +1083,17 @@ function buildCodexHookWindowsShimIR(scriptAbsPath, absoluteRunnerToken) {
       cmd: () => `@ECHO OFF\r\n@SETLOCAL\r\n@${runnerQuoted} ${scriptQuoted} %*\r\n`,
     },
   };
+}
+
+/**
+ * Path of the .cmd shim that runs a Codex hook on Windows (#3426). It sits next
+ * to the .js hook, with the extension swapped.
+ *
+ * @param {string} scriptPath - path of the .js hook
+ * @returns {string}
+ */
+function codexHookShimPath(scriptPath) {
+  return scriptPath.replace(/\.js$/, '.cmd');
 }
 
 /**
@@ -6157,167 +6174,32 @@ function _removeGsdEntries(destDir, kind) {
   }
 }
 
-function _captureLegacyDevPreferences(saved, skillFile) {
-  if (!fs.existsSync(skillFile)) return saved;
-  const next = saved || new Map();
-  next.set('dev-preferences.md', fs.readFileSync(skillFile, 'utf8'));
-  return next;
-}
-
-function _removeDirectoryIfEmpty(dir) {
-  if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-}
-
-function _pruneLegacyFlatSkills(flatSkillsDir, saved) {
-  if (!fs.existsSync(flatSkillsDir)) return saved;
-  const managedNames = new Set(readGsdCommandNames());
-  let next = saved;
-  for (const entry of fs.readdirSync(flatSkillsDir, { withFileTypes: true })) {
-    if (!entry.isDirectory() || !entry.name.startsWith('fvgsd-')) continue;
-    const stem = entry.name.slice('fvgsd-'.length);
-    if (stem === 'dev-preferences') {
-      next = _captureLegacyDevPreferences(next, path.join(flatSkillsDir, entry.name, 'SKILL.md'));
-    } else if (!managedNames.has(stem)) {
-      continue;
-    }
-    fs.rmSync(path.join(flatSkillsDir, entry.name), { recursive: true, force: true });
-  }
-  return next;
-}
-
-function _pruneLegacyHermesCategory(nestedGsdDir, saved) {
-  if (!fs.existsSync(nestedGsdDir)) return saved;
-  const managedNames = new Set(readGsdCommandNames());
-  let next = saved;
-  for (const entry of fs.readdirSync(nestedGsdDir, { withFileTypes: true })) {
-    const fullPath = path.join(nestedGsdDir, entry.name);
-    const normalizedName = entry.name.startsWith('fvgsd-')
-      ? entry.name.slice('fvgsd-'.length)
-      : entry.name;
-    if (entry.isDirectory() && normalizedName === 'dev-preferences') {
-      next = _captureLegacyDevPreferences(next, path.join(fullPath, 'SKILL.md'));
-      fs.rmSync(fullPath, { recursive: true, force: true });
-    } else if (entry.isDirectory() && managedNames.has(normalizedName)) {
-      fs.rmSync(fullPath, { recursive: true, force: true });
-    } else if (entry.isFile() && entry.name === 'DESCRIPTION.md') {
-      fs.rmSync(fullPath, { force: true });
-    }
-  }
-  _removeDirectoryIfEmpty(nestedGsdDir);
-  return next;
-}
-
-function _pruneLegacyFlatCommands(flatCommandsDir) {
-  if (!fs.existsSync(flatCommandsDir)) return;
-  const managedNames = new Set(readGsdCommandNames());
-  for (const entry of fs.readdirSync(flatCommandsDir, { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.startsWith('fvgsd-') || !entry.name.endsWith('.md')) continue;
-    const stem = entry.name.slice('fvgsd-'.length, -'.md'.length);
-    if (!managedNames.has(stem)) continue;
-    fs.rmSync(path.join(flatCommandsDir, entry.name), { force: true });
-  }
-}
-
 /**
- * Run legacy install migrations that must execute BEFORE the layout-driven
- * copy so stale artifacts are cleaned up before new ones are written.
- *
- * - Claude/Qwen/Hermes: migrate legacy commands/gsd/dev-preferences.md →
- *   skills/gsd-dev-preferences/SKILL.md if the old file is present.
- *   Also removes the legacy commands/gsd/ directory.
- * - Hermes: remove flat skills/gsd-STAR directories (pre-2841 layout) before
- *   writing the new nested skills/gsd/ layout.
+ * Install-time migration of older layouts, run before the layout-driven copy.
+ * fvgsd has no legacy layout of its own, and the commands/, skills/ and
+ * command/ entries of GSD and VibeClaw installs belong to those installers.
  *
  * @param {string} runtime
  * @param {string} configDir  resolved runtime config directory
  * @param {'global'|'local'} [scope]
  */
 function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
-  const legacyCommandsGsd = path.join(configDir, 'commands', 'gsd');
-  let savedLegacyArtifacts = null;
-  if (fs.existsSync(legacyCommandsGsd)) {
-    savedLegacyArtifacts = preserveUserArtifacts(legacyCommandsGsd, ['dev-preferences.md']);
-    fs.rmSync(legacyCommandsGsd, { recursive: true });
-  }
-
-  // Every pre-fvgsd skills runtime used flat fvgsd-* directories. Remove only
-  // known public commands; unknown prefixed directories may be user-owned.
-  const flatSkillsDir = path.join(configDir, 'skills');
-  savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
-
-  // Hermes previously nested the public category under skills/gsd/. Preserve
-  // dev-preferences and unknown user content while removing known commands.
-  const nestedGsdDir = path.join(configDir, 'skills', 'gsd');
-  savedLegacyArtifacts = _pruneLegacyHermesCategory(nestedGsdDir, savedLegacyArtifacts);
-
-  // OpenCode/Kilo used flat command/fvgsd-*.md files.
-  const flatCommandsDir = path.join(configDir, 'command');
-  _pruneLegacyFlatCommands(flatCommandsDir);
-
-  // Migrate dev-preferences content into the runtime's new fvgsd namespace.
-  if (savedLegacyArtifacts) {
-    const layout = resolveRuntimeArtifactLayout(runtime, configDir, scope);
-    const skillsKindEntry = layout.kinds.find((kind) => kind.kind === 'skills');
-    if (skillsKindEntry) {
-      migrateLegacyDevPreferencesToSkill(configDir, savedLegacyArtifacts, runtime, scope);
-    } else {
-      const commandsKindEntry = layout.kinds.find((kind) => kind.kind === 'commands');
-      const content = savedLegacyArtifacts.get('dev-preferences.md');
-      if (commandsKindEntry && content) {
-        const destDir = path.join(configDir, commandsKindEntry.destSubpath);
-        const prefixStem = commandsKindEntry.prefix.replace(/-$/, '');
-        const namespacedByDir = path.basename(commandsKindEntry.destSubpath) === prefixStem;
-        const destName = namespacedByDir ? 'dev-preferences.md' : `${commandsKindEntry.prefix}dev-preferences.md`;
-        fs.mkdirSync(destDir, { recursive: true });
-        const destFile = path.join(destDir, destName);
-        if (!fs.existsSync(destFile)) fs.writeFileSync(destFile, content, 'utf8');
-      } else if (content) {
-        // Rules-only runtimes have no command/skill layout. Keep the user file
-        // under the new namespace so an upgrade never discards it.
-        const destDir = path.join(configDir, 'commands', 'fvgsd');
-        fs.mkdirSync(destDir, { recursive: true });
-        const destFile = path.join(destDir, 'dev-preferences.md');
-        if (!fs.existsSync(destFile)) fs.writeFileSync(destFile, content, 'utf8');
-      }
-    }
-  }
+  // fvgsd has no legacy layout; files owned by GSD or VibeClaw installs are never touched.
 }
 
 /**
- * Run legacy uninstall cleanup that must execute BEFORE the layout-driven
- * removal so old-format entries are also cleaned up.
- *
- * - Claude global/Qwen: remove legacy commands/gsd/ directory if present.
- *   For Claude LOCAL, commands/gsd/ is the current primary location (not
- *   legacy), so we skip removal here and let _removeGsdEntries handle it
- *   with gsd- prefix filtering (preserving user files like dev-preferences.md).
- * - Hermes: remove pre-2841 flat skills/gsd-STAR entries.
+ * Uninstall-time cleanup of older layouts, run before the layout-driven
+ * removal. fvgsd has no legacy layout, so there is nothing to remove and no
+ * user artifact to carry over.
  *
  * @param {string} runtime
  * @param {string} configDir  resolved runtime config directory
  * @param {'global'|'local'} [scope]
+ * @returns {null}
  */
 function _runLegacyUninstallCleanup(runtime, configDir, scope = 'global') {
-  let savedLegacyArtifacts = null;
-  const legacyCommandsGsd = path.join(configDir, 'commands', 'gsd');
-  if (fs.existsSync(legacyCommandsGsd)) {
-    savedLegacyArtifacts = preserveUserArtifacts(legacyCommandsGsd, ['dev-preferences.md']);
-    fs.rmSync(legacyCommandsGsd, { recursive: true });
-  }
-
-  const flatSkillsDir = path.join(configDir, 'skills');
-  savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
-
-  const nestedGsdDir = path.join(configDir, 'skills', 'gsd');
-  savedLegacyArtifacts = _pruneLegacyHermesCategory(nestedGsdDir, savedLegacyArtifacts);
-
-  const flatCommandsDir = path.join(configDir, 'command');
-  _pruneLegacyFlatCommands(flatCommandsDir);
-
-  // Return saved artifacts so the caller can migrate after layout-driven removal.
-  return savedLegacyArtifacts;
+  // fvgsd has no legacy layout; files owned by GSD or VibeClaw installs are never touched.
+  return null;
 }
 
 /**
@@ -6473,10 +6355,8 @@ function installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile) {
  * @param {'global'|'local'} scope
  */
 function uninstallRuntimeArtifacts(runtime, configDir, scope) {
-  // Legacy cleanup before layout-driven removal (scope-aware to avoid
-  // removing Claude local commands/gsd/ which is the primary install dir).
-  // Returns saved user artifacts so we can migrate AFTER layout removal
-  // (the layout's fvgsd-* prefix pass would wipe a skill dir created here).
+  // Legacy cleanup before layout-driven removal. fvgsd has no legacy layout,
+  // so this is null and the dev-preferences migration below does not run.
   const savedLegacyArtifacts = _runLegacyUninstallCleanup(runtime, configDir, scope);
 
   const layout = resolveRuntimeArtifactLayout(runtime, configDir, scope);
@@ -6962,24 +6842,24 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
-  // 1c. Claude local: remove commands/gsd/ (primary local install location).
+  // 1c. Claude local: remove commands/fvgsd/ (primary local install location).
   //     The layout's _removeGsdEntries uses the 'fvgsd-' prefix which applies to
   //     flat command dirs (OpenCode/Kilo). Claude local files use no prefix inside
   //     the namespaced directory, so layout does not remove them. Handle inline.
   //     Preserve dev-preferences.md across the wipe (#1423).
   if (!isGlobal && runtime === 'claude') {
-    const gsdCommandsDir = path.join(targetDir, 'commands', 'gsd');
+    const gsdCommandsDir = path.join(targetDir, 'commands', IDENTITY.commandPrefix);
     if (fs.existsSync(gsdCommandsDir)) {
       const devPrefsPath = path.join(gsdCommandsDir, 'dev-preferences.md');
       const preservedDevPrefs = fs.existsSync(devPrefsPath) ? fs.readFileSync(devPrefsPath, 'utf-8') : null;
       fs.rmSync(gsdCommandsDir, { recursive: true });
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed commands/gsd/`);
+      console.log(`  ${green}✓${reset} Removed commands/${IDENTITY.commandPrefix}/`);
       if (preservedDevPrefs) {
         try {
           fs.mkdirSync(gsdCommandsDir, { recursive: true });
           fs.writeFileSync(devPrefsPath, preservedDevPrefs);
-          console.log(`  ${green}✓${reset} Preserved commands/gsd/dev-preferences.md`);
+          console.log(`  ${green}✓${reset} Preserved commands/${IDENTITY.commandPrefix}/dev-preferences.md`);
         } catch (err) {
           console.error(`  ${red}✗${reset} Failed to restore dev-preferences.md: ${err.message}`);
         }
@@ -6987,56 +6867,25 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
-  // 1d. Gemini: remove commands/gsd/ with dev-preferences.md preservation.
+  // 1d. Gemini: remove commands/fvgsd/ with dev-preferences.md preservation.
   //     The layout removes fvgsd-*.toml files but not the directory itself.
   //     Preserve user files before removing the directory.
   if (isGemini) {
-    const gsdCommandsDir = path.join(targetDir, 'commands', 'gsd');
+    const gsdCommandsDir = path.join(targetDir, 'commands', IDENTITY.commandPrefix);
     if (fs.existsSync(gsdCommandsDir)) {
       const devPrefsPath = path.join(gsdCommandsDir, 'dev-preferences.md');
       const preservedDevPrefs = fs.existsSync(devPrefsPath) ? fs.readFileSync(devPrefsPath, 'utf-8') : null;
       fs.rmSync(gsdCommandsDir, { recursive: true });
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed commands/gsd/`);
+      console.log(`  ${green}✓${reset} Removed commands/${IDENTITY.commandPrefix}/`);
       if (preservedDevPrefs) {
         try {
           fs.mkdirSync(gsdCommandsDir, { recursive: true });
           fs.writeFileSync(devPrefsPath, preservedDevPrefs);
-          console.log(`  ${green}✓${reset} Preserved commands/gsd/dev-preferences.md`);
+          console.log(`  ${green}✓${reset} Preserved commands/${IDENTITY.commandPrefix}/dev-preferences.md`);
         } catch (err) {
           console.error(`  ${red}✗${reset} Failed to restore dev-preferences.md: ${err.message}`);
         }
-      }
-    }
-  }
-
-  // 1d. Qwen/Hermes: migrate dev-preferences.md from legacy commands/gsd/ location
-  //     during uninstall. _runLegacyUninstallCleanup (called by uninstallRuntimeArtifacts)
-  //     removes the directory; we must preserve/restore user artifacts before that path.
-  //     This block runs AFTER uninstallRuntimeArtifacts, so we check if the directory
-  //     was already removed and skip if so (idempotent).
-  if (isQwen || isHermes) {
-    // dev-preferences may have survived in skills/ as SKILL.md — nothing to do for
-    // that case. If a stale commands/gsd/ still exists (e.g. legacy was not removed),
-    // attempt migration. In practice _runLegacyUninstallCleanup removes it first,
-    // so this is a best-effort guard.
-    const legacyDir = path.join(targetDir, 'commands', 'gsd');
-    if (fs.existsSync(legacyDir)) {
-      const savedLegacyArtifacts = preserveUserArtifacts(legacyDir, ['dev-preferences.md']);
-      fs.rmSync(legacyDir, { recursive: true });
-      removedCount++;
-      console.log(`  ${green}✓${reset} Removed legacy commands/gsd/`);
-      const _uninstallScope = isGlobal ? 'global' : 'local';
-      if (migrateLegacyDevPreferencesToSkill(targetDir, savedLegacyArtifacts, runtime, _uninstallScope)) {
-        // Compute the actual path written so the log line is accurate per-runtime
-        const _layout = resolveRuntimeArtifactLayout(runtime, targetDir, _uninstallScope);
-        const _sk = _layout.kinds.find((k) => k.kind === 'skills');
-        const _stem = _sk && _sk.prefix === '' ? 'dev-preferences' : 'fvgsd-dev-preferences';
-        const _skillRelPath = _sk ? `${_sk.destSubpath}/${_stem}/SKILL.md` : 'skills/fvgsd-dev-preferences/SKILL.md';
-        console.log(`  ${green}✓${reset} Migrated dev-preferences.md → ${_skillRelPath} (#2973)`);
-      } else {
-        // Migration failed or already exists — restore to legacy location so user content is not lost
-        restoreUserArtifacts(legacyDir, savedLegacyArtifacts);
       }
     }
   }
@@ -7081,50 +6930,34 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
-  // 4. Remove GSD hooks
-  const hooksDir = path.join(targetDir, 'hooks');
-  if (fs.existsSync(hooksDir)) {
-    const gsdHooks = ['fvgsd/statusline.js', 'fvgsd/check-update.js', 'fvgsd/check-update.cmd', 'fvgsd/context-monitor.js', 'fvgsd/prompt-guard.js', 'fvgsd/read-guard.js', 'fvgsd/read-injection-scanner.js', 'fvgsd/update-banner.js', 'fvgsd/workflow-guard.js', 'fvgsd/session-state.sh', 'fvgsd/validate-commit.sh', 'fvgsd/phase-boundary.sh', 'fvgsd/graphify-update.sh'];
+  // 4. Remove fvgsd hooks: every file install writes under hooks/fvgsd/ (lib/
+  //    helpers included), then the folders left empty. hooks/ is shared with other
+  //    installs and the user, so nothing outside hooks/fvgsd/ is touched, and a
+  //    folder that still holds a file fvgsd didn't write stays.
+  const ownHooksDir = path.join(targetDir, 'hooks', IDENTITY.hooksDir);
+  if (fs.existsSync(ownHooksDir)) {
     let hookCount = 0;
-    for (const hook of gsdHooks) {
-      const hookPath = path.join(hooksDir, hook);
-      if (fs.existsSync(hookPath)) {
+    const ownHookDirs = new Set([ownHooksDir]);
+    for (const hook of listOwnHookFiles()) {
+      const hookPath = path.join(targetDir, 'hooks', hook);
+      for (let dir = path.dirname(hookPath); dir.startsWith(ownHooksDir + path.sep); dir = path.dirname(dir)) {
+        ownHookDirs.add(dir);
+      }
+      try {
         fs.unlinkSync(hookPath);
         hookCount++;
+      } catch (_) {
+        // Not installed (best effort, non-fatal)
       }
+    }
+    // A deeper folder has a longer path, so it is tried before its parent.
+    for (const dir of [...ownHookDirs].sort((a, b) => b.length - a.length)) {
+      try { fs.rmdirSync(dir); } catch (_) { /* absent, or holds a file fvgsd didn't write */ }
     }
     if (hookCount > 0) {
       removedCount++;
-      console.log(`  ${green}✓${reset} Removed ${hookCount} GSD hooks`);
+      console.log(`  ${green}✓${reset} Removed ${hookCount} hooks from hooks/${IDENTITY.hooksDir}/`);
     }
-
-    // Remove only the GSD-managed files from hooks/fvgsd/lib/ (git-cmd.js + graphify-rebuild.sh).
-    // hooks/fvgsd/lib/ lives inside the user's runtime hooks directory (shared space) and
-    // may contain user-owned custom helpers. We must not recursively delete the dir.
-    const hooksLibDir = path.join(hooksDir, IDENTITY.hooksDir, 'lib');
-    if (fs.existsSync(hooksLibDir)) {
-      let removedLibFiles = 0;
-      for (const file of FVGSD_HOOK_LIB_FILES) {
-        const filePath = path.join(hooksLibDir, file);
-        try {
-          fs.unlinkSync(filePath);
-          removedLibFiles++;
-        } catch (_) {
-          // Ignore missing files (best effort, non-fatal)
-        }
-      }
-      // Only remove the directory itself if it is now empty (preserve any user files)
-      try {
-        fs.rmdirSync(hooksLibDir);
-      } catch (_) {
-        // Directory not empty or other error — leave it alone
-      }
-      if (removedLibFiles > 0) {
-        removedCount++;
-        console.log(`  ${green}✓${reset} Removed ${removedLibFiles} hooks/fvgsd/lib/ helper(s)`);
-      }
-    }
-    try { fs.rmdirSync(path.join(hooksDir, IDENTITY.hooksDir)); } catch (_) { /* not empty or absent */ }
   }
 
   // 5. Remove GSD package.json (CommonJS mode marker)
@@ -7162,7 +6995,13 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
 
     // Remove GSD hooks from settings — per-hook granularity to preserve
-    // user hooks that share an entry with a GSD hook (#1755 followup)
+    // user hooks that share an entry with a GSD hook (#1755 followup).
+    // A hook is fvgsd's only if its command points into this config dir's
+    // hooks/fvgsd/, with the config dir spelled the way install wrote it:
+    // absolute, $HOME-relative (--portable-hooks), or project-relative (local).
+    const hookConfigDirs = isGlobal
+      ? [targetDir, projectPortableHookBaseDir({ configDir: targetDir, homeDir: os.homedir() })]
+      : [projectLocalHookPrefix({ runtime, dirName })];
     for (const eventName of ['SessionStart', 'PostToolUse', 'AfterTool', 'PreToolUse', 'BeforeTool']) {
       if (settings.hooks && settings.hooks[eventName]) {
         const before = JSON.stringify(settings.hooks[eventName]);
@@ -7172,9 +7011,10 @@ function uninstall(isGlobal, runtime = 'claude') {
             // Filter out individual GSD hooks, keep user hooks
             entry.hooks = entry.hooks.filter((h) => {
               if (!h || typeof h.command !== 'string') return true;
-              return !isManagedHookCommand(h.command, {
+              return !hookConfigDirs.some((configDir) => isManagedHookCommand(h.command, {
                 surface: 'settings-json',
-              });
+                configDir,
+              }));
             });
             return entry.hooks.length > 0 ? entry : null;
           })
@@ -7589,6 +7429,24 @@ function generateManifest(dir, baseDir) {
     }
   }
   return manifest;
+}
+
+/**
+ * Files install writes under a runtime's hooks/fvgsd/ folder, as paths relative
+ * to hooks/ (for example 'fvgsd/check-update.js'). Uninstall removes exactly
+ * these, so the list comes from what install copies rather than a hand-kept
+ * list: the package's built hook tree (copied whole, lib/ included), the lib
+ * helpers copied from source, and the Windows .cmd shim written next to each
+ * hook Codex registers.
+ *
+ * @returns {string[]} sorted
+ */
+function listOwnHookFiles() {
+  const builtHooksDir = path.join(__dirname, '..', 'hooks', 'dist', IDENTITY.hooksDir);
+  const files = new Set(Object.keys(generateManifest(builtHooksDir)).map((rel) => `${IDENTITY.hooksDir}/${rel}`));
+  for (const file of FVGSD_HOOK_LIB_FILES) files.add(`${IDENTITY.hooksDir}/lib/${file}`);
+  for (const hook of CODEX_HOOKS_TO_COPY) files.add(codexHookShimPath(hook));
+  return [...files].sort();
 }
 
 function normalizeInstallRelativePath(relPath) {
@@ -8239,7 +8097,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const _preSkillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(_preSkillsDir)) {
       for (const entry of fs.readdirSync(_preSkillsDir, { withFileTypes: true })) {
-        if (entry.isDirectory() && /^(?:fvgsd|gsd)-/.test(entry.name)) {
+        if (entry.isDirectory() && new RegExp(`^${IDENTITY.commandPrefix}-`).test(entry.name)) {
           codexPreInstallSkillNames.add(entry.name);
           // Recursively snapshot all files in this skill dir.
           const skillDir = path.join(_preSkillsDir, entry.name);
@@ -8314,7 +8172,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     if (fs.existsSync(_earlySkillsDir)) {
       try {
         for (const entry of fs.readdirSync(_earlySkillsDir, { withFileTypes: true })) {
-          if (entry.isDirectory() && /^(?:fvgsd|gsd)-/.test(entry.name) && !codexPreInstallSkillNames.has(entry.name)) {
+          if (entry.isDirectory() && new RegExp(`^${IDENTITY.commandPrefix}-`).test(entry.name) && !codexPreInstallSkillNames.has(entry.name)) {
             try { fs.rmSync(path.join(_earlySkillsDir, entry.name), { recursive: true, force: true }); }
             catch (_) { /* best-effort */ }
           }
@@ -8462,7 +8320,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     (runtime === 'claude' && isGlobal);
 
   // Commands-based and rules-based runtimes do not enter the shared layout
-  // installer below, so run the public namespace upgrade cleanup here.
+  // installer below, so the legacy migration step (a no-op for fvgsd) runs here.
   if (!_isSkillsRuntime) {
     _runLegacyInstallMigrations(runtime, targetDir, isGlobal ? 'global' : 'local');
   }
@@ -8594,7 +8452,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const staleSkillsDir = path.join(targetDir, 'skills');
     if (fs.existsSync(staleSkillsDir)) {
       const staleGsd = fs.readdirSync(staleSkillsDir, { withFileTypes: true })
-        .filter(e => e.isDirectory() && /^(?:fvgsd|gsd)-/.test(e.name));
+        .filter(e => e.isDirectory() && new RegExp(`^${IDENTITY.commandPrefix}-`).test(e.name));
       for (const e of staleGsd) {
         fs.rmSync(path.join(staleSkillsDir, e.name), { recursive: true });
       }
@@ -9062,7 +8920,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       if (fs.existsSync(_rollbackSkillsDir)) {
         try {
           for (const entry of fs.readdirSync(_rollbackSkillsDir, { withFileTypes: true })) {
-            if (!entry.isDirectory() || !/^(?:fvgsd|gsd)-/.test(entry.name)) continue;
+            if (!entry.isDirectory() || !new RegExp(`^${IDENTITY.commandPrefix}-`).test(entry.name)) continue;
             if (!codexPreInstallSkillNames.has(entry.name)) {
               // New dir written this session: remove entirely.
               try { fs.rmSync(path.join(_rollbackSkillsDir, entry.name), { recursive: true, force: true }); }
@@ -9151,11 +9009,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       console.log(`  ${dim}↳${reset} Skipping Codex agent config generation (minimal install)`);
     }
 
-    // Copy only the hook files that Codex actually registers via its hook configuration (#2153).
-    // Codex primarily needs fvgsd/check-update.js for the SessionStart update-check hook.
-    // We deliberately do *not* copy fvgsd/graphify-update.sh or hooks/fvgsd/lib/ for Codex
-    // in this change (graphify auto-update support for Codex is out of scope for #3579).
-    const CODEX_HOOKS_TO_COPY = ['fvgsd/check-update.js'];
+    // Copy only the hook files that Codex actually registers (CODEX_HOOKS_TO_COPY).
     const codexHooksSrc = path.join(src, 'hooks', 'dist');
     if (fs.existsSync(codexHooksSrc)) {
       const codexHooksDest = path.join(targetDir, 'hooks');
@@ -11477,6 +11331,7 @@ module.exports = {
     readGsdCommandNames,
     installRuntimeArtifacts,
     uninstallRuntimeArtifacts,
+    listOwnHookFiles,
   };
 
 // Main logic — only run when not loaded as a module for testing

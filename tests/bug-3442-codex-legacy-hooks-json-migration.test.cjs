@@ -15,7 +15,7 @@ const migration = require(path.join(
 ));
 
 describe('bug #3442: codex legacy hooks.json migration consumes shared managed-hook policy', () => {
-  test('plan prunes managed codex hook commands including legacy alias', () => {
+  test('plan prunes managed codex hook commands and preserves legacy alias commands', () => {
     const configDir = '/Users/me/.codex';
     const hooksJson = {
       hooks: [
@@ -35,6 +35,7 @@ describe('bug #3442: codex legacy hooks.json migration consumes shared managed-h
     assert.equal(actions[0].relPath, 'hooks.json');
     assert.deepEqual(actions[0].value, {
       hooks: [
+        { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd-update-check.js"' },
         { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/custom-hook.js"' },
       ],
     });

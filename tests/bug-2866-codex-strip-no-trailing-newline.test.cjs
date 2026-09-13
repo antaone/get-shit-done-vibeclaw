@@ -18,7 +18,8 @@
  * This test parses `package.json` to require `bin/install.js`
  * structurally (not by hardcoded path), then drives each historical
  * shape through the helper twice — once with a trailing newline, once
- * without — and asserts both are stripped.
+ * without — and asserts both are stripped. Shape 1, which runs the hook
+ * under a legacy name fvgsd doesn't recognise, is asserted preserved.
  */
 'use strict';
 
@@ -63,13 +64,16 @@ function parseTomlShape(text) {
   return { tableHeaders, keys };
 }
 
+// Shape 1 ran the update-check hook under its pre-#1755 legacy name. fvgsd has no
+// legacy hook names, so that block isn't fvgsd's and the helper leaves it alone.
+const LEGACY_NAME_SHAPE = [
+  '# GSD Hooks',
+  '[[hooks]]',
+  'event = "SessionStart"',
+  'command = "node /Users/USER/.codex/hooks/fvgsd-update-check.js"',
+].join('\n');
+
 const SHAPES = {
-  'Shape 1 (legacy gsd-update-check)': [
-    '# GSD Hooks',
-    '[[hooks]]',
-    'event = "SessionStart"',
-    'command = "node /Users/USER/.codex/hooks/fvgsd-update-check.js"',
-  ].join('\n'),
   'Shape 2 (flat [[hooks]] + fvgsd/check-update)': [
     '# GSD Hooks',
     '[[hooks]]',
@@ -122,6 +126,16 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
       assertStripped(stripStaleGsdHookBlocks(input), shape, 'no trailing newline');
     });
   }
+
+  test('Shape 1 (legacy gsd-update-check): preserved when terminated by trailing newline', () => {
+    const input = `[history]\npersistence = "save-all"\n${LEGACY_NAME_SHAPE}\n`;
+    assert.strictEqual(stripStaleGsdHookBlocks(input), input);
+  });
+
+  test('Shape 1 (legacy gsd-update-check): preserved when at end-of-file without trailing newline', () => {
+    const input = `[history]\npersistence = "save-all"\n${LEGACY_NAME_SHAPE}`;
+    assert.strictEqual(stripStaleGsdHookBlocks(input), input);
+  });
 
   test('returns input unchanged when no GSD hook block is present', () => {
     const benign = '[history]\npersistence = "save-all"\n';

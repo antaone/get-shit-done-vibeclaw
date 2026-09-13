@@ -6,10 +6,11 @@
  * regressions file for the installer module cluster.
  *
  * Defects covered:
- *   #3664 Defect #1 — stale skills/gsd/gsd-<stem>/ dirs on Hermes upgrade
+ *   #3664 Defect #1 — skills/gsd/ entries on Hermes upgrade (not fvgsd's, so left in place)
  *   #3664 Defect #2 — --hermes --profile=core falls through to wrong path
- *   #2973 M1–M3    — dev-preferences migration at profile=core for hermes/qwen/claude
- *   #2973 U1–U3    — uninstall preserves dev-preferences via skill migration
+ *   #2973 M1–M3    — commands/gsd/dev-preferences.md at profile=core for hermes/qwen/claude
+ *                    (GSD's file: fvgsd leaves it in place and does not migrate it)
+ *   #2973 U1–U3    — the same file on uninstall
  *
  * Closes #3758
  */
@@ -46,8 +47,8 @@ const RESOLVED_CORE = resolveProfile({ modes: ['core'], manifest: MANIFEST });
 
 // ─── Defect #1 — Hermes upgrade leaves stale skills/gsd/gsd-<stem>/ dirs ────
 
-describe('Defect #1 regression (#3664): legacy Hermes entries migrate from skills/gsd to skills/fvgsd', () => {
-  test('installRuntimeArtifacts removes known legacy entries, preserves user content, and writes the fvgsd layout', (t) => {
+describe('Defect #1 regression (#3664): entries under skills/gsd stay while install writes skills/fvgsd', () => {
+  test('installRuntimeArtifacts preserves skills/gsd entries and user content, and writes the fvgsd layout', (t) => {
     const configDir = createTempDir('fvgsd-hermes-reg1-');
     t.after(() => cleanup(configDir));
 
@@ -68,10 +69,10 @@ describe('Defect #1 regression (#3664): legacy Hermes entries migrate from skill
 
     installRuntimeArtifacts('hermes', configDir, 'global', RESOLVED_CORE);
 
-    assert.ok(!fs.existsSync(path.join(nestedGsdDir, 'fvgsd-help')),
-      'skills/gsd/gsd-help/ must be removed (Defect #1)');
-    assert.ok(!fs.existsSync(path.join(nestedGsdDir, 'fvgsd-plan-phase')),
-      'skills/gsd/gsd-plan-phase/ must be removed (Defect #1)');
+    assert.strictEqual(fs.readFileSync(path.join(nestedGsdDir, 'fvgsd-help', 'SKILL.md'), 'utf8'), '# legacy help\n',
+      'skills/gsd/fvgsd-help/ must be preserved: skills/gsd/ is not an fvgsd folder');
+    assert.strictEqual(fs.readFileSync(path.join(nestedGsdDir, 'fvgsd-plan-phase', 'SKILL.md'), 'utf8'), '# legacy plan\n',
+      'skills/gsd/fvgsd-plan-phase/ must be preserved');
     assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd', 'help', 'SKILL.md')),
       'skills/fvgsd/help/SKILL.md must exist after install');
     assert.ok(fs.existsSync(path.join(userContentDir, 'SKILL.md')),
@@ -148,8 +149,8 @@ describe('Defect #2 regression (Hermes, #3664): --hermes --profile=core writes s
 
 // ─── M1 — Hermes minimal-mode migrates dev-preferences (#2973) ───────────────
 
-describe('M1 (#2973): --hermes --global --profile=core migrates dev-preferences → skills/fvgsd/dev-preferences/SKILL.md', () => {
-  test('dev-preferences migrated to nested Hermes location, legacy source removed', (t) => {
+describe('M1 (#2973): --hermes --global --profile=core leaves commands/gsd/dev-preferences.md in place', () => {
+  test('commands/gsd/dev-preferences.md preserved, not migrated into skills/fvgsd/ (hermes)', (t) => {
     const root = createTempDir('fvgsd-hermes-m1-');
     t.after(() => cleanup(root));
 
@@ -166,19 +167,17 @@ describe('M1 (#2973): --hermes --global --profile=core migrates dev-preferences 
     assert.strictEqual(result.status, 0,
       `installer exited ${result.status}\n${result.stdout}\n${result.stderr}`);
 
-    const skillFile = path.join(root, 'skills', 'fvgsd', 'dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile),
-      'skills/fvgsd/dev-preferences/SKILL.md must exist (M1: nested, not flat)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my hermes prefs\n');
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')),
-      'legacy source must be removed');
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my hermes prefs\n',
+      'commands/gsd/dev-preferences.md must be preserved (M1)');
+    assert.ok(!fs.existsSync(path.join(root, 'skills', 'fvgsd', 'dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd/ (M1)');
   });
 });
 
 // ─── M2 — Qwen minimal-mode migrates dev-preferences (#2973) ────────────────
 
-describe('M2 (#2973): --qwen --global --profile=core migrates dev-preferences → skills/fvgsd-dev-preferences/SKILL.md', () => {
-  test('dev-preferences migrated to flat Qwen location, legacy source removed', (t) => {
+describe('M2 (#2973): --qwen --global --profile=core leaves commands/gsd/dev-preferences.md in place', () => {
+  test('commands/gsd/dev-preferences.md preserved, not migrated into skills/fvgsd-dev-preferences/ (qwen)', (t) => {
     const root = createTempDir('fvgsd-qwen-m2-');
     t.after(() => cleanup(root));
 
@@ -195,18 +194,17 @@ describe('M2 (#2973): --qwen --global --profile=core migrates dev-preferences �
     assert.strictEqual(result.status, 0,
       `installer exited ${result.status}\n${result.stdout}\n${result.stderr}`);
 
-    const skillFile = path.join(root, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile),
-      'skills/fvgsd-dev-preferences/SKILL.md must exist (M2: flat Qwen layout)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my qwen prefs\n');
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')));
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my qwen prefs\n',
+      'commands/gsd/dev-preferences.md must be preserved (M2)');
+    assert.ok(!fs.existsSync(path.join(root, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd-dev-preferences/ (M2)');
   });
 });
 
 // ─── M3 — Claude global minimal-mode migrates dev-preferences (#2973) ────────
 
-describe('M3 (#2973): --claude --global --profile=core migrates dev-preferences → skills/fvgsd-dev-preferences/SKILL.md', () => {
-  test('dev-preferences migrated to flat Claude-global location, legacy source removed', (t) => {
+describe('M3 (#2973): --claude --global --profile=core leaves commands/gsd/dev-preferences.md in place', () => {
+  test('commands/gsd/dev-preferences.md preserved, not migrated into skills/fvgsd-dev-preferences/ (claude)', (t) => {
     const root = createTempDir('fvgsd-claude-m3-');
     t.after(() => cleanup(root));
 
@@ -223,18 +221,17 @@ describe('M3 (#2973): --claude --global --profile=core migrates dev-preferences 
     assert.strictEqual(result.status, 0,
       `installer exited ${result.status}\n${result.stdout}\n${result.stderr}`);
 
-    const skillFile = path.join(root, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile),
-      'skills/fvgsd-dev-preferences/SKILL.md must exist (M3)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my claude prefs\n');
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')));
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my claude prefs\n',
+      'commands/gsd/dev-preferences.md must be preserved (M3)');
+    assert.ok(!fs.existsSync(path.join(root, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd-dev-preferences/ (M3)');
   });
 });
 
 // ─── U1 — Qwen uninstall preserves dev-preferences via migration (#2973) ─────
 
-describe('U1 (#2973): uninstallRuntimeArtifacts qwen migrates dev-preferences → skills/fvgsd-dev-preferences/SKILL.md', () => {
-  test('legacy commands/gsd/ removed, dev-preferences migrated to fvgsd skill', (t) => {
+describe('U1 (#2973): uninstallRuntimeArtifacts qwen leaves commands/gsd/ in place', () => {
+  test('commands/gsd/ preserved, dev-preferences not migrated (qwen)', (t) => {
     const configDir = createTempDir('fvgsd-qwen-uninstall-u1-');
     t.after(() => cleanup(configDir));
 
@@ -248,19 +245,17 @@ describe('U1 (#2973): uninstallRuntimeArtifacts qwen migrates dev-preferences �
 
     uninstallRuntimeArtifacts('qwen', configDir, 'global');
 
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'help.md')));
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')));
-
-    const skillFile = path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile), 'skills/fvgsd-dev-preferences/SKILL.md must exist (U1)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my qwen prefs\n');
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'help.md'), 'utf8'), '# help content\n');
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my qwen prefs\n');
+    assert.ok(!fs.existsSync(path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd-dev-preferences/ (U1)');
   });
 });
 
 // ─── U2 — Claude-global uninstall preserves dev-preferences (#2973) ──────────
 
-describe('U2 (#2973): uninstallRuntimeArtifacts claude/global migrates dev-preferences → skills/fvgsd-dev-preferences/SKILL.md', () => {
-  test('legacy commands/gsd/ removed, dev-preferences migrated to fvgsd skill', (t) => {
+describe('U2 (#2973): uninstallRuntimeArtifacts claude/global leaves commands/gsd/ in place', () => {
+  test('commands/gsd/ preserved, dev-preferences not migrated (claude)', (t) => {
     const configDir = createTempDir('fvgsd-claude-uninstall-u2-');
     t.after(() => cleanup(configDir));
 
@@ -272,18 +267,16 @@ describe('U2 (#2973): uninstallRuntimeArtifacts claude/global migrates dev-prefe
 
     uninstallRuntimeArtifacts('claude', configDir, 'global');
 
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')));
-
-    const skillFile = path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile), 'skills/fvgsd-dev-preferences/SKILL.md must exist (U2)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my claude prefs\n');
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my claude prefs\n');
+    assert.ok(!fs.existsSync(path.join(configDir, 'skills', 'fvgsd-dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd-dev-preferences/ (U2)');
   });
 });
 
 // ─── U3 — Hermes uninstall migrates dev-preferences to NESTED location (#2973) ─
 
-describe('U3 (#2973): uninstallRuntimeArtifacts hermes migrates dev-preferences → skills/fvgsd/dev-preferences/SKILL.md', () => {
-  test('legacy commands/gsd/ not recreated, dev-preferences at nested fvgsd location', (t) => {
+describe('U3 (#2973): uninstallRuntimeArtifacts hermes leaves commands/gsd/ in place', () => {
+  test('commands/gsd/ preserved, dev-preferences not migrated (hermes)', (t) => {
     const configDir = createTempDir('fvgsd-hermes-uninstall-u3-');
     t.after(() => cleanup(configDir));
 
@@ -295,12 +288,9 @@ describe('U3 (#2973): uninstallRuntimeArtifacts hermes migrates dev-preferences 
 
     uninstallRuntimeArtifacts('hermes', configDir, 'global');
 
-    assert.ok(!fs.existsSync(path.join(legacyDir, 'dev-preferences.md')),
-      'commands/gsd/dev-preferences.md must not exist after hermes uninstall (U3)');
-
-    const skillFile = path.join(configDir, 'skills', 'fvgsd', 'dev-preferences', 'SKILL.md');
-    assert.ok(fs.existsSync(skillFile),
-      'skills/fvgsd/dev-preferences/SKILL.md must exist at HERMES nested location (U3)');
-    assert.strictEqual(fs.readFileSync(skillFile, 'utf8'), '# my hermes prefs\n');
+    assert.strictEqual(fs.readFileSync(path.join(legacyDir, 'dev-preferences.md'), 'utf8'), '# my hermes prefs\n',
+      'commands/gsd/dev-preferences.md must be preserved by hermes uninstall (U3)');
+    assert.ok(!fs.existsSync(path.join(configDir, 'skills', 'fvgsd', 'dev-preferences', 'SKILL.md')),
+      'GSD dev-preferences must not be migrated into skills/fvgsd/ (U3)');
   });
 });

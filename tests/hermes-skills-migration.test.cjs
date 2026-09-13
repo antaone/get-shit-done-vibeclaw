@@ -231,7 +231,7 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     assert.ok(!content.includes('~/.claude/'), 'old claude tilde-path not present');
   });
 
-  test('removes stale gsd- skills before installing new ones', () => {
+  test('preserves existing flat skill dirs when installing new ones', () => {
     const srcDir = path.join(tmpDir, 'src', 'commands', 'gsd');
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'quick.md'), [
@@ -247,15 +247,15 @@ describe('Hermes Agent: installRuntimeArtifacts', () => {
     fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(path.join(configDir, '.fvgsd-source'), srcDir);
 
-    // Pre-create a stale flat skill (skills/gsd-old-skill) — legacy Hermes layout
-    const staleFlatSkillDir = path.join(configDir, 'skills', 'fvgsd-old-skill');
-    fs.mkdirSync(staleFlatSkillDir, { recursive: true });
-    fs.writeFileSync(path.join(staleFlatSkillDir, 'SKILL.md'), 'old');
+    // Pre-create a flat skill dir (skills/fvgsd-old-skill) outside the nested Hermes layout
+    const flatSkillDir = path.join(configDir, 'skills', 'fvgsd-old-skill');
+    fs.mkdirSync(flatSkillDir, { recursive: true });
+    fs.writeFileSync(path.join(flatSkillDir, 'SKILL.md'), 'old');
 
     installRuntimeArtifacts('hermes', configDir, 'global', resolvedProfileFull);
 
-    // _runLegacyInstallMigrations removes skills/fvgsd-* flat dirs for hermes
-    assert.ok(!fs.existsSync(staleFlatSkillDir), 'stale flat gsd- skill removed');
+    // _runLegacyInstallMigrations is a no-op: fvgsd has no legacy layout to clean up
+    assert.equal(fs.readFileSync(path.join(flatSkillDir, 'SKILL.md'), 'utf8'), 'old', 'flat skill dir preserved');
     // New Hermes layout: skills/gsd/<bare-stem>/SKILL.md
     assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd', 'quick', 'SKILL.md')), 'new skill installed at skills/fvgsd/quick/SKILL.md');
   });

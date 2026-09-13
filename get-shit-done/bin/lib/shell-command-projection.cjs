@@ -119,6 +119,7 @@ const MANAGED_HOOK_COMMAND_BASENAMES_BY_SURFACE = {
     'fvgsd/session-state.sh',
     'fvgsd/validate-commit.sh',
     'fvgsd/phase-boundary.sh',
+    'fvgsd/graphify-update.sh',
   ]),
   'codex-toml': new Set([
     'fvgsd/check-update.js',
@@ -132,13 +133,10 @@ const MANAGED_HOOK_COMMAND_BASENAMES_BY_SURFACE = {
   ]),
 };
 
+// fvgsd has no legacy hook names.
 const LEGACY_MANAGED_HOOK_ALIASES_BY_SURFACE = {
-  'codex-toml': new Set([
-    'fvgsd-update-check.js',
-  ]),
-  'codex-hooks-json': new Set([
-    'fvgsd-update-check.js',
-  ]),
+  'codex-toml': new Set(),
+  'codex-hooks-json': new Set(),
 };
 
 function managedHookSurfaceSet(surface = 'settings-json') {
@@ -174,9 +172,9 @@ function isManagedHookCommand(commandText, opts = {}) {
     if (!normalizedCommand.includes(normalizedHooksDir)) return false;
   }
 
-  for (const basename of managedBasenames) {
-    const escapedBasename = basename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`(^|[\\\\/\\s"'` + '`' + `])${escapedBasename}(?=$|[\\s"'` + '`' + `])`);
+  for (const managedPath of managedBasenames) {
+    const escaped = `hooks/${managedPath}`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(^|[\\\\/\\s"'\`])${escaped}(?=$|[\\s"'\`])`);
     if (pattern.test(normalizedCommand)) return true;
   }
   return false;

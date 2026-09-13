@@ -164,7 +164,7 @@ describe('bug #3439: shell projection module owns managed-hook policy and legacy
     );
   });
 
-  test('isManagedHookCommand supports codex surfaces and optional legacy alias matching', () => {
+  test('isManagedHookCommand supports codex surfaces and recognises no legacy aliases', () => {
     const command = '"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd/check-update.js"';
     assert.equal(
       isManagedHookCommand(command, {
@@ -183,7 +183,7 @@ describe('bug #3439: shell projection module owns managed-hook policy and legacy
         surface: 'codex-toml',
         includeLegacyAliases: true,
       }),
-      true,
+      false,
     );
   });
 });

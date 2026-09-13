@@ -1475,17 +1475,21 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   });
 
   test('preserves dev-preferences.md across uninstall', () => {
-    const prefsDir = path.join(tmpDir, '.claude', 'commands', 'gsd');
-    fs.mkdirSync(prefsDir, { recursive: true });
-    const prefsPath = path.join(prefsDir, 'dev-preferences.md');
+    // commands/fvgsd/ is this install's command folder; commands/gsd/ belongs to an upstream GSD install.
     const content = '---\nname: dev-preferences\n---\n# Preferences\nUse TypeScript strict.\n';
-    fs.writeFileSync(prefsPath, content);
+    const prefsPaths = [IDENTITY.commandPrefix, 'gsd'].map((namespace) =>
+      path.join(tmpDir, '.claude', 'commands', namespace, 'dev-preferences.md'));
+    for (const prefsPath of prefsPaths) {
+      fs.mkdirSync(path.dirname(prefsPath), { recursive: true });
+      fs.writeFileSync(prefsPath, content);
+    }
 
     runClaudeUninstall(tmpDir);
 
-    const migratedPrefsPath = path.join(tmpDir, '.claude', 'commands', 'fvgsd', 'dev-preferences.md');
-    assert.ok(fs.existsSync(migratedPrefsPath), 'dev-preferences.md should survive under the fvgsd namespace');
-    assert.strictEqual(fs.readFileSync(migratedPrefsPath, 'utf-8'), content, 'content should be identical');
+    for (const prefsPath of prefsPaths) {
+      assert.ok(fs.existsSync(prefsPath), `${path.relative(tmpDir, prefsPath)} should survive uninstall`);
+      assert.strictEqual(fs.readFileSync(prefsPath, 'utf-8'), content, 'content should be identical');
+    }
   });
 
   test('still removes GSD engine files during uninstall', () => {
@@ -1507,9 +1511,9 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
     runClaudeUninstall(tmpDir);
 
     const gsdDir = path.join(tmpDir, '.claude', IDENTITY.installDir);
-    const cmdDir = path.join(tmpDir, '.claude', 'commands', 'gsd');
+    const cmdDir = path.join(tmpDir, '.claude', 'commands', IDENTITY.commandPrefix);
     // Directories should be fully removed when no user files to preserve
     assert.ok(!fs.existsSync(gsdDir), 'get-shit-done/ should not exist after clean uninstall');
-    assert.ok(!fs.existsSync(cmdDir), 'commands/gsd/ should not exist after clean uninstall');
+    assert.ok(!fs.existsSync(cmdDir), `commands/${IDENTITY.commandPrefix}/ should not exist after clean uninstall`);
   });
 });

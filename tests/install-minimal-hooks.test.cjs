@@ -35,6 +35,7 @@ const { createTempDir, cleanup } = require('./helpers.cjs');
 
 const {
   writeManifest,
+  listOwnHookFiles,
 } = require('../bin/install.js');
 
 const {
@@ -629,15 +630,11 @@ describe('install.js source correctness', () => {
   });
 
   test('fvgsd/workflow-guard.js is in uninstall hook list', () => {
-    const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(m, 'gsdHooks array must exist');
-    assert.ok(m[1].includes('fvgsd/workflow-guard.js'));
+    assert.ok(listOwnHookFiles().includes('fvgsd/workflow-guard.js'));
   });
 
   test('phantom fvgsd/check-update.sh is not in uninstall hook list', () => {
-    const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(m);
-    assert.ok(!m[1].includes('fvgsd/check-update.sh'));
+    assert.ok(!listOwnHookFiles().includes('fvgsd/check-update.sh'));
   });
 
   test('isGsdHookCommand covers all GSD hook names', () => {

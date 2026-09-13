@@ -49,6 +49,23 @@ function cleanup(tmpDir) {
   try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
 }
 
+// bin/install.js runs its CLI unless FVGSD_TEST_MODE is set when it loads. The flag
+// is restored right after, so hooks spawned by other tests never inherit it. The
+// installer's uninstall hook list reads hooks/dist, so build it first if missing.
+function requireInstallerInTestMode() {
+  if (!fs.existsSync(path.join(HOOKS_DIR, 'dist', 'fvgsd'))) {
+    spawnSync(process.execPath, [path.join(__dirname, '..', 'scripts', 'build-hooks.js')], { stdio: 'pipe' });
+  }
+  const savedTestMode = process.env.FVGSD_TEST_MODE;
+  process.env.FVGSD_TEST_MODE = '1';
+  try {
+    return require('../bin/install.js');
+  } finally {
+    if (savedTestMode === undefined) delete process.env.FVGSD_TEST_MODE;
+    else process.env.FVGSD_TEST_MODE = savedTestMode;
+  }
+}
+
 function writeConfigWithHooks(tmpDir, enabled) {
   fs.writeFileSync(
     path.join(tmpDir, '.planning', 'config.json'),
@@ -183,22 +200,10 @@ describe('installer hook registration', () => {
   });
 
   test('install.js adds all 3 new hooks to the uninstall cleanup list', () => {
-    const gsdHooksMatch = installSource.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(gsdHooksMatch, 'install.js should define gsdHooks array for uninstall cleanup');
-
-    const gsdHooksContent = gsdHooksMatch[1];
-    assert.ok(
-      gsdHooksContent.includes('fvgsd/session-state.sh'),
-      'gsdHooks should include fvgsd/session-state.sh'
-    );
-    assert.ok(
-      gsdHooksContent.includes('fvgsd/validate-commit.sh'),
-      'gsdHooks should include fvgsd/validate-commit.sh'
-    );
-    assert.ok(
-      gsdHooksContent.includes('fvgsd/phase-boundary.sh'),
-      'gsdHooks should include fvgsd/phase-boundary.sh'
-    );
+    const ownHookFiles = requireInstallerInTestMode().listOwnHookFiles();
+    for (const hook of ['fvgsd/session-state.sh', 'fvgsd/validate-commit.sh', 'fvgsd/phase-boundary.sh']) {
+      assert.ok(ownHookFiles.includes(hook), `uninstall hook list should include ${hook}`);
+    }
   });
 
   test('install.js log messages indicate opt-in behavior', () => {
