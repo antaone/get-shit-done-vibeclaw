@@ -21,6 +21,7 @@
     "tests/fvgsd-install-ownership.test.cjs",
     "tests/fvgsd-install-ownership.install.test.cjs",
     "tests/fvgsd-migration-baseline.test.cjs",
+    "tests/fvgsd-hook-commands.test.cjs",
     "tests/helpers/foreign-installs.cjs",
     "tests/fixtures/foreign-installer-matchers.json"
   ],

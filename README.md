@@ -2,9 +2,11 @@
 
 VibeClaw is a repository-backed orchestration layer for running one GSD workflow across multiple AI coding tools.
 
+<!-- rename-identity:off -->
 ## fvgsd
 
 This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+<!-- rename-identity:on -->
 
 Gemini can research, Codex can plan, OpenCode and Claude Code Router can produce competing implementations, and Codex can verify the selected result. The tools never message each other. They coordinate through durable repository state, explicit Git commits, and human-controlled promotion.
 

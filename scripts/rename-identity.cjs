@@ -10,6 +10,14 @@
  *   --root <dir>                                         # another git repository (tests)
  *
  * Every rule skips text that is already renamed, so re-running is safe.
+ *
+ * Every rule also skips text between a line containing `rename-identity:off`
+ * and a line containing `rename-identity:on` (R48). This lets prose that
+ * intentionally names the legacy `/gsd-*` and `/vgsd-*` prefixes — e.g. the
+ * README section explaining fvgsd's coexistence with upstream GSD and
+ * VibeClaw vgsd — stay stable across a re-run instead of being rewritten
+ * into fvgsd. The marker lines themselves are part of the protected region,
+ * so they are never rewritten either.
  */
 
 const fs = require('node:fs');
@@ -76,17 +84,51 @@ function buildRules({ agentRoles, hookNames, helperNames }) {
   return rules;
 }
 
+const RENAME_IDENTITY_OFF = 'rename-identity:off';
+const RENAME_IDENTITY_ON = 'rename-identity:on';
+
+// Splits text into alternating segments so rules can be applied to the
+// "active" segments only. A segment is "protected" once a line containing
+// RENAME_IDENTITY_OFF is seen, up to and including the next line containing
+// RENAME_IDENTITY_ON (an unterminated region protects to end of file). The
+// split is on line boundaries only (keeping each line's own terminator, LF
+// or CRLF, attached to that line) so byte-for-byte reassembly is exact.
+function splitProtectedRegions(text) {
+  const lines = text.split(/(?<=\n)/);
+  const segments = [];
+  let current = [];
+  let protectedRegion = false;
+  for (const line of lines) {
+    current.push(line);
+    if (!protectedRegion && line.includes(RENAME_IDENTITY_OFF)) {
+      segments.push({ protected: false, text: current.slice(0, -1).join('') });
+      current = [line];
+      protectedRegion = true;
+    } else if (protectedRegion && line.includes(RENAME_IDENTITY_ON)) {
+      segments.push({ protected: true, text: current.join('') });
+      current = [];
+      protectedRegion = false;
+    }
+  }
+  if (current.length) segments.push({ protected: protectedRegion, text: current.join('') });
+  return segments;
+}
+
 function rewriteText(text, rules, { isCode }) {
   const replacements = [];
-  let next = text;
-  for (const rule of rules) {
-    if (rule.codeOnly && !isCode) continue;
-    next = next.replace(rule.pattern, (...args) => {
-      const replacement = rule.replace(...args);
-      replacements.push({ ruleId: rule.id, match: args[0], replacement });
-      return replacement;
-    });
-  }
+  const next = splitProtectedRegions(text).map((segment) => {
+    if (segment.protected) return segment.text;
+    let segmentText = segment.text;
+    for (const rule of rules) {
+      if (rule.codeOnly && !isCode) continue;
+      segmentText = segmentText.replace(rule.pattern, (...args) => {
+        const replacement = rule.replace(...args);
+        replacements.push({ ruleId: rule.id, match: args[0], replacement });
+        return replacement;
+      });
+    }
+    return segmentText;
+  }).join('');
   return { text: next, replacements };
 }
 

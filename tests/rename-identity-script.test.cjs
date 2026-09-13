@@ -136,6 +136,28 @@ test('rewriteText renames \bgsd- regex prefixes in code only', () => {
   assert.deepEqual(rewriteText(source, rules, { isCode: false }).replacements, []);
 });
 
+test('rewriteText skips text between rename-identity:off/:on markers', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'Run /vgsd-help first.\n' +
+    '<!-- rename-identity:off -->\n' +
+    'Side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`).\n' +
+    '<!-- rename-identity:on -->\n' +
+    'Then see /vgsd-status.\n';
+  for (const isCode of [false, true]) {
+    const { text, replacements } = rewriteText(source, rules, { isCode });
+    assert.deepEqual(replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+      ['fork-prefix', 'vgsd', 'fvgsd'],
+      ['fork-prefix', 'vgsd', 'fvgsd'],
+    ]);
+    assert.equal(text, 'Run /fvgsd-help first.\n' +
+      '<!-- rename-identity:off -->\n' +
+      'Side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`).\n' +
+      '<!-- rename-identity:on -->\n' +
+      'Then see /fvgsd-status.\n');
+    assert.deepEqual(rewriteText(text, rules, { isCode }).replacements, []);
+  }
+});
+
 test('planRenames maps the SDK tools module', () => {
   assert.deepEqual(planRenames(['sdk/src/gsd-tools.ts']), [
     { from: 'sdk/src/gsd-tools.ts', to: 'sdk/src/fvgsd-tools.ts' },

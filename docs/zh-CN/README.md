@@ -4,9 +4,11 @@
 
 **一个轻量级且强大的元提示、上下文工程和规格驱动开发系统，支持 Claude Code、OpenCode、Gemini CLI、Kilo、Codex、Copilot、Cursor、Windsurf、Antigravity、Augment、Trae 和 Cline。**
 
+<!-- rename-identity:off -->
 ## fvgsd
 
 This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+<!-- rename-identity:on -->
 
 **解决上下文衰减 —— 即 Claude 填充上下文窗口时发生的质量退化问题。**
 
