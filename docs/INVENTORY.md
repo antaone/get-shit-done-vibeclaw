@@ -362,7 +362,7 @@ The `fvgsd-planner` agent is decomposed into a core agent plus reference modules
 
 ---
 
-## CLI Modules (75 shipped)
+## CLI Modules (76 shipped)
 
 Full listing: `get-shit-done/bin/lib/*.cjs`.
 
@@ -394,6 +394,7 @@ Full listing: `get-shit-done/bin/lib/*.cjs`.
 | `gap-checker.cjs` | Post-planning gap analysis (#2493): unified REQUIREMENTS.md + CONTEXT.md decisions vs PLAN.md coverage report (`fvgsd-tools gap-analysis`) |
 | `graphify.cjs` | Knowledge-graph build/query/status/diff for `/fvgsd-graphify` |
 | `gsd2-import.cjs` | External-plan ingest for `/fvgsd-import --from-gsd2` |
+| `identity.cjs` | Frozen fvgsd identity names (install folder, command/agent prefixes, bins, markers); single source of truth copied to `sdk/src/identity.ts` by `scripts/gen-identity-ts.cjs` |
 | `init-command-router.cjs` | Thin CJS subcommand router adapter for `fvgsd-tools init` |
 | `init.cjs` | Compound context loading for each workflow type |
 | `install-profiles.cjs` | Install profile allowlist + skill staging for `--minimal` install (#2762); single source of truth for which `fvgsd-*` skills/agents land in runtime config dirs |

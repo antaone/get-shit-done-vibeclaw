@@ -139,6 +139,12 @@
       "ts": "sdk/src/query/prompt-budget.ts",
       "classification": "cooperating-sibling",
       "justification": "CJS prompt-budget.cjs provides the applyBudget implementation used by fvgsd-tools.cjs case 'prompt-budget'. SDK prompt-budget.ts is the native QueryHandler port for fvgsd-sdk query dispatch (#3081). The SDK handler ports the pure budget logic and adds CLI arg parsing / file I/O directly, satisfying the registry-integration drift-guard without duplicating shared state."
+    },
+    {
+      "cjs": "get-shit-done/bin/lib/identity.cjs",
+      "ts": "sdk/src/identity.ts",
+      "classification": "cooperating-sibling",
+      "justification": "SDK identity.ts is generated from identity.cjs by scripts/gen-identity-ts.cjs. CJS identity.cjs is the single source of truth for fvgsd names; npm run check:identity-fresh (pretest) fails when the generated copy drifts. Not a hand-sync pair; freshness check enforces alignment."
     }
   ],
   "migrateMeBacklog": []
