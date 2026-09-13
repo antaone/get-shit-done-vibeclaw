@@ -11183,6 +11183,20 @@ function trySelfLinkGsdSdk(shimSrc) {
     ? [localBin, ...pathCandidates.filter((dir) => dir !== localBin)]
     : [...pathCandidates, localBin];
 
+  // The symlink only runs if its target is executable. npm sets the bit when it
+  // installs a package, but a clone keeps whatever mode git recorded, and a
+  // checkout with core.fileMode=false or an archive download can leave it off —
+  // every `fvgsd-sdk` call would then fail with EACCES.
+  try {
+    const stat = fs.statSync(shimSrc);
+    const isExecutable = !!(stat.mode & 0o111);
+    if (!isExecutable) {
+      fs.chmodSync(shimSrc, stat.mode | 0o111);
+    }
+  } catch {
+    // Non-fatal: a read-only checkout keeps its mode.
+  }
+
   for (const dir of candidates) {
     try {
       fs.mkdirSync(dir, { recursive: true });

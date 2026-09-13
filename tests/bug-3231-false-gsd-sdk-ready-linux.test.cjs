@@ -34,6 +34,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const installModule = require('../bin/install.js');
 const { captureConsole } = require('./helpers.cjs');
@@ -45,6 +46,7 @@ const {
   isGsdSdkOnPath,
   filterNpxFromPath,
   isLegacyGsdSdkShim,
+  trySelfLinkGsdSdk,
 } = installModule;
 
 // ---------------------------------------------------------------------------
@@ -398,6 +400,59 @@ describe('bug #3231: clean install — fvgsd-sdk self-linked into persistent PAT
     assert.ok(
       /GSD SDK ready/.test(stdout),
       'installer must print "GSD SDK ready" after a successful self-link into a persistent PATH dir. Got stdout: ' + stdout,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test 4: shim source checked out without the execute bit
+// ---------------------------------------------------------------------------
+// fvgsd installs from a git clone. A clone keeps the mode git recorded, and a
+// checkout with core.fileMode=false or an archive download can leave
+// bin/fvgsd-sdk.js without the execute bit. A symlink to it then fails with
+// EACCES, so every `fvgsd-sdk query` call in the installed workflows fails.
+describe('clone install: fvgsd-sdk shim source without the execute bit',
+  { skip: isWindows ? 'POSIX-only: relies on fs.symlinkSync + mode bits + bare shim filename' : false },
+  () => {
+  let tmpRoot;
+  let savedEnv;
+
+  beforeEach(() => {
+    tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-shim-mode-'));
+    const homeDir = path.join(tmpRoot, 'home');
+    fs.mkdirSync(homeDir, { recursive: true });
+
+    savedEnv = {
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+    };
+    process.env.HOME = homeDir;
+    process.env.PATH = path.join(homeDir, '.local', 'bin');
+  });
+
+  afterEach(() => {
+    if (savedEnv.PATH == null) delete process.env.PATH;
+    else process.env.PATH = savedEnv.PATH;
+    if (savedEnv.HOME == null) delete process.env.HOME;
+    else process.env.HOME = savedEnv.HOME;
+    try { fs.rmSync(tmpRoot, { recursive: true, force: true }); } catch {}
+  });
+
+  test('trySelfLinkGsdSdk links a runnable shim when the source lacks the execute bit', () => {
+    const shimSrc = path.join(tmpRoot, 'fvgsd-sdk.js');
+    fs.writeFileSync(shimSrc, ['#!/bin/sh', 'exit 0', ''].join('\n'));
+    fs.chmodSync(shimSrc, 0o644);
+
+    const linked = trySelfLinkGsdSdk(shimSrc);
+
+    assert.equal(linked, path.join(process.env.HOME, '.local', 'bin', 'fvgsd-sdk'));
+    const run = spawnSync(linked, [], { encoding: 'utf8' });
+    assert.equal(run.error?.code, undefined, 'the linked fvgsd-sdk must be executable');
+    assert.equal(run.status, 0);
+    assert.equal(
+      isGsdSdkOnPath(process.env.PATH),
+      true,
+      'the installer PATH probe must accept the linked shim',
     );
   });
 });
