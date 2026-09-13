@@ -246,6 +246,36 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
     assert.equal(fs.existsSync(clinerules), false);
   });
 
+  describe('~/.gsd/defaults.json: fvgsd adds resolve_model_ids only when the key is absent', () => {
+    // ~/.gsd/ is upstream GSD's shared defaults folder; HOME is the temp root here.
+    const DEFAULTS_REL = '.gsd/defaults.json';
+    function seedDefaults(root, defaults) {
+      fs.mkdirSync(path.join(root, '.gsd'), { recursive: true });
+      fs.writeFileSync(path.join(root, DEFAULTS_REL), `${JSON.stringify(defaults, null, 2)}\n`);
+      return snapshot(root, [DEFAULTS_REL]);
+    }
+
+    test('gemini --global: a resolve_model_ids value the user set stays byte-identical through install and uninstall', (t) => {
+      const root = tempRoot(t, 'defaults-set');
+      const configDir = path.join(root, 'config');
+      const before = seedDefaults(root, { resolve_model_ids: true, model_profile: 'quality' });
+
+      runInstaller(root, ['--gemini', '--global', '--config-dir', configDir]);
+      assert.deepEqual(snapshot(root, [DEFAULTS_REL]), before);
+
+      runInstaller(root, ['--gemini', '--global', '--config-dir', configDir, '--uninstall']);
+      assert.deepEqual(snapshot(root, [DEFAULTS_REL]), before);
+    });
+
+    test('gemini --global: a defaults.json without resolve_model_ids gets "omit" and keeps its other keys', (t) => {
+      const root = tempRoot(t, 'defaults-absent');
+      seedDefaults(root, { model_profile: 'quality' });
+
+      runInstaller(root, ['--gemini', '--global', '--config-dir', path.join(root, 'config')]);
+      assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, DEFAULTS_REL), 'utf8')), { model_profile: 'quality', resolve_model_ids: 'omit' });
+    });
+  });
+
   describe('Gemini experimental.enableAgents: fvgsd takes back only the flag it set', () => {
     function gemini(root, configDir, extra = []) {
       runInstaller(root, ['--gemini', '--global', '--config-dir', configDir, ...extra]);

@@ -9950,21 +9950,28 @@ function finishInstall(settingsPath, settings, statuslineCommand, shouldInstallS
   // For non-Claude runtimes, set resolve_model_ids: "omit" in ~/.gsd/defaults.json
   // so resolveModelInternal() returns '' instead of Claude aliases (opus/sonnet/haiku)
   // that the runtime can't resolve. Users can still use model_overrides for explicit IDs.
-  // See #1156.
+  // See #1156. ~/.gsd/ is upstream GSD's shared defaults folder, so the key is only
+  // added when it is absent: a value already there (the user's, or another
+  // install's) is never changed, a file that isn't a JSON object is left as it
+  // is, and uninstall does not touch the file.
   if (runtime !== 'claude') {
     const gsdDir = path.join(os.homedir(), '.gsd');
     const defaultsPath = path.join(gsdDir, 'defaults.json');
     try {
-      fs.mkdirSync(gsdDir, { recursive: true });
       let defaults = {};
-      try { defaults = JSON.parse(fs.readFileSync(defaultsPath, 'utf8')); } catch { /* new file */ }
-      if (defaults.resolve_model_ids !== 'omit') {
+      if (fs.existsSync(defaultsPath)) {
+        const parsed = JSON.parse(fs.readFileSync(defaultsPath, 'utf8'));
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not a JSON object');
+        defaults = parsed;
+      }
+      if (!Object.prototype.hasOwnProperty.call(defaults, 'resolve_model_ids')) {
         defaults.resolve_model_ids = 'omit';
+        fs.mkdirSync(gsdDir, { recursive: true });
         fs.writeFileSync(defaultsPath, JSON.stringify(defaults, null, 2) + '\n');
         console.log(`  ${green}✓${reset} Set resolve_model_ids: "omit" in ~/.gsd/defaults.json`);
       }
     } catch (e) {
-      console.log(`  ${yellow}⚠${reset} Could not write ~/.gsd/defaults.json: ${e.message}`);
+      console.log(`  ${yellow}⚠${reset} Left ~/.gsd/defaults.json unchanged: ${e.message}`);
     }
   }
 
