@@ -66,7 +66,7 @@ test('a GSD hook block in config.toml stays byte-identical through fvgsd install
   ].join('\n');
   fs.writeFileSync(configPath, userPart + gsdPart);
 
-  assert.equal(stripStaleGsdHookBlocks(userPart + gsdPart), userPart + gsdPart, 'the stale-hook matcher ignores GSD hook names');
+  assert.equal(stripStaleGsdHookBlocks(userPart + gsdPart, { configDir }), userPart + gsdPart, 'the stale-hook matcher ignores GSD hook names');
 
   runCodexInstaller(root, configDir);
 
@@ -76,6 +76,31 @@ test('a GSD hook block in config.toml stays byte-identical through fvgsd install
   const parsed = parseTomlToObject(content);
   assert.equal(parsed.features.codex_hooks, true);
   assert.equal(Object.keys(parsed.agents).some((name) => name.startsWith(IDENTITY.agentPrefix)), true);
+});
+
+test('a stale fvgsd hook block for another config dir stays byte-identical through fvgsd install', (t) => {
+  const { root, configDir } = tempCodexHome(t, 'other-dir-hook-block');
+  const configPath = path.join(configDir, 'config.toml');
+  const userPart = 'model = "gpt-5"\n\n[features]\ncodex_hooks = true\n\n';
+  const hookBlock = (dir) => [
+    '# GSD Hooks',
+    '[[hooks.SessionStart]]',
+    '',
+    '[[hooks.SessionStart.hooks]]',
+    'type = "command"',
+    `command = "node ${dir.replace(/\\/g, '/')}/hooks/fvgsd/check-update.js"`,
+    '',
+  ].join('\n');
+  const otherBlock = hookBlock(path.join(root, 'other', '.codex'));
+  fs.writeFileSync(configPath, userPart + otherBlock);
+
+  assert.equal(stripStaleGsdHookBlocks(userPart + otherBlock, { configDir }), userPart + otherBlock, 'another config dir\'s block is not stale here');
+  assert.equal(parseTomlToObject(stripStaleGsdHookBlocks(userPart + hookBlock(configDir), { configDir })).hooks, undefined, 'this config dir\'s block is still removed');
+
+  runCodexInstaller(root, configDir);
+
+  const content = fs.readFileSync(configPath, 'utf8');
+  assert.equal(content.slice(0, userPart.length + otherBlock.length), userPart + otherBlock, 'the other config dir\'s hook block is unchanged');
 });
 
 test('uninstall keeps the hooks feature fvgsd added while hooks.json still runs another SessionStart hook', (t) => {

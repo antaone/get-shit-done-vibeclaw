@@ -3618,17 +3618,25 @@ function stripLeakedGsdCodexSections(content) {
  * lines outside any table.
  *
  * The structural approach: find every `hooks*` table whose body contains a
- * `command` that runs fvgsd's own `hooks/fvgsd/check-update.js` (matched by
- * `isManagedHookCommand` on the codex-toml surface), remove its exact byte
- * range, and additionally remove any orphaned parent `[[hooks.SessionStart]]`
- * whose body becomes empty as a result (Shape 4). A block that runs another
- * install's hook, such as GSD's own check-update hook, is kept. A `# GSD Hooks`
+ * `command` that runs this config dir's `hooks/fvgsd/check-update.js` (matched
+ * by `isManagedHookCommand` on the codex-toml surface, scoped to `configDir`),
+ * remove its exact byte range, and additionally remove any orphaned parent
+ * `[[hooks.SessionStart]]` whose body becomes empty as a result (Shape 4). A
+ * block that runs another install's hook, such as GSD's own check-update hook
+ * or fvgsd's hook under a different config dir, is kept. A `# GSD Hooks`
  * comment line directly above a removed table is removed with it.
  *
  * Pure function, exported for test coverage. Returns the input unchanged
  * if no fvgsd-managed hook section is present.
+ *
+ * @param {string} configContent - config.toml content
+ * @param {{ configDir: string }} opts - the Codex config directory that holds this config.toml
+ * @returns {string}
  */
-function stripStaleGsdHookBlocks(configContent) {
+function stripStaleGsdHookBlocks(configContent, { configDir } = {}) {
+  if (typeof configDir !== 'string' || configDir.length === 0) {
+    throw new TypeError('stripStaleGsdHookBlocks requires opts.configDir, the Codex config directory');
+  }
   const sections = getTomlTableSections(configContent);
   const lineRecords = getTomlLineRecords(configContent);
   const hookSections = sections.filter(
@@ -3639,10 +3647,10 @@ function stripStaleGsdHookBlocks(configContent) {
   }
 
   // A section is fvgsd-managed if any structural `command` key inside its
-  // body parses to a string that runs `hooks/fvgsd/check-update.js`. The TOML
-  // line parser already classified each line's `keySegments`, so we never
-  // inspect raw text — this handles arbitrary whitespace, key reordering, and
-  // additional keys robustly.
+  // body parses to a string that runs `<configDir>/hooks/fvgsd/check-update.js`.
+  // The TOML line parser already classified each line's `keySegments`, so we
+  // never inspect raw text — this handles arbitrary whitespace, key
+  // reordering, and additional keys robustly.
   function sectionHasStaleCommand(section) {
     const records = lineRecords.filter(
       (r) => !r.startsInMultilineString
@@ -3666,6 +3674,7 @@ function stripStaleGsdHookBlocks(configContent) {
       if (isManagedHookCommand(parsed.value, {
         surface: 'codex-toml',
         includeLegacyAliases: true,
+        configDir,
       })) {
         return true;
       }
@@ -9049,17 +9058,16 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       let configContent = fs.existsSync(configPath) ? fs.readFileSync(configPath, 'utf-8') : '';
       const eol = detectLineEnding(configContent);
 
-      // Strip ALL prior GSD-managed hook blocks BEFORE migration so the migration
-      // only touches user-authored hooks, not GSD-owned stale entries. Running
-      // strip after migration causes Shape 1 (legacy gsd-update-check filename)
-      // to be converted by migration before the strip regex can match it (#2698).
-      //
-      // Historical shapes stripped, in order:
-      //   Shape 1 — legacy gsd-update-check filename (pre-#1755): flat [[hooks]] + event
+      // Strip prior fvgsd-managed hook blocks BEFORE migration so the migration
+      // only touches user-authored hooks, not fvgsd-owned stale entries (#2698).
+      // A block is stale only when its command runs this config dir's
+      // hooks/fvgsd/check-update.js:
       //   Shape 2 — flat [[hooks]] + event = "SessionStart" (#2637 era, never correct)
       //   Shape 4 — correct two-block nested (strip before shape 3 to avoid orphaned header)
       //   Shape 3 — single-block [[hooks.SessionStart]] without nested .hooks (#2760 era)
-      configContent = stripStaleGsdHookBlocks(configContent);
+      // Blocks for another config dir, and Shape 1's legacy gsd-update-check
+      // name, belong to another install and stay.
+      configContent = stripStaleGsdHookBlocks(configContent, { configDir: targetDir });
 
       // Migrate legacy [hooks] map format and flat [[hooks]] AoT entries to the
       // namespaced [[hooks.<EVENT>]] form after stripping GSD-managed stale blocks.

@@ -627,6 +627,8 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     //   - A previous GSD install left the legacy flat [[hooks]] managed block
     //     for fvgsd/check-update. The pre-CR4 strip step would short-circuit
     //     the namespaced emit and leave the user stuck in the mixed layout.
+    // The legacy block runs this config dir's hook, so it is fvgsd's own.
+    const staleCommand = `node ${codexHome.replace(/\\/g, '/')}/hooks/fvgsd/check-update.js`;
     const userPlusLegacy = [
       '[[hooks.SessionStart]]',
       'command = "echo user hook"',
@@ -634,7 +636,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
       '# GSD Hooks',
       '[[hooks]]',
       'event = "SessionStart"',
-      'command = "node /old/path/hooks/fvgsd/check-update.js"',
+      `command = "${staleCommand}"`,
       '',
     ].join('\n');
     writeCodexConfig(codexHome, userPlusLegacy);
@@ -666,6 +668,10 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     assert.ok(
       allSessionStartCommands.includes('echo user hook'),
       'user [[hooks.SessionStart]] entry preserved: ' + JSON.stringify(allSessionStartCommands)
+    );
+    assert.ok(
+      !allSessionStartCommands.includes(staleCommand),
+      'the legacy fvgsd block is removed from config.toml, not migrated: ' + JSON.stringify(allSessionStartCommands)
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(

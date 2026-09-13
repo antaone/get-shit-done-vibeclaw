@@ -12,7 +12,7 @@
  *
  * Fix: every shape's terminator is now `(?:\r?\n|$)` so end-of-file
  * counts as a valid terminator. The strip logic was lifted into a pure
- * helper, `stripStaleGsdHookBlocks(configContent)`, exported from
+ * helper, `stripStaleGsdHookBlocks(configContent, { configDir })`, exported from
  * `bin/install.js` for direct test coverage.
  *
  * This test parses `package.json` to require `bin/install.js`
@@ -34,6 +34,10 @@ const REPO_ROOT = path.join(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf-8'));
 const installPath = path.resolve(REPO_ROOT, pkg.bin['fvgsd']);
 const { stripStaleGsdHookBlocks } = require(installPath);
+
+// The config dir the fixtures' hook commands run under. The helper only strips
+// blocks whose command runs this dir's hooks/fvgsd/check-update.js.
+const CONFIG_DIR = '/Users/USER/.codex';
 
 /**
  * Parse the TOML output line-structurally so assertions check shape, not
@@ -117,29 +121,29 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
   for (const [shape, block] of Object.entries(SHAPES)) {
     test(`${shape}: stripped when terminated by trailing newline`, () => {
       const input = `[history]\npersistence = "save-all"\n${block}\n`;
-      assertStripped(stripStaleGsdHookBlocks(input), shape, 'with trailing newline');
+      assertStripped(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), shape, 'with trailing newline');
     });
 
     test(`${shape}: stripped when at end-of-file without trailing newline`, () => {
       // The reporter's repro: stale block sits at the very end with no \n.
       const input = `[history]\npersistence = "save-all"\n${block}`;
-      assertStripped(stripStaleGsdHookBlocks(input), shape, 'no trailing newline');
+      assertStripped(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), shape, 'no trailing newline');
     });
   }
 
   test('Shape 1 (legacy gsd-update-check): preserved when terminated by trailing newline', () => {
     const input = `[history]\npersistence = "save-all"\n${LEGACY_NAME_SHAPE}\n`;
-    assert.strictEqual(stripStaleGsdHookBlocks(input), input);
+    assert.strictEqual(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), input);
   });
 
   test('Shape 1 (legacy gsd-update-check): preserved when at end-of-file without trailing newline', () => {
     const input = `[history]\npersistence = "save-all"\n${LEGACY_NAME_SHAPE}`;
-    assert.strictEqual(stripStaleGsdHookBlocks(input), input);
+    assert.strictEqual(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), input);
   });
 
   test('returns input unchanged when no GSD hook block is present', () => {
     const benign = '[history]\npersistence = "save-all"\n';
-    const out = stripStaleGsdHookBlocks(benign);
+    const out = stripStaleGsdHookBlocks(benign, { configDir: CONFIG_DIR });
     assert.strictEqual(out, benign, 'helper must be a no-op when no GSD reference exists');
     const benignShape = parseTomlShape(out);
     assert.strictEqual(benignShape.keys.get('history.persistence'), 'save-all',
@@ -186,11 +190,11 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
   for (const [variation, block] of Object.entries(VARIATIONS)) {
     test(`variation stripped: ${variation}`, () => {
       const input = `[history]\npersistence = "save-all"\n${block}\n`;
-      assertStripped(stripStaleGsdHookBlocks(input), variation, 'with trailing newline');
+      assertStripped(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), variation, 'with trailing newline');
     });
     test(`variation stripped at EOF without trailing newline: ${variation}`, () => {
       const input = `[history]\npersistence = "save-all"\n${block}`;
-      assertStripped(stripStaleGsdHookBlocks(input), variation, 'no trailing newline');
+      assertStripped(stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR }), variation, 'no trailing newline');
     });
   }
 
@@ -204,7 +208,7 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
       'command = "node /Users/USER/my-hook.js"',
       '',
     ].join('\n');
-    const out = stripStaleGsdHookBlocks(input);
+    const out = stripStaleGsdHookBlocks(input, { configDir: CONFIG_DIR });
     const shape = parseTomlShape(out);
     assert.ok(
       shape.tableHeaders.includes('[[hooks.UserPromptSubmit]]'),
@@ -220,7 +224,7 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
   test('Shape 4 strip does not leave an orphaned [[hooks.SessionStart]] header', () => {
     // Shape 4 is stripped before Shape 3 specifically to avoid this.
     const block = SHAPES['Shape 4 (nested [[hooks.SessionStart]] + [[hooks.SessionStart.hooks]])'];
-    const out = stripStaleGsdHookBlocks(`[history]\npersistence = "save-all"\n${block}`);
+    const out = stripStaleGsdHookBlocks(`[history]\npersistence = "save-all"\n${block}`, { configDir: CONFIG_DIR });
     const outShape = parseTomlShape(out);
     const orphan = outShape.tableHeaders.find((h) => /hooks\.SessionStart/.test(h));
     assert.strictEqual(orphan, undefined,

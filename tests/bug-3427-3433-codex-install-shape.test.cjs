@@ -100,7 +100,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
       '[[hooks.SessionStart]]',
       '[[hooks.SessionStart.hooks]]',
       'type = "command"',
-      'command = "node /tmp/legacy/.codex/hooks/fvgsd/check-update.js"',
+      `command = "node ${codexHome.replace(/\\/g, '/')}/hooks/fvgsd/check-update.js"`,
       '',
     ].join('\n');
     fs.writeFileSync(path.join(codexHome, 'config.toml'), configToml);
