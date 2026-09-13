@@ -689,7 +689,7 @@ jobs:
               echo "- Version \`v${VERSION}\` (stream: \`${TAG}\`)"
               echo "- SDK bundled inside the CC tarball at:"
               echo "  - \`sdk/dist/cli.js\` (loose tree, consumed by \`bin/fvgsd-sdk.js\` shim)"
-              echo "  - \`sdk-bundle/fvgsd-sdk.tgz\` (recoverable artifact)"
+              echo "  - \`sdk-bundle/fvgsd-sdk.tgz\` (built and verified in this job; not uploaded)"
               echo "- Git tag \`v${VERSION}\` pushed"
               echo "- GitHub Release \`v${VERSION}\` created"
               if [ "$ACTION" = "hotfix" ]; then
