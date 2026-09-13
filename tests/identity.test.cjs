@@ -44,3 +44,16 @@ test('identity and its bins map are frozen', () => {
   assert.equal(Object.isFrozen(IDENTITY), true);
   assert.equal(Object.isFrozen(IDENTITY.bins), true);
 });
+
+test('runtime formatter and artifact layout derive from the identity', () => {
+  const { formatGsdSlash } = require('../get-shit-done/bin/lib/runtime-slash.cjs');
+  const { resolveRuntimeArtifactLayout } = require('../get-shit-done/bin/lib/runtime-artifact-layout.cjs');
+  assert.equal(formatGsdSlash('help 1', 'claude'), `/${IDENTITY.commandPrefix}-help 1`);
+  assert.equal(formatGsdSlash('help', 'gemini'), `/${IDENTITY.commandPrefix}:help`);
+  assert.equal(formatGsdSlash('/vgsd:help', 'codex'), `$${IDENTITY.commandPrefix}-help`);
+  const layout = resolveRuntimeArtifactLayout('claude', '/tmp/fvgsd-layout', 'local');
+  assert.deepEqual(layout.kinds.map((kind) => [kind.kind, kind.prefix, kind.destSubpath]), [
+    ['commands', `${IDENTITY.commandPrefix}-`, `commands/${IDENTITY.commandPrefix}`],
+    ['agents', IDENTITY.agentPrefix, 'agents'],
+  ]);
+});

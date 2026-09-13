@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const childProcess = require('child_process');
+const IDENTITY = require('../identity.cjs');
 const { VibeStore } = require('./store.cjs');
 const { createDefaultRegistry, renderCommand } = require('./adapters.cjs');
 const { formatGsdSlash } = require('../runtime-slash.cjs');
@@ -65,7 +66,7 @@ class VibeOrchestrator {
           git: {
             candidate_branches: true,
             worktrees: 'auto',
-            worktree_root: '.fvgsd-vibe/worktrees',
+            worktree_root: IDENTITY.vibeWorktreeRoot,
             promotion_strategy: 'fast-forward',
             multi_machine: false,
             remote: 'origin',
@@ -575,7 +576,7 @@ class VibeOrchestrator {
       `Persist additional candidate artifacts under: ${context.persistence.outputs}\n\n` +
       `Completion: ${context.completion_command}\n` +
       `Promotion is human-controlled and separate: ${context.promotion_command}\n\n` +
-      `Do not edit .planning-fvgsd-vibe or .fvgsd-vibe from the candidate branch. Tools do not communicate with each other; all handoff is through persisted repository state.\n`;
+      `Do not edit ${IDENTITY.vibeStateDir} or ${IDENTITY.vibeWorktreeRoot.split('/')[0]} from the candidate branch. Tools do not communicate with each other; all handoff is through persisted repository state.\n`;
   }
 
   saveContext(candidateId, context) {

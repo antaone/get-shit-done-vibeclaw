@@ -1927,8 +1927,8 @@ function buildSkillManifest(cwd, skillsDir = null) {
       deprecated: true,
     },
     {
-      root: '.claude/commands/fvgsd',
-      path: path.join(os.homedir(), '.claude', 'commands', 'fvgsd'),
+      root: `.claude/commands/${IDENTITY.commandPrefix}`,
+      path: path.join(os.homedir(), '.claude', 'commands', IDENTITY.commandPrefix),
       scope: 'global',
       kind: 'commands',
     },
@@ -2032,7 +2032,7 @@ function buildSkillManifest(cwd, skillsDir = null) {
     return rootCmp !== 0 ? rootCmp : a.name.localeCompare(b.name);
   });
 
-  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('fvgsd-'));
+  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith(IDENTITY.agentPrefix));
 
   return {
     skills,

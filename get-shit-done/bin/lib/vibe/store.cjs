@@ -4,11 +4,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const IDENTITY = require('../identity.cjs');
 const { execGit } = require('../shell-command-projection.cjs');
 const { parseYaml, stringifyYaml } = require('./yaml.cjs');
 const { VibeError, invariant } = require('./errors.cjs');
 
-const STATE_DIR = '.planning-fvgsd-vibe';
+const STATE_DIR = IDENTITY.vibeStateDir;
 const STORE_DIRS = ['routes', 'workflows', 'runs', 'candidates', 'promotions', 'history', 'locks', 'state'];
 const heldLocks = new Set();
 

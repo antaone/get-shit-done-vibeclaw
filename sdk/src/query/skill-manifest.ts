@@ -181,7 +181,7 @@ export function buildSkillManifest(cwd: string, skillsDir: string | null = null)
     return rootCmp !== 0 ? rootCmp : a.name.localeCompare(b.name);
   });
 
-  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith('fvgsd-'));
+  const gsdSkillsInstalled = skills.some(skill => skill.name.startsWith(IDENTITY.agentPrefix));
 
   return {
     skills,

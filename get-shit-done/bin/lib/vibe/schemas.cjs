@@ -1,5 +1,6 @@
 'use strict';
 
+const IDENTITY = require('../identity.cjs');
 const { invariant, VibeError } = require('./errors.cjs');
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,79}$/;
@@ -24,11 +25,11 @@ function normalizeConfig(value) {
   invariant(git.candidate_branches !== false, 'SCHEMA_INVALID', 'config.git.candidate_branches must be true in schema version 1');
   const worktrees = git.worktrees ?? 'auto';
   invariant(['auto', 'always', 'never'].includes(worktrees), 'SCHEMA_INVALID', 'config.git.worktrees must be auto, always, or never');
-  const worktreeRoot = String(git.worktree_root || '.fvgsd-vibe/worktrees').replace(/\\/g, '/');
+  const worktreeRoot = String(git.worktree_root || IDENTITY.vibeWorktreeRoot).replace(/\\/g, '/');
   invariant(
-    worktreeRoot === '.fvgsd-vibe/worktrees' || worktreeRoot.startsWith('.fvgsd-vibe/worktrees/'),
+    worktreeRoot === IDENTITY.vibeWorktreeRoot || worktreeRoot.startsWith(`${IDENTITY.vibeWorktreeRoot}/`),
     'SCHEMA_INVALID',
-    'config.git.worktree_root must stay under .fvgsd-vibe/worktrees',
+    `config.git.worktree_root must stay under ${IDENTITY.vibeWorktreeRoot}`,
   );
   const promotionStrategy = String(git.promotion_strategy || 'fast-forward');
   invariant(promotionStrategy === 'fast-forward', 'SCHEMA_INVALID', 'Only fast-forward promotion is supported in schema version 1');

@@ -22,6 +22,7 @@
 
 const os = require('os');
 const path = require('path');
+const IDENTITY = require('./identity.cjs');
 
 /**
  * Expand a leading ~ to os.homedir().
@@ -144,7 +145,7 @@ function getGlobalConfigDir(runtime) {
 function getGlobalSkillsBase(runtime) {
   if (runtime === 'cline') return null;
   const configDir = getGlobalConfigDir(runtime);
-  if (runtime === 'hermes') return path.join(configDir, 'skills', 'fvgsd');
+  if (runtime === 'hermes') return path.join(configDir, 'skills', IDENTITY.commandPrefix);
   return path.join(configDir, 'skills');
 }
 

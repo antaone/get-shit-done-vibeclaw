@@ -5,6 +5,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const IDENTITY = require('./identity.cjs');
 const { execGit, platformWriteSync, platformReadSync, platformEnsureDir } = require('./shell-command-projection.cjs');
 const { MODEL_PROFILES, AGENT_TO_PHASE_TYPE, VALID_PHASE_TYPES, AGENT_DEFAULT_TIERS, VALID_AGENT_TIERS, nextTier } = require('./model-profiles.cjs');
 const { MODEL_ALIAS_MAP, RUNTIME_PROFILE_MAP, KNOWN_RUNTIMES, RUNTIMES_WITH_REASONING_EFFORT } = require('./model-catalog.cjs');
@@ -91,7 +92,7 @@ function ensureGsdTempDir() {
   platformEnsureDir(FVGSD_TEMP_DIR);
 }
 
-function reapStaleTempFiles(prefix = 'fvgsd-', { maxAgeMs = 5 * 60 * 1000, dirsOnly = false } = {}) {
+function reapStaleTempFiles(prefix = IDENTITY.tempPrefix, { maxAgeMs = 5 * 60 * 1000, dirsOnly = false } = {}) {
   try {
     ensureGsdTempDir();
     const now = Date.now();
@@ -128,7 +129,7 @@ function output(result, raw, rawValue) {
     if (json.length > 50000) {
       reapStaleTempFiles();
       ensureGsdTempDir();
-      const tmpPath = path.join(FVGSD_TEMP_DIR, `fvgsd-${Date.now()}.json`);
+      const tmpPath = path.join(FVGSD_TEMP_DIR, `${IDENTITY.tempPrefix}${Date.now()}.json`);
       platformWriteSync(tmpPath, json);
       data = '@file:' + tmpPath;
     } else {

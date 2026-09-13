@@ -2,11 +2,14 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../identity.cjs');
 const { VibeOrchestrator } = require('./orchestrator.cjs');
 const { VibeStore, atomicWrite } = require('./store.cjs');
 const { VibeError, invariant } = require('./errors.cjs');
 const { formatGsdSlash } = require('../runtime-slash.cjs');
 const git = require('./git.cjs');
+
+const COMMAND_PREFIX_RE = new RegExp(`^${IDENTITY.commandPrefix}(?::|-)`);
 
 const LIFECYCLE_ENTRIES = Object.freeze({
   'new-project': Object.freeze({ workflow: 'project-bootstrap', stage: 'project' }),
@@ -169,7 +172,7 @@ function migrateLegacyPlanningCommands(projectRoot, options = {}) {
 function normalizeCommand(value) {
   let command = String(value || '').trim().toLowerCase();
   command = command.replace(/^\$/, '').replace(/^\//, '');
-  command = command.replace(/^fvgsd(?::|-)/, '');
+  command = command.replace(COMMAND_PREFIX_RE, '');
   command = command.replace(/^gsd(?::|-)/, '');
   invariant(/^[a-z][a-z0-9-]*$/.test(command), 'COMMAND_INVALID', `Invalid fvgsd command '${value || ''}'`);
   return command;
@@ -229,7 +232,7 @@ function commandWorkflow(entry) {
           'candidate summary written',
           'all candidate changes committed when tracked',
         ],
-        gsd: { command: `fvgsd:${entry.command}` },
+        gsd: { command: `${IDENTITY.commandPrefix}:${entry.command}` },
       },
     },
   };

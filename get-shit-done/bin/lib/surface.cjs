@@ -21,6 +21,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const IDENTITY = require('./identity.cjs');
 const { platformWriteSync } = require('./shell-command-projection.cjs');
 
 const {
@@ -34,7 +35,7 @@ const {
 const { CLUSTERS, allClusteredSkills } = require('./clusters.cjs');
 const { findInstallSourceRoot } = require('./runtime-artifact-layout.cjs');
 
-const SURFACE_FILE_NAME = '.fvgsd-surface.json';
+const SURFACE_FILE_NAME = IDENTITY.surfaceFile;
 
 // ---------------------------------------------------------------------------
 // State IO
@@ -324,7 +325,7 @@ function _syncGsdDir(stagedDir, destDir, kind, manifest) {
 
   // Normalize: allow legacy string context for backward-compat with internal callers
   const kindName = (typeof kind === 'string') ? kind : kind.kind;
-  const kindPrefix = (typeof kind === 'object' && kind !== null) ? kind.prefix : 'fvgsd-';
+  const kindPrefix = (typeof kind === 'object' && kind !== null) ? kind.prefix : IDENTITY.agentPrefix;
 
   if (kindName === 'skills') {
     // Skills kind: work with directories, not files.
@@ -360,7 +361,7 @@ function _syncGsdDir(stagedDir, destDir, kind, manifest) {
     // For agents dir: only fvgsd-* files
     const destEntries = fs.readdirSync(destDir).filter(f => f.endsWith('.md'));
     for (const file of destEntries) {
-      if (kindName === 'agents' && !file.startsWith('fvgsd-')) continue;
+      if (kindName === 'agents' && !file.startsWith(IDENTITY.agentPrefix)) continue;
       if (!stagedFiles.has(file)) {
         try { fs.unlinkSync(path.join(destDir, file)); } catch {}
       }

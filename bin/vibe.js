@@ -5,6 +5,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const sourceCore = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'lib', 'vibe', 'index.cjs');
 const installedCore = path.resolve(__dirname, 'lib', 'vibe', 'index.cjs');
+const corePath = fs.existsSync(sourceCore) ? sourceCore : installedCore;
+// identity.cjs sits next to the vibe/ core directory, in the repository and in an install alike.
+const IDENTITY = require(path.join(path.dirname(corePath), '..', 'identity.cjs'));
 const {
   VibeOrchestrator,
   VibeError,
@@ -12,7 +15,7 @@ const {
   inspectVibeEntry,
   migrateLegacyPlanningCommands,
   prepareVibeEntry,
-} = require(fs.existsSync(sourceCore) ? sourceCore : installedCore);
+} = require(corePath);
 
 function takeFlag(tokens, name) {
   const index = tokens.indexOf(name);
@@ -54,28 +57,29 @@ function assertNoArgs(tokens) {
 }
 
 function help() {
+  const bin = IDENTITY.bins.vibe;
   return `VibeClaw repository orchestration
 
 Usage:
-  vibe init [--project <dir>] [--json]
-  vibe entry inspect <fvgsd-command> [--runtime <runtime>]
-  vibe entry migrate <fvgsd-command> [--runtime <runtime>] [--dry-run]
-  vibe entry prepare <fvgsd-command> [--runtime <runtime>] [--tool <tool> ...] [--run <run>] [--id <run>] [--multi-machine --remote <name>]
-  vibe mode show|local|multi-machine [--remote <name>]
-  vibe route list|show <name>|use <name>
-  vibe run start <workflow> [--id <run>] [--route <route>] [--base <commit>]
-  vibe run resume <run> | show [run] | list
-  vibe status [--run <run>] [--json]
-  vibe next [--run <run>] [--prepare] [--tool <tool>]
-  vibe stage prepare <stage> [--run <run>] [--tool <tool>]
-  vibe stage launch <candidate> [--execute]
-  vibe stage complete <candidate> [--summary <text>] [--artifact <path> ...]
-  vibe context [candidate] [--json]
-  vibe candidates [stage] [--run <run>] [--json]
-  vibe promote <candidate> [--replace]
-  vibe history [--run <run>] [--stage <stage>]
-  vibe cleanup <candidate> [--delete-branch]
-  vibe tool list|detect
+  ${bin} init [--project <dir>] [--json]
+  ${bin} entry inspect <fvgsd-command> [--runtime <runtime>]
+  ${bin} entry migrate <fvgsd-command> [--runtime <runtime>] [--dry-run]
+  ${bin} entry prepare <fvgsd-command> [--runtime <runtime>] [--tool <tool> ...] [--run <run>] [--id <run>] [--multi-machine --remote <name>]
+  ${bin} mode show|local|multi-machine [--remote <name>]
+  ${bin} route list|show <name>|use <name>
+  ${bin} run start <workflow> [--id <run>] [--route <route>] [--base <commit>]
+  ${bin} run resume <run> | show [run] | list
+  ${bin} status [--run <run>] [--json]
+  ${bin} next [--run <run>] [--prepare] [--tool <tool>]
+  ${bin} stage prepare <stage> [--run <run>] [--tool <tool>]
+  ${bin} stage launch <candidate> [--execute]
+  ${bin} stage complete <candidate> [--summary <text>] [--artifact <path> ...]
+  ${bin} context [candidate] [--json]
+  ${bin} candidates [stage] [--run <run>] [--json]
+  ${bin} promote <candidate> [--replace]
+  ${bin} history [--run <run>] [--stage <stage>]
+  ${bin} cleanup <candidate> [--delete-branch]
+  ${bin} tool list|detect
 
 Every lifecycle and inspection command supports --json. Managed launch is optional;
 without --execute, stage launch prints the command and leaves execution to the operator.`;
@@ -150,7 +154,7 @@ function main(argv = process.argv.slice(2)) {
   if (command === 'entry') {
     const action = tokens.shift();
     const fvgsdCommand = tokens.shift();
-    if (!fvgsdCommand) throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|migrate|prepare <fvgsd-command>');
+    if (!fvgsdCommand) throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} entry inspect|migrate|prepare <fvgsd-command>`);
     const cwd = path.resolve(project || process.cwd());
     if (action === 'inspect') {
       const runtime = takeOption(tokens, '--runtime');
@@ -223,7 +227,7 @@ function main(argv = process.argv.slice(2)) {
       ].join('\n'));
       return 0;
     }
-    throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe entry inspect|migrate|prepare <fvgsd-command>');
+    throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} entry inspect|migrate|prepare <fvgsd-command>`);
   }
   const orchestrator = createOrchestrator(project, command === 'init');
   let result;
@@ -244,7 +248,7 @@ function main(argv = process.argv.slice(2)) {
     assertNoArgs(tokens);
     if (action === 'show') result = orchestrator.mode();
     else if (action === 'local' || action === 'multi-machine') result = orchestrator.setMode(action, { remote });
-    else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe mode show|local|multi-machine [--remote <name>]');
+    else throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} mode show|local|multi-machine [--remote <name>]`);
     emit(result, json, (value) => `Coordination mode: ${value.mode}\nRemote: ${value.remote}`);
     return 0;
   }
@@ -265,7 +269,7 @@ function main(argv = process.argv.slice(2)) {
       assertNoArgs(tokens);
       result = orchestrator.useRoute(name);
       emit(result, json, (route) => `Default route: ${route.name}`);
-    } else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe route list|show <name>|use <name>');
+    } else throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} route list|show <name>|use <name>`);
     return 0;
   }
 
@@ -293,7 +297,7 @@ function main(argv = process.argv.slice(2)) {
       assertNoArgs(tokens);
       result = orchestrator.listRuns();
       emit(result, json, (runs) => runs.map((run) => `${run.id}\t${run.workflow}\t${run.route}\t${run.status}`).join('\n'));
-    } else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe run start|resume|show|list');
+    } else throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} run start|resume|show|list`);
     return 0;
   }
 
@@ -349,7 +353,7 @@ function main(argv = process.argv.slice(2)) {
         summary, artifacts, durationSeconds, estimatedCost, inputTokens, outputTokens, notes, rating,
       });
       emit(result, json, prettyCandidate);
-    } else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe stage prepare|launch|complete');
+    } else throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} stage prepare|launch|complete`);
     return 0;
   }
 
@@ -402,7 +406,7 @@ function main(argv = process.argv.slice(2)) {
     const registry = createDefaultRegistry();
     if (action === 'list') result = registry.list();
     else if (action === 'detect') result = registry.detect({ env: process.env, probeExecutables: true });
-    else throw new VibeError('ARGUMENT_INVALID', 'Usage: vibe tool list|detect');
+    else throw new VibeError('ARGUMENT_INVALID', `Usage: ${IDENTITY.bins.vibe} tool list|detect`);
     assertNoArgs(tokens);
     emit(result, json, (value) => Array.isArray(value)
       ? value.map((tool) => `${tool.id}\t${tool.display_name}`).join('\n')

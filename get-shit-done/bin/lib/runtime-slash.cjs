@@ -6,8 +6,9 @@
  * ROADMAP.md entries, verify/validate fix hints, error messages, etc.).
  *
  * VibeClaw installs GSD commands under the collision-free `fvgsd` namespace.
- * The legacy `gsd` prefix is still accepted as input here so persisted data
- * from an older install can be upgraded in place, but it is never emitted.
+ * The legacy `vgsd` and `gsd` prefixes are still accepted as input here so
+ * persisted data from an older install can be upgraded in place, but they are
+ * never emitted.
  * This module is the only place runtime output should decide which invocation
  * shape to emit.
  *
@@ -19,14 +20,19 @@
  * loader derives namespaces from directories.
  */
 
+const IDENTITY = require('./identity.cjs');
+
+const COMMAND_PREFIX_RE = new RegExp(`^[/$]?(?:${IDENTITY.commandPrefix}|vgsd|gsd)[-:]`, 'i');
+
 function formatGsdSlash(commandName, runtime) {
   if (typeof commandName !== 'string') return commandName;
   if (commandName === '') return commandName;
 
   // Strip any existing leading prefix so the helper is idempotent and accepts
   // both legacy `/fvgsd:<name>` and canonical hyphen-form input (plus the bare
-  // `gsd:<name>` shorthand and codex `$fvgsd-<name>` shell-var input).
-  const stripped = commandName.replace(/^[/$]?(?:fvgsd|gsd)[-:]/i, '');
+  // `gsd:<name>` shorthand, legacy `vgsd` prefixes and codex `$fvgsd-<name>`
+  // shell-var input).
+  const stripped = commandName.replace(COMMAND_PREFIX_RE, '');
   // If the regex matched nothing (no prefix), the input is already a bare name.
   const bare = stripped === commandName ? commandName : stripped;
   // Defensive: a degenerate input like `/fvgsd:`, `fvgsd-`, or whitespace-only
@@ -49,10 +55,10 @@ function formatGsdSlash(commandName, runtime) {
     // Codex skills are invoked as $fvgsd-<cmd> (skill syntax). The command
     // token is lowercased because shell-var identifiers are conventionally
     // lowercase; matches the convertCodexSlash() projection in bin/install.js.
-    return `$fvgsd-${token.toLowerCase()}${tail}`;
+    return `$${IDENTITY.commandPrefix}-${token.toLowerCase()}${tail}`;
   }
-  if (rt === 'gemini') return `/fvgsd:${token}${tail}`;
-  return `/fvgsd-${token}${tail}`;
+  if (rt === 'gemini') return `/${IDENTITY.commandPrefix}:${token}${tail}`;
+  return `/${IDENTITY.commandPrefix}-${token}${tail}`;
 }
 
 /**

@@ -15,11 +15,12 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('./identity.cjs');
 const { execGit: execGitSeam } = require('./shell-command-projection.cjs');
 const { VibeStore } = require('./vibe/store.cjs');
 const { VibeError } = require('./vibe/errors.cjs');
 
-const SMART_BRANCH_PREFIX = 'fvgsd/';
+const SMART_BRANCH_PREFIX = IDENTITY.branchPrefix;
 const METADATA_VERSION = 1;
 const ALLOWED_CANDIDATE_STATUSES = new Set(['prepared', 'running']);
 
@@ -157,7 +158,7 @@ function executionId(env, options = {}) {
 }
 
 function metadataDirectory(commonDir) {
-  return path.join(commonDir, 'fvgsd', 'executions');
+  return path.join(commonDir, ...IDENTITY.executionsDir.split('/'));
 }
 
 function metadataPath(commonDir, branch) {
@@ -773,7 +774,7 @@ function discoverStandaloneExecutions(projectRoot, options = {}) {
   }
 
   const refs = invokeGit(
-    ['for-each-ref', '--format=%(refname:short)\t%(objectname)', 'refs/heads/fvgsd/'],
+    ['for-each-ref', '--format=%(refname:short)\t%(objectname)', `refs/heads/${IDENTITY.branchPrefix}`],
     repo.root,
     options.gitOptions,
   );

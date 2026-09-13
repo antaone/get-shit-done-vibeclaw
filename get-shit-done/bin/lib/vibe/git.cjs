@@ -2,8 +2,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../identity.cjs');
 const { execGit: execGitSeam } = require('../shell-command-projection.cjs');
 const { VibeError, invariant } = require('./errors.cjs');
+
+// Top-level directory of the candidate worktree root; kept out of Git through info/exclude.
+const VIBE_PRIVATE_DIR = IDENTITY.vibeWorktreeRoot.split('/')[0];
+const COMMAND_PREFIX_RE = new RegExp(`^${IDENTITY.commandPrefix}(?::|-)`);
 
 function invoke(args, cwd, options = {}) {
   const exec = options.execGit || execGitSeam;
@@ -84,7 +89,7 @@ function remoteRefHead(cwd, remote, ref, options = {}) {
 
 function normalizeHandoffCommand(candidate) {
   let command = String(candidate.contract && candidate.contract.gsd && candidate.contract.gsd.command || '').trim().toLowerCase();
-  command = command.replace(/^\$/, '').replace(/^\//, '').replace(/^fvgsd(?::|-)/, '');
+  command = command.replace(/^\$/, '').replace(/^\//, '').replace(COMMAND_PREFIX_RE, '');
   invariant(/^[a-z][a-z0-9-]*$/.test(command), 'HANDOFF_COMMAND_INVALID', `Candidate '${candidate.id}' has no portable fvgsd command`);
   return command;
 }
@@ -291,7 +296,7 @@ function prepareCandidateWorktree({ projectRoot, baseCommit, branch, worktreePat
   const repoRoot = ensureRepository(projectRoot, options);
   const base = resolveCommit(repoRoot, baseCommit, options);
   invariant(!branchHead(repoRoot, branch, options), 'BRANCH_EXISTS', `Candidate branch '${branch}' already exists`);
-  assertPathWithin(path.join(repoRoot, '.fvgsd-vibe', 'worktrees'), worktreePath, 'Candidate worktree');
+  assertPathWithin(path.join(repoRoot, ...IDENTITY.vibeWorktreeRoot.split('/')), worktreePath, 'Candidate worktree');
   assertNoSymlinkAncestors(repoRoot, worktreePath, 'Candidate worktree');
   invariant(!fs.existsSync(worktreePath), 'WORKTREE_EXISTS', `Candidate worktree path already exists: ${worktreePath}`);
   fs.mkdirSync(path.dirname(worktreePath), { recursive: true });
@@ -335,7 +340,7 @@ function isAllowedDirtyPath(line, allowedPaths) {
 
 function protectedChanges(projectRoot, baseCommit, resultCommit, options = {}) {
   const output = requireGit(
-    ['diff', '--name-only', `${baseCommit}..${resultCommit}`, '--', '.planning-fvgsd-vibe', '.fvgsd-vibe'],
+    ['diff', '--name-only', `${baseCommit}..${resultCommit}`, '--', IDENTITY.vibeStateDir, VIBE_PRIVATE_DIR],
     projectRoot,
     'GIT_DIFF_FAILED',
     'Could not validate protected orchestration paths',
@@ -385,10 +390,10 @@ function completeCandidateGit(candidate, options = {}) {
 function sourceDirty(projectRoot, options = {}) {
   const pathspecs = [
     '.',
-    ':(exclude).planning-fvgsd-vibe',
-    ':(exclude).planning-fvgsd-vibe/**',
-    ':(exclude).fvgsd-vibe',
-    ':(exclude).fvgsd-vibe/**',
+    `:(exclude)${IDENTITY.vibeStateDir}`,
+    `:(exclude)${IDENTITY.vibeStateDir}/**`,
+    `:(exclude)${VIBE_PRIVATE_DIR}`,
+    `:(exclude)${VIBE_PRIVATE_DIR}/**`,
   ];
   const output = requireGit(
     ['status', '--porcelain', '--untracked-files=all', '--', ...pathspecs],
@@ -514,11 +519,11 @@ function ensurePrivateWorktreeExclude(projectRoot, options = {}) {
   const excludePath = path.isAbsolute(result.stdout) ? result.stdout : path.resolve(projectRoot, result.stdout);
   fs.mkdirSync(path.dirname(excludePath), { recursive: true });
   const current = fs.existsSync(excludePath) ? fs.readFileSync(excludePath, 'utf8') : '';
-  if (current.split(/\r?\n/).map((line) => line.trim()).includes('.fvgsd-vibe/')) {
+  if (current.split(/\r?\n/).map((line) => line.trim()).includes(`${VIBE_PRIVATE_DIR}/`)) {
     return { updated: false, path: excludePath };
   }
   const prefix = current && !current.endsWith('\n') ? '\n' : '';
-  fs.appendFileSync(excludePath, `${prefix}.fvgsd-vibe/\n`, 'utf8');
+  fs.appendFileSync(excludePath, `${prefix}${VIBE_PRIVATE_DIR}/\n`, 'utf8');
   return { updated: true, path: excludePath };
 }
 

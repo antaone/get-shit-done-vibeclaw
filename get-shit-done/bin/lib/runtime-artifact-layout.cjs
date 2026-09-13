@@ -11,12 +11,16 @@
 
 const path = require('path');
 const fs = require('fs');
+const IDENTITY = require('./identity.cjs');
 
 const {
   stageSkillsForProfile,
   stageAgentsForProfile,
   stageSkillsForRuntimeAsSkills,
 } = require('./install-profiles.cjs');
+
+// Name prefix of fvgsd-owned command and skill entries.
+const COMMAND_ENTRY_PREFIX = `${IDENTITY.commandPrefix}-`;
 
 // ---------------------------------------------------------------------------
 // Lazy installer exports (avoids FVGSD_TEST_MODE env mutation at module load)
@@ -78,7 +82,7 @@ function getInstallExports() {
 function findInstallSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
   if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, '.fvgsd-source');
+    const markerPath = path.join(runtimeConfigDir, IDENTITY.sourceFile);
     if (fs.existsSync(markerPath)) {
       try {
         const src = fs.readFileSync(markerPath, 'utf8').trim();
@@ -114,7 +118,7 @@ function findInstallSourceRoot(runtimeConfigDir) {
 function findAgentsSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
   if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, '.fvgsd-source');
+    const markerPath = path.join(runtimeConfigDir, IDENTITY.sourceFile);
     if (fs.existsSync(markerPath)) {
       try {
         const src = fs.readFileSync(markerPath, 'utf8').trim();
@@ -227,56 +231,56 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
     case 'claude':
       if (scope === 'local') {
         kinds = [
-          commandsKind('commands/fvgsd', 'fvgsd-', configDir),
-          agentsKind('agents', 'fvgsd-', configDir),
+          commandsKind(`commands/${IDENTITY.commandPrefix}`, COMMAND_ENTRY_PREFIX, configDir),
+          agentsKind('agents', IDENTITY.agentPrefix, configDir),
         ];
       } else {
-        kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
+        kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToClaudeSkill', 'claude', configDir)];
       }
       break;
 
     case 'cursor':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToCursorSkill', 'cursor', configDir)];
       break;
 
     case 'gemini':
-      kinds = [commandsKind('commands/fvgsd', 'fvgsd-', configDir)];
+      kinds = [commandsKind(`commands/${IDENTITY.commandPrefix}`, COMMAND_ENTRY_PREFIX, configDir)];
       break;
 
     case 'codex':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToCodexSkill', 'codex', configDir)];
       break;
 
     case 'copilot':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToCopilotSkill', 'copilot', configDir)];
       break;
 
     case 'antigravity':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToAntigravitySkill', 'antigravity', configDir)];
       break;
 
     case 'windsurf':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToWindsurfSkill', 'windsurf', configDir)];
       break;
 
     case 'augment':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToAugmentSkill', 'augment', configDir)];
       break;
 
     case 'trae':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToTraeSkill', 'trae', configDir)];
       break;
 
     case 'qwen':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToClaudeSkill', 'qwen', configDir)];
       break;
 
     case 'hermes':
-      kinds = [skillsKind('skills/fvgsd', '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
+      kinds = [skillsKind(`skills/${IDENTITY.commandPrefix}`, '', 'convertClaudeCommandToClaudeSkill', 'hermes', configDir)];
       break;
 
     case 'codebuddy':
-      kinds = [skillsKind('skills', 'fvgsd-', 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
+      kinds = [skillsKind('skills', COMMAND_ENTRY_PREFIX, 'convertClaudeCommandToCodebuddySkill', 'codebuddy', configDir)];
       break;
 
     case 'cline':
@@ -284,11 +288,11 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
       break;
 
     case 'opencode':
-      kinds = [commandsKind('command', 'fvgsd-', configDir)];
+      kinds = [commandsKind('command', COMMAND_ENTRY_PREFIX, configDir)];
       break;
 
     case 'kilo':
-      kinds = [commandsKind('command', 'fvgsd-', configDir)];
+      kinds = [commandsKind('command', COMMAND_ENTRY_PREFIX, configDir)];
       break;
 
     default:

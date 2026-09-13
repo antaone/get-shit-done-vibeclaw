@@ -4962,10 +4962,10 @@ function installCodexConfig(targetDir, agentsSrc) {
 
   for (const file of agentEntries) {
     let content = fs.readFileSync(path.join(agentsSrc, file), 'utf8');
-    // Replace full .claude/get-shit-done prefix so path resolves to the Codex
-    // GSD install before generic .claude → .codex conversion rewrites it.
-    content = content.replace(/~\/\.claude\/fvgsd\//g, codexGsdPath);
-    content = content.replace(/\$HOME\/\.claude\/fvgsd\//g, codexGsdPath);
+    // Replace the full .claude/<install folder>/ prefix so the path resolves to the
+    // Codex install before the generic .claude → .codex conversion rewrites it.
+    content = content.replaceAll(`~/.claude/${IDENTITY.installDir}/`, codexGsdPath);
+    content = content.replaceAll(`$HOME/.claude/${IDENTITY.installDir}/`, codexGsdPath);
     // Route TOML emit through the same full Claude→Codex conversion pipeline
     // used on the `.md` emit path (#2639). Covers: slash-command rewrites,
     // $ARGUMENTS → {{FVGSD_ARGS}}, /clear removal, anchored and bare .claude/
@@ -6894,7 +6894,7 @@ function uninstall(isGlobal, runtime = 'claude') {
 
   // Remove profile marker so a clean reinstall defaults to full surface.
   try {
-    fs.unlinkSync(path.join(targetDir, '.fvgsd-profile'));
+    fs.unlinkSync(path.join(targetDir, IDENTITY.profileFile));
     removedCount++;
   } catch {}
 
@@ -7412,7 +7412,7 @@ function configureOpencodePermissions(isGlobal = true, configDir = null) {
   // Use ~ shorthand if it's in the default location, otherwise use full path
   const defaultConfigDir = path.join(os.homedir(), '.config', 'opencode');
   const gsdPath = opencodeConfigDir === defaultConfigDir
-    ? '~/.config/opencode/fvgsd/*'
+    ? `~/.config/opencode/${IDENTITY.installDir}/*`
     : `${opencodeConfigDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
 
   let modified = false;
@@ -7560,8 +7560,8 @@ function verifyFileInstalled(filePath, description) {
 // Local Patch Persistence
 // ──────────────────────────────────────────────────────
 
-const PATCHES_DIR_NAME = 'fvgsd-local-patches';
-const MANIFEST_NAME = 'fvgsd-file-manifest.json';
+const PATCHES_DIR_NAME = IDENTITY.patchesDir;
+const MANIFEST_NAME = IDENTITY.manifestFile;
 
 /**
  * Compute SHA256 hash of file contents
@@ -7867,7 +7867,7 @@ function saveLocalPatches(configDir, pristineCtx) {
   }
 
   const patchesDir = path.join(configDir, PATCHES_DIR_NAME);
-  const pristineDir = path.join(configDir, 'fvgsd-pristine');
+  const pristineDir = path.join(configDir, IDENTITY.pristineDir);
   const modified = [];
   const pristineHashes = {};
 
