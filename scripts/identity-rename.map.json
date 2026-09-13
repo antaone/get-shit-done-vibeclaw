@@ -13,6 +13,7 @@
     "scripts/identity-rename.map.json",
     "tests/rename-identity-script.test.cjs",
     "get-shit-done/bin/lib/identity.cjs",
+    "get-shit-done/bin/lib/runtime-slash.cjs",
     "sdk/src/identity.ts",
     "tests/identity.test.cjs",
     "tests/fvgsd-coexistence.install.test.cjs",
