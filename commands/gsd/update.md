@@ -1,6 +1,6 @@
 ---
 name: fvgsd:update
-description: Update GSD to latest version with changelog display
+description: Update fvgsd from the local clone it was installed from
 argument-hint: "[--sync | --reapply]"
 allowed-tools:
   - Read
@@ -9,7 +9,6 @@ allowed-tools:
   - Bash
   - Glob
   - Grep
-  - AskUserQuestion
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
@@ -24,7 +23,7 @@ Parse the JSON response:
 </execution_branch_guard>
 
 <objective>
-Check for GSD updates, install if available, and display what changed.
+Update fvgsd from the local clone it was installed from, and show the commits pulled.
 
 Routes to the update workflow which handles:
 - Locating the local clone fvgsd was installed from
@@ -41,7 +40,7 @@ Routes to the update workflow which handles:
 <flags>
 - **--sync**: Sync managed GSD skills across runtime roots so multi-runtime users stay aligned after an update. Runs the sync-skills workflow (--from, --to, --dry-run, --apply flags supported).
 - **--reapply**: Reapply local modifications after a GSD update. Uses three-way comparison (pristine baseline, user-modified backup, newly installed version) to merge user customizations back. Runs the reapply-patches workflow.
-- **(no flag)**: Standard update — check for new version, show changelog, install.
+- **(no flag)**: Standard update — pull the local clone, reinstall, show the commits pulled.
 </flags>
 
 <process>

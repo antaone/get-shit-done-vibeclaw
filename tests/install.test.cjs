@@ -592,10 +592,4 @@ describe('Kilo source integration assertions', () => {
   test('uninstall cleans Kilo permissions from the resolved target dir', () => {
     assert.ok(src.includes('const configPath = resolveKiloConfigPath(targetDir);'));
   });
-
-  // The "update workflow checks preferred custom config dirs" test that used
-  // to live here was removed (fvgsd identity Task 10): the rewritten
-  // get-shit-done/workflows/update.md locates the install via .fvgsd-source
-  // (recorded at install time) rather than probing PREFERRED_CONFIG_DIR /
-  // KILO_CONFIG / kilo.jsonc from the workflow itself.
 });

@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // gsd-hook-version: {{FVGSD_VERSION}}
 // Background worker spawned by fvgsd/check-update.js (SessionStart hook).
-// Checks for GSD updates and stale hooks, writes result to cache file.
+// Checks for stale hooks and writes the result to the cache file. Does NOT
+// check for GSD updates against npm — fvgsd is not published there; see the
+// `result` comment below and get-shit-done/bin/check-latest-version.cjs.
 // Receives paths via environment variables set by the parent hook.
 //
 // Using a separate file (rather than node -e '<inline code>') avoids the
@@ -88,10 +90,10 @@ if (configDir) {
 }
 
 // fvgsd is not published to npm, so there is no "latest" to query — the
-// update check is disabled (fvgsd identity Task 10; see
-// get-shit-done/bin/check-latest-version.cjs for the deterministic-check
-// script this mirrors). /fvgsd-update pulls the clone recorded in
-// .fvgsd-source instead of comparing against a registry version.
+// update check is disabled (see get-shit-done/bin/check-latest-version.cjs
+// for the deterministic-check script this mirrors). /fvgsd-update pulls the
+// clone recorded in .fvgsd-source instead of comparing against a registry
+// version.
 const result = {
   update_available: false,
   installed,

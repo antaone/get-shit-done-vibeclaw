@@ -2,8 +2,7 @@
 'use strict';
 
 /**
- * Deterministic latest-version check for /fvgsd-update (#2992; disabled for
- * fvgsd identity Task 10).
+ * Deterministic latest-version check for /fvgsd-update (#2992).
  *
  * This script used to run `npm view fvgsd version` so the executing model
  * could not shortcut the prescription and invent npm queries against
@@ -19,10 +18,6 @@
  * record, never on console prose. See CONTRIBUTING.md "Prohibited: Raw
  * Text Matching on Test Outputs".
  */
-
-// Retained for documentation of what package fvgsd would be if it were ever
-// published — not used by checkLatestVersion() below, which never queries npm.
-const PACKAGE_NAME = 'fvgsd';
 
 const CHECK_REASON = Object.freeze({
   OK: 'ok',
@@ -49,14 +44,13 @@ function main() {
   const r = checkLatestVersion();
   if (json) {
     process.stdout.write(JSON.stringify(r) + '\n');
-  } else if (r.ok) {
-    process.stdout.write(r.version + '\n');
   } else {
     process.stderr.write(`check-latest-version: ${r.reason}: ${r.detail}\n`);
   }
-  process.exit(r.ok ? 0 : 1);
+  // r.ok is always false — checkLatestVersion() only ever returns DISABLED.
+  process.exit(1);
 }
 
 if (require.main === module) main();
 
-module.exports = { checkLatestVersion, CHECK_REASON, PACKAGE_NAME };
+module.exports = { checkLatestVersion, CHECK_REASON };

@@ -763,14 +763,13 @@ describe('uninstall settings cleanup preserves user hooks', () => {
 describe('Codex legacy gsd-update-check migration', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
 
-  test('install.js has structural logic to strip stale Codex hook blocks', () => {
-    // Was previously keyed off the literal 'fvgsd-update-check' string, which
-    // only happened to appear in the (unrelated) update-cache filename literal
-    // — coincidental, not load-bearing. The actual stale-hook-stripping logic
-    // is stripStaleGsdHookBlocks(), a structural TOML-section parser (see
-    // bin/install.js); assert on its presence instead (fvgsd identity Task 10).
-    assert.ok(src.includes('function stripStaleGsdHookBlocks('));
-  });
+  // The test that used to live here ('install.js strips legacy
+  // gsd-update-check hook blocks') asserted src.includes('fvgsd-update-check')
+  // — coincidentally true only because that literal also appeared in the
+  // (unrelated) update-cache filename, not because it tested the actual
+  // stale-hook-stripping logic. stripStaleGsdHookBlocks()'s export and
+  // behavior — including the "legacy gsd-update-check name" preservation
+  // case — are already covered by tests/bug-2866-codex-strip-no-trailing-newline.test.cjs.
 
   test('migration regex removes LF legacy hook block', () => {
     const legacyBlock = ['[features]', 'codex_hooks = true', '',

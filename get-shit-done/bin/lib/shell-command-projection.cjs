@@ -359,6 +359,33 @@ function formatSdkPathDiagnostic({ shimDir, platform, runDir }) {
   return { shimLocationLine, actionLines, shellActions, npxNoteLines, isNpx, isWin32 };
 }
 
+/**
+ * Strip HTTP Basic-Auth-style credentials (userinfo) from a URL before it is
+ * written to disk or displayed — e.g. a git remote URL recorded in
+ * `.fvgsd-source`. An HTTPS remote can embed a token as
+ * `https://user:token@host/org/repo.git` (or GitHub's
+ * `https://token@host/...` form); leaving that on disk would copy the
+ * credential into a plain-JSON file anything on the machine can read.
+ *
+ * Only URLs the WHATWG `URL` parser accepts have a userinfo component to
+ * strip. SCP-style SSH remotes (`git@host:org/repo.git`) have no scheme and
+ * fail to parse as a URL, so they pass through unchanged — there is no
+ * embedded secret in that form to begin with.
+ */
+function stripUrlCredentials(url) {
+  if (typeof url !== 'string' || url.length === 0) return url;
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (!parsed.username && !parsed.password) return url;
+  parsed.username = '';
+  parsed.password = '';
+  return parsed.toString();
+}
+
 // ─── Subprocess dispatch ──────────────────────────────────────────────────────
 
 function _spawnResult(result, program) {
@@ -539,6 +566,7 @@ module.exports = {
   projectPersistentPathExportActions,
   buildWindowsShimTriple,
   formatSdkPathDiagnostic,
+  stripUrlCredentials,
   execGit,
   execNpm,
   execTool,

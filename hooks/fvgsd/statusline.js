@@ -399,8 +399,13 @@ function runStatusline() {
           gsdUpdate = '\x1b[33m⬆ /gsd:update\x1b[0m │ ';
         }
         if (cache.stale_hooks && cache.stale_hooks.length > 0) {
-          // If installed version is ahead of npm latest, this is a dev install.
-          // Running /gsd:update would downgrade — show a contextual warning instead.
+          // fvgsd never sets cache.latest (npm querying is disabled — see
+          // hooks/fvgsd/check-update-worker.js), so this always resolves to
+          // false below and the plain stale-hooks warning always shows.
+          // Left in place rather than removed: harmless, and it still does
+          // the right thing if a cache written by an older fvgsd version
+          // (from before the update check was disabled) is still on disk
+          // with a real `latest` value.
           const isDevInstall = (() => {
             if (!cache.installed || !cache.latest || cache.latest === 'unknown') return false;
             const parseV = v => v.replace(/^v/, '').split('.').map(Number);

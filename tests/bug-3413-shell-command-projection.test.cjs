@@ -187,3 +187,45 @@ describe('bug #3439: shell projection module owns managed-hook policy and legacy
     );
   });
 });
+
+describe('stripUrlCredentials strips embedded userinfo before a remote URL is recorded (.fvgsd-source)', () => {
+  const { stripUrlCredentials } = projection;
+
+  test('strips a user:password pair from an HTTPS remote', () => {
+    assert.equal(
+      stripUrlCredentials('https://user:token@github.com/org/repo.git'),
+      'https://github.com/org/repo.git',
+    );
+  });
+
+  test('strips a GitHub-style token-as-username remote (no password)', () => {
+    assert.equal(
+      stripUrlCredentials('https://ghp_aBc123@github.com/org/repo.git'),
+      'https://github.com/org/repo.git',
+    );
+  });
+
+  test('strips userinfo from an ssh:// URL too — the field is informational only, never executed', () => {
+    assert.equal(
+      stripUrlCredentials('ssh://git@github.com/org/repo.git'),
+      'ssh://github.com/org/repo.git',
+    );
+  });
+
+  test('leaves an HTTPS remote with no credentials unchanged', () => {
+    assert.equal(
+      stripUrlCredentials('https://github.com/org/repo.git'),
+      'https://github.com/org/repo.git',
+    );
+  });
+
+  test('leaves SCP-style SSH remotes unchanged (not parseable as a URL, no userinfo to strip)', () => {
+    const scp = 'git@github.com:org/repo.git';
+    assert.equal(stripUrlCredentials(scp), scp);
+  });
+
+  test('passes non-string input through unchanged (e.g. null when there is no origin remote)', () => {
+    assert.equal(stripUrlCredentials(null), null);
+    assert.equal(stripUrlCredentials(undefined), undefined);
+  });
+});

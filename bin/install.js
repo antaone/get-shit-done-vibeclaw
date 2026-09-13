@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const {
   buildWindowsShimTriple: buildWindowsShimTripleFromProjection,
   formatSdkPathDiagnostic: formatSdkPathDiagnosticFromProjection,
+  stripUrlCredentials,
   execGit,
   isManagedHookBasename,
   isManagedHookCommand,
@@ -8886,18 +8887,22 @@ function install(isGlobal, runtime = 'claude', options = {}) {
 
   // Record which clone fvgsd was installed from, so /fvgsd-update can pull
   // and reinstall from it instead of querying npm (fvgsd is not published
-  // there). Best-effort: git metadata is null when unavailable (#2992-family
-  // Task 10; see get-shit-done/workflows/update.md).
+  // there). Best-effort: git metadata is null when unavailable — see
+  // get-shit-done/workflows/update.md.
   const repoRoot = path.resolve(__dirname, '..');
   const gitValue = (args) => {
     const r = execGit(args, { cwd: repoRoot });
     return r.exitCode === 0 ? r.stdout.trim() : null;
   };
+  const remoteUrl = gitValue(['remote', 'get-url', 'origin']);
   fs.writeFileSync(
     path.join(targetDir, IDENTITY.installDir, IDENTITY.sourceFile),
     `${JSON.stringify({
       repo: repoRoot,
-      remote: gitValue(['remote', 'get-url', 'origin']),
+      // Stripped of any embedded userinfo (e.g. an HTTPS token) — nothing
+      // reads this field, it's informational, and it lands in a plain-JSON
+      // file under the install directory.
+      remote: remoteUrl === null ? null : stripUrlCredentials(remoteUrl),
       commit: gitValue(['rev-parse', 'HEAD']),
       runtimes: [runtime],
       scope: isGlobal ? 'global' : 'local',

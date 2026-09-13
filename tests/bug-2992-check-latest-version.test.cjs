@@ -9,10 +9,8 @@ const { CHECK_REASON } = require(
 );
 
 // checkLatestVersion() itself (disabled, never spawns) is covered by
-// tests/fvgsd-update-check-disabled.test.cjs. This file now only pins the
-// CHECK_REASON enum shape — the success/error-path tests that exercised the
-// npm-spawning code (#2992) were removed with that code (fvgsd identity
-// Task 10): fvgsd is not published to npm, so those paths are unreachable.
+// tests/fvgsd-update-check-disabled.test.cjs. This file only pins the
+// CHECK_REASON enum shape.
 
 describe('Bug #2992: deterministic latest-version check', () => {
   test('CHECK_REASON enum exposes the documented codes, including DISABLED', () => {
