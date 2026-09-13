@@ -14,7 +14,7 @@ const path = require('node:path');
 const { isDeepStrictEqual } = require('node:util');
 const { spawnSync } = require('node:child_process');
 
-const { INSTALL_SCRIPT, RUNTIME_META, installerEnv } = require('./helpers/install-shared.cjs');
+const { INSTALL_SCRIPT, RUNTIME_META, installerEnv, runMinimalInstall } = require('./helpers/install-shared.cjs');
 const { seedForeignInstalls, listFiles, snapshot } = require('./helpers/foreign-installs.cjs');
 const MATCHERS = require('./fixtures/foreign-installer-matchers.json');
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
@@ -119,4 +119,66 @@ describe('fvgsd installs next to gsd and vgsd', () => {
       }
     });
   }
+});
+
+// allow-test-rule: source-text-is-the-product
+// Agent/workflow/reference .md files are the installed AI instructions — their
+// text content IS what an executing agent reads and follows. Parsing out the
+// file references a shipped prompt points at, and checking each one resolves
+// on disk, tests the deployed contract (does the hint land on fvgsd's own
+// installed copy), not an implementation-internal string literal.
+describe('shipped prompt references anchor into the installed fvgsd folder', () => {
+  test('install-relative get-shit-done/... references resolve under the installed fvgsd tree', () => {
+    const { configDir, root } = runMinimalInstall({ runtime: 'claude', scope: 'global' });
+    try {
+      // `runMinimalInstall` (scope: 'global') passes the same temp dir as both
+      // HOME and --config-dir, so bin/install.js's computePathPrefix() collapses
+      // to the literal string "$HOME/" — i.e. `$HOME/<segment>` in installed
+      // content resolves to `path.join(configDir, <segment>)` on this disk.
+      const ANCHORED_REF = new RegExp(`\\$HOME/${IDENTITY.installDir}/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*`, 'g');
+
+      // Installed location (relative to configDir) for every shipped file this
+      // fix touches, and the minimum count of anchored fvgsd references each
+      // must carry once the fix lands (pre-existing anchors + the ones the fix
+      // adds). This is the non-vacuous guard: today's bare `get-shit-done/...`
+      // mentions aren't anchored yet, so several counts below are not yet met.
+      const CHECKS = [
+        { installed: ['agents', 'fvgsd-planner.md'], minRefs: 22 },
+        { installed: ['skills', 'fvgsd-surface', 'SKILL.md'], minRefs: 4 },
+        { installed: [IDENTITY.installDir, 'workflows', 'autonomous.md'], minRefs: 2 },
+        { installed: [IDENTITY.installDir, 'workflows', 'plan-phase.md'], minRefs: 13 },
+        { installed: [IDENTITY.installDir, 'workflows', 'settings-integrations.md'], minRefs: 1 },
+        { installed: [IDENTITY.installDir, 'workflows', 'execute-phase.md'], minRefs: 16 },
+        { installed: [IDENTITY.installDir, 'workflows', 'ingest-docs.md'], minRefs: 3 },
+        { installed: [IDENTITY.installDir, 'workflows', 'code-review.md'], minRefs: 1 },
+        { installed: [IDENTITY.installDir, 'workflows', 'help', 'modes', 'full.md'], minRefs: 1 },
+        { installed: [IDENTITY.installDir, 'references', 'planner-graphify-auto-update.md'], minRefs: 2 },
+        { installed: [IDENTITY.installDir, 'references', 'mvp-concepts.md'], minRefs: 1 },
+      ];
+
+      for (const { installed, minRefs } of CHECKS) {
+        const label = installed.join('/');
+        const abs = path.join(configDir, ...installed);
+        assert.ok(fs.existsSync(abs), `installed copy missing: ${label}`);
+
+        const content = fs.readFileSync(abs, 'utf8');
+        // Strip a single trailing '.' — sentence-ending punctuation right after
+        // a file extension (e.g. "...tdd.md.") is not part of the path.
+        const refs = (content.match(ANCHORED_REF) || []).map((ref) => ref.replace(/\.$/, ''));
+
+        assert.ok(
+          refs.length >= minRefs,
+          `${label}: expected >= ${minRefs} anchored fvgsd references, found ${refs.length} (${JSON.stringify(refs)})`,
+        );
+
+        for (const ref of refs) {
+          const relParts = ref.slice('$HOME/'.length).split('/');
+          const target = path.join(configDir, ...relParts);
+          assert.ok(fs.existsSync(target), `${label}: reference "${ref}" does not resolve to a real file (${target})`);
+        }
+      }
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

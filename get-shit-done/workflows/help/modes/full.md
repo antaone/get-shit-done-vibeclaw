@@ -542,7 +542,7 @@ Show GSD command help at the tier you ask for.
 - `<topic>` — emit only the matching section (e.g. `/fvgsd:help debug`, `/fvgsd:help workflow`)
 - `--brief <topic>` — compact scoped lookup: signature + one-line summary of the matched section
 
-Every topic output starts with a `**Topic:** \`<alias>\` → \`<heading>\` *(scope: full | compact)*` preamble so resolved routing is visible. See `get-shit-done/workflows/help/modes/topic.md` for the full alias table. Unknown topics print the recognized list.
+Every topic output starts with a `**Topic:** \`<alias>\` → \`<heading>\` *(scope: full | compact)*` preamble so resolved routing is visible. See `~/.claude/fvgsd/workflows/help/modes/topic.md` for the full alias table. Unknown topics print the recognized list.
 
 Usage: `/fvgsd:help`
 Usage: `/fvgsd:help --brief`

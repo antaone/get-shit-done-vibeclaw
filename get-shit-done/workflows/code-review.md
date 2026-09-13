@@ -537,7 +537,7 @@ if [ "$FIX_FLAG" = "true" ]; then
   # The fix workflow is the canonical implementation for all fix logic:
   # fvgsd-code-fixer agent dispatch, --auto iteration loop, REVIEW-FIX.md commit,
   # and result presentation. Do not duplicate that logic here.
-  Workflow(workflow="get-shit-done/workflows/code-review-fix.md", args="${FIX_ARGS}")
+  Workflow(workflow="~/.claude/fvgsd/workflows/code-review-fix.md", args="${FIX_ARGS}")
 
   # Exit after fix workflow completes — present_results is for review-only output.
   # The fix workflow has its own present_results step.

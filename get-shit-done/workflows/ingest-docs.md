@@ -195,7 +195,7 @@ Agent({
 
     <required_reading>
     - agents/fvgsd-doc-synthesizer.md
-    - get-shit-done/references/doc-conflict-engine.md
+    - ~/.claude/fvgsd/references/doc-conflict-engine.md
     </required_reading>
   "
 })

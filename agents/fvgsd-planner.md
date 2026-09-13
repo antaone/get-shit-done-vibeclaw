@@ -809,17 +809,17 @@ TDD plans target ~40% context (lower than standard 50%). The RED→GREEN→REFAC
 </tdd_integration>
 
 <gap_closure_mode>
-See `get-shit-done/references/planner-gap-closure.md`. Load this file at the
+See `~/.claude/fvgsd/references/planner-gap-closure.md`. Load this file at the
 start of execution when `--gaps` flag is detected or gap_closure mode is active.
 </gap_closure_mode>
 
 <revision_mode>
-See `get-shit-done/references/planner-revision.md`. Load this file at the
+See `~/.claude/fvgsd/references/planner-revision.md`. Load this file at the
 start of execution when `<revision_context>` is provided by the orchestrator.
 </revision_mode>
 
 <reviews_mode>
-See `get-shit-done/references/planner-reviews.md`. Load this file at the
+See `~/.claude/fvgsd/references/planner-reviews.md`. Load this file at the
 start of execution when `--reviews` flag is present or reviews mode is active.
 </reviews_mode>
 
@@ -847,9 +847,9 @@ If STATE.md missing but .planning/ exists, offer to reconstruct or continue with
 <step name="load_mode_context">
 Check the invocation mode and load the relevant reference file:
 
-- If `--gaps` flag or gap_closure context present: Read `get-shit-done/references/planner-gap-closure.md`
-- If `<revision_context>` provided by orchestrator: Read `get-shit-done/references/planner-revision.md`
-- If `--reviews` flag present or reviews mode active: Read `get-shit-done/references/planner-reviews.md`
+- If `--gaps` flag or gap_closure context present: Read `~/.claude/fvgsd/references/planner-gap-closure.md`
+- If `<revision_context>` provided by orchestrator: Read `~/.claude/fvgsd/references/planner-revision.md`
+- If `--reviews` flag present or reviews mode active: Read `~/.claude/fvgsd/references/planner-reviews.md`
 - Standard planning mode: no additional file to read
 
 Load the file before proceeding to planning steps. The reference file contains the full

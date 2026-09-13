@@ -516,7 +516,7 @@ Display the review result summary (score from UI-REVIEW.md if produced). Continu
 
 ## Smart Discuss
 
-> Full instructions are in `get-shit-done/references/autonomous-smart-discuss.md`. Read that file now and follow it exactly.
+> Full instructions are in `~/.claude/fvgsd/references/autonomous-smart-discuss.md`. Read that file now and follow it exactly.
 
 Smart discuss is an autonomous-optimized variant of `fvgsd-discuss-phase`. It proposes grey area answers in batch tables — the user accepts or overrides per area — and writes an identical CONTEXT.md to what discuss-phase produces.
 

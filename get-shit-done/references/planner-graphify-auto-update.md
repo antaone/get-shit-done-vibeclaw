@@ -1,6 +1,6 @@
 # Graphify Auto-Update — Status Surfacing
 
-> Documents how `fvgsd-planner` and `fvgsd-phase-researcher` surface the opt-in graphify auto-update state (issue #3347). The status surface lives inside `graphifyStatus()` in `get-shit-done/bin/lib/graphify.cjs`; no planner-side prompt changes are required.
+> Documents how `fvgsd-planner` and `fvgsd-phase-researcher` surface the opt-in graphify auto-update state (issue #3347). The status surface lives inside `graphifyStatus()` in `~/.claude/fvgsd/bin/lib/graphify.cjs`; no planner-side prompt changes are required.
 
 ## Why this exists
 
@@ -27,7 +27,7 @@ The hook writes `status: "running"` synchronously **before** detach, so the next
 
 ## How the planner surfaces it (zero new prompt content)
 
-`graphifyStatus()` in `get-shit-done/bin/lib/graphify.cjs` reads `.last-build-status.json` and folds the `running` / `failed` states into the existing `stale: true` signal:
+`graphifyStatus()` in `~/.claude/fvgsd/bin/lib/graphify.cjs` reads `.last-build-status.json` and folds the `running` / `failed` states into the existing `stale: true` signal:
 
 ```javascript
 const autoUpdateStale =

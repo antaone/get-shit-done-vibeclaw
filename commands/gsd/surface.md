@@ -49,7 +49,7 @@ Parse the first token of $ARGUMENTS:
 ## list / status
 
 Call `listSurface(runtimeConfigDir, manifest, CLUSTERS)` from
-`get-shit-done/bin/lib/surface.cjs`. Display:
+`~/.claude/fvgsd/bin/lib/surface.cjs`. Display:
 
 ```
 Enabled (N skills, ~T tokens):

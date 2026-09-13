@@ -314,7 +314,7 @@ fvgsd-sdk query commit "docs(${padded_phase}): generate context from PRD" --file
 **If `--ingest <path-or-glob>` provided:**
 
 1. Display banner: `GSD ► ADR Ingest Express Path` with `{INGEST_PATH}` and `{INGEST_FORMAT}`.
-2. Parse each resolved ADR through `get-shit-done/bin/lib/adr-parser.cjs` (`--input`, `--format`) and collect normalized records.
+2. Parse each resolved ADR through `~/.claude/fvgsd/bin/lib/adr-parser.cjs` (`--input`, `--format`) and collect normalized records.
 3. Status gate: reject `superseded`/`rejected`/`deprecated`; warn on `proposed`; missing status defaults to `accepted`.
 4. Empty-decisions fallback: if all parsed ADRs have zero `decisions[]`, emit `ADR ingest produced no locked decisions; fall back to discuss-phase for this phase.` and exit with `/fvgsd:discuss-phase {N}` guidance.
 5. Generate CONTEXT.md using `<domain>`, `<decisions>`, `<canonical_refs>`, `<specifics>`, `<deferred>`, `<scope_fence>`, map `consequences_positive[]` to Success Criteria and `consequences_negative[]` to Risk Summary, and include `**Source:** ADR Ingest Express Path ({INGEST_PATH})`.

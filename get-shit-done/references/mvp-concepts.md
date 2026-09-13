@@ -20,7 +20,7 @@ Canonical domain terms for the concepts named below live in [CONTEXT.md](../../C
 If you're looking for the canonical statement of a concept, this is where to find it:
 
 - **MVP Mode resolution chain** — `workflows/plan-phase.md` Step 1 (CLI flag → roadmap → config → false). Mirrored in `execute-phase.md` and `verify-work.md`.
-- **`**Mode:** mvp` parser** — `get-shit-done/bin/lib/roadmap.cjs` (`searchPhaseInContent` + `cmdRoadmapAnalyze`). Workflows compare against the parser output, never re-parse.
+- **`**Mode:** mvp` parser** — `~/.claude/fvgsd/bin/lib/roadmap.cjs` (`searchPhaseInContent` + `cmdRoadmapAnalyze`). Workflows compare against the parser output, never re-parse.
 - **User Story regex** — `/^As a .+, I want to .+, so that .+\.$/` — applied at runtime by `fvgsd-verifier` (the user-story-format guard) and `fvgsd-mvp-phase` (interactive validation).
 - **Behavior-Adding Task predicate** — `references/execute-mvp-tdd.md` (the canonical three-check definition). Applied at runtime by `fvgsd-executor`.
 - **Walking Skeleton gate condition** — `workflows/plan-phase.md` (Phase 1 + new project + `--mvp` + no prior summaries → emit `SKELETON.md`).

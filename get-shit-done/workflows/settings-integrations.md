@@ -25,7 +25,7 @@ log the plaintext value. The workflow follows these rules:
   other than `config.json` itself.
 - **`config-set` output is masked** for keys in the secret set
   (`brave_search`, `firecrawl`, `exa_search`) — see
-  `get-shit-done/bin/lib/secrets.cjs`.
+  `~/.claude/fvgsd/bin/lib/secrets.cjs`.
 - **Agent-type and CLI slug validation.** `agent_skills.<agent-type>` and
   `review.models.<cli>` keys are matched against `^[a-zA-Z0-9_-]+$`. Inputs
   containing path separators (`/`, `\`, `..`), whitespace, or shell
