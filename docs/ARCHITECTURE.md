@@ -488,19 +488,20 @@ UI-SPEC.md (per phase) ───────────────────
 
 ```
 ~/.claude/                          # Claude Code (global install)
-├── skills/fvgsd-*/SKILL.md           # Global skills (authoritative roster: docs/INVENTORY.md)
-├── commands/gsd/*.md               # Local Claude installs use slash commands instead of global skills
-├── get-shit-done/
-│   ├── bin/fvgsd-tools.cjs           # CLI utility
+├── skills/fvgsd-*/SKILL.md         # Global skills (authoritative roster: docs/INVENTORY.md)
+├── commands/fvgsd/*.md             # Local Claude installs use slash commands instead of global skills
+├── fvgsd/
+│   ├── bin/fvgsd-tools.cjs         # CLI utility
 │   ├── bin/lib/*.cjs               # Domain modules (authoritative roster: docs/INVENTORY.md)
 │   ├── workflows/*.md              # Workflow definitions (authoritative roster: docs/INVENTORY.md)
 │   ├── references/*.md             # Shared reference docs (authoritative roster: docs/INVENTORY.md)
-│   └── templates/                  # Planning artifact templates
-├── agents/*.md                     # Agent definitions (authoritative roster: docs/INVENTORY.md)
-├── hooks/*.js                      # Node.js hooks (statusline, guards, monitors, update check)
-├── hooks/*.sh                      # Shell hooks (session state, commit validation, phase boundary)
-├── settings.json                   # Hook registrations
-└── VERSION                         # Installed version number
+│   ├── templates/                  # Planning artifact templates
+│   └── VERSION                     # Installed version number
+├── agents/fvgsd-*.md               # Agent definitions (authoritative roster: docs/INVENTORY.md)
+├── hooks/fvgsd/*.js                # Node.js hooks (statusline, guards, monitors, update check)
+├── hooks/fvgsd/*.sh                # Shell hooks (session state, commit validation, phase boundary)
+├── hooks/fvgsd/package.json        # CommonJS marker for the hooks above
+└── settings.json                   # Hook registrations
 ```
 
 Equivalent paths for other runtimes:
@@ -617,7 +618,7 @@ The installer (`bin/install.js`, ~10,700 lines) handles:
   - Windsurf: Skills-first with Windsurf rule references
   - Trae: Skills-first install to `~/.trae` / `./.trae` with no `settings.json` or hook integration
   - Qwen Code: Skills-first with Qwen-branded path and prompt rewrites
-  - Hermes Agent: Category-based skills under `skills/gsd/`
+  - Hermes Agent: Category-based skills under `skills/fvgsd/`
   - CodeBuddy: Skills-first with CodeBuddy path and prompt rewrites
   - Cline: Writes `.clinerules` for rule-based integration
   - Augment Code: Skills-first with full skill conversion and config management
@@ -737,10 +738,10 @@ The migration-specific ownership and source snapshots live in
 
 | Runtime | Global root | Local root | Invocation surface | Agent surface | Config and hooks |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code | `~/.claude` | `./.claude` | Global `skills/fvgsd-*/SKILL.md`; local `commands/gsd/*.md` | `agents/fvgsd-*.md` | `settings.json` hook and statusLine entries |
+| Claude Code | `~/.claude` | `./.claude` | Global `skills/fvgsd-*/SKILL.md`; local `commands/fvgsd/*.md` | `agents/fvgsd-*.md` | `settings.json` hook and statusLine entries |
 | OpenCode | `~/.config/opencode` | `./.opencode` | `command/fvgsd-*.md` | `agents/fvgsd-*.md` | `opencode.json` or `opencode.jsonc`; no GSD hooks |
 | Kilo | `~/.config/kilo` | `./.kilo` | `command/fvgsd-*.md` | `agents/fvgsd-*.md` | `kilo.json` or `kilo.jsonc`; no GSD hooks |
-| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/gsd/*.toml` | `agents/fvgsd-*.md` | `settings.json` feature flag, hooks, and statusline |
+| Gemini CLI | `~/.gemini` | `./.gemini` | `commands/fvgsd/*.toml` | `agents/fvgsd-*.md` | `settings.json` feature flag, hooks, and statusline |
 | Codex | `~/.codex` | `./.codex` | `skills/fvgsd-*/SKILL.md` | `agents/` source markdown plus per-agent TOML | `config.toml` `[agents.fvgsd-*]`, `[features].hooks` (canonical; legacy alias `codex_hooks` is recognized and migrated forward on reinstall, #3566), and hook tables |
 | GitHub Copilot | `~/.copilot` | `./.github` | `skills/fvgsd-*/SKILL.md` and `copilot-instructions.md` | `.agent.md` files | No GSD hooks or statusline |
 | Antigravity | `~/.gemini/antigravity` | `./.agent` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Gemini-style `settings.json` hook entries when installed by GSD |
@@ -749,7 +750,7 @@ The migration-specific ownership and source snapshots live in
 | Augment Code | `~/.augment` | `./.augment` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | No GSD hooks or statusline |
 | Trae | `~/.trae` | `./.trae` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Rule references under `rules/`; no GSD hooks |
 | Qwen Code | `~/.qwen` | `./.qwen` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
-| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/gsd/DESCRIPTION.md` plus `skills/gsd/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
+| Hermes Agent | `~/.hermes` | `./.hermes` | `skills/fvgsd/DESCRIPTION.md` plus `skills/fvgsd/*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
 | CodeBuddy | `~/.codebuddy` | `./.codebuddy` | `skills/fvgsd-*/SKILL.md` | `agents/fvgsd-*.md` | Common GSD settings and hook entries where supported |
 | Cline | `~/.cline` | project root | `.clinerules` | Rules only | No GSD hooks or statusline |
 

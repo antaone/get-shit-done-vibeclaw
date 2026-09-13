@@ -67,7 +67,7 @@ declared promoted input. Every other public command—including `quick`, `fast`,
 `debug`, `autonomous`, reviews, audits, documentation, spikes, and future
 commands—gets a durable single-command workflow automatically.
 
-The installed command calls the runtime-local `get-shit-done/bin/vibe.cjs`, so
+The installed command calls the runtime-local `fvgsd/bin/vibe.cjs`, so
 it works wherever `fvgsd` was installed; a globally linked `fvgsd-vibe` executable is
 optional.
 

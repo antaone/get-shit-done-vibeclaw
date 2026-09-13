@@ -52,13 +52,13 @@ Use `--local` instead of `--global` for a project-scoped install.
 The installer performs a clean wipe-and-replace of fvgsd-managed directories only:
 
 - `~/.claude/fvgsd/` — workflows, references, templates
-- `~/.claude/commands/fvgsd/` — slash commands
+- `~/.claude/skills/fvgsd-*/` — skills (a `--local` install writes `.claude/commands/fvgsd/` instead)
 - `~/.claude/agents/fvgsd-*.md` — fvgsd agents
 - `~/.claude/hooks/fvgsd/` — compiled hooks
 
 **What is preserved:**
 - Custom agents not prefixed with `fvgsd-`
-- Custom commands outside `commands/fvgsd/`
+- Custom skills not prefixed with `fvgsd-`, and custom commands outside `commands/fvgsd/`
 - Your `CLAUDE.md` files
 - Custom hooks
 
