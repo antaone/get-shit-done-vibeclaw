@@ -508,43 +508,41 @@ describe('generateCodexConfigBlock', () => {
 
 describe('stripGsdFromCodexConfig', () => {
   test('returns null for GSD-only config', () => {
-    const content = `${FVGSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const content = `${FVGSD_CODEX_MARKER}\n\n[agents.fvgsd-executor]\ndescription = "Executes plans"\nconfig_file = "agents/fvgsd-executor.toml"\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.strictEqual(result, null, 'returns null when GSD-only');
   });
 
   test('preserves user content before marker', () => {
-    const content = `[model]\nname = "o3"\n\n${FVGSD_CODEX_MARKER}\n[features]\nmulti_agent = true\n`;
+    const content = `[model]\nname = "o3"\n\n${FVGSD_CODEX_MARKER}\n\n[agents.fvgsd-executor]\ndescription = "Executes plans"\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user section');
     assert.ok(result.includes('name = "o3"'), 'preserves user values');
-    assert.ok(!result.includes('multi_agent'), 'removes GSD content');
+    assert.ok(!result.includes('[agents.fvgsd-executor]'), 'removes GSD content');
     assert.ok(!result.includes(FVGSD_CODEX_MARKER), 'removes marker');
   });
 
-  test('strips injected feature keys without marker', () => {
+  test('keeps multi_agent and default_mode_request_user_input, which fvgsd never writes', () => {
     const content = `[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nother_feature = false\n`;
-    const result = stripGsdFromCodexConfig(content);
-    assert.ok(!result.includes('multi_agent'), 'removes multi_agent');
-    assert.ok(!result.includes('default_mode_request_user_input'), 'removes request_user_input');
-    assert.ok(result.includes('other_feature = false'), 'preserves user features');
+    assert.strictEqual(stripGsdFromCodexConfig(content), content);
   });
 
   test('removes empty [features] section', () => {
-    const content = `[features]\nmulti_agent = true\n[model]\nname = "o3"\n`;
+    // The hooks feature flag fvgsd recorded ownership of is the only key in [features].
+    const ownershipLine = `${require('../get-shit-done/bin/lib/identity.cjs').codexHooksOwnershipPrefix}section`;
+    const content = `[features]\ncodex_hooks = true\n[model]\nname = "o3"\n\n${FVGSD_CODEX_MARKER}\n${ownershipLine}\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(!result.includes('[features]'), 'removes empty features section');
     assert.ok(result.includes('[model]'), 'preserves other sections');
   });
 
-  test('strips injected keys above marker on uninstall', () => {
-    // Case 3 install injects keys into [features] AND appends marker block
+  test('keeps user [features] keys above the marker on uninstall', () => {
     const content = `[model]\nname = "o3"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\nsome_custom_flag = true\n\n${FVGSD_CODEX_MARKER}\n[agents]\nmax_threads = 4\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(result.includes('[model]'), 'preserves user model section');
     assert.ok(result.includes('some_custom_flag = true'), 'preserves user feature');
-    assert.ok(!result.includes('multi_agent'), 'strips injected multi_agent');
-    assert.ok(!result.includes('default_mode_request_user_input'), 'strips injected request_user_input');
+    assert.ok(result.includes('multi_agent = true'), 'keeps multi_agent');
+    assert.ok(result.includes('default_mode_request_user_input = true'), 'keeps request_user_input');
     assert.ok(!result.includes(FVGSD_CODEX_MARKER), 'strips marker');
   });
 

@@ -2978,22 +2978,14 @@ function blankParentTableSections(content) {
     && tomlTableBodyIsBlank(records, section));
 }
 
-// Remove the first `<key> = true` line that is not inside a multiline string.
-function removeTrueKeyLine(content, key) {
-  const pattern = new RegExp(`^${key}[ \\t]*=[ \\t]*true[ \\t]*$`);
-  const record = getTomlLineRecords(content)
-    .find((candidate) => !candidate.startsInMultilineString && pattern.test(candidate.text));
-  return record
-    ? removeCodexConfigRanges(content, [{ start: record.start, end: record.end + record.eol.length }])
-    : content;
-}
-
 /**
  * Remove fvgsd's block from Codex config.toml content (uninstall, and a
- * full → minimal reinstall). The hooks feature key fvgsd recorded ownership of,
- * and the multi_agent / default_mode_request_user_input keys, are removed only
- * while no GSD or VibeClaw marker remains and `foreignHooksRemain` is false,
- * that is, no other install's SessionStart hook is left in hooks.json.
+ * full → minimal reinstall). The hooks feature key fvgsd recorded ownership of
+ * is removed only while no GSD or VibeClaw marker remains and
+ * `foreignHooksRemain` is false, that is, no other install's SessionStart hook
+ * is left in hooks.json. Keys fvgsd never writes, such as multi_agent and
+ * default_mode_request_user_input, belong to the user or another install and
+ * are left as written.
  * A [features] or [agents] table is removed only when this cleanup left it
  * empty. Blank lines change only at the seams of what was removed, so the start
  * and end of the file, and any GSD or VibeClaw region, keep their bytes.
@@ -3005,10 +2997,6 @@ function stripGsdFromCodexConfig(content, { foreignHooksRemain = false } = {}) {
   const ownership = foreignPresent ? null : getManagedCodexHooksOwnership(content);
   const blankBefore = new Set(blankParentTableSections(content).map((section) => section.path));
   let cleaned = stripOwnCodexBlock(stripCodexHooksFeatureAssignments(content, ownership));
-  if (!foreignPresent) {
-    cleaned = removeTrueKeyLine(cleaned, 'multi_agent');
-    cleaned = removeTrueKeyLine(cleaned, 'default_mode_request_user_input');
-  }
   const emptied = blankParentTableSections(cleaned)
     .filter((section) => !blankBefore.has(section.path))
     .map(({ start, end }) => ({ start, end }));

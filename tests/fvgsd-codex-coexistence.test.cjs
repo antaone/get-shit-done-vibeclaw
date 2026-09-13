@@ -113,8 +113,12 @@ test('strip keeps [features] keys in their table and removes only tables its own
   const userEmptyTable = 'model = "gpt-5"\n\n[features]\n\n[tui]\nnotifications = true\n';
   assert.equal(stripGsdFromCodexConfig(`${userEmptyTable}\n${ownBlock}`), userEmptyTable, 'an already-empty table stays');
 
-  const emptiedFeatures = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[features]\nmulti_agent = true\n\n${ownBlock}`);
+  const ownedHooksFlag = `${IDENTITY.codexMarker}\n${IDENTITY.codexHooksOwnershipPrefix}section\n\n[agents.fvgsd-planner]\ndescription = "x"\nconfig_file = "y"\n`;
+  const emptiedFeatures = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[features]\ncodex_hooks = true\n\n${ownedHooksFlag}`);
   assert.deepEqual(parseTomlToObject(emptiedFeatures), { model: 'gpt-5' }, 'a [features] table the cleanup empties is removed');
+
+  const userKeys = 'model = "gpt-5"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\n';
+  assert.equal(stripGsdFromCodexConfig(`${userKeys}\n${ownBlock}`), userKeys, 'keys fvgsd never writes stay in their table');
 
   const emptiedAgents = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[agents]\n${ownBlock}`);
   assert.deepEqual(parseTomlToObject(emptiedAgents), { model: 'gpt-5' }, 'an [agents] table the cleanup empties is removed');

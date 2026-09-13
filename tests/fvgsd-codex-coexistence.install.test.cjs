@@ -132,3 +132,20 @@ test('uninstall removes the hooks feature fvgsd added when no other SessionStart
 
   assert.deepEqual(parseTomlToObject(fs.readFileSync(configPath, 'utf8')), { model: 'gpt-5' });
 });
+
+test('uninstall keeps multi_agent, default_mode_request_user_input and their [features] table, which fvgsd never writes', (t) => {
+  const { root, configDir } = tempCodexHome(t, 'user-feature-keys');
+  const configPath = path.join(configDir, 'config.toml');
+  const original = 'model = "gpt-5"\n\n[features]\nmulti_agent = true\ndefault_mode_request_user_input = true\n';
+  fs.writeFileSync(configPath, original);
+
+  runCodexInstaller(root, configDir);
+  runCodexInstaller(root, configDir, ['--uninstall']);
+
+  const content = fs.readFileSync(configPath, 'utf8');
+  assert.deepEqual(parseTomlToObject(content), {
+    model: 'gpt-5',
+    features: { multi_agent: true, default_mode_request_user_input: true },
+  });
+  assert.equal(content, original);
+});
