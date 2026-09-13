@@ -6656,63 +6656,6 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
 }
 
 /**
- * Clean up orphaned hook registrations from settings.json
- */
-function cleanupOrphanedHooks(settings) {
-  const orphanedHookPatterns = [
-    'fvgsd-notify.sh',  // Removed in v1.6.x
-    'hooks/statusline.js',  // Renamed to fvgsd/statusline.js in v1.9.0
-    'fvgsd-intel-index.js',  // Removed in v1.9.2
-    'fvgsd-intel-session.js',  // Removed in v1.9.2
-    'fvgsd-intel-prune.js',  // Removed in v1.9.2
-  ];
-
-  let cleanedHooks = false;
-
-  // Check all hook event types (Stop, SessionStart, etc.)
-  if (settings.hooks) {
-    for (const eventType of Object.keys(settings.hooks)) {
-      const hookEntries = settings.hooks[eventType];
-      if (Array.isArray(hookEntries)) {
-        // Filter out entries that contain orphaned hooks
-        const filtered = hookEntries.filter(entry => {
-          if (entry.hooks && Array.isArray(entry.hooks)) {
-            // Check if any hook in this entry matches orphaned patterns
-            const hasOrphaned = entry.hooks.some(h =>
-              h.command && orphanedHookPatterns.some(pattern => h.command.includes(pattern))
-            );
-            if (hasOrphaned) {
-              cleanedHooks = true;
-              return false;  // Remove this entry
-            }
-          }
-          return true;  // Keep this entry
-        });
-        settings.hooks[eventType] = filtered;
-      }
-    }
-  }
-
-  if (cleanedHooks) {
-    console.log(`  ${green}✓${reset} Removed orphaned hook registrations`);
-  }
-
-  // Fix #330: Update statusLine if it points to old GSD statusline.js path
-  // Only match the specific old GSD path pattern (hooks/statusline.js),
-  // not third-party statusline scripts that happen to contain 'statusline.js'
-  if (settings.statusLine && settings.statusLine.command &&
-    /hooks[\/\\]statusline\.js/.test(settings.statusLine.command)) {
-    settings.statusLine.command = settings.statusLine.command.replace(
-      /hooks([\/\\])statusline\.js/,
-      'hooks$1gsd-statusline.js'
-    );
-    console.log(`  ${green}✓${reset} Updated statusline path (hooks/statusline.js → hooks/fvgsd/statusline.js)`);
-  }
-
-  return settings;
-}
-
-/**
  * Validate hook field requirements to prevent silent settings.json rejection.
  *
  * Claude Code validates the entire settings file with a strict Zod schema.
@@ -9505,7 +9448,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     persistActiveProfileMarker();
     return;
   }
-  const settings = validateHookFields(cleanupOrphanedHooks(rawSettings));
+  // No orphaned-hook cleanup runs here: fvgsd has no earlier hook layout, and a
+  // flat hooks/<name>.js command in settings.json belongs to the user or another
+  // install (spec, Installer ownership: settings.json).
+  const settings = validateHookFields(rawSettings);
   // #3002 CR: rewrite legacy `node .../fvgsd-*.js` command strings carried over
   // from pre-#2979 installs to use the absolute node binary path. Without this,
   // existing managed hook entries stay bare-`node`-prefixed across reinstalls

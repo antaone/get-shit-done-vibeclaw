@@ -12,6 +12,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
+const { isDeepStrictEqual } = require('node:util');
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { cleanup } = require('./helpers.cjs');
 const { listFiles, snapshot } = require('./helpers/foreign-installs.cjs');
@@ -133,6 +134,29 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
 
     runInstaller(root, ['--claude', '--global', '--config-dir', configDir, '--uninstall']);
     assert.deepEqual(hookCommands(readSettings(configDir)), []);
+  });
+
+  test('claude --global: a user statusLine and a hook entry using the flat hooks/statusline.js path stay unchanged through install and uninstall', (t) => {
+    const root = tempRoot(t, 'user-statusline');
+    const configDir = path.join(root, 'config');
+    const userCommand = (name) => ({ type: 'command', command: `node "${path.join(configDir, 'hooks', name).replace(/\\/g, '/')}"` });
+    // The user's own statusline script, and one entry mixing another user hook
+    // with that same flat-layout path: neither is fvgsd's.
+    const statusLine = userCommand('statusline.js');
+    const mixedEntry = { hooks: [userCommand('session-note.js'), userCommand('statusline.js')] };
+    const seeded = { statusLine, hooks: { SessionStart: [mixedEntry] } };
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(path.join(configDir, 'settings.json'), `${JSON.stringify(seeded, null, 2)}\n`);
+
+    runInstaller(root, ['--claude', '--global', '--config-dir', configDir]);
+    const installed = readSettings(configDir);
+    assert.deepEqual(installed.statusLine, statusLine);
+    assert.equal(installed.hooks.SessionStart.some((entry) => isDeepStrictEqual(entry, mixedEntry)), true, 'install changed or dropped the mixed hook entry');
+
+    runInstaller(root, ['--claude', '--global', '--config-dir', configDir, '--uninstall']);
+    const uninstalled = readSettings(configDir);
+    assert.deepEqual(uninstalled.statusLine, statusLine);
+    assert.deepEqual(hookCommands(uninstalled), hookCommands(seeded));
   });
 
   test('claude --global: the CommonJS marker lives in hooks/fvgsd/, so fvgsd hooks load under an ancestor "type": "module" package.json', (t) => {
