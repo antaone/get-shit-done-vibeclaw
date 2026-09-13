@@ -1,7 +1,7 @@
 /**
  * Regression test for #1736: local Claude install missing commands/gsd/
  *
- * After a fresh local install (`--claude --local`), all /gsd-* commands
+ * After a fresh local install (`--claude --local`), all /fvgsd-* commands
  * except /gsd-help return "Unknown skill: gsd-quick" because
  * .claude/commands/gsd/ is not populated. Claude Code reads local project
  * commands from .claude/commands/gsd/ (the commands/ format), not from

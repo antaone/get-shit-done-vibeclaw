@@ -80,16 +80,16 @@ function walk(dir) {
 
 function simulateHookCopy(hooksSrc, hooksDest) {
   fs.mkdirSync(hooksDest, { recursive: true });
-  for (const entry of fs.readdirSync(hooksSrc)) {
-    const srcFile = path.join(hooksSrc, entry);
+  for (const srcFile of walk(hooksSrc)) {
     if (!fs.statSync(srcFile).isFile()) continue;
-    const destFile = path.join(hooksDest, entry);
-    if (entry.endsWith('.js')) {
+    const destFile = path.join(hooksDest, path.relative(hooksSrc, srcFile));
+    fs.mkdirSync(path.dirname(destFile), { recursive: true });
+    if (srcFile.endsWith('.js')) {
       fs.writeFileSync(destFile, fs.readFileSync(srcFile, 'utf8'));
       try { fs.chmodSync(destFile, 0o755); } catch { /* Windows */ }
     } else {
       fs.copyFileSync(srcFile, destFile);
-      if (entry.endsWith('.sh')) {
+      if (srcFile.endsWith('.sh')) {
         try { fs.chmodSync(destFile, 0o755); } catch { /* Windows */ }
       }
     }

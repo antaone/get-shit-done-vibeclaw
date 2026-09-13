@@ -8,7 +8,7 @@
  * throws.
  *
  * The files in question are NOT user-owned — they are the GSD bundled
- * hooks shipped under `hooks/gsd-*` in the npm package. The fix adds a
+ * hooks shipped under `hooks/fvgsd/*` in the npm package. The fix adds a
  * `bundled-gsd-hook` classification to `classifyPromptUserAction` so the
  * resolver removes them (the installer then writes the fresh bundled
  * versions in their place).
@@ -63,7 +63,7 @@ function writeManifest(root, files) {
 }
 
 // Reporter's exact list of blocked files from the v1.42.2 → v1.42.0 upgrade
-// abort. Each is a real `hooks/gsd-*` file shipped under hooks/ in the npm
+// abort. Each is a real `hooks/fvgsd/*` file shipped under hooks/ in the npm
 // package (verified by `ls hooks/`).
 const BUNDLED_HOOK_RELPATHS = [
   'hooks/fvgsd/check-update-worker.js',
@@ -81,7 +81,7 @@ const BUNDLED_HOOK_RELPATHS = [
 ];
 
 describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () => {
-  test('classifies hooks/gsd-*.js as bundled-gsd-hook → remove', () => {
+  test('classifies hooks/fvgsd/*.js as bundled-gsd-hook → remove', () => {
     const result = classifyPromptUserAction({
       relPath: 'hooks/fvgsd/prompt-guard.js',
     });
@@ -94,7 +94,7 @@ describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () 
     );
   });
 
-  test('classifies hooks/gsd-*.sh as bundled-gsd-hook → remove', () => {
+  test('classifies hooks/fvgsd/*.sh as bundled-gsd-hook → remove', () => {
     const result = classifyPromptUserAction({
       relPath: 'hooks/fvgsd/validate-commit.sh',
     });
@@ -117,7 +117,7 @@ describe('bug #3610: classifyPromptUserAction recognizes bundled GSD hooks', () 
     );
   });
 
-  test('does NOT classify deeper paths under hooks/gsd-* (e.g. hooks/fvgsd/lib/) as bundled-gsd-hook', () => {
+  test('does NOT classify deeper paths under hooks/fvgsd/* (e.g. hooks/fvgsd/lib/) as bundled-gsd-hook', () => {
     // The bundled GSD distribution has hooks/fvgsd/lib/ (helper modules). Those
     // are managed differently — verify the classifier limits itself to
     // top-level hooks/gsd-<name>.<ext> files, not nested directories.
@@ -160,7 +160,7 @@ describe('bug #3610: fresh upgrade with leftover bundled hooks does not throw', 
     assert.deepStrictEqual(
       blockedPaths,
       [...BUNDLED_HOOK_RELPATHS].sort(),
-      'precondition: every leftover hooks/gsd-* should be a prompt-user blocker',
+      'precondition: every leftover hooks/fvgsd/* should be a prompt-user blocker',
     );
 
     // Resolve through the safe-default classifier (passing isTty=false to

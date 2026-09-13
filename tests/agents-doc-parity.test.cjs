@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * For every `agents/gsd-*.md`, assert its agent name appears as a row
+ * For every `agents/fvgsd-*.md`, assert its agent name appears as a row
  * in docs/INVENTORY.md's Agents table. AGENTS.md card presence is NOT
  * enforced — that file is allowed to be a curated subset (primary
  * cards + advanced stubs).

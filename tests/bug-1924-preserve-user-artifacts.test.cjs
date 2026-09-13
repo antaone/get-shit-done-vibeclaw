@@ -29,6 +29,7 @@ const { describe, test, beforeEach, afterEach, before } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('os');
 const { execFileSync } = require('child_process');
 
@@ -88,7 +89,7 @@ describe('#1924: USER-PROFILE.md preserved across re-install (global Claude)', (
     runInstaller(tmpDir);
 
     // Simulate /gsd-profile-user creating USER-PROFILE.md inside get-shit-done/
-    const profilePath = path.join(tmpDir, 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, IDENTITY.installDir, 'USER-PROFILE.md');
     fs.writeFileSync(profilePath, '# My Profile\n\nCustom user content.\n');
 
     assert.ok(
@@ -102,7 +103,7 @@ describe('#1924: USER-PROFILE.md preserved across re-install (global Claude)', (
     runInstaller(tmpDir);
 
     // User runs /gsd-profile-user, creating USER-PROFILE.md
-    const profilePath = path.join(tmpDir, 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, IDENTITY.installDir, 'USER-PROFILE.md');
     const originalContent = '# My Profile\n\nThis is my custom user profile content.\n';
     fs.writeFileSync(profilePath, originalContent);
 
@@ -125,7 +126,7 @@ describe('#1924: USER-PROFILE.md preserved across re-install (global Claude)', (
   test('USER-PROFILE.md is preserved even when get-shit-done/ is wiped and recreated', () => {
     runInstaller(tmpDir);
 
-    const gsdDir = path.join(tmpDir, 'get-shit-done');
+    const gsdDir = path.join(tmpDir, IDENTITY.installDir);
     const profilePath = path.join(gsdDir, 'USER-PROFILE.md');
 
     // Confirm get-shit-done/ was created by install

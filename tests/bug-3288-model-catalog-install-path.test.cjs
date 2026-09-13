@@ -29,6 +29,7 @@ const { describe, test, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 
 const REPO_ROOT = path.join(__dirname, '..');
@@ -210,7 +211,7 @@ module.exports = { catalog };
     // The co-located json must be present after install.
     const colocatedJson = path.join(
       claudeDir,
-      'get-shit-done',
+      IDENTITY.installDir,
       'bin',
       'shared',
       'model-catalog.json',
@@ -232,7 +233,7 @@ module.exports = { catalog };
     // And the installed model-catalog.cjs must be requireable from its install location.
     const installedCjs = path.join(
       claudeDir,
-      'get-shit-done',
+      IDENTITY.installDir,
       'bin',
       'lib',
       'model-catalog.cjs',

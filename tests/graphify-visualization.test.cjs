@@ -495,14 +495,14 @@ describe('regressions', () => {
 
     test('every top-level hooks/*.sh is emitted to hooks/dist/ by the build', () => {
       const topLevelSh = fs
-        .readdirSync(HOOKS_DIR_3579, { withFileTypes: true })
+        .readdirSync(path.join(HOOKS_DIR_3579, 'fvgsd'), { withFileTypes: true })
         .filter((e) => e.isFile() && e.name.endsWith('.sh'))
         .map((e) => e.name);
 
       assert.ok(topLevelSh.length > 0, 'expected at least one top-level hooks/*.sh in source');
 
       const missing = topLevelSh.filter(
-        (sh) => !fs.existsSync(path.join(DIST_DIR_3579, sh))
+        (sh) => !fs.existsSync(path.join(DIST_DIR_3579, 'fvgsd', sh))
       );
       assert.deepStrictEqual(
         missing,
@@ -520,7 +520,7 @@ describe('regressions', () => {
 
     test('hooks/dist/lib/graphify-rebuild.sh exists after build', () => {
       assert.ok(
-        fs.existsSync(path.join(DIST_DIR_3579, 'lib', 'graphify-rebuild.sh')),
+        fs.existsSync(path.join(DIST_DIR_3579, 'fvgsd', 'lib', 'graphify-rebuild.sh')),
         'expected hooks/dist/lib/graphify-rebuild.sh to exist after build (Gap 2)'
       );
     });
@@ -557,7 +557,7 @@ describe('regressions', () => {
     });
 
     test('hooks/fvgsd/lib/graphify-rebuild.sh present at install target', () => {
-      const dest = path.join(tmpDir, 'hooks', 'lib', 'graphify-rebuild.sh');
+      const dest = path.join(tmpDir, 'hooks', 'fvgsd', 'lib', 'graphify-rebuild.sh');
       assert.ok(fs.existsSync(dest), `expected ${dest} to exist after install`);
     });
 

@@ -4,14 +4,14 @@ process.env.FVGSD_TEST_MODE = '1';
 
 /**
  * Regression test for bug #3562 — Codex global install must create a
- * discoverable $gsd-* skill surface.
+ * discoverable $fvgsd-* skill surface.
  *
  * Codex CLI 0.130.0 (the version in the issue report) does NOT auto-discover
  * commands from get-shit-done/workflows/*.md or agents/*.md. It only registers
  * commands from skills/<name>/SKILL.md. Prior installer logic ("Codex now
  * discovers official skills from .agents/skills") was based on an assumption
  * that does not match the shipping Codex CLI behavior, leaving users with
- * workflows on disk and no $gsd-* entrypoints after `npx fvgsd
+ * workflows on disk and no $fvgsd-* entrypoints after `npx fvgsd
  * --codex --global`.
  *
  * Fix: re-wire copyCommandsAsCodexSkills() back into the install dispatch path
@@ -42,7 +42,7 @@ function withCodexHome(codexHome, fn) {
   }
 }
 
-describe('#3562 — Codex install produces discoverable $gsd-* skill surface', { concurrency: false }, () => {
+describe('#3562 — Codex install produces discoverable $fvgsd-* skill surface', { concurrency: false }, () => {
   let tmpRoot;
   let codexHome;
 
@@ -66,7 +66,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
     assert.ok(
       fs.existsSync(skillPath),
       `Codex install must create ${skillPath} so $gsd-help is discoverable. ` +
-        'Without this, Codex CLI 0.130.0 does not expose any $gsd-* command.',
+        'Without this, Codex CLI 0.130.0 does not expose any $fvgsd-* command.',
     );
   });
 
@@ -81,7 +81,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
     assert.equal(frontmatter.name, 'fvgsd-help', 'SKILL.md frontmatter must declare name: gsd-help so $gsd-help resolves');
   });
 
-  test('multiple core $gsd-* skills are produced (not just gsd-help)', () => {
+  test('multiple core $fvgsd-* skills are produced (not just gsd-help)', () => {
     withCodexHome(codexHome, () => install(true, 'codex'));
 
     const skillsDir = path.join(codexHome, 'skills');
@@ -98,7 +98,7 @@ describe('#3562 — Codex install produces discoverable $gsd-* skill surface', {
     // nothing" or "we only generated one accidentally" regressions.
     assert.ok(
       gsdSkills.length >= 10,
-      `Expected >= 10 generated gsd-* skill directories, found ${gsdSkills.length}: ${gsdSkills.join(', ')}`,
+      `Expected >= 10 generated fvgsd-* skill directories, found ${gsdSkills.length}: ${gsdSkills.join(', ')}`,
     );
   });
 

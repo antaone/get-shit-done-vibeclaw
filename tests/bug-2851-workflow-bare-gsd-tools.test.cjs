@@ -151,7 +151,7 @@ describe('bug-2851: workflow files must not call bare `fvgsd-tools` (#2245 sweep
           foundGapAnalysisCall = true;
           assert.match(
             line,
-            /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/fvgsd-tools\.cjs["']?\s+gap-analysis\b/,
+            /\bnode\s+["']?\$HOME\/\.claude\/fvgsd\/bin\/fvgsd-tools\.cjs["']?\s+gap-analysis\b/,
             `gap-analysis call must use canonical absolute-path invocation, got: ${line.trim()}`,
           );
         }

@@ -44,7 +44,7 @@ Currently, Grok Build is only supported via its Claude compatibility layer. This
 - Currently uses a combination of manual processes + this skill.
 
 ### Codex-Style Adaptations Already in Use
-- Many `gsd-*` skills in `~/.agents/skills/` contain a `<codex_skill_adapter>` section at the top.
+- Many `fvgsd-*` skills in `~/.agents/skills/` contain a `<codex_skill_adapter>` section at the top.
 - This adapter translates Claude Code patterns (`AskUserQuestion`, `Task()`) into Codex/Grok-compatible ones (`request_user_input`, `spawn_agent`).
 - This pattern was developed because Grok Build / Codex use a different skill invocation and subagent model than Claude Code.
 
@@ -118,7 +118,7 @@ Design a practical local solution that works for **this user’s four-runtime re
 
 Possible components:
 - A local Grok conversion layer (or extension of existing Codex adapters).
-- Proper `gsd-*` skills under `~/.grok/skills/` with correct Grok frontmatter + `codex_skill_adapter` sections where needed.
+- Proper `fvgsd-*` skills under `~/.grok/skills/` with correct Grok frontmatter + `codex_skill_adapter` sections where needed.
 - Grok-compatible agent definitions (`.md` + any required TOML/config).
 - JSON hook manifests in `~/.grok/hooks/`.
 - Updates to the sync mechanism (`gsd-sync-skills` or a new `gsd-multi-runtime-sync` tool) so one source can deploy cleanly to all four targets.
@@ -215,7 +215,7 @@ Then follow the phased plan in Section 4.
 ### Audit Findings (Phase 1)
 - **Version drift confirmed**: `~/.agents/get-shit-done/` (Grok Build primary) was on 1.38.4; `~/.claude/` on 1.42.2; `~/.codex/` and `~/.gemini/` on 1.41.2.
 - `~/.agents/hooks/` was empty (no hooks active for Grok Build sessions).
-- `grok inspect` successfully discovers 80+ `gsd-*` skills via the `~/.agents/skills/` layout + the existing `<codex_skill_adapter>` blocks.
+- `grok inspect` successfully discovers 80+ `fvgsd-*` skills via the `~/.agents/skills/` layout + the existing `<codex_skill_adapter>` blocks.
 - No `grok` or `agents` runtime existed in installer or sync logic.
 - `~/.grok/` itself contains only the 7 official bundled skills; GSD lives entirely in the shared `~/.agents/` layout.
 
@@ -230,7 +230,7 @@ Then follow the phased plan in Section 4.
 ### Next Steps (for follow-up sessions)
 - Full `gsd install --grok --global` end-to-end (hook projection, agent .toml generation with correct sandbox, skill wrapping with adapters, statusline, etc.). Currently the flag is recognized but some codex-specific install branches may need `|| runtime === 'grok'`.
 - Run `gsd update --sync --from claude --to grok --apply` (or `--from grok --to claude`) once the runtime is fully wired, to keep the 4 harnesses in sync without manual rsync.
-- Slim the `<codex_skill_adapter>` blocks (currently ~60 lines inlined in every gsd-* SKILL.md). Options: extract detailed mapping to a shared `@reference/codex-skill-adapter.md` that skills include, or make the adapter header shorter/optional for lower `grok inspect` token cost.
+- Slim the `<codex_skill_adapter>` blocks (currently ~60 lines inlined in every fvgsd-* SKILL.md). Options: extract detailed mapping to a shared `@reference/codex-skill-adapter.md` that skills include, or make the adapter header shorter/optional for lower `grok inspect` token cost.
 - Investigate Grok Build native hook support (JSON manifests under `~/.grok/hooks/` vs the shell hooks in `~/.agents/hooks/`).
 - Update `grok inspect` output cleanliness (remove "unknown tool prefix: Skill(gsd:*)" warnings if possible via settings or skill manifest).
 - Consider whether to also populate a native `~/.grok/skills/fvgsd-*` tree in addition to the working `.agents` layout.

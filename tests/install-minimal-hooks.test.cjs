@@ -27,6 +27,7 @@ const { test, describe, beforeEach, afterEach, before } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 const { spawnSync, execFileSync } = require('node:child_process');
 
@@ -517,7 +518,7 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
       }
       assert.ok(fs.existsSync(configPath));
 
-      const installedVibe = path.join(targetDir, 'get-shit-done', 'bin', 'vibe.cjs');
+      const installedVibe = path.join(targetDir, IDENTITY.installDir, 'bin', 'vibe.cjs');
       assert.ok(fs.existsSync(installedVibe), 'installed fvgsd surface should include its local Vibe CLI');
       const vibeHelp = spawnSync(process.execPath, [installedVibe, '--help'], { encoding: 'utf8' });
       assert.strictEqual(vibeHelp.status, 0, vibeHelp.stderr);
@@ -529,7 +530,7 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
 });
 
 describe('install: Claude full → minimal downgrade removes stale agents', () => {
-  test('--minimal removes stale gsd-*.md agents but preserves user-owned agents', () => {
+  test('--minimal removes stale fvgsd-*.md agents but preserves user-owned agents', () => {
     const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-claude-downgrade-'));
     try {
       const agentsDir = path.join(targetDir, 'agents');
@@ -619,7 +620,7 @@ describe('install.js source correctness', () => {
   });
 
   test('manifest tracks .sh hook files', () => {
-    assert.ok(src.includes("file.endsWith('.sh')"));
+    assert.ok(src.includes('generateManifest(ownHooksDir)'));
   });
 
   test('fvgsd/workflow-guard.js is in uninstall hook list', () => {

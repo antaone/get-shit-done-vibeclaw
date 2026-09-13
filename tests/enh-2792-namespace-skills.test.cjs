@@ -144,8 +144,8 @@ describe('Namespace skill bodies carry a routing table', () => {
 
     test(`${file} — body has at least one Invoke target`, () => {
       const fm = readNamespaceFile(file);
-      const hasInvoke = /\bgsd-[a-z-]+/i.test(fm._body);
-      assert.ok(hasInvoke, `${file} body must reference at least one gsd-* sub-skill`);
+      const hasInvoke = /\bfvgsd-[a-z-]+/i.test(fm._body);
+      assert.ok(hasInvoke, `${file} body must reference at least one fvgsd-* sub-skill`);
     });
   }
 });
@@ -237,11 +237,11 @@ describe('Namespace router targets resolve to surviving skills', () => {
         if (!line.startsWith('|') || /^\|[\s\-:|]+\|?\s*$/.test(line)) continue;
         const cells = line.split('|').map((c) => c.trim()).filter(Boolean);
         if (cells.length < 2) continue;
-        for (const m of cells[cells.length - 1].matchAll(/\bgsd-[a-z][a-z0-9-]*/g)) {
+        for (const m of cells[cells.length - 1].matchAll(/\bfvgsd-[a-z][a-z0-9-]*/g)) {
           targets.add(m[0]);
         }
       }
-      assert.ok(targets.size > 0, `${file} routing table must reference at least one gsd-* target`);
+      assert.ok(targets.size > 0, `${file} routing table must reference at least one fvgsd-* target`);
       const unresolved = [...targets].filter(
         (t) => !surviving.has(t) && !FLAG_FORM_PARENTS.has(t),
       );

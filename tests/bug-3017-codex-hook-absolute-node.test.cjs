@@ -245,7 +245,7 @@ describe('Bug #3017: rewriteLegacyCodexHookBlock migrates bare-node on reinstall
     ].join('\n');
     const result = rewriteLegacyCodexHookBlock(userOwned, '"/usr/local/bin/node"');
     assert.equal(result.changed, false,
-      'user-authored hooks must be left alone; only managed gsd-* hooks are migrated');
+      'user-authored hooks must be left alone; only managed fvgsd-* hooks are migrated');
     assert.equal(result.content, userOwned);
   });
 

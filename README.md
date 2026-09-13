@@ -269,8 +269,8 @@ repository's integration branch. In either case, it can initialize Vibe and
 prepare the selected candidates without making you translate the flow into
 terminal commands.
 
-When a brownfield `.planning/` tree still contains legacy `/gsd-*`, `/gsd:*`,
-or `$gsd-*` public command references, the gateway reports their exact locations
+When a brownfield `.planning/` tree still contains legacy `/gsd-<command>`, `/gsd:<command>`,
+or `$gsd-<command>` public command references, the gateway reports their exact locations
 and runtime-native `fvgsd` replacements before candidate preparation. Migration
 is explicit: review the proposed edits, apply them through the gateway, and
 commit the focused planning change so every candidate inherits the corrected

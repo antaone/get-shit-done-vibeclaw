@@ -377,7 +377,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
     }
     assert.strictEqual(threw, true, 'install must throw when validation fails');
 
-    // skills/ — GSD writes gsd-* subdirs here. All must be absent after rollback.
+    // skills/ — GSD writes fvgsd-* subdirs here. All must be absent after rollback.
     const skillsDir = path.join(codexHome, 'skills');
     if (fs.existsSync(skillsDir)) {
       const gsdSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
@@ -385,11 +385,11 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
       assert.strictEqual(
         gsdSkills.length,
         0,
-        'rollback must remove all gsd-* skill directories: ' + gsdSkills.map(e => e.name).join(', ')
+        'rollback must remove all fvgsd-* skill directories: ' + gsdSkills.map(e => e.name).join(', ')
       );
     }
 
-    // agents/ — GSD writes gsd-*.md and gsd-*.toml here. All must be absent.
+    // agents/ — GSD writes fvgsd-*.md and fvgsd-*.toml here. All must be absent.
     const agentsDir = path.join(codexHome, 'agents');
     if (fs.existsSync(agentsDir)) {
       const gsdAgents = fs.readdirSync(agentsDir)
@@ -397,7 +397,7 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
       assert.strictEqual(
         gsdAgents.length,
         0,
-        'rollback must remove all gsd-* agent files: ' + gsdAgents.join(', ')
+        'rollback must remove all fvgsd-* agent files: ' + gsdAgents.join(', ')
       );
     }
 
@@ -429,8 +429,8 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
       threw = true;
     }
     assert.strictEqual(threw, true, 'install must throw when validation fails (very early failure)');
-    // Rollback removes all gsd-* skill dirs it wrote. Even if skills/ was
-    // created during the install, no gsd-* dirs should survive after rollback.
+    // Rollback removes all fvgsd-* skill dirs it wrote. Even if skills/ was
+    // created during the install, no fvgsd-* dirs should survive after rollback.
     const skillsDir = path.join(codexHome, 'skills');
     const remainingGsdSkills = fs.existsSync(skillsDir)
       ? fs.readdirSync(skillsDir, { withFileTypes: true })
@@ -440,12 +440,12 @@ describe('#3245 — idempotent rollback reverts skills/, agents/, and VERSION', 
     assert.deepStrictEqual(
       remainingGsdSkills,
       [],
-      'rollback must remove all gsd-* skill dirs even when fired after minimal writes'
+      'rollback must remove all fvgsd-* skill dirs even when fired after minimal writes'
     );
   });
 
   test('rollback does not remove pre-existing user skills that GSD did not write', () => {
-    // If the user has a custom skill dir (not gsd-*) it must survive rollback.
+    // If the user has a custom skill dir (not fvgsd-*) it must survive rollback.
     const skillsDir = path.join(codexHome, 'skills');
     const userSkill = path.join(skillsDir, 'my-custom-skill');
     fs.mkdirSync(userSkill, { recursive: true });

@@ -36,6 +36,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { execFileSync } = require('node:child_process');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -146,7 +147,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
   describe('W — integration: staged workflows and references contain no colon-namespace refs', () => {
 
     test('W0: staged get-shit-done/workflows/ directory exists after install', () => {
-      const workflowsDir = path.join(claudeTmpDir, '.claude', 'get-shit-done', 'workflows');
+      const workflowsDir = path.join(claudeTmpDir, '.claude', IDENTITY.installDir, 'workflows');
       assert.ok(
         fs.existsSync(workflowsDir),
         `get-shit-done/workflows/ must be created by local claude install at ${workflowsDir}`,
@@ -154,7 +155,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
     });
 
     test('W1: staged get-shit-done/references/ directory exists after install', () => {
-      const refsDir = path.join(claudeTmpDir, '.claude', 'get-shit-done', 'references');
+      const refsDir = path.join(claudeTmpDir, '.claude', IDENTITY.installDir, 'references');
       assert.ok(
         fs.existsSync(refsDir),
         `get-shit-done/references/ must be created by local claude install at ${refsDir}`,
@@ -165,7 +166,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
       // User-reported repro: /gsd-discuss-phase output ends with /gsd:nextcommand
       // because discuss-phase.md ships 7 colon refs that were not normalized.
       const stagedFile = path.join(
-        claudeTmpDir, '.claude', 'get-shit-done', 'workflows', 'discuss-phase.md',
+        claudeTmpDir, '.claude', IDENTITY.installDir, 'workflows', 'discuss-phase.md',
       );
       assert.ok(
         fs.existsSync(stagedFile),
@@ -186,7 +187,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
     });
 
     test('W3: no staged workflow body contains /gsd:<known-cmd> colon refs', () => {
-      const workflowsDir = path.join(claudeTmpDir, '.claude', 'get-shit-done', 'workflows');
+      const workflowsDir = path.join(claudeTmpDir, '.claude', IDENTITY.installDir, 'workflows');
       assert.ok(fs.existsSync(workflowsDir), 'workflows/ must exist for this check to be meaningful');
 
       const offenders = collectOffenders(workflowsDir, rosterRegex);
@@ -201,7 +202,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
     });
 
     test('W4: no staged reference body contains /gsd:<known-cmd> colon refs', () => {
-      const refsDir = path.join(claudeTmpDir, '.claude', 'get-shit-done', 'references');
+      const refsDir = path.join(claudeTmpDir, '.claude', IDENTITY.installDir, 'references');
       assert.ok(fs.existsSync(refsDir), 'references/ must exist for this check to be meaningful');
 
       const offenders = collectOffenders(refsDir, rosterRegex);
@@ -254,7 +255,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
 
     test('R1: staged validate-phase.md routing block uses /gsd-<cmd> hyphen form', () => {
       const stagedFile = path.join(
-        claudeTmpDir, '.claude', 'get-shit-done', 'workflows', 'validate-phase.md',
+        claudeTmpDir, '.claude', IDENTITY.installDir, 'workflows', 'validate-phase.md',
       );
       assert.ok(
         fs.existsSync(stagedFile),
@@ -295,7 +296,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
 
     test('R2: staged secure-phase.md routing block uses /gsd-<cmd> hyphen form', () => {
       const stagedFile = path.join(
-        claudeTmpDir, '.claude', 'get-shit-done', 'workflows', 'secure-phase.md',
+        claudeTmpDir, '.claude', IDENTITY.installDir, 'workflows', 'secure-phase.md',
       );
       assert.ok(
         fs.existsSync(stagedFile),
@@ -341,7 +342,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
       //         not detectable by W3's file-level regex
       // Sweeps both workflows/ and references/ so routing blocks in reference files
       // are covered alongside workflow files.
-      const gsdDir = path.join(claudeTmpDir, '.claude', 'get-shit-done');
+      const gsdDir = path.join(claudeTmpDir, '.claude', IDENTITY.installDir);
       const workflowsDir = path.join(gsdDir, 'workflows');
       assert.ok(fs.existsSync(workflowsDir), 'workflows/ must exist for R3 to be meaningful');
 
@@ -415,7 +416,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
     });
 
     test('G0: staged gemini get-shit-done/workflows/ directory exists after install', () => {
-      const workflowsDir = path.join(tmpDir, '.gemini', 'get-shit-done', 'workflows');
+      const workflowsDir = path.join(tmpDir, '.gemini', IDENTITY.installDir, 'workflows');
       assert.ok(
         fs.existsSync(workflowsDir),
         `gemini get-shit-done/workflows/ must be created at ${workflowsDir}`,
@@ -426,7 +427,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
       // Gemini registers /gsd:<cmd> as its canonical form — normalization
       // must NOT fire for this runtime. Verify colon refs survive unchanged.
       const stagedFile = path.join(
-        tmpDir, '.gemini', 'get-shit-done', 'workflows', 'discuss-phase.md',
+        tmpDir, '.gemini', IDENTITY.installDir, 'workflows', 'discuss-phase.md',
       );
       assert.ok(
         fs.existsSync(stagedFile),
@@ -444,7 +445,7 @@ describe('bug #3683 — workflow/reference colon-namespace leak (Claude local in
     });
 
     test('G2: gemini workflows are not over-normalized (no /gsd-- double-hyphen artifacts)', () => {
-      const workflowsDir = path.join(tmpDir, '.gemini', 'get-shit-done', 'workflows');
+      const workflowsDir = path.join(tmpDir, '.gemini', IDENTITY.installDir, 'workflows');
       if (!fs.existsSync(workflowsDir)) return; // guard — G0 already asserts existence
       const doubleHyphenRegex = /\/gsd--[a-z]/;
       const garbled = collectOffenders(workflowsDir, doubleHyphenRegex);

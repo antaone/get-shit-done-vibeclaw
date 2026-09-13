@@ -72,12 +72,12 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
 
   test('Test A: non-TTY default resolution removes stale SDK artifacts and keeps user skills', () => {
     // Stale SDK build artifact: replicates the 1.41.2 → 1.42.2 upgrade where
-    // 24 stale `get-shit-done/sdk/{dist,src}/gsd-*` files leaked into the
+    // 24 stale `get-shit-done/sdk/{dist,src}/fvgsd-*` files leaked into the
     // baseline because the new manifest no longer classifies them as managed.
     writeFile(configDir, 'get-shit-done/sdk/dist/gsd-old-bundle.js', 'stale sdk bundle\n');
     // User-facing skill: replicates `skills/gsd-roadmap/SKILL.md` from the
     // same incident — user-owned content that must be preserved.
-    writeFile(configDir, 'skills/gsd-roadmap/SKILL.md', '# Roadmap skill\nuser content\n');
+    writeFile(configDir, 'skills/fvgsd-roadmap/SKILL.md', '# Roadmap skill\nuser content\n');
 
     // Plant an empty manifest so both files classify as `stale-gsd-looking`
     // (they look like GSD artifacts but are not manifest-managed).
@@ -95,7 +95,7 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
     const blockedPaths = (result.blocked || []).map((a) => a.relPath).sort();
     assert.deepEqual(
       blockedPaths,
-      ['get-shit-done/sdk/dist/gsd-old-bundle.js', 'skills/gsd-roadmap/SKILL.md'],
+      ['get-shit-done/sdk/dist/gsd-old-bundle.js', 'skills/fvgsd-roadmap/SKILL.md'],
       'precondition: both stale-looking files should be flagged for explicit user choice'
     );
 
@@ -112,7 +112,7 @@ describe('#3541: installer migration prompt-user non-TTY resolution', { concurre
 
     const byPath = new Map(resolved.resolutions.map((r) => [r.relPath, r]));
     const sdkResolution = byPath.get('get-shit-done/sdk/dist/gsd-old-bundle.js');
-    const skillResolution = byPath.get('skills/gsd-roadmap/SKILL.md');
+    const skillResolution = byPath.get('skills/fvgsd-roadmap/SKILL.md');
 
     assert.ok(sdkResolution, 'SDK artifact resolution logged');
     assert.equal(sdkResolution.choice, 'remove', 'stale SDK build artifact defaults to remove');

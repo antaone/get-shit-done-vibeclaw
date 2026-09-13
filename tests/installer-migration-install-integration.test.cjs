@@ -14,6 +14,7 @@ const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const crypto = require('node:crypto');
 
 const installModule = require('../bin/install.js');
@@ -187,12 +188,12 @@ function assertFreshInstallContract(runtime, targetDir) {
   assert.ok(contract, `missing runtime install contract for ${runtime}`);
 
   assert.equal(
-    fs.readFileSync(path.join(targetDir, 'get-shit-done', 'VERSION'), 'utf8'),
+    fs.readFileSync(path.join(targetDir, IDENTITY.installDir, 'VERSION'), 'utf8'),
     pkg.version,
     `${runtime} should install the package VERSION`
   );
   assert.ok(
-    fs.existsSync(path.join(targetDir, 'get-shit-done', 'bin', 'fvgsd-tools.cjs')),
+    fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'bin', 'fvgsd-tools.cjs')),
     `${runtime} should install the GSD tool payload`
   );
   assert.ok(
@@ -204,12 +205,12 @@ function assertFreshInstallContract(runtime, targetDir) {
   assert.equal(manifest.version, pkg.version, `${runtime} manifest should record the package version`);
   assert.equal(manifest.mode, 'full', `${runtime} manifest should record a full install`);
   assert.ok(
-    manifest.files['get-shit-done/VERSION'],
+    manifest.files[`${IDENTITY.installDir}/VERSION`],
     `${runtime} manifest should track the installed VERSION file`
   );
 
   if (contract.surface === 'flat-skills') {
-    // Pre-#3562: codex was special-cased to expect zero gsd-* skill dirs
+    // Pre-#3562: codex was special-cased to expect zero fvgsd-* skill dirs
     // (assumption: Codex auto-discovers from workflows). That assumption
     // does not hold for Codex CLI 0.130.0 — fresh installs now materialize
     // the same flat-skills surface as the other runtimes.
@@ -241,7 +242,7 @@ function assertFreshInstallContract(runtime, targetDir) {
   } else if (contract.surface === 'clinerules') {
     assert.match(
       fs.readFileSync(path.join(targetDir, '.clinerules'), 'utf8'),
-      /GSD workflows live in `get-shit-done\/workflows\/`/,
+      new RegExp(`GSD workflows live in \`${IDENTITY.installDir}/workflows/\``),
       'Cline should install root .clinerules guidance'
     );
   }
@@ -307,7 +308,7 @@ describe('installer migration install integration', { concurrency: false }, () =
     assert.match(plainOutput, /Installer migrations/);
     assert.match(plainOutput, /removed\s+hooks\/statusline\.js/);
     assert.ok(
-      plainOutput.indexOf('Installer migrations') < plainOutput.indexOf('Installed get-shit-done'),
+      plainOutput.indexOf('Installer migrations') < plainOutput.indexOf(`Installed ${IDENTITY.installDir}`),
       'migration report should appear before package materialization'
     );
     assert.equal(fs.existsSync(path.join(codexHome, 'hooks/statusline.js')), false);
@@ -325,7 +326,7 @@ describe('installer migration install integration', { concurrency: false }, () =
 
     assert.equal(fs.readFileSync(path.join(codexHome, 'hooks/gsd-retired-hook.txt'), 'utf8'), 'old gsd hook\n');
     assert.equal(fs.existsSync(path.join(codexHome, 'skills')), false);
-    assert.equal(fs.existsSync(path.join(codexHome, 'get-shit-done', 'VERSION')), false);
+    assert.equal(fs.existsSync(path.join(codexHome, IDENTITY.installDir, 'VERSION')), false);
   });
 
   test('rolls back applied migrations when package materialization fails for non-Codex installs', () => {
@@ -339,7 +340,7 @@ describe('installer migration install integration', { concurrency: false }, () =
     assert.throws(
       () => captureConsole(() =>
         withEnv('CLAUDE_CONFIG_DIR', claudeHome, () =>
-          withWriteFailure(path.join(claudeHome, 'get-shit-done', 'VERSION'), () => install(true, 'claude'))
+          withWriteFailure(path.join(claudeHome, IDENTITY.installDir, 'VERSION'), () => install(true, 'claude'))
         )
       ),
       /injected write failure for VERSION/
@@ -397,7 +398,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       () => captureConsole(() =>
         withEnv('CLAUDE_CONFIG_DIR', claudeHome, () =>
           withEnv('CODEX_HOME', codexHome, () =>
-            withWriteFailure(path.join(codexHome, 'get-shit-done', 'VERSION'), () =>
+            withWriteFailure(path.join(codexHome, IDENTITY.installDir, 'VERSION'), () =>
               installModule.installAllRuntimes(['claude', 'codex'], true, false)
             )
           )
@@ -434,7 +435,7 @@ describe('installer migration install integration', { concurrency: false }, () =
       assert.match(output, /Installing for /);
       assert.match(output, /Installer migrations/);
       assert.match(output, /removed\s+hooks\/statusline\.js/);
-      assert.match(output, /Installed get-shit-done/);
+      assert.match(output, new RegExp(`Installed ${IDENTITY.installDir}`));
       assert.match(output, /Done!/);
       assert.equal(fs.existsSync(path.join(targetDir, 'hooks/statusline.js')), false);
 
@@ -484,7 +485,7 @@ describe('installer migration install integration', { concurrency: false }, () =
         fs.readFileSync(path.join(targetDir, 'get-shit-done/gsd-retired-tool.cjs'), 'utf8'),
         'old ambiguous artifact\n'
       );
-      assert.equal(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')), false);
+      assert.equal(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')), false);
     });
   }
 });

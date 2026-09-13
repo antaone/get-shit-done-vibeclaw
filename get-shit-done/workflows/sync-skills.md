@@ -2,7 +2,7 @@
 
 **Command:** `/fvgsd-sync-skills`
 
-Sync managed `gsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `fvgsd-update` on one runtime.
+Sync managed `fvgsd-*` skill directories from one canonical runtime's skills root to one or more destination runtime skills roots. Keeps multi-runtime installs aligned after a `fvgsd-update` on one runtime.
 
 ---
 
@@ -87,11 +87,11 @@ Then exit.
 For each destination runtime:
 
 ```bash
-# List gsd-* subdirectories in source
-SRC_SKILLS=$(ls -1 "$SRC_SKILLS_ROOT" 2>/dev/null | grep '^gsd-')
+# List fvgsd-* subdirectories in source
+SRC_SKILLS=$(ls -1 "$SRC_SKILLS_ROOT" 2>/dev/null | grep '^fvgsd-')
 
-# List gsd-* subdirectories in destination (may not exist yet)
-DST_SKILLS=$(ls -1 "$DEST_ROOT" 2>/dev/null | grep '^gsd-')
+# List fvgsd-* subdirectories in destination (may not exist yet)
+DST_SKILLS=$(ls -1 "$DEST_ROOT" 2>/dev/null | grep '^fvgsd-')
 
 # Diff:
 # CREATE  — in SRC but not in DST
@@ -100,7 +100,7 @@ DST_SKILLS=$(ls -1 "$DEST_ROOT" 2>/dev/null | grep '^gsd-')
 # SKIP    — in both; content identical (already up to date)
 ```
 
-**Non-GSD preservation:** Only `gsd-*` entries are ever created, updated, or removed. Entries in the destination that do not start with `gsd-` are never touched.
+**Non-GSD preservation:** Only `fvgsd-*` entries are ever created, updated, or removed. Entries in the destination that do not start with `fvgsd-` are never touched.
 
 ---
 
@@ -115,7 +115,7 @@ sync targets: <dest1>, <dest2>
 == <dest1> (<dest1_skills_root>) ==
 CREATE: fvgsd-help
 UPDATE: fvgsd-update
-REMOVE: gsd-old-command
+REMOVE: fvgsd-old-command
 SKIP:   fvgsd-plan-phase (up to date)
 (N changes)
 
@@ -168,7 +168,7 @@ Sync complete: <N> skills synced to <M> runtime(s).
 
 ## Safety Rules
 
-1. **Only `gsd-*` directories** are created, updated, or removed. Any directory not starting with `gsd-` in a destination root is untouched.
+1. **Only `fvgsd-*` directories** are created, updated, or removed. Any directory not starting with `fvgsd-` in a destination root is untouched.
 2. **Dry-run is the default.** `--apply` must be passed explicitly to write anything.
 3. **Source root must exist.** Never create the source root; it must have been created by a prior `fvgsd-update` or installer run.
 4. **No cross-runtime content transformation.** Sync copies files verbatim. It does not apply runtime-specific content transformations (those happen at install time). If a runtime requires transformed content (e.g. Augment's format differs), the developer should run the installer for that runtime instead of using sync.

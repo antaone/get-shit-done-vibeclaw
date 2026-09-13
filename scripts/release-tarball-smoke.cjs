@@ -51,6 +51,7 @@ const { execFileSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const CHILD_TIMEOUT_MS = 120000;
 
 // ---------------------------------------------------------------------------
@@ -139,7 +140,7 @@ function findInstallerBin(installPrefix) {
  * Returns the bare workflow filename (e.g. `"discuss-phase.md"`) or null.
  */
 function parseWorkflowRef(mdContent) {
-  const WORKFLOW_PREFIX = 'get-shit-done/workflows/';
+  const WORKFLOW_PREFIX = `${IDENTITY.installDir}/workflows/`;
   let atImportResult = null;
   let lastInlineResult = null;
 
@@ -227,7 +228,7 @@ function scanWorkflowMissingSdkFallback(filePath) {
 
   const FENCE_OPEN = /^```(?:bash|sh)?\s*$/;
   const FENCE_CLOSE = /^```\s*$/;
-  const SDK_QUERY = /\bgsd-sdk\s+query\b/;
+  const SDK_QUERY = /\bfvgsd-sdk\s+query\b/;
   const COMMAND_V = /\bcommand\s+-v\s+fvgsd-sdk\b/;
 
   let inFence = false;
@@ -356,7 +357,7 @@ function runSmoke({
 
   // Output format: "fvgsd-sdk v1.50.0-canary.0\n"
   const rawOutput = (versionResult.stdout || '').trim();
-  const versionMatch = rawOutput.match(/v(.+)$/);
+  const versionMatch = rawOutput.match(/(?:^|\s)v(\S+)$/);
   const installedVersion = versionMatch ? versionMatch[1] : rawOutput;
 
   details.version = installedVersion;
@@ -428,7 +429,7 @@ function runSmoke({
     // Verify expected dirs were created
     const expectedDirs = [
       path.join(fixtureDir, '.claude', 'commands'),
-      path.join(fixtureDir, '.claude', 'get-shit-done'),
+      path.join(fixtureDir, '.claude', IDENTITY.installDir),
     ];
     for (const dir of expectedDirs) {
       if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {

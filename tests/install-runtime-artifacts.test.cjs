@@ -279,7 +279,7 @@ describe('installRuntimeArtifacts — legacy migrations run before layout copy',
     assert.ok(fs.existsSync(path.join(configDir, 'skills', 'fvgsd-help', 'SKILL.md')));
   });
 
-  test('hermes: legacy flat skills/gsd-*/ removed AND new nested skills/fvgsd/<stem>/ written', (t) => {
+  test('hermes: legacy flat skills/fvgsd-*/ removed AND new nested skills/fvgsd/<stem>/ written', (t) => {
     const configDir = createTempDir('fvgsd-legacy-hermes-install-');
     t.after(() => cleanup(configDir));
 

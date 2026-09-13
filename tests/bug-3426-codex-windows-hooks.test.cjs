@@ -239,7 +239,7 @@ describe('#3426 integration: ensureCodexHooksJsonSessionStart on win32 writes .c
 
   beforeEach(() => {
     tmpDir = createTempDir('fvgsd-3426-');
-    fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'hooks', 'fvgsd'), { recursive: true });
     // Stub the hook file that must exist for the hook to be registered
     fs.writeFileSync(
       path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
@@ -376,7 +376,7 @@ describe('#3426 uninstall: fvgsd/check-update.cmd is removed from hooks dir on u
 
   beforeEach(() => {
     tmpDir = createTempDir('fvgsd-3426-uninstall-');
-    fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'hooks', 'fvgsd'), { recursive: true });
     // Write the .js hook (required by install) and a pre-existing .cmd shim
     fs.writeFileSync(
       path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
@@ -412,7 +412,7 @@ describe('#3426 upgrade: reinstall on win32 migrates existing "node script.js" t
 
   beforeEach(() => {
     tmpDir = createTempDir('fvgsd-3426-upgrade-');
-    fs.mkdirSync(path.join(tmpDir, 'hooks'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, 'hooks', 'fvgsd'), { recursive: true });
     fs.writeFileSync(
       path.join(tmpDir, 'hooks', 'fvgsd/check-update.js'),
       '#!/usr/bin/env node\nconsole.log("ok");\n',

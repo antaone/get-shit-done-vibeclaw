@@ -76,7 +76,7 @@ Body content.
 describe('convertClaudeAgentToWindsurfAgent', () => {
   test('converts agent frontmatter with unquoted name', () => {
     const input = `---
-name: gsd-bugfix
+name: fvgsd-bugfix
 description: "Fix bugs automatically"
 color: blue
 skills:

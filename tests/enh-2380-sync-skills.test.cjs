@@ -103,11 +103,11 @@ describe('sync-skills.md — required behavioral specs', () => {
     );
   });
 
-  test('only gsd-* directories are touched (non-GSD preservation)', () => {
+  test('only fvgsd-* directories are touched (non-GSD preservation)', () => {
     content = content || readWorkflow();
     assert.ok(
       content.includes('fvgsd-*') && (content.includes('non-GSD') || content.includes('Non-GSD') || content.includes('not starting with')),
-      'workflow must document that only gsd-* dirs are modified'
+      'workflow must document that only fvgsd-* dirs are modified'
     );
   });
 

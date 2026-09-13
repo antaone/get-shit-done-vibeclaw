@@ -163,8 +163,8 @@ describe('#1834: install.js source handles .sh files in the hook copy loop', () 
     // Extract a window large enough to contain the if/else block (≈1500 chars)
     const region = src.slice(anchorIdx, anchorIdx + 1500);
     assert.ok(
-      region.includes("entry.endsWith('.js')"),
-      "install.js hook copy loop must check entry.endsWith('.js')"
+      region.includes("srcFile.endsWith('.js')"),
+      "install.js hook copy loop must check srcFile.endsWith('.js')"
     );
     assert.ok(
       region.includes('} else {') || region.includes('else {'),

@@ -79,7 +79,7 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 
 完全なリストは [v1.39.0 リリースノート](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0) を参照してください。
 
-- **`--minimal` インストールプロファイル** — エイリアス `--core-only`。メインループの6スキル（`new-project`、`discuss-phase`、`plan-phase`、`execute-phase`、`help`、`update`）のみをインストールし、`gsd-*` サブエージェントはゼロ。コールドスタート時のシステムプロンプトのオーバーヘッドを ~12kトークンから ~700トークンへ削減（≥94%減）。32K〜128Kコンテキストのローカル LLM やトークン課金 API に有効。
+- **`--minimal` インストールプロファイル** — エイリアス `--core-only`。メインループの6スキル（`new-project`、`discuss-phase`、`plan-phase`、`execute-phase`、`help`、`update`）のみをインストールし、`fvgsd-*` サブエージェントはゼロ。コールドスタート時のシステムプロンプトのオーバーヘッドを ~12kトークンから ~700トークンへ削減（≥94%減）。32K〜128Kコンテキストのローカル LLM やトークン課金 API に有効。
 - **`/fvgsd-phase --edit`** — `ROADMAP.md` 上の既存フェーズの任意フィールドをその場で編集（番号や位置は変更されない）。`--force` で確認 diff をスキップ、`depends_on` の参照を検証し、書き込み時に `STATE.md` も更新。
 - **マージ後ビルド & テストゲート** — `execute-phase` のステップ 5.6 が `workflow.build_command` の設定を自動検出し、無ければ Xcode（`.xcodeproj`）、Makefile、Justfile、Cargo、Go、Python、npm の順にフォールバック。Xcode/iOS プロジェクトでは `xcodebuild build` と `xcodebuild test` を自動実行。並列・直列両モードで動作。
 - **ランタイム別レビューモデル選択** — `review.models.<cli>` で各外部レビュー CLI（codex、gemini など）が使うモデルをプランナー/実行プロファイルとは独立に指定可能。
@@ -107,7 +107,7 @@ npx fvgsd@latest
 - Cline: GSDは`.clinerules`経由でインストール — `.clinerules`の存在を確認
 
 > [!NOTE]
-> Claude Code 2.1.88+とCodexはスキル（`skills/gsd-*/SKILL.md`）としてインストールされます。Clineは`.clinerules`を使用します。インストーラーがすべての形式を自動的に処理します。
+> Claude Code 2.1.88+とCodexはスキル（`skills/fvgsd-*/SKILL.md`）としてインストールされます。Clineは`.clinerules`を使用します。インストーラーがすべての形式を自動的に処理します。
 
 > [!TIP]
 > ソースベースのインストールやnpmが利用できない環境については、**[docs/manual-update.md](docs/manual-update.md)**を参照してください。
@@ -782,7 +782,7 @@ GSDのコードベースマッピングおよび分析コマンドは、プロ�
 **インストール後にコマンドが見つからない？**
 - ランタイムを再起動してコマンド/スキルを再読み込みしてください
 - `~/.claude/commands/gsd/`（グローバル）または `./.claude/commands/gsd/`（ローカル）にファイルが存在するか確認してください
-- Codexの場合、`~/.codex/skills/gsd-*/SKILL.md`（グローバル）または `./.codex/skills/gsd-*/SKILL.md`（ローカル）にスキルが存在するか確認してください
+- Codexの場合、`~/.codex/skills/fvgsd-*/SKILL.md`（グローバル）または `./.codex/skills/fvgsd-*/SKILL.md`（ローカル）にスキルが存在するか確認してください
 
 **コマンドが期待通りに動作しない？**
 - `/fvgsd-help` を実行してインストールを確認してください

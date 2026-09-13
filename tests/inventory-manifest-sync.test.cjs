@@ -21,7 +21,7 @@ const FAMILIES = [
   { name: 'workflows',   dir: path.join(ROOT, 'get-shit-done', 'workflows'),        filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'references',  dir: path.join(ROOT, 'get-shit-done', 'references'),       filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'cli_modules', dir: path.join(ROOT, 'get-shit-done', 'bin', 'lib'),       filter: (f) => f.endsWith('.cjs'),       toName: (f) => f },
-  { name: 'hooks',       dir: path.join(ROOT, 'hooks'),                             filter: (f) => /\.(js|sh)$/.test(f),    toName: (f) => f },
+  { name: 'hooks',       dir: path.join(ROOT, 'hooks', 'fvgsd'),                    filter: (f) => /\.(js|sh)$/.test(f),    toName: (f) => `fvgsd/${f}` },
 ];
 
 test('docs/INVENTORY-MANIFEST.json matches the filesystem', () => {

@@ -251,12 +251,12 @@ describe('#1974 context exhaustion auto-record', () => {
     const hookSource = fs.readFileSync(HOOK_PATH, 'utf-8');
     assert.match(
       hookSource,
-      /path\.join\(__dirname,\s*'\.\.',\s*'get-shit-done'/,
+      /path\.join\(__dirname,\s*'\.\.',\s*'\.\.',\s*'fvgsd'/,
       'hook must use __dirname-based path resolution for fvgsd-tools.cjs'
     );
     assert.doesNotMatch(
       hookSource,
-      /process\.env\.HOME.*\.claude.*get-shit-done.*fvgsd-tools\.cjs/,
+      /process\.env\.HOME.*\.claude.*fvgsd.*fvgsd-tools\.cjs/,
       'hook must not hardcode ~/.claude/ path'
     );
   });

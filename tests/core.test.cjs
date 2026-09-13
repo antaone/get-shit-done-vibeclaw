@@ -1203,7 +1203,7 @@ describe('stale hook filter', () => {
       'README.md',                       // non-js file
     ];
 
-    const gsdFilter = f => f.startsWith('fvgsd-') && f.endsWith('.js');
+    const gsdFilter = f => f.startsWith('fvgsd/') && f.endsWith('.js');
     const filtered = files.filter(gsdFilter);
 
     assert.deepStrictEqual(filtered, [
@@ -1787,7 +1787,7 @@ describe('findProjectRoot', () => {
 describe('reapStaleTempFiles', () => {
   const gsdTmpDir = path.join(os.tmpdir(), 'gsd');
 
-  test('removes stale gsd-*.json files older than maxAgeMs', () => {
+  test('removes stale fvgsd-*.json files older than maxAgeMs', () => {
     fs.mkdirSync(gsdTmpDir, { recursive: true });
     const stalePath = path.join(gsdTmpDir, `fvgsd-reap-test-${Date.now()}.json`);
     fs.writeFileSync(stalePath, '{}');
@@ -1800,7 +1800,7 @@ describe('reapStaleTempFiles', () => {
     assert.ok(!fs.existsSync(stalePath), 'stale file should be removed');
   });
 
-  test('preserves fresh gsd-*.json files', () => {
+  test('preserves fresh fvgsd-*.json files', () => {
     fs.mkdirSync(gsdTmpDir, { recursive: true });
     const freshPath = path.join(gsdTmpDir, `fvgsd-reap-fresh-${Date.now()}.json`);
     fs.writeFileSync(freshPath, '{}');

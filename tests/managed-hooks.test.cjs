@@ -40,11 +40,12 @@ describe('bug #2136: MANAGED_HOOKS must include all shipped hook files', () => {
     .map(line => line.trim().replace(/^['"]|['"],?$/g, ''))
     .filter(s => s.length > 0 && !s.startsWith('//'));
 
-  // List all GSD-managed hook files in hooks/ (names starting with "fvgsd-")
-  shippedHooks = fs.readdirSync(HOOKS_DIR)
-    .filter(f => f.startsWith('fvgsd-') && (f.endsWith('.js') || f.endsWith('.sh')));
+  // List all GSD-managed hook files in hooks/fvgsd/, as fvgsd/<hook> paths
+  shippedHooks = fs.readdirSync(path.join(HOOKS_DIR, 'fvgsd'))
+    .filter(f => f.endsWith('.js') || f.endsWith('.sh'))
+    .map(f => `fvgsd/${f}`);
 
-  test('every shipped gsd-*.js hook is in MANAGED_HOOKS', () => {
+  test('every shipped fvgsd-*.js hook is in MANAGED_HOOKS', () => {
     const jsHooks = shippedHooks.filter(f => f.endsWith('.js'));
     for (const hookFile of jsHooks) {
       assert.ok(
@@ -54,7 +55,7 @@ describe('bug #2136: MANAGED_HOOKS must include all shipped hook files', () => {
     }
   });
 
-  test('every shipped gsd-*.sh hook is in MANAGED_HOOKS', () => {
+  test('every shipped fvgsd-*.sh hook is in MANAGED_HOOKS', () => {
     const shHooks = shippedHooks.filter(f => f.endsWith('.sh'));
     for (const hookFile of shHooks) {
       assert.ok(

@@ -16,11 +16,11 @@ const cwd = process.cwd();
 function detectConfigDir(baseDir) {
   // Check env override first (supports multi-account setups)
   const envDir = process.env.CLAUDE_CONFIG_DIR;
-  if (envDir && fs.existsSync(path.join(envDir, 'get-shit-done', 'VERSION'))) {
+  if (envDir && fs.existsSync(path.join(envDir, 'fvgsd', 'VERSION'))) {
     return envDir;
   }
   for (const dir of ['.claude', '.gemini', '.config/kilo', '.kilo', '.config/opencode', '.opencode']) {
-    if (fs.existsSync(path.join(baseDir, dir, 'get-shit-done', 'VERSION'))) {
+    if (fs.existsSync(path.join(baseDir, dir, 'fvgsd', 'VERSION'))) {
       return path.join(baseDir, dir);
     }
   }
@@ -36,8 +36,8 @@ const cacheDir = path.join(homeDir, '.cache', 'gsd');
 const cacheFile = path.join(cacheDir, 'fvgsd-update-check.json');
 
 // VERSION file locations (check project first, then global)
-const projectVersionFile = path.join(projectConfigDir, 'get-shit-done', 'VERSION');
-const globalVersionFile = path.join(globalConfigDir, 'get-shit-done', 'VERSION');
+const projectVersionFile = path.join(projectConfigDir, 'fvgsd', 'VERSION');
+const globalVersionFile = path.join(globalConfigDir, 'fvgsd', 'VERSION');
 
 // Ensure cache directory exists
 if (!fs.existsSync(cacheDir)) {
@@ -48,7 +48,7 @@ if (!fs.existsSync(cacheDir)) {
 // Spawning a file (rather than node -e '<inline code>') keeps the worker logic
 // in plain JS with no template-literal regex-escaping concerns, and makes the
 // worker independently testable.
-const workerPath = path.join(__dirname, 'fvgsd/check-update-worker.js');
+const workerPath = path.join(__dirname, 'check-update-worker.js');
 const child = spawn(process.execPath, [workerPath], {
   stdio: 'ignore',
   windowsHide: true,

@@ -7,7 +7,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync, execFileSync } = require('node:child_process');
 const { createTempDir, cleanup } = require('./helpers.cjs');
-const { buildRules, rewriteText } = require('../scripts/rename-identity.cjs');
+const { buildRules, rewriteText, planRenames } = require('../scripts/rename-identity.cjs');
 
 const SCRIPT = path.join(__dirname, '..', 'scripts', 'rename-identity.cjs');
 
@@ -121,6 +121,39 @@ test('rewriteText renames .vibe paths but leaves vibe branch ranges alone', () =
     ]);
     assert.equal(text, 'git diff vibe/project-001/project/gemini-001..vibe/project-001/project/codex-002\n' +
       "/.fvgsd-vibe/\nSee `.fvgsd-vibe/worktrees`.\nconst dir = '.fvgsd-vibe';\n");
+  }
+});
+
+test('rewriteText renames \bgsd- regex prefixes in code only', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = String.raw`const matches = content.match(/\bgsd-[a-z][a-z-]*/g);` + '\n';
+  const code = rewriteText(source, rules, { isCode: true });
+  assert.deepEqual(code.replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+    ['code-literals', String.raw`\bgsd-`, String.raw`\bfvgsd-`],
+  ]);
+  assert.equal(code.text, String.raw`const matches = content.match(/\bfvgsd-[a-z][a-z-]*/g);` + '\n');
+  assert.deepEqual(rewriteText(code.text, rules, { isCode: true }).replacements, []);
+  assert.deepEqual(rewriteText(source, rules, { isCode: false }).replacements, []);
+});
+
+test('planRenames maps the SDK tools module', () => {
+  assert.deepEqual(planRenames(['sdk/src/gsd-tools.ts']), [
+    { from: 'sdk/src/gsd-tools.ts', to: 'sdk/src/fvgsd-tools.ts' },
+  ]);
+});
+
+test('rewriteText renames gsd-* prefix globs and nests hook globs under fvgsd/', () => {
+  const rules = buildRules({ agentRoles: [], hookNames: [], helperNames: [] });
+  const source = 'ls skills/gsd-*/\nrm hooks/gsd-*.js\nls hooks/dist/gsd-*\n';
+  for (const isCode of [false, true]) {
+    const once = rewriteText(source, rules, { isCode });
+    assert.deepEqual(once.replacements.map((r) => [r.ruleId, r.match, r.replacement]), [
+      ['prefix-globs', 'hooks/gsd-*', 'hooks/fvgsd/*'],
+      ['prefix-globs', 'hooks/dist/gsd-*', 'hooks/dist/fvgsd/*'],
+      ['prefix-globs', 'gsd-*', 'fvgsd-*'],
+    ]);
+    assert.equal(once.text, 'ls skills/fvgsd-*/\nrm hooks/fvgsd/*.js\nls hooks/dist/fvgsd/*\n');
+    assert.deepEqual(rewriteText(once.text, rules, { isCode }).replacements, []);
   }
 });
 

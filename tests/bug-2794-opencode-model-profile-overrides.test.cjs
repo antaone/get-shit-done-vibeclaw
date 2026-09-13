@@ -8,7 +8,7 @@
  *
  *   { runtime: "opencode", model_profile_overrides: { opencode: { sonnet: "..." } } }
  *
- * generated `.opencode/agents/gsd-*.md` files contained no `model:` frontmatter.
+ * generated `.opencode/agents/fvgsd-*.md` files contained no `model:` frontmatter.
  *
  * The fix adds a tier-resolver fallback in the OpenCode agent conversion block:
  * explicit `model_overrides[agent]` > `model_profile_overrides.opencode.<tier>` > omit.

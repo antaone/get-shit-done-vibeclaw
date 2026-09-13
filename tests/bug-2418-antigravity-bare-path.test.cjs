@@ -57,7 +57,7 @@ describe('convertClaudeToAntigravityContent bare path replacement (#2418)', () =
       const input = 'See ~/.claude/fvgsd/workflows/';
       const result = convertClaudeToAntigravityContent(input, true);
       assert.ok(
-        result.includes('~/.gemini/antigravity/get-shit-done/workflows/'),
+        result.includes('~/.gemini/antigravity/fvgsd/workflows/'),
         `Expected path with trailing slash to be replaced, got: ${result}`
       );
       assert.ok(!result.includes('~/.claude/'), `Expected ~/ .claude/ to be fully replaced, got: ${result}`);

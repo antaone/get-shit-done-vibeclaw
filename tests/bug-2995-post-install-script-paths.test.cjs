@@ -171,9 +171,9 @@ describe('Bug #2995: real workflow audit', () => {
   const INSTALLED_PREFIXES = [
     'get-shit-done',  // workflows, references, bin/lib, templates
     'commands',       // commands/gsd/*.md (Claude Code local + Gemini global)
-    'skills',         // skills/gsd-*/SKILL.md (Claude Code 2.1.88+ global, Codex, etc.)
-    'agents',         // agents/gsd-*.md
-    'hooks',          // hooks/gsd-*.{sh,js}
+    'skills',         // skills/fvgsd-*/SKILL.md (Claude Code 2.1.88+ global, Codex, etc.)
+    'agents',         // agents/fvgsd-*.md
+    'hooks',          // hooks/fvgsd/*.{sh,js}
   ];
 
   // Known existing gaps tracked in their own issues. Removing an entry should

@@ -136,11 +136,11 @@ process.stdin.on('end', () => {
     // of the "crash moment" record on every debounce cycle.
     if (isCritical && isGsdActive && !warnData.criticalRecorded) {
       try {
-        // Runtime-agnostic path: this hook lives at <runtime-config>/hooks/
-        // and fvgsd-tools.cjs lives at <runtime-config>/get-shit-done/bin/.
+        // Runtime-agnostic path: this hook lives at <runtime-config>/hooks/fvgsd/
+        // and fvgsd-tools.cjs lives at <runtime-config>/fvgsd/bin/.
         // Using __dirname makes this work on Claude Code, OpenCode, Gemini,
         // Kilo, etc. without hardcoding ~/.claude/.
-        const gsdTools = path.join(__dirname, '..', 'get-shit-done', 'bin', 'fvgsd-tools.cjs');
+        const gsdTools = path.join(__dirname, '..', '..', 'fvgsd', 'bin', 'fvgsd-tools.cjs');
         // Coerce usedPct to a safe number in case bridge file is malformed
         const safeUsedPct = Number(usedPct) || 0;
         const stoppedAt = `context exhaustion at ${safeUsedPct}% (${new Date().toISOString().split('T')[0]})`;

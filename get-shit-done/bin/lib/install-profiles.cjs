@@ -137,7 +137,7 @@ function parseCallsAgents(content) {
   // Match word-boundary gsd-<stem> patterns; stems are lowercase letters and hyphens.
   // We use a regex that matches `fvgsd-` followed by one or more lowercase-alpha-or-hyphen chars.
   // This catches `fvgsd-planner`, `fvgsd-plan-checker`, etc. in prose and code.
-  const matches = content.match(/\bgsd-[a-z][a-z-]*/g);
+  const matches = content.match(/\bfvgsd-[a-z][a-z-]*/g);
   if (!matches) return [];
   // Deduplicate
   return [...new Set(matches)];

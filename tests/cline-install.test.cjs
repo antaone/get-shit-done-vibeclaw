@@ -25,6 +25,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 const { createTempDir, cleanup } = require('./helpers.cjs');
 
@@ -156,7 +157,7 @@ describe('Cline install (local)', () => {
 
   test('install creates get-shit-done engine directory', () => {
     install(false, 'cline');
-    const engineDir = path.join(tmpDir, 'get-shit-done');
+    const engineDir = path.join(tmpDir, IDENTITY.installDir);
     assert.ok(fs.existsSync(engineDir), 'get-shit-done directory must exist after install');
   });
 
@@ -179,7 +180,7 @@ describe('Cline install (local)', () => {
 
   test('installed engine files have no leaked .claude paths', () => {
     install(false, 'cline');
-    const engineDir = path.join(tmpDir, 'get-shit-done');
+    const engineDir = path.join(tmpDir, IDENTITY.installDir);
     if (!fs.existsSync(engineDir)) return; // skip if engine not installed
 
     function scanDir(dir) {

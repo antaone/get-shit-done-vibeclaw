@@ -85,8 +85,8 @@ const {
 const { runCli } = require('./helpers/cli-negative.cjs');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
-const PROMPT_GUARD_HOOK = path.join(REPO_ROOT, 'hooks', 'gsd-prompt-guard.js');
-const READ_SCANNER_HOOK = path.join(REPO_ROOT, 'hooks', 'gsd-read-injection-scanner.js');
+const PROMPT_GUARD_HOOK = path.join(REPO_ROOT, 'hooks', 'fvgsd', 'prompt-guard.js');
+const READ_SCANNER_HOOK = path.join(REPO_ROOT, 'hooks', 'fvgsd', 'read-injection-scanner.js');
 const FIXTURE_DIR = path.join(__dirname, 'fixtures', 'adversarial', 'security');
 
 const {

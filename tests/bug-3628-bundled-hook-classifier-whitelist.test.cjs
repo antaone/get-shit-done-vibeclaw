@@ -57,8 +57,8 @@ describe('bug #3628: BUNDLED_GSD_HOOK_FILES is an explicit whitelist', () => {
         `entry ${JSON.stringify(relPath)} must use POSIX slashes`,
       );
       assert.ok(
-        relPath.includes('fvgsd-'),
-        `entry ${JSON.stringify(relPath)} must contain the "fvgsd-" prefix`,
+        relPath.startsWith('hooks/fvgsd/'),
+        `entry ${JSON.stringify(relPath)} must live under "hooks/fvgsd/"`,
       );
     }
   });
@@ -78,12 +78,12 @@ describe('bug #3628: BUNDLED_GSD_HOOK_FILES is an explicit whitelist', () => {
     }
   });
 
-  test('every gsd-*.{js,sh,cjs,mjs} file in hooks/ is in BUNDLED_GSD_HOOK_FILES (no shipping drift)', () => {
+  test('every fvgsd-*.{js,sh,cjs,mjs} file in hooks/ is in BUNDLED_GSD_HOOK_FILES (no shipping drift)', () => {
     const hooksDir = path.join(__dirname, '..', 'hooks');
     const onDisk = fs
-      .readdirSync(hooksDir, { withFileTypes: true })
-      .filter((e) => e.isFile() && /^fvgsd-[^/]+\.(?:js|sh|cjs|mjs)$/.test(e.name))
-      .map((e) => `hooks/${e.name}`);
+      .readdirSync(path.join(hooksDir, 'fvgsd'), { withFileTypes: true })
+      .filter((e) => e.isFile() && /\.(?:js|sh|cjs|mjs)$/.test(e.name))
+      .map((e) => `hooks/fvgsd/${e.name}`);
     for (const relPath of onDisk) {
       assert.ok(
         BUNDLED_GSD_HOOK_FILES.has(relPath),
@@ -124,7 +124,7 @@ describe('bug #3628: classifyPromptUserAction whitelists shipped bundled hooks',
     });
   }
 
-  test('still does NOT classify nested gsd-* directories (existing #3610 boundary preserved)', () => {
+  test('still does NOT classify nested fvgsd-* directories (existing #3610 boundary preserved)', () => {
     assert.strictEqual(
       classifyPromptUserAction({ relPath: 'hooks/gsd-helpers/index.js' }),
       null,

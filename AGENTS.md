@@ -24,7 +24,7 @@ Use Node.js `>=22`.
 
 ## Coding Style & Naming Conventions
 
-Match the existing style in the edited area. Root JavaScript is CommonJS, generally strict-mode, two-space indentation, semicolons, `const`/`let`, and `node:` imports for built-ins. SDK code is strict TypeScript using ESM/`NodeNext`. Keep command, workflow, and test filenames kebab-case, for example `commands/gsd/plan-phase.md` and `tests/bug-2396-makefile-test-priority.test.cjs`. Agent files use `gsd-*.md`. Avoid unrelated formatting and unnecessary dependencies.
+Match the existing style in the edited area. Root JavaScript is CommonJS, generally strict-mode, two-space indentation, semicolons, `const`/`let`, and `node:` imports for built-ins. SDK code is strict TypeScript using ESM/`NodeNext`. Keep command, workflow, and test filenames kebab-case, for example `commands/gsd/plan-phase.md` and `tests/bug-2396-makefile-test-priority.test.cjs`. Agent files use `fvgsd-*.md`. Avoid unrelated formatting and unnecessary dependencies.
 
 ## Testing Guidelines
 

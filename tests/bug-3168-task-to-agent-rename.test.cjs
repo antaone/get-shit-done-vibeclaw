@@ -1,7 +1,7 @@
 'use strict';
 
 // allow-test-rule: source-text-is-the-product
-// commands/gsd/*.md, get-shit-done/workflows/*.md, and agents/gsd-*.md are
+// commands/gsd/*.md, get-shit-done/workflows/*.md, and agents/fvgsd-*.md are
 // deployed product files. Checking their text IS checking the runtime contract.
 
 /**

@@ -58,7 +58,7 @@ function isReleaseDoc(filePath) {
 }
 
 // Slugs that appear in docs as internal component names or documentation
-// syntax placeholders — they match the /gsd-* regex but are NOT user-typable
+// syntax placeholders — they match the /fvgsd-* regex but are NOT user-typable
 // slash commands and never appear in the command registry. Adding a slug here
 // requires a code comment explaining why it is not a slash command.
 //

@@ -12,6 +12,7 @@
  * enforced by both consumers.
  */
 
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const CANONICAL_TOOLS = new Set([
   'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep',
   'Task', 'Agent', 'Skill', 'SlashCommand',
@@ -54,7 +55,8 @@ function executionContextRefs(content) {
       const trailingProse = line.length > token.length;
       const normalized = token
         .replace(/^@(?:~|\$HOME)\//, '')
-        .replace(/^(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        .replace(/^\.claude\//, '')
+        .replace(new RegExp(`^${IDENTITY.installDir}/`), '');
       refs.push({ token, normalized, trailingProse });
     }
   }

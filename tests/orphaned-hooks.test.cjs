@@ -8,7 +8,7 @@
  * (e.g., gsd-intel-*.js) should NOT be flagged as stale by fvgsd/check-update.js.
  *
  * The stale hooks scanner should only check hooks that are part of the current
- * distribution, not every gsd-*.js file in the hooks directory.
+ * distribution, not every fvgsd-*.js file in the hooks directory.
  */
 
 const { test, describe } = require('node:test');
@@ -41,8 +41,8 @@ describe('orphaned hooks stale detection (#1750)', () => {
     // rather than embedding all logic in a template literal.
     const content = fs.readFileSync(CHECK_UPDATE_PATH, 'utf8');
     assert.ok(
-      content.includes('fvgsd/check-update-worker.js'),
-      'fvgsd/check-update.js must reference fvgsd/check-update-worker.js as the spawn target'
+      content.includes("path.join(__dirname, 'check-update-worker.js')"),
+      'fvgsd/check-update.js must spawn its sibling check-update-worker.js by file path'
     );
     assert.ok(
       !content.includes("'-e'"),

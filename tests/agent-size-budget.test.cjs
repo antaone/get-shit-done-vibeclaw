@@ -6,7 +6,7 @@
 /**
  * Agent size budget.
  *
- * Agent definitions in `agents/gsd-*.md` are loaded verbatim into Claude's
+ * Agent definitions in `agents/fvgsd-*.md` are loaded verbatim into Claude's
  * context on every subagent dispatch. Unbounded growth is paid on every call
  * across every workflow.
  *

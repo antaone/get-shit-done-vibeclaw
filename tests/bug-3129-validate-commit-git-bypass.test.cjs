@@ -20,7 +20,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const ROOT = path.join(__dirname, '..');
-const { isGitSubcommand, tokenize } = require(path.join(ROOT, 'hooks', 'lib', 'git-cmd.js'));
+const { isGitSubcommand, tokenize } = require(path.join(ROOT, 'hooks', 'fvgsd', 'lib', 'git-cmd.js'));
 
 // ── tokenize ─────────────────────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ describe('fvgsd/validate-commit.sh delegates to git-cmd.js', () => {
 
   test('hooks/fvgsd/lib/git-cmd.js exists at the expected install path', () => {
     assert.ok(
-      fs.existsSync(path.join(ROOT, 'hooks', 'lib', 'git-cmd.js')),
+      fs.existsSync(path.join(ROOT, 'hooks', 'fvgsd', 'lib', 'git-cmd.js')),
       'hooks/fvgsd/lib/git-cmd.js does not exist — library file missing',
     );
   });

@@ -173,13 +173,13 @@ describe('bug #3439: shell projection module owns managed-hook policy and legacy
       true,
     );
     assert.equal(
-      isManagedHookCommand('"/usr/local/bin/node" "/Users/me/.codex/hooks/gsd-update-check.js"', {
+      isManagedHookCommand('"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd-update-check.js"', {
         surface: 'codex-toml',
       }),
       false,
     );
     assert.equal(
-      isManagedHookCommand('"/usr/local/bin/node" "/Users/me/.codex/hooks/gsd-update-check.js"', {
+      isManagedHookCommand('"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd-update-check.js"', {
         surface: 'codex-toml',
         includeLegacyAliases: true,
       }),

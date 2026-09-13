@@ -268,7 +268,7 @@ test('records known generated agent artifacts so profile cleanup can remove them
   try {
     writeFile(configDir, 'agents/fvgsd-executor.md', 'old generated agent\n');
     writeFile(configDir, 'agents/fvgsd-executor.toml', 'old generated agent config\n');
-    writeFile(configDir, 'agents/gsd-local-experiment.md', 'user experiment\n');
+    writeFile(configDir, 'agents/fvgsd-local-experiment.md', 'user experiment\n');
     writeManifest(configDir, {});
 
     const result = runInstallerMigrations({
@@ -299,15 +299,15 @@ test('records known generated agent artifacts so profile cleanup can remove them
         },
         {
           type: 'prompt-user',
-          relPath: 'agents/gsd-local-experiment.md',
+          relPath: 'agents/fvgsd-local-experiment.md',
           classification: 'stale-gsd-looking',
         },
       ]
     );
-    assert.deepEqual(result.blocked.map((action) => action.relPath), ['agents/gsd-local-experiment.md']);
+    assert.deepEqual(result.blocked.map((action) => action.relPath), ['agents/fvgsd-local-experiment.md']);
     assert.equal(fs.readFileSync(path.join(configDir, 'agents/fvgsd-executor.md'), 'utf8'), 'old generated agent\n');
     assert.equal(fs.readFileSync(path.join(configDir, 'agents/fvgsd-executor.toml'), 'utf8'), 'old generated agent config\n');
-    assert.equal(fs.readFileSync(path.join(configDir, 'agents/gsd-local-experiment.md'), 'utf8'), 'user experiment\n');
+    assert.equal(fs.readFileSync(path.join(configDir, 'agents/fvgsd-local-experiment.md'), 'utf8'), 'user experiment\n');
   } finally {
     cleanup(configDir);
   }

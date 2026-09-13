@@ -73,7 +73,7 @@ function detectSubRepos(cwd) {
 // ─── Output helpers ───────────────────────────────────────────────────────────
 
 /**
- * Remove stale gsd-* temp files/dirs older than maxAgeMs (default: 5 minutes).
+ * Remove stale fvgsd-* temp files/dirs older than maxAgeMs (default: 5 minutes).
  * Runs opportunistically before each new temp file write to prevent unbounded accumulation.
  * @param {string} prefix - filename prefix to match (e.g., 'fvgsd-')
  * @param {object} opts

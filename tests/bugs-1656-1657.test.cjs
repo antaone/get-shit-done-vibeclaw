@@ -52,7 +52,7 @@ describe('#1656: community .sh hooks must be present in hooks/dist', () => {
 // Historical context: #1657 originally guarded against a broken `promptSdk()`
 // flow that shipped when `@fvgsd/sdk` did not yet exist on npm. The
 // package was published at v0.1.0 and is now a hard runtime requirement for
-// every /gsd-* command (they all shell out to `fvgsd-sdk query …`).
+// every /fvgsd-* command (they all shell out to `fvgsd-sdk query …`).
 //
 // #2385 restored the `--sdk` flag and made SDK install the default path in
 // bin/install.js. These guards are inverted: we now assert that SDK install

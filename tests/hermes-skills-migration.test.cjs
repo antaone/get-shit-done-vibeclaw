@@ -93,7 +93,7 @@ describe('Hermes Agent: convertClaudeCommandToClaudeSkill', () => {
     // Directory name is gsd-next (hyphen, Windows-safe), frontmatter name is
     // gsd-next (hyphen, #2808 — canonical invocation form for Claude Code autocomplete).
     const result = convertClaudeCommandToClaudeSkill(input, 'fvgsd-next');
-    assert.ok(result.includes('name: gsd-next'), 'frontmatter name uses hyphen form (#2808)');
+    assert.ok(result.includes('name: fvgsd-next'), 'frontmatter name uses hyphen form (#2808)');
   });
 
   test('preserves body content unchanged', () => {

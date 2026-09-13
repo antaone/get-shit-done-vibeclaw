@@ -71,7 +71,7 @@ describe('init commands: agents_installed field (#1371)', () => {
     assert.strictEqual(typeof output.agents_installed, 'boolean',
       'init execute-phase must include agents_installed field');
     assert.strictEqual(output.agents_installed, true,
-      'agents_installed should be true when FVGSD_AGENTS_DIR has gsd-*.md files');
+      'agents_installed should be true when FVGSD_AGENTS_DIR has fvgsd-*.md files');
   });
 
   test('init plan-phase includes agents_installed=true when agents exist', () => {
@@ -171,7 +171,7 @@ describe('checkAgentsInstalled: Copilot .agent.md format (#1512)', () => {
   });
 
   test('agents_installed=true when agents exist as .agent.md (Copilot format)', () => {
-    // Simulate a Copilot install: agents are named gsd-*.agent.md, not gsd-*.md
+    // Simulate a Copilot install: agents are named fvgsd-*.agent.md, not fvgsd-*.md
     // Use FVGSD_AGENTS_DIR to point at an isolated dir with ONLY .agent.md files,
     // so the test does not accidentally pass via the repo's own agents/ dir.
     const agentsDir = path.join(tmpDir, 'copilot-agents');

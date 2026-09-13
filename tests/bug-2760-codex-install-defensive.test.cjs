@@ -121,7 +121,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const parsed = parseTomlToObject(content);
 
     const sessionStartCommands = readHooksSessionStartCommands(codexHome);
-    const managed = sessionStartCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
+    const managed = sessionStartCommands.filter((cmd) => /fvgsd\/check-update/.test(cmd));
     assert.equal(managed.length, 1, 'hooks.json must contain exactly one managed fvgsd/check-update command');
     assert.ok(
       !parsed.hooks || !Array.isArray(parsed.hooks.SessionStart),
@@ -172,7 +172,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd\/check-update/.test(cmd)),
       'GSD handler must appear in hooks.json SessionStart entries: ' + JSON.stringify(hooksJsonCommands)
     );
     assert.ok(!Array.isArray(parsed.hooks), 'no flat [[hooks]] entries');
@@ -200,7 +200,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     assert.ok(!Array.isArray(parsed.hooks), 'flat [[hooks]] must be stripped on upgrade');
     // Only one GSD hook entry must exist (no duplication) in hooks.json.
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd\/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed handler after upgrade');
   });
 
@@ -223,7 +223,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const parsed = parseTomlToObject(content);
 
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd\/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed handler after upgrade from PR-#2802-shape');
   });
 
@@ -234,7 +234,7 @@ describe('#2760 defect 3 — Hooks AoT preservation across install/uninstall/rei
     const content = readCodexConfig(codexHome);
 
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd/check-update/.test(cmd));
+    const gsdHandlers = hooksJsonCommands.filter((cmd) => /fvgsd\/check-update/.test(cmd));
     assert.strictEqual(gsdHandlers.length, 1, 'exactly one managed SessionStart handler after double install');
   });
 });
@@ -269,7 +269,7 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
 
     // Bare [agents] would have left { default, extra_key } as scalar leaves
     // on parsed.agents. After strip + struct emit, every key under agents
-    // must itself be a table (the gsd-* struct form).
+    // must itself be a table (the fvgsd-* struct form).
     assert.ok(
       parsed.agents && typeof parsed.agents === 'object' && !Array.isArray(parsed.agents),
       'agents must be a table-of-tables in parsed structure, got: ' + typeof parsed.agents
@@ -309,7 +309,7 @@ describe('#2760 fix 2 — Strip purges invalid legacy [agents] / [[agents]] rega
     const parsed = parseTomlToObject(content);
 
     // [[agents]] sequence form would parse to Array — after strip it must be
-    // a table-of-tables with gsd-* struct keys.
+    // a table-of-tables with fvgsd-* struct keys.
     assert.ok(
       parsed.agents && typeof parsed.agents === 'object' && !Array.isArray(parsed.agents),
       'agents must be a table-of-tables in parsed structure (sequence form must be stripped), got: '
@@ -668,7 +668,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     );
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd\/check-update/.test(cmd)),
       'GSD entry must appear in hooks.json SessionStart entries: '
         + JSON.stringify(hooksJsonCommands)
     );
@@ -682,7 +682,7 @@ describe('#2760 CR4 finding 2 — Legacy flat [[hooks]] block migrates to namesp
     );
 
     // No duplicate fvgsd/check-update entries — exactly one managed entry.
-    const gsdEntries = hooksJsonCommands.filter((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd));
+    const gsdEntries = hooksJsonCommands.filter((cmd) => typeof cmd === 'string' && /fvgsd\/check-update/.test(cmd));
     assert.equal(gsdEntries.length, 1,
       'exactly one fvgsd/check-update entry after migration, got: ' + gsdEntries.length);
   });
@@ -1064,7 +1064,7 @@ describe('#2760 CR5 finding 3 — migration emits namespaced AoT (no flat/namesp
     // GSD's managed fvgsd/check-update entry also lives in the namespaced array.
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     assert.ok(
-      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd/check-update/.test(cmd)),
+      hooksJsonCommands.some((cmd) => typeof cmd === 'string' && /fvgsd\/check-update/.test(cmd)),
       'managed fvgsd/check-update entry must appear in hooks.json SessionStart entries: ' +
         JSON.stringify(hooksJsonCommands)
     );

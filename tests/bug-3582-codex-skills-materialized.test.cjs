@@ -4,7 +4,7 @@
  *
  * Background: GSD 1.42.2 reported the user-visible failure
  *   > Skipped Codex skill-copy generation (Codex discovers official skills directly)
- * which left users with a "successful" install but no routable `$gsd-*`
+ * which left users with a "successful" install but no routable `$fvgsd-*`
  * entrypoints in Codex CLI 0.130.0. Codex CLI does NOT auto-discover
  * commands from `~/.codex/fvgsd/workflows/*.md` or `agents/*.md`;
  * it only registers slash commands derived from `~/.codex/skills/<name>/SKILL.md`.
@@ -138,7 +138,7 @@ describe('bug-3582: Codex global install materializes the skill surface', { conc
     }
   });
 
-  test('writes the exact expected set of gsd-*/SKILL.md skills (deepEqual on name set)', () => {
+  test('writes the exact expected set of fvgsd-*/SKILL.md skills (deepEqual on name set)', () => {
     const skillsDir = path.join(installRun.codexHome, 'skills');
     assert.ok(
       fs.existsSync(skillsDir),

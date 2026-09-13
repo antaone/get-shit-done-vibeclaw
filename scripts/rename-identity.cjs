@@ -70,6 +70,9 @@ function buildRules({ agentRoles, hookNames, helperNames }) {
   rules.push({ id: 'code-literals', codeOnly: true, pattern: /(['"`])gsd-(?!build\/)/g, replace: (match, quote) => `${quote}fvgsd-` });
   rules.push({ id: 'code-literals', codeOnly: true, pattern: /\^gsd-/g, replace: () => '^fvgsd-' });
   rules.push({ id: 'code-literals', codeOnly: true, pattern: /agents(\\?\.)gsd-/g, replace: (match, dot) => `agents${dot}fvgsd-` });
+  rules.push({ id: 'code-literals', codeOnly: true, pattern: /\\bgsd-/g, replace: () => '\\bfvgsd-' });
+  rules.push({ id: 'prefix-globs', pattern: /(hooks\/(?:dist\/)?)gsd-\*/g, replace: (match, prefix) => `${prefix}fvgsd/*` });
+  rules.push({ id: 'prefix-globs', pattern: /(?<![A-Za-z0-9_-])gsd-\*/g, replace: () => 'fvgsd-*' });
   return rules;
 }
 
@@ -96,6 +99,7 @@ function renamedPath(relPath) {
   if (parts.length === 3 && parts[0] === 'hooks' && parts[1] === 'lib') return `hooks/fvgsd/lib/${parts[2].replace(/^gsd-/, '')}`;
   if (relPath === 'get-shit-done/bin/gsd-tools.cjs') return 'get-shit-done/bin/fvgsd-tools.cjs';
   if (relPath === 'bin/gsd-sdk.js') return 'bin/fvgsd-sdk.js';
+  if (relPath === 'sdk/src/gsd-tools.ts') return 'sdk/src/fvgsd-tools.ts';
   const forked = relPath.replace(/(?<![fF])vgsd/g, 'fvgsd');
   return forked === relPath ? null : forked;
 }

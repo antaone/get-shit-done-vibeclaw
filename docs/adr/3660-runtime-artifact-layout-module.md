@@ -81,7 +81,7 @@ Phase 1 should **not**:
  * @typedef {Object} Layout
  * @property {string} runtime                  canonical enum from runtime-homes.cjs
  * @property {string} configDir                caller-supplied (local or global scope)
- * @property {ArtifactKind[]} kinds            empty array = runtime has no gsd-* surface
+ * @property {ArtifactKind[]} kinds            empty array = runtime has no fvgsd-* surface
  */
 
 function resolveRuntimeArtifactLayout(runtime, configDir) { … }

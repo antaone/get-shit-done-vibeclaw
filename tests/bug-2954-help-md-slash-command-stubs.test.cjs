@@ -68,8 +68,8 @@ function listShippedSlashBaseNames() {
     if (!fm || !fm.name) continue;
     const fmName = fm.name;
     let base = null;
-    if (fmName.startsWith('gsd:')) base = fmName.slice(4);
-    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(4);
+    if (fmName.startsWith('fvgsd:')) base = fmName.slice(6);
+    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(6);
     if (base && /^[a-z][a-z0-9-]*$/.test(base)) names.add(base);
   }
   return names;
@@ -77,7 +77,7 @@ function listShippedSlashBaseNames() {
 
 function extractSlashReferences(contents) {
   const names = new Set();
-  const tokenRe = /\/gsd[:-]([a-z][a-z0-9-]*)/g;
+  const tokenRe = /\/fvgsd[:-]([a-z][a-z0-9-]*)/g;
   let match;
   while ((match = tokenRe.exec(contents)) !== null) {
     names.add(match[1]);
@@ -99,8 +99,8 @@ function listShippedFlagsByCommand() {
     if (!fm || !fm.name || !fm['argument-hint']) continue;
     const fmName = fm.name;
     let base = null;
-    if (fmName.startsWith('gsd:')) base = fmName.slice(4);
-    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(4);
+    if (fmName.startsWith('fvgsd:')) base = fmName.slice(6);
+    else if (fmName.startsWith('fvgsd-')) base = fmName.slice(6);
     if (!base || !/^[a-z][a-z0-9-]*$/.test(base)) continue;
     const flags = new Set();
     for (const m of fm['argument-hint'].matchAll(/--([a-z][a-z0-9-]*)/g)) {
@@ -157,15 +157,15 @@ describe('Bug #2954: help.md ↔ commands/gsd/ bidirectional parity', () => {
         // Accept `/gsd-<command> --<flag>` (precise) OR a bare `--<flag>` token
         // anywhere in help.md (good enough for shared flags like `--force` that
         // appear under multiple commands' descriptions).
-        const preciseDash = `/gsd-${command} --${flag}`;
-        const preciseColon = `/gsd:${command} --${flag}`;
+        const preciseDash = `/fvgsd-${command} --${flag}`;
+        const preciseColon = `/fvgsd:${command} --${flag}`;
         const flagToken = `--${flag}`;
         if (
           !helpContents.includes(preciseDash) &&
           !helpContents.includes(preciseColon) &&
           !helpContents.includes(flagToken)
         ) {
-          gaps.push(`/gsd:${command} --${flag}`);
+          gaps.push(`/fvgsd:${command} --${flag}`);
         }
       }
     }

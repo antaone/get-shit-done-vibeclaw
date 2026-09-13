@@ -67,7 +67,7 @@ if (configDir) {
   const hooksDir = path.join(configDir, 'hooks');
   try {
     if (fs.existsSync(hooksDir)) {
-      const hookFiles = fs.readdirSync(hooksDir).filter(f => MANAGED_HOOKS.includes(f));
+      const hookFiles = MANAGED_HOOKS.filter(f => fs.existsSync(path.join(hooksDir, f)));
       for (const hookFile of hookFiles) {
         try {
           const content = fs.readFileSync(path.join(hooksDir, hookFile), 'utf8');

@@ -148,8 +148,8 @@ function managedHookSurfaceSet(surface = 'settings-json') {
 function isManagedHookBasename(scriptPathOrBasename, opts = {}) {
   if (!scriptPathOrBasename) return false;
   const surface = opts.surface || 'settings-json';
-  const basename = String(scriptPathOrBasename).split(/[\\/]/).pop() || '';
-  return managedHookSurfaceSet(surface).has(basename);
+  const segments = String(scriptPathOrBasename).split(/[\\/]/).filter(Boolean);
+  return managedHookSurfaceSet(surface).has(segments.slice(-2).join('/'));
 }
 
 function managedHookCommandSurfaceSet(surface = 'settings-json', includeLegacyAliases = false) {

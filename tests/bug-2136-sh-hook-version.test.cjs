@@ -176,7 +176,7 @@ describe('bug #2136 part 2: stale-hook detector handles bash comment syntax', ()
     // which breaks simple extraction), so instead we confirm the source matches
     // our expectation and run the regex itself.
     assert.ok(
-      src.includes('fvgsd-hook-version'),
+      src.includes(' gsd-hook-version'),
       'fvgsd/check-update-worker.js must contain a gsd-hook-version version check'
     );
 
@@ -218,8 +218,8 @@ describe('bug #2136 part 3a: install.js bundled path substitutes {{FVGSD_VERSION
     const region = src.slice(anchorIdx, anchorIdx + 2000);
 
     assert.ok(
-      region.includes("entry.endsWith('.sh')"),
-      "bundled hook copy loop must check entry.endsWith('.sh')"
+      region.includes("srcFile.endsWith('.sh')"),
+      "bundled hook copy loop must check srcFile.endsWith('.sh')"
     );
     assert.ok(
       region.includes('FVGSD_VERSION'),
@@ -228,7 +228,7 @@ describe('bug #2136 part 3a: install.js bundled path substitutes {{FVGSD_VERSION
       'bash hook staleness becomes permanently undetectable after future updates'
     );
     // copyFileSync on a .sh file would skip substitution — ensure we read+write instead
-    const shBranchIdx = region.indexOf("entry.endsWith('.sh')");
+    const shBranchIdx = region.indexOf("srcFile.endsWith('.sh')");
     const shBranchRegion = region.slice(shBranchIdx, shBranchIdx + 400);
     assert.ok(
       shBranchRegion.includes('readFileSync') || shBranchRegion.includes('writeFileSync'),

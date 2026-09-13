@@ -15,6 +15,7 @@ const { describe, test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const EXECUTE_PHASE = path.join(ROOT, 'get-shit-done', 'workflows', 'execute-phase.md');
@@ -92,7 +93,7 @@ describe('#3360 — Codex execute-phase handles unsupported worktree isolation',
 
       const installedWorkflow = path.join(
         configDir,
-        'get-shit-done',
+        IDENTITY.installDir,
         'workflows',
         'execute-phase.md',
       );

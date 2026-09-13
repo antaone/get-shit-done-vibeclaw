@@ -228,7 +228,7 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
  *   - Non-empty prefix (e.g. 'fvgsd-'): dir name starts with that prefix AND
  *     appears in the manifest (manifest membership is required). Dirs that match
  *     the prefix but are NOT in the manifest are treated as user-owned and
- *     preserved — this prevents data loss for user-created gsd-* directories.
+ *     preserved — this prevents data loss for user-created fvgsd-* directories.
  *     A warning is written to stderr when such a dir is encountered.
  *   - Empty prefix (Hermes): dir name appears as a canonical skill stem in the
  *     manifest. User dirs not in the manifest are preserved.
@@ -274,7 +274,7 @@ function pruneSkillDirs(skillsDir, retainedNames, prefix, manifest) {
       }
       // Finding 1 fix: prefix match is necessary but NOT sufficient.
       // The dir must also be in the manifest to be considered GSD-owned.
-      // A user-created gsd-* dir that isn't in the manifest is preserved with a warning.
+      // A user-created fvgsd-* dir that isn't in the manifest is preserved with a warning.
       if (!canonicalStems.has(entry.slice(prefix.length))) {
         process.stderr.write(
           `[gsd] Warning: ${entry} matches GSD prefix '${prefix}' but is not in the manifest — preserving (user-owned or unknown)\n`
@@ -357,7 +357,7 @@ function _syncGsdDir(stagedDir, destDir, kind, manifest) {
 
     // Remove gsd-only files from dest that aren't in staged set
     // For commands dir: all .md files are gsd skills
-    // For agents dir: only gsd-* files
+    // For agents dir: only fvgsd-* files
     const destEntries = fs.readdirSync(destDir).filter(f => f.endsWith('.md'));
     for (const file of destEntries) {
       if (kindName === 'agents' && !file.startsWith('fvgsd-')) continue;

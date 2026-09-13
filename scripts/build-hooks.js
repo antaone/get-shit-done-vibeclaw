@@ -46,7 +46,7 @@ const HOOKS_TO_COPY = [
 // entry is copied as `hooks/<dir>/*` → `hooks/dist/<dir>/*` so detached
 // helpers (e.g. hooks/fvgsd/lib/graphify-rebuild.sh) resolve from the hook's
 // installed runtime path. See #3579.
-const HOOKS_SUBDIRS_TO_COPY = ['lib'];
+const HOOKS_SUBDIRS_TO_COPY = ['fvgsd/lib'];
 
 // Sync millisecond sleep using Atomics.wait on a throwaway SharedArrayBuffer.
 // Used between Windows rename retries; this script is sync end-to-end so
@@ -168,7 +168,8 @@ function build() {
     // (in install.js and tests) never observes a transient ".tmp" sibling.
     // Each process uses its own STAGE_DIR (keyed by PID) so concurrent
     // builders never race on staging-dir creation or cleanup.
-    const stagedDest = path.join(STAGE_DIR, `${hook}.${Date.now()}`);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    const stagedDest = path.join(STAGE_DIR, `${hook.replace(/\//g, '__')}.${Date.now()}`);
     fs.copyFileSync(src, stagedDest);
     // Preserve executable bit for shell scripts before rename so the
     // installed file is executable from the very first observation.
@@ -200,7 +201,7 @@ function build() {
         }
       }
       console.log(`\x1b[32m✓\x1b[0m Copying ${subdir}/${ent.name}...`);
-      const stagedDest = path.join(STAGE_DIR, `${subdir}__${ent.name}.${Date.now()}`);
+      const stagedDest = path.join(STAGE_DIR, `${subdir.replace(/\//g, '__')}__${ent.name}.${Date.now()}`);
       fs.copyFileSync(srcFile, stagedDest);
       if (ent.name.endsWith('.sh')) {
         try { fs.chmodSync(stagedDest, 0o755); } catch (e) { /* Windows */ }

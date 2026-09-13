@@ -55,7 +55,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
     cleanup(tmpRoot);
   });
 
-  test('regenerates managed gsd-* skill copies and preserves unrelated user skills (#3562 reverses prior #3427/#3433 behaviour)', () => {
+  test('regenerates managed fvgsd-* skill copies and preserves unrelated user skills (#3562 reverses prior #3427/#3433 behaviour)', () => {
     // Stale legacy body — fresh install must overwrite this so Codex sees the
     // current SKILL.md, not whatever was last on disk.
     const legacySkillBody = '# old managed\n';
@@ -79,8 +79,8 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
       ? fs.readdirSync(skillsDir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name)
       : [];
 
-    // #3562: $gsd-* commands are discoverable only when skills/gsd-*/SKILL.md
-    // exists. The installer must regenerate (not remove) the managed gsd-*
+    // #3562: $fvgsd-* commands are discoverable only when skills/fvgsd-*/SKILL.md
+    // exists. The installer must regenerate (not remove) the managed fvgsd-*
     // directories.
     assert.equal(entries.includes('fvgsd-help'), true);
     const refreshedBody = fs.readFileSync(path.join(skillsDir, 'fvgsd-help', 'SKILL.md'), 'utf8');
@@ -134,7 +134,7 @@ describe('#3427 + #3433 — Codex installer avoids duplicate skills and mixed ho
 
   test('uninstall removes managed SessionStart hook from hooks.json but preserves user hooks', () => {
     const hooksDir = path.join(codexHome, 'hooks');
-    fs.mkdirSync(hooksDir, { recursive: true });
+    fs.mkdirSync(path.join(hooksDir, 'fvgsd'), { recursive: true });
     fs.writeFileSync(path.join(hooksDir, 'fvgsd/check-update.js'), '// managed hook\n');
     const managedHookPath = path.join(codexHome, 'hooks', 'fvgsd/check-update.js').replace(/\\/g, '/');
 

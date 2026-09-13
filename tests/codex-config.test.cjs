@@ -132,7 +132,7 @@ describe('getCodexSkillAdapterHeader', () => {
 
   test('includes correct invocation syntax', () => {
     const result = getCodexSkillAdapterHeader('fvgsd-plan-phase');
-    assert.ok(result.includes('`$gsd-plan-phase`'), 'has $skillName invocation');
+    assert.ok(result.includes('`$fvgsd-plan-phase`'), 'has $skillName invocation');
     assert.ok(result.includes('{{FVGSD_ARGS}}'), 'has FVGSD_ARGS variable');
   });
 
@@ -364,7 +364,7 @@ tools: Read, Grep, Glob
     const minimalAgent = `<role>You are an unknown agent.</role>`;
     const result = generateCodexAgentToml('fvgsd-unknown', minimalAgent);
     assert.ok(result.includes('name = "fvgsd-unknown"'), 'falls back to agent name');
-    assert.ok(result.includes('description = "GSD agent gsd-unknown"'), 'falls back to synthetic description');
+    assert.ok(result.includes('description = "GSD agent fvgsd-unknown"'), 'falls back to synthetic description');
   });
 
   test('defaults unknown agents to read-only', () => {
@@ -555,7 +555,7 @@ describe('stripGsdFromCodexConfig', () => {
     assert.ok(result.includes('[agents.custom-agent]'), 'preserves user agent section');
   });
 
-  test('#2645: removes [[agents]] array-of-tables entries whose name is gsd-*', () => {
+  test('#2645: removes [[agents]] array-of-tables entries whose name is fvgsd-*', () => {
     const content = `[[agents]]\nname = "fvgsd-executor"\ndescription = "test"\nconfig_file = "agents/fvgsd-executor.toml"\n\n[[agents]]\nname = "custom-agent"\ndescription = "user agent"\n`;
     const result = stripGsdFromCodexConfig(content);
     assert.ok(!/name = "fvgsd-executor"/.test(result), 'removes managed GSD [[agents]] entry');
@@ -1815,7 +1815,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('features = { other_feature = true }'), 'preserves the root inline-table assignment');
     assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append an invalid dotted codex_hooks key');
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a features table');
-    assert.strictEqual(countMatches(content, /fvgsd/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
+    assert.strictEqual(countMatches(content, /fvgsd\/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
     assert.ok(content.includes('[agents.fvgsd-executor]'), 'still installs the managed agent block in struct format');
     assertNoDraftRootKeys(content);
   });
@@ -1836,7 +1836,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assert.ok(content.includes('features = "disabled"'), 'preserves the root scalar assignment');
     assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append an invalid dotted codex_hooks key');
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a features table');
-    assert.strictEqual(countMatches(content, /fvgsd/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
+    assert.strictEqual(countMatches(content, /fvgsd\/check-update\.js/g), 0, 'does not add the GSD hook block when codex_hooks cannot be enabled safely');
     assert.ok(content.includes('[agents.fvgsd-executor]'), 'still installs the managed agent block in struct format');
     assertNoDraftRootKeys(content);
   });
@@ -2175,7 +2175,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     assert.ok(cleaned.includes('# keep me'), 'preserves user comments in [features]');
     assert.ok(cleaned.includes('other_feature = true'), 'preserves other feature keys');
     assert.strictEqual(countMatches(cleaned, /echo custom-after-command/g), 1, 'preserves non-GSD hooks');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes only the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes only the GSD update hook');
     assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
     assertUsesOnlyEol(cleaned, '\r\n');
   });
@@ -2200,7 +2200,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     assert.strictEqual(countMatches(cleaned, /^features\.codex_hooks = true$/gm), 0, 'removes the dotted GSD codex_hooks key');
     assert.strictEqual(countMatches(cleaned, /^\[features\]\s*$/gm), 0, 'does not leave behind a [features] table');
     assert.strictEqual(countMatches(cleaned, /echo custom-after-command/g), 1, 'preserves non-GSD hooks');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes the GSD update hook');
   });
 
   test('install then uninstall preserves a pre-existing [features].codex_hooks = true', () => {
@@ -2219,7 +2219,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('[features]\ncodex_hooks = true\nother_feature = true'), 'preserves the user-authored codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^codex_hooks = true$/gm), 1, 'keeps the pre-existing codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes the GSD update hook');
     assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
@@ -2239,7 +2239,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('[features]\n"codex_hooks" = true\nother_feature = true'), 'preserves the user-authored quoted codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^"codex_hooks" = true$/gm), 1, 'keeps the pre-existing quoted codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes the GSD update hook');
     assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
@@ -2258,7 +2258,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('features.codex_hooks = true\nfeatures.other_feature = true'), 'preserves the user-authored dotted codex_hooks assignment');
     assert.strictEqual(countMatches(cleaned, /^features\.codex_hooks = true$/gm), 1, 'keeps the pre-existing dotted codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes the GSD update hook');
     assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 
@@ -2297,7 +2297,7 @@ describe('Codex uninstall symmetry for hook-enabled configs', () => {
     const cleaned = stripGsdFromCodexConfig(readCodexConfig(codexHome));
     assert.ok(cleaned.includes('# first line wins\n[features]\r\nother_feature = true\r\n\r\n[model]\r\nname = "o3"'), 'preserves the original mixed-EOL user content');
     assert.strictEqual(countMatches(cleaned, /^codex_hooks = true$/gm), 0, 'removes the injected codex_hooks key');
-    assert.strictEqual(countMatches(cleaned, /fvgsd/check-update\.js/g), 0, 'removes the GSD update hook');
+    assert.strictEqual(countMatches(cleaned, /fvgsd\/check-update\.js/g), 0, 'removes the GSD update hook');
     assert.strictEqual(countMatches(cleaned, /\[agents\.fvgsd-/g), 0, 'removes managed GSD agent sections');
   });
 });

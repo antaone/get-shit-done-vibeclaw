@@ -13,6 +13,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 const REPO_ROOT = path.join(__dirname, '..');
 const CONFIGURATION_CJS = path.join(REPO_ROOT, 'get-shit-done', 'bin', 'lib', 'configuration.generated.cjs');
@@ -103,7 +104,7 @@ describe('bug #3571: configuration generated manifests resolve in install layout
       install(true, 'codex');
     });
 
-    const sharedDir = path.join(tmpRoot, '.codex', 'get-shit-done', 'bin', 'shared');
+    const sharedDir = path.join(tmpRoot, '.codex', IDENTITY.installDir, 'bin', 'shared');
     for (const fileName of ['config-defaults.manifest.json', 'config-schema.manifest.json']) {
       const installedManifest = path.join(sharedDir, fileName);
       assert.ok(fs.existsSync(installedManifest), `${fileName} must be copied to ${sharedDir}`);
@@ -115,7 +116,7 @@ describe('bug #3571: configuration generated manifests resolve in install layout
     const installedCjs = path.join(
       tmpRoot,
       '.codex',
-      'get-shit-done',
+      IDENTITY.installDir,
       'bin',
       'lib',
       'configuration.generated.cjs'

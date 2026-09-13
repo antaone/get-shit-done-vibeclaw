@@ -93,7 +93,7 @@ Use Read() to view files.
 describe('convertClaudeAgentToAugmentAgent', () => {
   test('converts agent frontmatter with unquoted name', () => {
     const input = `---
-name: gsd-bugfix
+name: fvgsd-bugfix
 description: "Fix bugs automatically"
 tools: Read, Write, Edit, Bash
 color: green

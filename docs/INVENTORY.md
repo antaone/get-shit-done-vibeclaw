@@ -247,7 +247,7 @@ Full roster at `get-shit-done/workflows/*.md`. Workflows are thin orchestrators 
 | `spike.md` | Rapid feasibility validation through focused, throwaway experiments. | `/fvgsd-spike` |
 | `spike-wrap-up.md` | Curate spike findings and package them as a persistent `spike-findings-[project]` skill. | `/fvgsd-spike --wrap-up` |
 | `stats.md` | Project statistics rendering — phases, plans, requirements, git metrics. | `/fvgsd-stats` |
-| `sync-skills.md` | Cross-runtime GSD skill sync — diff and apply `gsd-*` skill directories across runtime roots. | `/fvgsd-update --sync` |
+| `sync-skills.md` | Cross-runtime GSD skill sync — diff and apply `fvgsd-*` skill directories across runtime roots. | `/fvgsd-update --sync` |
 | `transition.md` | Phase-boundary transition workflow — workstream checks, state advancement. | `execute-phase.md`, `/fvgsd-progress --next` |
 | `ui-phase.md` | Generate UI-SPEC.md design contract via fvgsd-ui-researcher. | `/fvgsd-ui-phase` |
 | `ui-review.md` | Retroactive 6-pillar visual audit via fvgsd-ui-auditor. | `/fvgsd-ui-review` |
@@ -396,7 +396,7 @@ Full listing: `get-shit-done/bin/lib/*.cjs`.
 | `gsd2-import.cjs` | External-plan ingest for `/fvgsd-import --from-gsd2` |
 | `init-command-router.cjs` | Thin CJS subcommand router adapter for `fvgsd-tools init` |
 | `init.cjs` | Compound context loading for each workflow type |
-| `install-profiles.cjs` | Install profile allowlist + skill staging for `--minimal` install (#2762); single source of truth for which `gsd-*` skills/agents land in runtime config dirs |
+| `install-profiles.cjs` | Install profile allowlist + skill staging for `--minimal` install (#2762); single source of truth for which `fvgsd-*` skills/agents land in runtime config dirs |
 | `installer-migration-authoring.cjs` | Installer migration authoring guardrails for record metadata, explicit scopes, ownership evidence, and runtime contract citations |
 | `installer-migration-report.cjs` | Installer migration report projection and blocked-action guard for install/update integration |
 | `installer-migrations.cjs` | Installer migration planning, artifact classification, install-state persistence, journaled apply, and rollback helpers |

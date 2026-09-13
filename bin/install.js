@@ -103,7 +103,7 @@ function isCodexHooksFeatureKey(key) {
 const FVGSD_COPILOT_INSTRUCTIONS_MARKER = '<!-- GSD Configuration \u2014 managed by get-shit-done installer -->';
 const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = '<!-- /GSD Configuration -->';
 
-// GSD-managed files under hooks/fvgsd/lib/ (helpers required by gsd-*.sh hooks).
+// GSD-managed files under hooks/fvgsd/lib/ (helpers required by fvgsd-*.sh hooks).
 // git-cmd.js does not start with "fvgsd-" (shared classifier for #3129), graphify-rebuild.sh does.
 const FVGSD_HOOK_LIB_FILES = ['git-cmd.js', 'graphify-rebuild.sh'];
 
@@ -149,6 +149,7 @@ const pkg = require('../package.json');
 // of cwd, but keeping the require at the top makes the dependency explicit and
 // surfaces resolution failures at process start instead of at first install call.
 const _gsdLibDir = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib');
+const IDENTITY = require(path.join(_gsdLibDir, 'identity.cjs'));
 const { MODEL_PROFILES: FVGSD_MODEL_PROFILES } = require(path.join(_gsdLibDir, 'model-profiles.cjs'));
 const {
   RUNTIME_PROFILE_MAP: FVGSD_RUNTIME_PROFILE_MAP,
@@ -706,7 +707,7 @@ function resolveNodeRunner() {
 }
 
 /**
- * Rewrite legacy `node .../gsd-*.js` command strings in settings.hooks to use
+ * Rewrite legacy `node .../fvgsd-*.js` command strings in settings.hooks to use
  * the absolute Node binary path (#2979 follow-up: CR feedback on #3002).
  *
  * The original #2979 fix only emitted absolute paths for *newly registered*
@@ -4957,14 +4958,14 @@ function installCodexConfig(targetDir, agentsSrc) {
   const agents = [];
 
   // Compute the Codex GSD install path (absolute, so subagents with empty $HOME work — #820)
-  const codexGsdPath = `${path.resolve(targetDir, 'get-shit-done').replace(/\\/g, '/')}/`;
+  const codexGsdPath = `${path.resolve(targetDir, IDENTITY.installDir).replace(/\\/g, '/')}/`;
 
   for (const file of agentEntries) {
     let content = fs.readFileSync(path.join(agentsSrc, file), 'utf8');
     // Replace full .claude/get-shit-done prefix so path resolves to the Codex
     // GSD install before generic .claude → .codex conversion rewrites it.
-    content = content.replace(/~\/\.claude\/get-shit-done\//g, codexGsdPath);
-    content = content.replace(/\$HOME\/\.claude\/get-shit-done\//g, codexGsdPath);
+    content = content.replace(/~\/\.claude\/fvgsd\//g, codexGsdPath);
+    content = content.replace(/\$HOME\/\.claude\/fvgsd\//g, codexGsdPath);
     // Route TOML emit through the same full Claude→Codex conversion pipeline
     // used on the `.md` emit path (#2639). Covers: slash-command rewrites,
     // $ARGUMENTS → {{FVGSD_ARGS}}, /clear removal, anchored and bare .claude/
@@ -5618,7 +5619,7 @@ function copyFlattenedCommands(srcDir, destDir, prefix, pathPrefix, runtime) {
     return;
   }
 
-  // Remove old gsd-*.md files before copying new ones
+  // Remove old fvgsd-*.md files before copying new ones
   if (fs.existsSync(destDir)) {
     for (const file of fs.readdirSync(destDir)) {
       if (file.startsWith(`${prefix}-`) && file.endsWith('.md')) {
@@ -6241,7 +6242,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
     fs.rmSync(legacyCommandsGsd, { recursive: true });
   }
 
-  // Every pre-fvgsd skills runtime used flat gsd-* directories. Remove only
+  // Every pre-fvgsd skills runtime used flat fvgsd-* directories. Remove only
   // known public commands; unknown prefixed directories may be user-owned.
   const flatSkillsDir = path.join(configDir, 'skills');
   savedLegacyArtifacts = _pruneLegacyFlatSkills(flatSkillsDir, savedLegacyArtifacts);
@@ -6251,7 +6252,7 @@ function _runLegacyInstallMigrations(runtime, configDir, scope = 'global') {
   const nestedGsdDir = path.join(configDir, 'skills', 'gsd');
   savedLegacyArtifacts = _pruneLegacyHermesCategory(nestedGsdDir, savedLegacyArtifacts);
 
-  // OpenCode/Kilo used flat command/gsd-*.md files.
+  // OpenCode/Kilo used flat command/fvgsd-*.md files.
   const flatCommandsDir = path.join(configDir, 'command');
   _pruneLegacyFlatCommands(flatCommandsDir);
 
@@ -6398,7 +6399,7 @@ function installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile) {
       // Preserve every subdir that is NOT in the staged set — those are user-added dirs
       // (e.g. user-content/) that GSD does not manage.
       //
-      // For prefix='fvgsd-' (others): _removeGsdEntries removes only gsd-* entries.
+      // For prefix='fvgsd-' (others): _removeGsdEntries removes only fvgsd-* entries.
       // Non-gsd-* user dirs (e.g. my-custom-skill/) are untouched. Only preserve the
       // explicit user-owned GSD-prefixed skill gsd-dev-preferences, which GSD does not
       // reinstall from source but must survive the prune (#2973).
@@ -6475,7 +6476,7 @@ function uninstallRuntimeArtifacts(runtime, configDir, scope) {
   // Legacy cleanup before layout-driven removal (scope-aware to avoid
   // removing Claude local commands/gsd/ which is the primary install dir).
   // Returns saved user artifacts so we can migrate AFTER layout removal
-  // (the layout's gsd-* prefix pass would wipe a skill dir created here).
+  // (the layout's fvgsd-* prefix pass would wipe a skill dir created here).
   const savedLegacyArtifacts = _runLegacyUninstallCleanup(runtime, configDir, scope);
 
   const layout = resolveRuntimeArtifactLayout(runtime, configDir, scope);
@@ -6987,7 +6988,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   }
 
   // 1d. Gemini: remove commands/gsd/ with dev-preferences.md preservation.
-  //     The layout removes gsd-*.toml files but not the directory itself.
+  //     The layout removes fvgsd-*.toml files but not the directory itself.
   //     Preserve user files before removing the directory.
   if (isGemini) {
     const gsdCommandsDir = path.join(targetDir, 'commands', 'gsd');
@@ -7041,7 +7042,7 @@ function uninstall(isGlobal, runtime = 'claude') {
   }
 
   // 2. Remove get-shit-done directory
-  const gsdDir = path.join(targetDir, 'get-shit-done');
+  const gsdDir = path.join(targetDir, IDENTITY.installDir);
   if (fs.existsSync(gsdDir)) {
     // Preserve user-generated files before wipe (#1423)
     const userProfilePath = path.join(gsdDir, 'USER-PROFILE.md');
@@ -7049,21 +7050,21 @@ function uninstall(isGlobal, runtime = 'claude') {
 
     fs.rmSync(gsdDir, { recursive: true });
     removedCount++;
-    console.log(`  ${green}✓${reset} Removed get-shit-done/`);
+    console.log(`  ${green}✓${reset} Removed ${IDENTITY.installDir}/`);
 
     // Restore user-generated files
     if (preservedProfile) {
       try {
         fs.mkdirSync(gsdDir, { recursive: true });
         fs.writeFileSync(userProfilePath, preservedProfile);
-        console.log(`  ${green}✓${reset} Preserved get-shit-done/USER-PROFILE.md`);
+        console.log(`  ${green}✓${reset} Preserved ${IDENTITY.installDir}/USER-PROFILE.md`);
       } catch (err) {
         console.error(`  ${red}✗${reset} Failed to restore USER-PROFILE.md: ${err.message}`);
       }
     }
   }
 
-  // 3. Remove GSD agents (gsd-*.md files only)
+  // 3. Remove GSD agents (fvgsd-*.md files only)
   const agentsDir = path.join(targetDir, 'agents');
   if (fs.existsSync(agentsDir)) {
     const files = fs.readdirSync(agentsDir);
@@ -7100,7 +7101,7 @@ function uninstall(isGlobal, runtime = 'claude') {
     // Remove only the GSD-managed files from hooks/fvgsd/lib/ (git-cmd.js + graphify-rebuild.sh).
     // hooks/fvgsd/lib/ lives inside the user's runtime hooks directory (shared space) and
     // may contain user-owned custom helpers. We must not recursively delete the dir.
-    const hooksLibDir = path.join(hooksDir, 'lib');
+    const hooksLibDir = path.join(hooksDir, IDENTITY.hooksDir, 'lib');
     if (fs.existsSync(hooksLibDir)) {
       let removedLibFiles = 0;
       for (const file of FVGSD_HOOK_LIB_FILES) {
@@ -7123,6 +7124,7 @@ function uninstall(isGlobal, runtime = 'claude') {
         console.log(`  ${green}✓${reset} Removed ${removedLibFiles} hooks/fvgsd/lib/ helper(s)`);
       }
     }
+    try { fs.rmdirSync(path.join(hooksDir, IDENTITY.hooksDir)); } catch (_) { /* not empty or absent */ }
   }
 
   // 5. Remove GSD package.json (CommonJS mode marker)
@@ -7214,7 +7216,7 @@ function uninstall(isGlobal, runtime = 'claude') {
             if (config.permission[permType]) {
               const keys = Object.keys(config.permission[permType]);
               for (const key of keys) {
-                if (key.includes('get-shit-done')) {
+                if (key.includes(`/${IDENTITY.installDir}/`)) {
                   delete config.permission[permType][key];
                   modified = true;
                 }
@@ -7255,7 +7257,7 @@ function uninstall(isGlobal, runtime = 'claude') {
             if (config.permission[permType]) {
               const keys = Object.keys(config.permission[permType]);
               for (const key of keys) {
-                if (key.includes('get-shit-done')) {
+                if (key.includes(`/${IDENTITY.installDir}/`)) {
                   delete config.permission[permType][key];
                   modified = true;
                 }
@@ -7411,7 +7413,7 @@ function configureOpencodePermissions(isGlobal = true, configDir = null) {
   const defaultConfigDir = path.join(os.homedir(), '.config', 'opencode');
   const gsdPath = opencodeConfigDir === defaultConfigDir
     ? '~/.config/opencode/fvgsd/*'
-    : `${opencodeConfigDir.replace(/\\/g, '/')}/get-shit-done/*`;
+    : `${opencodeConfigDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
 
   let modified = false;
 
@@ -7484,8 +7486,8 @@ function configureKiloPermissions(isGlobal = true, configDir = null) {
   // Use ~ shorthand if it's in the default location, otherwise use full path
   const defaultConfigDir = path.join(os.homedir(), '.config', 'kilo');
   const gsdPath = kiloConfigDir === defaultConfigDir
-    ? '~/.config/kilo/get-shit-done/*'
-    : `${kiloConfigDir.replace(/\\/g, '/')}/get-shit-done/*`;
+    ? `~/.config/kilo/${IDENTITY.installDir}/*`
+    : `${kiloConfigDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
 
   let modified = false;
 
@@ -7656,7 +7658,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
   const isTrae = runtime === 'trae';
   const isCline = runtime === 'cline';
   const isHermes = runtime === 'hermes';
-  const gsdDir = path.join(configDir, 'get-shit-done');
+  const gsdDir = path.join(configDir, IDENTITY.installDir);
   const commandsDir = path.join(configDir, 'commands', 'fvgsd');
   const opencodeCommandDir = path.join(configDir, 'command');
   // Hermes nests GSD skills under skills/fvgsd/ as a single category (#2841).
@@ -7681,7 +7683,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
     // as a "local patch" (bug #2771). Single source of truth:
     // USER_OWNED_ARTIFACTS at top of file.
     if (USER_OWNED_ARTIFACTS.includes(rel)) continue;
-    manifest.files['get-shit-done/' + rel] = hash;
+    manifest.files[`${IDENTITY.installDir}/${rel}`] = hash;
   }
   // Record commands/fvgsd/ for any runtime that emits it (Gemini globally,
   // Claude Code locally — see #2923). Manifest must reflect everything on
@@ -7739,20 +7741,9 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
   if (!isCodex && !isCopilot && !isCline) {
     const hooksDir = path.join(configDir, 'hooks');
     if (fs.existsSync(hooksDir)) {
-      for (const file of fs.readdirSync(hooksDir)) {
-        if (file.startsWith('fvgsd-') && (file.endsWith('.js') || file.endsWith('.sh'))) {
-          manifest.files['hooks/' + file] = fileHash(path.join(hooksDir, file));
-        }
-      }
-      // Track hooks/fvgsd/lib/ helpers so saveLocalPatches() can back up user edits
-      // to git-cmd.js (validate-commit classifier) and graphify-rebuild.sh.
-      const hooksLibDir = path.join(hooksDir, 'lib');
-      if (fs.existsSync(hooksLibDir)) {
-        for (const file of fs.readdirSync(hooksLibDir)) {
-          if (FVGSD_HOOK_LIB_FILES.includes(file)) {
-            manifest.files['hooks/fvgsd/lib/' + file] = fileHash(path.join(hooksLibDir, file));
-          }
-        }
+      const ownHooksDir = path.join(hooksDir, IDENTITY.hooksDir);
+      for (const [rel, hash] of Object.entries(generateManifest(ownHooksDir))) {
+        manifest.files[`hooks/${IDENTITY.hooksDir}/${rel}`] = hash;
       }
     }
   }
@@ -7868,7 +7859,7 @@ function saveLocalPatches(configDir, pristineCtx) {
   // that were incorrectly recorded so refreshes don't surface false patches warnings.
   if (manifest.files) {
     for (const artifact of USER_OWNED_ARTIFACTS) {
-      delete manifest.files[`get-shit-done/${artifact}`];
+      delete manifest.files[`${IDENTITY.installDir}/${artifact}`];
     }
   }
 
@@ -8220,11 +8211,11 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // reflect the true pre-GSD state. Non-Codex runtimes skip this block.
   //
   // Snapshot contents:
-  //   codexPreInstallSkillNames  — Set of gsd-* skill dir names that existed
+  //   codexPreInstallSkillNames  — Set of fvgsd-* skill dir names that existed
   //   codexPreInstallSkillContents — Map<skillName, Map<relPath, Buffer>> of
-  //       the full file tree of each pre-existing gsd-* skill dir, so that
+  //       the full file tree of each pre-existing fvgsd-* skill dir, so that
   //       overwritten dirs can be fully restored on rollback (not just removed).
-  //   codexPreInstallAgentFiles  — Set of gsd-*.{md,toml} filenames in agents/
+  //   codexPreInstallAgentFiles  — Set of fvgsd-*.{md,toml} filenames in agents/
   //   codexPreInstallAgentContents — Map<filename, Buffer> of pre-existing agent
   //       file bytes, enabling full content restore (not just deletion) on rollback.
   //   codexPreInstallVersionBytes — Buffer (or null) of get-shit-done/VERSION
@@ -8234,11 +8225,11 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // accessible by closure.
   const codexPreInstallSkillNames = new Set();
   // Map<skillDirName, Map<relPath, Buffer>> — full content snapshot of each
-  // pre-existing gsd-* skill directory. Best-effort: read errors are silently
+  // pre-existing fvgsd-* skill directory. Best-effort: read errors are silently
   // skipped so a partial snapshot is still better than none.
   const codexPreInstallSkillContents = new Map();
   const codexPreInstallAgentFiles = new Set();
-  // Map<filename, Buffer> — content snapshot of each pre-existing gsd-* agent file.
+  // Map<filename, Buffer> — content snapshot of each pre-existing fvgsd-* agent file.
   const codexPreInstallAgentContents = new Map();
   let codexPreInstallVersionBytes = null;
   if (isCodex && !isMinimalMode(_effectiveInstallMode)) {
@@ -8279,7 +8270,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         }
       }
     }
-    const _preVersionPath = path.join(targetDir, 'get-shit-done', 'VERSION');
+    const _preVersionPath = path.join(targetDir, IDENTITY.installDir, 'VERSION');
     if (fs.existsSync(_preVersionPath)) {
       try { codexPreInstallVersionBytes = fs.readFileSync(_preVersionPath); } catch (_) { /* best-effort */ }
     }
@@ -8297,7 +8288,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // handles config.toml, which is not yet touched at this point in the pipeline.
   const _codexPreConfigRollback = !isCodex || isMinimalMode(_effectiveInstallMode) ? null : () => {
     rollbackInstallerMigrations();
-    // skills/gsd-* — pass 1: restore snapshot entries (may be absent if deleted mid-install).
+    // skills/fvgsd-* — pass 1: restore snapshot entries (may be absent if deleted mid-install).
     const _earlySkillsDir = path.join(targetDir, 'skills');
     for (const skillName of codexPreInstallSkillNames) {
       const skillDirPath = path.join(_earlySkillsDir, skillName);
@@ -8316,7 +8307,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         }
       } catch (_) { /* best-effort */ }
     }
-    // skills/gsd-* — pass 2: remove any newly-created dirs not in the snapshot.
+    // skills/fvgsd-* — pass 2: remove any newly-created dirs not in the snapshot.
     if (fs.existsSync(_earlySkillsDir)) {
       try {
         for (const entry of fs.readdirSync(_earlySkillsDir, { withFileTypes: true })) {
@@ -8327,7 +8318,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         }
       } catch (_) { /* best-effort */ }
     }
-    // agents/gsd-* — pass 1: restore snapshot entries.
+    // agents/fvgsd-* — pass 1: restore snapshot entries.
     const _earlyAgentsDir = path.join(targetDir, 'agents');
     for (const file of codexPreInstallAgentFiles) {
       const buf = codexPreInstallAgentContents.get(file);
@@ -8338,7 +8329,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         } catch (_) { /* best-effort */ }
       }
     }
-    // agents/gsd-* — pass 2: remove any newly-created files not in the snapshot.
+    // agents/fvgsd-* — pass 2: remove any newly-created files not in the snapshot.
     if (fs.existsSync(_earlyAgentsDir)) {
       try {
         for (const file of fs.readdirSync(_earlyAgentsDir)) {
@@ -8349,7 +8340,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       } catch (_) { /* best-effort */ }
     }
     // get-shit-done/VERSION
-    const _earlyVersionPath = path.join(targetDir, 'get-shit-done', 'VERSION');
+    const _earlyVersionPath = path.join(targetDir, IDENTITY.installDir, 'VERSION');
     if (codexPreInstallVersionBytes !== null) {
       try { fs.writeFileSync(_earlyVersionPath, codexPreInstallVersionBytes); } catch (_) { /* best-effort */ }
     } else if (fs.existsSync(_earlyVersionPath)) {
@@ -8405,7 +8396,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // which now emits a grouped error with the documented resolution path.
   //
   // #3610: the classifier-based resolution must run regardless of TTY.
-  // For unambiguous categories (e.g. `hooks/gsd-*` bundled hooks left
+  // For unambiguous categories (e.g. `hooks/fvgsd/*` bundled hooks left
   // behind by a previous version), there is no actual "user choice" to
   // make — the file is a known GSD-managed artifact and the installer is
   // about to write the fresh bundled version. Gating the resolver on
@@ -8613,7 +8604,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // Copy get-shit-done skill with path replacement
   // Preserve user-generated files before the wipe-and-copy so they survive re-install
   const skillSrc = path.join(src, 'get-shit-done');
-  const skillDest = path.join(targetDir, 'get-shit-done');
+  const skillDest = path.join(targetDir, IDENTITY.installDir);
   const savedGsdArtifacts = preserveUserArtifacts(skillDest, USER_OWNED_ARTIFACTS);
   copyWithPathReplacement(skillSrc, skillDest, pathPrefix, runtime, false, isGlobal);
   restoreUserArtifacts(skillDest, savedGsdArtifacts);
@@ -8628,10 +8619,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   } else {
     failures.push('bin/vibe.js (source missing)');
   }
-  if (verifyInstalled(skillDest, 'get-shit-done')) {
-    console.log(`  ${green}✓${reset} Installed get-shit-done`);
+  if (verifyInstalled(skillDest, IDENTITY.installDir)) {
+    console.log(`  ${green}✓${reset} Installed ${IDENTITY.installDir}`);
   } else {
-    failures.push('get-shit-done');
+    failures.push(IDENTITY.installDir);
   }
 
   // #3288 / #3571 — Copy sdk/shared manifests into the get-shit-done payload
@@ -8651,7 +8642,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   for (const fileName of sharedPayloadFiles) {
     const sharedSrc = path.join(src, 'sdk', 'shared', fileName);
     const sharedDest = path.join(skillDest, 'bin', 'shared', fileName);
-    const displayPath = `get-shit-done/bin/shared/${fileName}`;
+    const displayPath = `${IDENTITY.installDir}/bin/shared/${fileName}`;
     if (fs.existsSync(sharedSrc)) {
       fs.mkdirSync(path.dirname(sharedDest), { recursive: true });
       fs.copyFileSync(sharedSrc, sharedDest);
@@ -8666,7 +8657,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   // Copy agents to agents directory.
-  // Skipped under --minimal: gsd-* subagent descriptions are eagerly loaded
+  // Skipped under --minimal: fvgsd-* subagent descriptions are eagerly loaded
   // into the runtime's Agent tool schema, costing ~6k tokens per turn even
   // when no GSD workflow is active. See gsd-build/get-shit-done#2762.
   // Note: agentsSrc is declared as let before the enclosing try block so it
@@ -8674,7 +8665,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   agentsSrc = _stageAgents(path.join(src, 'agents'));
   const agentsDest = path.join(targetDir, 'agents');
 
-  // Always remove stale gsd-* agents first so re-installing with
+  // Always remove stale fvgsd-* agents first so re-installing with
   // `--minimal` actually shrinks a previously-full install.
   // For Codex this also covers per-agent `.toml` files alongside the `.md`
   // sources so a full → minimal switch doesn't leave stale registrations.
@@ -8799,7 +8790,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
 
   // Copy CHANGELOG.md
   const changelogSrc = path.join(src, 'CHANGELOG.md');
-  const changelogDest = path.join(targetDir, 'get-shit-done', 'CHANGELOG.md');
+  const changelogDest = path.join(targetDir, IDENTITY.installDir, 'CHANGELOG.md');
   if (fs.existsSync(changelogSrc)) {
     fs.copyFileSync(changelogSrc, changelogDest);
     if (verifyFileInstalled(changelogDest, 'CHANGELOG.md')) {
@@ -8810,7 +8801,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   // Write VERSION file
-  const versionDest = path.join(targetDir, 'get-shit-done', 'VERSION');
+  const versionDest = path.join(targetDir, IDENTITY.installDir, 'VERSION');
   fs.writeFileSync(versionDest, pkg.version);
   if (verifyFileInstalled(versionDest, 'VERSION')) {
     console.log(`  ${green}✓${reset} Wrote VERSION (${pkg.version})`);
@@ -8832,66 +8823,42 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     if (fs.existsSync(hooksSrc)) {
       const hooksDest = path.join(targetDir, 'hooks');
       fs.mkdirSync(hooksDest, { recursive: true });
-      const hookEntries = fs.readdirSync(hooksSrc);
       const configDirReplacement = getConfigDirFromHome(runtime, isGlobal);
-      for (const entry of hookEntries) {
-        const srcFile = path.join(hooksSrc, entry);
-        if (fs.statSync(srcFile).isFile()) {
-          const destFile = path.join(hooksDest, entry);
-          // Template .js files to replace '.claude' with runtime-specific config dir
-          // and stamp the current GSD version into the hook version header
-          if (entry.endsWith('.js')) {
-            let content = fs.readFileSync(srcFile, 'utf8');
-            content = content.replace(/'\.claude'/g, configDirReplacement);
-            content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
-            content = content.replace(/\.claude\//g, `${getDirName(runtime)}/`);
-            if (isQwen) {
-              content = content.replace(/CLAUDE\.md/g, 'QWEN.md');
-              content = content.replace(/\bClaude Code\b/g, 'Qwen Code');
-            }
-            if (isHermes) {
-              content = content.replace(/CLAUDE\.md/g, 'HERMES.md');
-              content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
-            }
-            content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
-            fs.writeFileSync(destFile, content);
-            // Ensure hook files are executable (fixes #1162 — missing +x permission)
-            try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
-          } else {
-            // .sh hooks carry a gsd-hook-version header so fvgsd/check-update.js can
-            // detect staleness after updates — stamp the version just like .js hooks.
-            if (entry.endsWith('.sh')) {
-              let content = fs.readFileSync(srcFile, 'utf8');
-              content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
-              fs.writeFileSync(destFile, content);
-              try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
-            } else {
-              fs.copyFileSync(srcFile, destFile);
-            }
+      const templateHook = (srcFile, destFile) => {
+        if (srcFile.endsWith('.js')) {
+          let content = fs.readFileSync(srcFile, 'utf8');
+          content = content.replace(/'\.claude'/g, configDirReplacement);
+          content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
+          content = content.replace(/\.claude\//g, `${getDirName(runtime)}/`);
+          if (isQwen) {
+            content = content.replace(/CLAUDE\.md/g, 'QWEN.md');
+            content = content.replace(/\bClaude Code\b/g, 'Qwen Code');
           }
-        } else if (fs.statSync(srcFile).isDirectory()) {
-          // #3579: recurse one level into hook subdirs (lib/ etc.). The
-          // graphify auto-update hook's rebuild helper lives at
-          // hooks/dist/lib/graphify-rebuild.sh and must land at the
-          // mirrored target path so the hook's REBUILD_SCRIPT lookup resolves.
-          const subDest = path.join(hooksDest, entry);
-          fs.mkdirSync(subDest, { recursive: true });
-          const subEntries = fs.readdirSync(srcFile);
-          for (const subEntry of subEntries) {
-            const subSrcFile = path.join(srcFile, subEntry);
-            if (!fs.statSync(subSrcFile).isFile()) continue;
-            const subDestFile = path.join(subDest, subEntry);
-            if (subEntry.endsWith('.sh')) {
-              let content = fs.readFileSync(subSrcFile, 'utf8');
-              content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
-              fs.writeFileSync(subDestFile, content);
-              try { fs.chmodSync(subDestFile, 0o755); } catch (e) { /* Windows */ }
-            } else {
-              fs.copyFileSync(subSrcFile, subDestFile);
-            }
+          if (isHermes) {
+            content = content.replace(/CLAUDE\.md/g, 'HERMES.md');
+            content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
           }
+          content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
+          fs.writeFileSync(destFile, content);
+          try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
+        } else if (srcFile.endsWith('.sh')) {
+          const content = fs.readFileSync(srcFile, 'utf8').replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
+          fs.writeFileSync(destFile, content);
+          try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
+        } else {
+          fs.copyFileSync(srcFile, destFile);
         }
-      }
+      };
+      const copyHookTree = (srcDir, destDir) => {
+        fs.mkdirSync(destDir, { recursive: true });
+        for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+          const srcPath = path.join(srcDir, entry.name);
+          const destPath = path.join(destDir, entry.name);
+          if (entry.isDirectory()) copyHookTree(srcPath, destPath);
+          else if (entry.isFile()) templateHook(srcPath, destPath);
+        }
+      };
+      copyHookTree(hooksSrc, hooksDest);
       if (verifyInstalled(hooksDest, 'hooks')) {
         console.log(`  ${green}✓${reset} Installed hooks (bundled)`);
         // Warn if expected community .sh hooks are missing (non-fatal)
@@ -8911,9 +8878,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // Codex/Copilot/Cursor/Windsurf/Trae/Cline skip hooks entirely, so they must not
   // receive the hooks/fvgsd/lib/ helpers either — otherwise the Codex comment downstream
   // ("we deliberately do *not* copy hooks/fvgsd/lib/ for Codex") is contradicted in practice.
-  const hooksLibSrc = path.join(src, 'hooks', 'lib');
+  const hooksLibSrc = path.join(src, 'hooks', IDENTITY.hooksDir, 'lib');
   if (!isCodex && !isCopilot && !isCursor && !isWindsurf && !isTrae && !isCline && fs.existsSync(hooksLibSrc)) {
-    const hooksLibDest = path.join(targetDir, 'hooks', 'lib');
+    const hooksLibDest = path.join(targetDir, 'hooks', IDENTITY.hooksDir, 'lib');
     fs.mkdirSync(hooksLibDest, { recursive: true });
     copyLibDir(hooksLibSrc, hooksLibDest, FVGSD_HOOK_LIB_FILES);
     console.log(`  ${green}✓${reset} Installed hooks/fvgsd/lib/ helpers (git-cmd, graphify-rebuild, ...)`);
@@ -9027,9 +8994,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     // #3245 — unified idempotent rollback. Reverts ALL Codex-specific mutations:
     //   config.toml  — restore pre-install bytes (or remove if was absent)
     //   hooks.json   — restore pre-install bytes (or remove if was absent)
-    //   skills/gsd-* — restore pre-existing dirs from content snapshot; remove
+    //   skills/fvgsd-* — restore pre-existing dirs from content snapshot; remove
     //                   newly-created dirs (i.e. those not in the pre-install Set)
-    //   agents/gsd-* — restore pre-existing files from content snapshot; remove
+    //   agents/fvgsd-* — restore pre-existing files from content snapshot; remove
     //                   newly-created files
     //   get-shit-done/VERSION — restore or remove
     //   *.tmp-*      — best-effort cleanup of installer-owned atomic-write temps
@@ -9060,11 +9027,11 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         }
       }
 
-      // 2. skills/gsd-*
+      // 2. skills/fvgsd-*
       //   • Dirs that pre-existed: wipe current contents, restore snapshotted files.
       //     The restore iterates the SNAPSHOT manifest (codexPreInstallSkillNames) rather
       //     than just the current filesystem so that dirs deleted during the install
-      //     (copyCommandsAsCodexSkills removes pre-existing gsd-* dirs before re-writing)
+      //     (copyCommandsAsCodexSkills removes pre-existing fvgsd-* dirs before re-writing)
       //     are restored even when they are absent from disk at rollback time (#3245 CR).
       //   • Dirs that did not pre-exist: remove entirely.
       const _rollbackSkillsDir = path.join(targetDir, 'skills');
@@ -9086,7 +9053,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           }
         } catch (_) { /* best-effort dir restore */ }
       }
-      // Pass 2 — remove any newly-created gsd-* dirs (not in the pre-install snapshot).
+      // Pass 2 — remove any newly-created fvgsd-* dirs (not in the pre-install snapshot).
       if (fs.existsSync(_rollbackSkillsDir)) {
         try {
           for (const entry of fs.readdirSync(_rollbackSkillsDir, { withFileTypes: true })) {
@@ -9100,7 +9067,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
         } catch (_) { /* best-effort */ }
       }
 
-      // 3. agents/gsd-*.{md,toml}
+      // 3. agents/fvgsd-*.{md,toml}
       //   • Files that pre-existed: restore bytes from content snapshot.
       //     Iterates the SNAPSHOT manifest (codexPreInstallAgentFiles) so that files
       //     deleted by the pre-copy stale-removal pass (lines 7862-7870) are restored
@@ -9117,7 +9084,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           } catch (_) { /* best-effort */ }
         }
       }
-      // Pass 2 — remove any newly-created gsd-* agent files (not in the pre-install snapshot).
+      // Pass 2 — remove any newly-created fvgsd-* agent files (not in the pre-install snapshot).
       if (fs.existsSync(_rollbackAgentsDir)) {
         try {
           for (const file of fs.readdirSync(_rollbackAgentsDir)) {
@@ -9131,7 +9098,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       }
 
       // 4. get-shit-done/VERSION
-      const _rollbackVersionPath = path.join(targetDir, 'get-shit-done', 'VERSION');
+      const _rollbackVersionPath = path.join(targetDir, IDENTITY.installDir, 'VERSION');
       if (codexPreInstallVersionBytes !== null) {
         try { fs.writeFileSync(_rollbackVersionPath, codexPreInstallVersionBytes); }
         catch (_) { /* best-effort */ }
@@ -9189,11 +9156,11 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       const codexHooksDest = path.join(targetDir, 'hooks');
       fs.mkdirSync(codexHooksDest, { recursive: true });
       const configDirReplacement = getConfigDirFromHome(runtime, isGlobal);
-      for (const entry of fs.readdirSync(codexHooksSrc)) {
-        if (!CODEX_HOOKS_TO_COPY.includes(entry)) continue;
+      for (const entry of CODEX_HOOKS_TO_COPY) {
         const srcFile = path.join(codexHooksSrc, entry);
-        if (!fs.statSync(srcFile).isFile()) continue;
+        if (!fs.existsSync(srcFile) || !fs.statSync(srcFile).isFile()) continue;
         const destFile = path.join(codexHooksDest, entry);
+        fs.mkdirSync(path.dirname(destFile), { recursive: true });
         if (entry.endsWith('.js')) {
           let content = fs.readFileSync(srcFile, 'utf8');
           content = content.replace(/'\.claude'/g, configDirReplacement);
@@ -9346,7 +9313,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
 
   if (isCopilot) {
     // Generate copilot-instructions.md
-    const templatePath = path.join(targetDir, 'get-shit-done', 'templates', 'copilot-instructions.md');
+    const templatePath = path.join(targetDir, IDENTITY.installDir, 'templates', 'copilot-instructions.md');
     const instructionsPath = path.join(targetDir, 'copilot-instructions.md');
     if (fs.existsSync(templatePath)) {
       const template = fs.readFileSync(templatePath, 'utf8');
@@ -9382,10 +9349,10 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const clinerules = [
       '# GSD — Get Shit Done',
       '',
-      '- GSD workflows live in `get-shit-done/workflows/`. Load the relevant workflow when',
+      `- GSD workflows live in \`${IDENTITY.installDir}/workflows/\`. Load the relevant workflow when`,
       '  the user runs a `/fvgsd-*` command.',
       '- GSD agents live in `agents/`. Use the matching agent when spawning subagents.',
-      '- GSD tools are at `get-shit-done/bin/fvgsd-tools.cjs`. Run with `node`.',
+      `- GSD tools are at \`${IDENTITY.installDir}/bin/fvgsd-tools.cjs\`. Run with \`node\`.`,
       '- Planning artifacts live in `.planning/`. Never edit them outside a GSD workflow.',
       '- Do not apply GSD workflows unless the user explicitly asks for them.',
       '- When a GSD command triggers a deliverable (feature, fix, docs), offer the next',
@@ -9408,7 +9375,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     return;
   }
   const settings = validateHookFields(cleanupOrphanedHooks(rawSettings));
-  // #3002 CR: rewrite legacy `node .../gsd-*.js` command strings carried over
+  // #3002 CR: rewrite legacy `node .../fvgsd-*.js` command strings carried over
   // from pre-#2979 installs to use the absolute node binary path. Without this,
   // existing managed hook entries stay bare-`node`-prefixed across reinstalls
   // and remain broken under GUI/minimal-PATH runtimes.

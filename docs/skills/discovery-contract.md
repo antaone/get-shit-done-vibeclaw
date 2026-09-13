@@ -43,7 +43,7 @@ This is not a skills root. Discovery code only checks whether it exists so inven
 - Read `name` and `description` from YAML frontmatter.
 - Use the directory name when `name` is missing.
 - Extract trigger hints from body lines that match `TRIGGER when: ...`.
-- Treat `gsd-*` directories as installed framework skills.
+- Treat `fvgsd-*` directories as installed framework skills.
 - Treat `~/.claude/fvgsd/skills/` entries as deprecated/import-only.
 - Treat `~/.claude/commands/gsd/` as legacy command installation metadata, not skills.
 
@@ -59,7 +59,7 @@ This is not a skills root. Discovery code only checks whether it exists so inven
 
 - Builds the project `CLAUDE.md` skills section.
 - Scans project roots only.
-- Skips `gsd-*` directories so the project section stays focused on user/project skills.
+- Skips `fvgsd-*` directories so the project section stays focused on user/project skills.
 - Adds `.codex/skills/` to the project discovery set.
 
 ### `get-shit-done/bin/lib/init.cjs`

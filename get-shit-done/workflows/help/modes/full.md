@@ -614,6 +614,7 @@ The commands above cover the most common day-to-day flows. Every command listed 
 - **`/fvgsd:manager [--analyze-deps]`** — Interactive command center for managing multiple phases from one terminal. `--analyze-deps` scans ROADMAP phases for dependency relationships before parallel execution.
 - **`/fvgsd:workspace [--new | --list | --remove] [name]`** — Manage GSD workspaces: create, list, or remove isolated workspace environments.
 - **`/fvgsd:workstreams`** — Manage parallel workstreams: list, create, switch, status, progress, complete, and resume.
+- **`/fvgsd:vibe [command] [--tool TOOL ...] [--run RUN] [--launch] [--multi-machine --remote REMOTE]`** — Route any GSD workflow through one or more isolated Vibe candidates.
 - **`/fvgsd:review-backlog`** — Review and promote backlog items to active milestone.
 - **`/fvgsd:milestone-summary [version]`** — Generate a comprehensive project summary from milestone artifacts for team onboarding and review.
 

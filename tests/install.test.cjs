@@ -27,6 +27,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 
 const { createTempDir, createTempProject, cleanup, parseFrontmatter } = require('./helpers.cjs');
@@ -301,7 +302,7 @@ describe('install/uninstall — hermes (nested skills/gsd/ layout)', () => {
   });
 });
 
-describe('install/uninstall — qwen (flat skills/gsd-* layout)', () => {
+describe('install/uninstall — qwen (flat skills/fvgsd-* layout)', () => {
   let tmpDir;
   let previousCwd;
 
@@ -336,7 +337,7 @@ describe('install/uninstall — qwen (flat skills/gsd-* layout)', () => {
   });
 });
 
-describe('install/uninstall — trae (flat skills/gsd-* layout)', () => {
+describe('install/uninstall — trae (flat skills/fvgsd-* layout)', () => {
   let tmpDir;
   let previousCwd;
 
@@ -420,9 +421,9 @@ describe('uninstall skills cleanup — hermes', () => {
   test('removes engine directory', () => {
     install(false, 'hermes');
     const targetDir = path.join(tmpDir, '.hermes');
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')));
     uninstall(false, 'hermes');
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')));
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)));
   });
 });
 
@@ -538,7 +539,7 @@ describe('configureKiloPermissions', () => {
     configureKiloPermissions(true);
     const configPath = path.join(configDir, 'kilo.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const gsdPath = `${configDir.replace(/\\/g, '/')}/get-shit-done/*`;
+    const gsdPath = `${configDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
     assert.strictEqual(config.permission.read[gsdPath], 'allow');
     assert.strictEqual(config.permission.external_directory[gsdPath], 'allow');
   });
@@ -549,7 +550,7 @@ describe('configureKiloPermissions', () => {
     fs.writeFileSync(configPath, '{\n  // existing\n  "permission": {\n    "bash": "ask",\n  },\n}\n');
     configureKiloPermissions(true);
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const gsdPath = `${configDir.replace(/\\/g, '/')}/get-shit-done/*`;
+    const gsdPath = `${configDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
     assert.strictEqual(config.permission.bash, 'ask');
     assert.strictEqual(config.permission.read[gsdPath], 'allow');
     assert.strictEqual(config.permission.external_directory[gsdPath], 'allow');
@@ -560,7 +561,7 @@ describe('configureKiloPermissions', () => {
     configureKiloPermissions(true, explicitDir);
     const configPath = path.join(explicitDir, 'kilo.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    const gsdPath = `${explicitDir.replace(/\\/g, '/')}/get-shit-done/*`;
+    const gsdPath = `${explicitDir.replace(/\\/g, '/')}/${IDENTITY.installDir}/*`;
     assert.strictEqual(config.permission.read[gsdPath], 'allow');
     assert.strictEqual(config.permission.external_directory[gsdPath], 'allow');
   });

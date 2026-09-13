@@ -27,7 +27,7 @@ const agentsDir = join(repoRoot, 'agents');
  * string "agent-skills") do not produce false positives. The `\s+` between
  * tokens accepts newlines, so commands wrapped across lines still match.
  */
-const QUERY_KEY_PATTERN = /\bgsd-sdk\s+query\s+agent-skills\s+([a-z][a-z0-9-]*)\b/g;
+const QUERY_KEY_PATTERN = /\bfvgsd-sdk\s+query\s+agent-skills\s+([a-z][a-z0-9-]*)\b/g;
 
 interface QueryUsage {
   readonly file: string;

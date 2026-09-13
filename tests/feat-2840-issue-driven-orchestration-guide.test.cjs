@@ -89,7 +89,7 @@ function parseGuide() {
                           extractSection(content, 'What this guide does not do');
 
   // Track which referenced commands appear at least once anywhere in the
-  // guide. This prevents drift if /gsd-* command names are renamed.
+  // guide. This prevents drift if /fvgsd-* command names are renamed.
   const requiredCommands = [
     '/gsd-workspace --new',
     '/gsd-manager',

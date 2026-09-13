@@ -31,7 +31,7 @@ const FAMILIES = [
   { label: 'Workflows',   dir: 'get-shit-done/workflows',     filter: (f) => f.endsWith('.md') },
   { label: 'References',  dir: 'get-shit-done/references',    filter: (f) => f.endsWith('.md') },
   { label: 'CLI Modules', dir: 'get-shit-done/bin/lib',       filter: (f) => f.endsWith('.cjs') },
-  { label: 'Hooks',       dir: 'hooks',                       filter: (f) => /\.(js|sh)$/.test(f) },
+  { label: 'Hooks',       dir: 'hooks/fvgsd',                 filter: (f) => /\.(js|sh)$/.test(f) },
 ];
 
 function headlineCount(label) {

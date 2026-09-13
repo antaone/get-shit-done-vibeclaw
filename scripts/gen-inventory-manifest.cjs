@@ -52,9 +52,9 @@ const FAMILIES = [
   },
   {
     name: 'hooks',
-    dir: path.join(ROOT, 'hooks'),
+    dir: path.join(ROOT, 'hooks', 'fvgsd'),
     filter: (f) => /\.(js|sh)$/.test(f),
-    toName: (f) => f,
+    toName: (f) => `fvgsd/${f}`,
   },
 ];
 

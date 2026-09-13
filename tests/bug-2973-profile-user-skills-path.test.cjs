@@ -204,11 +204,11 @@ describe('Bug #2973 (#3003 CR): installRuntimeArtifacts preserves user-owned gsd
     }
   });
 
-  test('non-user-owned gsd-* skills are wiped and recreated via uninstall+install cycle', () => {
+  test('non-user-owned fvgsd-* skills are wiped and recreated via uninstall+install cycle', () => {
     // Stale artifacts (e.g. STALE-MARKER.txt left from a previous version)
     // are removed when the caller runs uninstallRuntimeArtifacts() before
     // installRuntimeArtifacts() — the full uninstall+reinstall cycle.
-    // uninstallRuntimeArtifacts removes all gsd-* entries; installRuntimeArtifacts
+    // uninstallRuntimeArtifacts removes all fvgsd-* entries; installRuntimeArtifacts
     // then writes fresh ones from source.
     const inst = require(INSTALL);
     const { loadSkillsManifest, resolveProfile } = require(path.join(ROOT, 'get-shit-done', 'bin', 'lib', 'install-profiles.cjs'));

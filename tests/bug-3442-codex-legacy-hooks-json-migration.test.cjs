@@ -20,7 +20,7 @@ describe('bug #3442: codex legacy hooks.json migration consumes shared managed-h
     const hooksJson = {
       hooks: [
         { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd/check-update.js"' },
-        { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/gsd-update-check.js"' },
+        { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/fvgsd-update-check.js"' },
         { command: '"/usr/local/bin/node" "/Users/me/.codex/hooks/custom-hook.js"' },
       ],
     };

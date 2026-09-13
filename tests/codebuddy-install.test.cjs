@@ -9,6 +9,7 @@ const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('node:os');
 const { createTempDir, cleanup } = require('./helpers.cjs');
 
@@ -188,7 +189,7 @@ describe('CodeBuddy local install/uninstall', () => {
     assert.ok(result.settingsPath, 'should have settingsPath (CodeBuddy supports hooks)');
 
     assert.ok(fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help', 'SKILL.md')));
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')));
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')));
     assert.ok(fs.existsSync(path.join(targetDir, 'agents')));
 
     const manifest = writeManifest(targetDir, 'codebuddy');
@@ -197,7 +198,7 @@ describe('CodeBuddy local install/uninstall', () => {
     uninstall(false, 'codebuddy');
 
     assert.ok(!fs.existsSync(path.join(targetDir, 'skills', 'fvgsd-help')), 'CodeBuddy skill directory removed');
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')), 'get-shit-done removed');
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)), 'get-shit-done removed');
   });
 });
 
@@ -216,7 +217,7 @@ describe('E2E: CodeBuddy uninstall skills cleanup', () => {
     cleanup(tmpDir);
   });
 
-  test('removes all gsd-* skill directories on --codebuddy --uninstall', () => {
+  test('removes all fvgsd-* skill directories on --codebuddy --uninstall', () => {
     const targetDir = path.join(tmpDir, '.codebuddy');
     install(false, 'codebuddy');
 
@@ -225,7 +226,7 @@ describe('E2E: CodeBuddy uninstall skills cleanup', () => {
 
     const installedSkills = fs.readdirSync(skillsDir, { withFileTypes: true })
       .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'));
-    assert.ok(installedSkills.length > 0, `found ${installedSkills.length} gsd-* skill dirs before uninstall`);
+    assert.ok(installedSkills.length > 0, `found ${installedSkills.length} fvgsd-* skill dirs before uninstall`);
 
     uninstall(false, 'codebuddy');
 
@@ -233,7 +234,7 @@ describe('E2E: CodeBuddy uninstall skills cleanup', () => {
       const remainingGsd = fs.readdirSync(skillsDir, { withFileTypes: true })
         .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'));
       assert.strictEqual(remainingGsd.length, 0,
-        `Expected 0 gsd-* skill dirs after uninstall, found: ${remainingGsd.map(e => e.name).join(', ')}`);
+        `Expected 0 fvgsd-* skill dirs after uninstall, found: ${remainingGsd.map(e => e.name).join(', ')}`);
     }
   });
 
@@ -257,12 +258,12 @@ describe('E2E: CodeBuddy uninstall skills cleanup', () => {
     const targetDir = path.join(tmpDir, '.codebuddy');
     install(false, 'codebuddy');
 
-    assert.ok(fs.existsSync(path.join(targetDir, 'get-shit-done', 'VERSION')),
+    assert.ok(fs.existsSync(path.join(targetDir, IDENTITY.installDir, 'VERSION')),
       'engine exists before uninstall');
 
     uninstall(false, 'codebuddy');
 
-    assert.ok(!fs.existsSync(path.join(targetDir, 'get-shit-done')),
+    assert.ok(!fs.existsSync(path.join(targetDir, IDENTITY.installDir)),
       'get-shit-done engine should be removed after CodeBuddy uninstall');
   });
 });

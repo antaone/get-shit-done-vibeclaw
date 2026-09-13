@@ -22,6 +22,7 @@ process.env.FVGSD_TEST_MODE = '1';
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('os');
 const fs = require('fs');
 const { parseFrontmatter, createTempDir, cleanup } = require('./helpers.cjs');
@@ -643,7 +644,7 @@ describe('installRuntimeArtifacts (copilot integration)', () => {
     assert.ok(fs.existsSync(path.join(skillsDir, 'fvgsd-help')), 'fvgsd-help folder exists');
     assert.ok(fs.existsSync(path.join(skillsDir, 'fvgsd-progress')), 'fvgsd-progress folder exists');
 
-    // Count gsd-* directories — should match number of source command files
+    // Count fvgsd-* directories — should match number of source command files
     const dirs = fs.readdirSync(skillsDir, { withFileTypes: true })
       .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'));
     const expectedSkillCount = fs.readdirSync(srcDir)
@@ -733,7 +734,7 @@ describe('installRuntimeArtifacts (copilot integration)', () => {
     // Real skills are present after install
     assert.ok(fs.existsSync(path.join(skillsDir, 'fvgsd-health')), 'real dirs still exist');
     // Stale GSD-prefixed dir is removed by pre-prune
-    assert.ok(!fs.existsSync(staleDir), 'stale gsd-* dir removed by pre-prune');
+    assert.ok(!fs.existsSync(staleDir), 'stale fvgsd-* dir removed by pre-prune');
     // Non-GSD dir is preserved
     assert.ok(fs.existsSync(path.join(skillsDir, 'user-custom')), 'non-GSD dir preserved');
   });
@@ -1013,7 +1014,7 @@ describe('Copilot uninstall skill removal', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test('identifies gsd-* skill directories for removal', () => {
+  test('identifies fvgsd-* skill directories for removal', () => {
     // Create Copilot-like skills directory structure
     const skillsDir = path.join(tmpDir, 'skills');
     fs.mkdirSync(path.join(skillsDir, 'fvgsd-foo'), { recursive: true });
@@ -1023,7 +1024,7 @@ describe('Copilot uninstall skill removal', () => {
     fs.mkdirSync(path.join(skillsDir, 'custom-skill'), { recursive: true });
     fs.writeFileSync(path.join(skillsDir, 'custom-skill', 'SKILL.md'), '# Custom');
 
-    // Test the pattern: read skills, filter gsd-* entries
+    // Test the pattern: read skills, filter fvgsd-* entries
     const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
     const gsdSkills = entries
       .filter(e => e.isDirectory() && e.name.startsWith('fvgsd-'))
@@ -1032,7 +1033,7 @@ describe('Copilot uninstall skill removal', () => {
       .filter(e => e.isDirectory() && !e.name.startsWith('fvgsd-'))
       .map(e => e.name);
 
-    assert.deepStrictEqual(gsdSkills.sort(), ['fvgsd-bar', 'fvgsd-foo'], 'identifies gsd-* skills');
+    assert.deepStrictEqual(gsdSkills.sort(), ['fvgsd-bar', 'fvgsd-foo'], 'identifies fvgsd-* skills');
     assert.deepStrictEqual(nonGsdSkills, ['custom-skill'], 'preserves non-gsd skills');
   });
 
@@ -1077,7 +1078,7 @@ describe('Copilot manifest and patches fixes', () => {
 
   test('writeManifest hashes skills for Copilot runtime', () => {
     // Create minimal get-shit-done dir (required by writeManifest)
-    const gsdDir = path.join(tmpDir, 'get-shit-done', 'bin');
+    const gsdDir = path.join(tmpDir, IDENTITY.installDir, 'bin');
     fs.mkdirSync(gsdDir, { recursive: true });
     fs.writeFileSync(path.join(gsdDir, 'verify.cjs'), '// verify stub');
 
@@ -1300,7 +1301,7 @@ describe('E2E: Copilot full install verification', () => {
 
     const skillEntries = keys.filter(k => k.startsWith('skills/'));
     const agentEntries = keys.filter(k => k.startsWith('agents/'));
-    const engineEntries = keys.filter(k => k.startsWith('get-shit-done/'));
+    const engineEntries = keys.filter(k => k.startsWith(`${IDENTITY.installDir}/`));
 
     assert.strictEqual(skillEntries.length, EXPECTED_SKILLS,
       `Expected ${EXPECTED_SKILLS} skill manifest entries, got ${skillEntries.length}`);
@@ -1327,7 +1328,7 @@ describe('E2E: Copilot full install verification', () => {
   });
 
   test('engine directory contains required subdirectories and files', () => {
-    const engineDir = path.join(tmpDir, '.github', 'get-shit-done');
+    const engineDir = path.join(tmpDir, '.github', IDENTITY.installDir);
     const requiredDirs = ['bin', 'references', 'templates', 'workflows'];
     const requiredFiles = ['CHANGELOG.md', 'VERSION'];
 
@@ -1358,7 +1359,7 @@ describe('E2E: Copilot uninstall verification', () => {
   });
 
   test('removes engine directory', () => {
-    const engineDir = path.join(tmpDir, '.github', 'get-shit-done');
+    const engineDir = path.join(tmpDir, '.github', IDENTITY.installDir);
     assert.ok(!fs.existsSync(engineDir),
       'get-shit-done directory should not exist after uninstall');
   });
@@ -1463,7 +1464,7 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   });
 
   test('preserves USER-PROFILE.md across uninstall', () => {
-    const profilePath = path.join(tmpDir, '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, '.claude', IDENTITY.installDir, 'USER-PROFILE.md');
     const content = '# Developer Profile\n\nAutonomy: High\nGenerated: 2026-03-29\n';
     fs.writeFileSync(profilePath, content);
 
@@ -1488,11 +1489,11 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   });
 
   test('still removes GSD engine files during uninstall', () => {
-    const profilePath = path.join(tmpDir, '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, '.claude', IDENTITY.installDir, 'USER-PROFILE.md');
     fs.writeFileSync(profilePath, '# Profile\n');
 
     // Verify engine files exist before uninstall
-    const binDir = path.join(tmpDir, '.claude', 'get-shit-done', 'bin');
+    const binDir = path.join(tmpDir, '.claude', IDENTITY.installDir, 'bin');
     assert.ok(fs.existsSync(binDir), 'bin/ should exist before uninstall');
 
     runClaudeUninstall(tmpDir);
@@ -1505,7 +1506,7 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   test('clean uninstall when no user files exist', () => {
     runClaudeUninstall(tmpDir);
 
-    const gsdDir = path.join(tmpDir, '.claude', 'get-shit-done');
+    const gsdDir = path.join(tmpDir, '.claude', IDENTITY.installDir);
     const cmdDir = path.join(tmpDir, '.claude', 'commands', 'gsd');
     // Directories should be fully removed when no user files to preserve
     assert.ok(!fs.existsSync(gsdDir), 'get-shit-done/ should not exist after clean uninstall');

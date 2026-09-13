@@ -68,7 +68,7 @@ const SHAPES = {
     '# GSD Hooks',
     '[[hooks]]',
     'event = "SessionStart"',
-    'command = "node /Users/USER/.codex/hooks/gsd-update-check.js"',
+    'command = "node /Users/USER/.codex/hooks/fvgsd-update-check.js"',
   ].join('\n'),
   'Shape 2 (flat [[hooks]] + fvgsd/check-update)': [
     '# GSD Hooks',
@@ -105,7 +105,7 @@ describe('bug-2866: stripStaleGsdHookBlocks handles end-of-file without trailing
     const staleCmd = [...shape_.keys.entries()].find(([_, v]) =>
       /gsd-(update-check|check-update)/.test(v));
     assert.strictEqual(staleCmd, undefined,
-      `(${shape}, ${scenario}) no key may carry a stale gsd-*-update command, got: ${staleCmd && staleCmd.join('=')}`);
+      `(${shape}, ${scenario}) no key may carry a stale fvgsd-*-update command, got: ${staleCmd && staleCmd.join('=')}`);
     assert.strictEqual(shape_.keys.get('history.persistence'), 'save-all',
       `(${shape}, ${scenario}) history.persistence must be preserved as "save-all"`);
   }

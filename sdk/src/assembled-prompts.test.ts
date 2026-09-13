@@ -26,6 +26,8 @@ import type { GSDEventStream } from './event-stream.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sdkPromptsDir = join(__dirname, '..', 'prompts');
+// Repo agent definitions (renamed fvgsd-*.md); keeps the factory off the machine's installed agents.
+const repoAgentsDir = join(__dirname, '..', '..', 'agents');
 
 // ─── Blocked patterns (aligned with headless-prompts.test.ts) ────────────────
 
@@ -96,7 +98,7 @@ describe('PromptFactory assembled output', () => {
   let factory: PromptFactory;
 
   beforeAll(() => {
-    factory = new PromptFactory({ sdkPromptsDir });
+    factory = new PromptFactory({ sdkPromptsDir, agentsDir: repoAgentsDir });
   });
 
   const phaseTypes = Object.values(PhaseType) as PhaseType[];

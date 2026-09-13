@@ -5,7 +5,7 @@
 - **Decision date:** 2026-05-12
 - **Implementation:** feat/3408-skills-description-dropped-due-to-size, PR <TBD>
 
-Every installed `gsd-*` skill costs eager system-prompt tokens: runtimes (Claude Code, opencode, and others) enumerate all skill descriptions in `<available_skills>` on every turn. With 66 skills and 33 agents, GSD alone consumes roughly 60% of the default 1%-of-context skill-listing budget, causing descriptions to drop when users stack multiple plugins (#3408).
+Every installed `fvgsd-*` skill costs eager system-prompt tokens: runtimes (Claude Code, opencode, and others) enumerate all skill descriptions in `<available_skills>` on every turn. With 66 skills and 33 agents, GSD alone consumes roughly 60% of the default 1%-of-context skill-listing budget, causing descriptions to drop when users stack multiple plugins (#3408).
 
 The root problem is an absence of a profile/surface seam: the installer wrote every skill unconditionally, and no runtime-side control existed for enabling or disabling a cohesive group of skills without a full reinstall.
 

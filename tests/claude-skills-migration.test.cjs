@@ -16,6 +16,7 @@ process.env.FVGSD_TEST_MODE = '1';
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const os = require('os');
 const fs = require('fs');
 
@@ -357,11 +358,11 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
     // Paths use the installer's portable global prefix ($HOME when applicable).
     const expectedPrefix = expectedGlobalPrefix(configDir);
     assert.ok(
-      content.includes(expectedPrefix + 'get-shit-done/workflows/manager.md'),
+      content.includes(expectedPrefix + `${IDENTITY.installDir}/workflows/manager.md`),
       'tilde path rewritten to absolute configDir prefix'
     );
     assert.ok(
-      content.includes(expectedPrefix + 'get-shit-done/references/ui-brand.md'),
+      content.includes(expectedPrefix + `${IDENTITY.installDir}/references/ui-brand.md`),
       'HOME path rewritten to absolute configDir prefix'
     );
   });
@@ -379,7 +380,7 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
     assert.ok(!content.includes('$HOME/.claude/'), 'no $HOME/.claude/ paths remain');
     const expectedPrefix = expectedGlobalPrefix(configDir);
     assert.ok(
-      content.includes(expectedPrefix + 'get-shit-done/workflows/debug.md'),
+      content.includes(expectedPrefix + `${IDENTITY.installDir}/workflows/debug.md`),
       'path rewritten to absolute configDir prefix'
     );
   });
@@ -397,7 +398,7 @@ describe('installRuntimeArtifacts path replacement in Claude global skills (#165
     );
     const expectedPrefix = expectedGlobalPrefix(configDir);
     assert.ok(
-      content.includes(expectedPrefix + 'get-shit-done/workflows/next.md'),
+      content.includes(expectedPrefix + `${IDENTITY.installDir}/workflows/next.md`),
       'global tilde path rewritten to absolute configDir prefix'
     );
     assert.ok(!content.includes('~/.claude/'), 'tilde form is replaced');
