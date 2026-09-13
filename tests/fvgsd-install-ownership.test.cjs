@@ -66,10 +66,12 @@ test('the uninstall hook list is every file install writes under hooks/fvgsd/', 
   if (!fs.existsSync(path.join(HOOKS_DIST, IDENTITY.hooksDir))) {
     execFileSync(process.execPath, [BUILD_SCRIPT], { stdio: 'pipe' });
   }
-  // install copies the built hooks tree (lib/ included) and, on Windows, writes a
-  // .cmd shim next to Codex's update-check hook.
+  // install copies the built hooks tree (lib/ included), writes the CommonJS marker
+  // package.json next to the hooks and, on Windows, writes a .cmd shim next to
+  // Codex's update-check hook.
   const codexShim = buildCodexHookWindowsShimIR(`${IDENTITY.hooksDir}/check-update.js`, '"node"').cmdPath;
-  const expected = [...new Set([...listFiles(HOOKS_DIST, IDENTITY.hooksDir), codexShim])].sort();
+  const commonjsMarker = `${IDENTITY.hooksDir}/package.json`;
+  const expected = [...new Set([...listFiles(HOOKS_DIST, IDENTITY.hooksDir), commonjsMarker, codexShim])].sort();
   const ownHookFiles = listOwnHookFiles();
   assert.deepEqual(ownHookFiles, expected);
   assert.equal(ownHookFiles.includes(`${IDENTITY.hooksDir}/check-update-worker.js`), true);

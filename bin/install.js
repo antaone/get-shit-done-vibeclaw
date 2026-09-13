@@ -138,6 +138,14 @@ const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = IDENTITY.copilotInstructionsClos
 // git-cmd.js does not start with "fvgsd-" (shared classifier for #3129), graphify-rebuild.sh does.
 const FVGSD_HOOK_LIB_FILES = ['git-cmd.js', 'graphify-rebuild.sh'];
 
+// CommonJS marker install writes into hooks/fvgsd/, so fvgsd's .js hooks and
+// their lib/ helpers load as CommonJS even under an ancestor package.json with
+// "type": "module". The config root's package.json belongs to the user or to
+// another install (GSD writes the same marker there), so fvgsd never writes or
+// removes it. Files under fvgsd/ are .cjs, which is CommonJS regardless.
+const FVGSD_HOOKS_COMMONJS_MARKER = 'package.json';
+const COMMONJS_MARKER_CONTENT = '{"type":"commonjs"}\n';
+
 // Hook files installed for Codex: only those its hook configuration registers (#2153).
 // Codex primarily needs fvgsd/check-update.js for the SessionStart update-check hook.
 // We deliberately do *not* copy fvgsd/graphify-update.sh or hooks/fvgsd/lib/ for Codex
@@ -7177,23 +7185,10 @@ function uninstall(isGlobal, runtime = 'claude') {
     }
   }
 
-  // 5. Remove GSD package.json (CommonJS mode marker)
-  const pkgJsonPath = path.join(targetDir, 'package.json');
-  if (fs.existsSync(pkgJsonPath)) {
-    try {
-      const content = fs.readFileSync(pkgJsonPath, 'utf8').trim();
-      // Only remove if it's our minimal CommonJS marker
-      if (content === '{"type":"commonjs"}') {
-        fs.unlinkSync(pkgJsonPath);
-        removedCount++;
-        console.log(`  ${green}✓${reset} Removed GSD package.json`);
-      }
-    } catch (e) {
-      // Ignore read errors
-    }
-  }
+  // The config root's package.json is not fvgsd's: its CommonJS marker lives in
+  // hooks/fvgsd/ and went with the hooks above (see FVGSD_HOOKS_COMMONJS_MARKER).
 
-  // 6. Clean up settings.json (remove GSD hooks and statusline)
+  // 5. Clean up settings.json (remove GSD hooks and statusline)
   const settingsPath = path.join(targetDir, 'settings.json');
   if (fs.existsSync(settingsPath)) {
     let settings = readSettings(settingsPath);
@@ -7677,8 +7672,8 @@ function generateManifest(dir, baseDir) {
  * to hooks/ (for example 'fvgsd/check-update.js'). Uninstall removes exactly
  * these, so the list comes from what install copies rather than a hand-kept
  * list: the package's built hook tree (copied whole, lib/ included), the lib
- * helpers copied from source, and the Windows .cmd shim written next to each
- * hook Codex registers.
+ * helpers copied from source, the CommonJS marker package.json, and the
+ * Windows .cmd shim written next to each hook Codex registers.
  *
  * @returns {string[]} sorted
  */
@@ -7686,6 +7681,7 @@ function listOwnHookFiles() {
   const builtHooksDir = path.join(__dirname, '..', 'hooks', 'dist', IDENTITY.hooksDir);
   const files = new Set(Object.keys(generateManifest(builtHooksDir)).map((rel) => `${IDENTITY.hooksDir}/${rel}`));
   for (const file of FVGSD_HOOK_LIB_FILES) files.add(`${IDENTITY.hooksDir}/lib/${file}`);
+  files.add(`${IDENTITY.hooksDir}/${FVGSD_HOOKS_COMMONJS_MARKER}`);
   for (const hook of CODEX_HOOKS_TO_COPY) files.add(codexHookShimPath(hook));
   return [...files].sort();
 }
@@ -8942,12 +8938,14 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   if (!isCodex && !isCopilot && !isCursor && !isWindsurf && !isTrae && !isCline) {
-    // Write package.json to force CommonJS mode for GSD scripts
-    // Prevents "require is not defined" errors when project has "type": "module"
-    // Node.js walks up looking for package.json - this stops inheritance from project
-    const pkgJsonDest = path.join(targetDir, 'package.json');
-    fs.writeFileSync(pkgJsonDest, '{"type":"commonjs"}\n');
-    console.log(`  ${green}✓${reset} Wrote package.json (CommonJS mode)`);
+    // Force CommonJS mode for fvgsd's .js hooks and lib helpers. Node takes a
+    // file's module type from the nearest package.json, so a marker inside
+    // hooks/fvgsd/ keeps a project's or home folder's "type": "module" from
+    // reaching them, and the config root stays untouched.
+    const ownHooksDest = path.join(targetDir, 'hooks', IDENTITY.hooksDir);
+    fs.mkdirSync(ownHooksDest, { recursive: true });
+    fs.writeFileSync(path.join(ownHooksDest, FVGSD_HOOKS_COMMONJS_MARKER), COMMONJS_MARKER_CONTENT);
+    console.log(`  ${green}✓${reset} Wrote hooks/${IDENTITY.hooksDir}/${FVGSD_HOOKS_COMMONJS_MARKER} (CommonJS mode)`);
 
     // Copy hooks from dist/ (bundled with dependencies)
     // Template paths for the target runtime (replaces '.claude' with correct config dir)

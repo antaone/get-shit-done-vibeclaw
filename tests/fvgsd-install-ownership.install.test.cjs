@@ -14,7 +14,7 @@ const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 const { cleanup } = require('./helpers.cjs');
-const { snapshot } = require('./helpers/foreign-installs.cjs');
+const { listFiles, snapshot } = require('./helpers/foreign-installs.cjs');
 const { INSTALL_SCRIPT, BUILD_SCRIPT, HOOKS_DIST, installerEnv } = require('./helpers/install-shared.cjs');
 
 // Seeded before install, so each test also shows that install leaves them alone,
@@ -133,6 +133,36 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
 
     runInstaller(root, ['--claude', '--global', '--config-dir', configDir, '--uninstall']);
     assert.deepEqual(hookCommands(readSettings(configDir)), []);
+  });
+
+  test('claude --global: the CommonJS marker lives in hooks/fvgsd/, so fvgsd hooks load under an ancestor "type": "module" package.json', (t) => {
+    const root = tempRoot(t, 'commonjs-marker');
+    const configDir = path.join(root, 'config');
+    const ownHooksDir = path.join(configDir, 'hooks', IDENTITY.hooksDir);
+    const markerRel = `hooks/${IDENTITY.hooksDir}/package.json`;
+    // Node takes a .js file's module type from the nearest package.json above it.
+    fs.writeFileSync(path.join(root, 'package.json'), '{"type":"module"}\n');
+
+    runInstaller(root, ['--claude', '--global', '--config-dir', configDir]);
+    assert.equal(fs.existsSync(path.join(configDir, 'package.json')), false, 'install wrote the config root package.json');
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(configDir, markerRel), 'utf8')), { type: 'commonjs' });
+    const manifest = JSON.parse(fs.readFileSync(path.join(configDir, IDENTITY.manifestFile), 'utf8'));
+    assert.equal(manifest.files[markerRel], snapshot(configDir, [markerRel])[markerRel]);
+    // Only .cjs files ship under fvgsd/, and .cjs is CommonJS whatever package.json says,
+    // so that folder needs no marker of its own.
+    assert.deepEqual(listFiles(configDir, IDENTITY.installDir).filter((rel) => path.extname(rel) === '.js'), []);
+
+    const hook = spawnSync(process.execPath, [path.join(ownHooksDir, 'prompt-guard.js')], {
+      cwd: root,
+      encoding: 'utf8',
+      input: JSON.stringify({ tool_name: 'Read' }),
+      env: installerEnv({ HOME: root, USERPROFILE: root }),
+    });
+    assert.equal(hook.status, 0, `prompt-guard.js exited ${hook.status}\n${hook.stderr}`);
+
+    runInstaller(root, ['--claude', '--global', '--config-dir', configDir, '--uninstall']);
+    assert.equal(fs.existsSync(ownHooksDir), false);
+    assert.equal(fs.existsSync(path.join(configDir, 'package.json')), false);
   });
 
   test('cline --global: fvgsd records the .clinerules it writes, updates it on reinstall while unchanged, and removes it on uninstall', (t) => {

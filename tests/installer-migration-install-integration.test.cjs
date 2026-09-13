@@ -25,21 +25,21 @@ const { createTempDir, cleanup } = require('./helpers.cjs');
 const installScript = path.join(__dirname, '..', 'bin', 'install.js');
 const SUPPORTED_RUNTIMES = installModule.allRuntimes;
 const RUNTIME_INSTALL_CONTRACTS = {
-  claude: { surface: 'flat-skills', settings: true, packageJson: true },
-  antigravity: { surface: 'flat-skills', settings: true, packageJson: true },
-  augment: { surface: 'flat-skills', settings: true, packageJson: true },
-  cline: { surface: 'clinerules', settings: false, packageJson: false },
-  codebuddy: { surface: 'flat-skills', settings: true, packageJson: true },
-  codex: { surface: 'flat-skills', settings: false, packageJson: false, codexConfig: true },
-  copilot: { surface: 'flat-skills', settings: false, packageJson: false, copilotInstructions: true },
-  cursor: { surface: 'flat-skills', settings: false, packageJson: false },
-  gemini: { surface: 'commands-gsd', settings: true, packageJson: true },
-  hermes: { surface: 'hermes-skills', settings: true, packageJson: true },
-  kilo: { surface: 'flat-command', settings: false, packageJson: true },
-  opencode: { surface: 'flat-command', settings: true, packageJson: true },
-  qwen: { surface: 'flat-skills', settings: true, packageJson: true },
-  trae: { surface: 'flat-skills', settings: false, packageJson: false },
-  windsurf: { surface: 'flat-skills', settings: false, packageJson: false },
+  claude: { surface: 'flat-skills', settings: true, commonjsMarker: true },
+  antigravity: { surface: 'flat-skills', settings: true, commonjsMarker: true },
+  augment: { surface: 'flat-skills', settings: true, commonjsMarker: true },
+  cline: { surface: 'clinerules', settings: false, commonjsMarker: false },
+  codebuddy: { surface: 'flat-skills', settings: true, commonjsMarker: true },
+  codex: { surface: 'flat-skills', settings: false, commonjsMarker: false, codexConfig: true },
+  copilot: { surface: 'flat-skills', settings: false, commonjsMarker: false, copilotInstructions: true },
+  cursor: { surface: 'flat-skills', settings: false, commonjsMarker: false },
+  gemini: { surface: 'commands-gsd', settings: true, commonjsMarker: true },
+  hermes: { surface: 'hermes-skills', settings: true, commonjsMarker: true },
+  kilo: { surface: 'flat-command', settings: false, commonjsMarker: true },
+  opencode: { surface: 'flat-command', settings: true, commonjsMarker: true },
+  qwen: { surface: 'flat-skills', settings: true, commonjsMarker: true },
+  trae: { surface: 'flat-skills', settings: false, commonjsMarker: false },
+  windsurf: { surface: 'flat-skills', settings: false, commonjsMarker: false },
 };
 
 function sha256(content) {
@@ -258,9 +258,14 @@ function assertFreshInstallContract(runtime, targetDir) {
     `${runtime} settings.json presence should match the runtime contract`
   );
   assert.equal(
+    fs.existsSync(path.join(targetDir, 'hooks', IDENTITY.hooksDir, 'package.json')),
+    contract.commonjsMarker,
+    `${runtime} hooks/${IDENTITY.hooksDir}/package.json presence should match the runtime contract`
+  );
+  assert.equal(
     fs.existsSync(path.join(targetDir, 'package.json')),
-    contract.packageJson,
-    `${runtime} package.json presence should match the runtime contract`
+    false,
+    `${runtime} install must not write the config root package.json`
   );
 
   if (contract.codexConfig) {

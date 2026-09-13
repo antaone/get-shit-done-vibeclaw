@@ -17,6 +17,13 @@ const FOREIGN_MARKERS = Object.freeze({
   copilotClose: '<!-- /GSD Configuration -->',
 });
 
+// Runtimes whose config root gets GSD's CommonJS marker package.json from GSD's
+// installer (bin/install.js at v1.42.3 skips it only for Codex, Copilot, Cursor,
+// Windsurf, Trae and Cline). fvgsd must neither rewrite nor remove it.
+const COMMONJS_MARKER_RUNTIMES = new Set([
+  'claude', 'antigravity', 'augment', 'codebuddy', 'gemini', 'hermes', 'kilo', 'opencode', 'qwen',
+]);
+
 function writeFile(root, rel, content) {
   const full = path.join(root, rel);
   fs.mkdirSync(path.dirname(full), { recursive: true });
@@ -123,6 +130,11 @@ function seedForeignInstalls(configDir, runtime) {
   if (runtime === 'opencode' || runtime === 'kilo') {
     const key = `${configDir.replace(/\\/g, '/')}/get-shit-done/*`;
     files[`${runtime}.json`] = `${JSON.stringify({ permission: { read: { [key]: 'allow' } } }, null, 2)}\n`;
+  }
+  if (COMMONJS_MARKER_RUNTIMES.has(runtime)) {
+    // The exact bytes GSD's installer writes, so an fvgsd install that wrote the
+    // same marker would still pass the hash check; only removing it would not.
+    files['package.json'] = '{"type":"commonjs"}\n';
   }
   for (const [rel, content] of Object.entries(files)) writeFile(configDir, rel, content);
   return Object.keys(files).sort();
