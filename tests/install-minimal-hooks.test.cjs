@@ -621,8 +621,8 @@ describe('install.js source correctness', () => {
     assert.ok(!nestedHookPath.test(src), 'Codex hook path must not nest hooks/ under the install folder');
   });
 
-  test('cache invalidation uses ~/.cache/gsd/ path', () => {
-    assert.ok(src.includes("os.homedir(), '.cache', 'gsd'"));
+  test('cache invalidation uses ~/.cache/fvgsd/ path', () => {
+    assert.ok(src.includes("os.homedir(), '.cache', IDENTITY.updateCacheDir"));
   });
 
   test('manifest tracks .sh hook files', () => {
@@ -763,8 +763,13 @@ describe('uninstall settings cleanup preserves user hooks', () => {
 describe('Codex legacy gsd-update-check migration', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
 
-  test('install.js strips legacy gsd-update-check hook blocks', () => {
-    assert.ok(src.includes('fvgsd-update-check') && src.includes('replace('));
+  test('install.js has structural logic to strip stale Codex hook blocks', () => {
+    // Was previously keyed off the literal 'fvgsd-update-check' string, which
+    // only happened to appear in the (unrelated) update-cache filename literal
+    // — coincidental, not load-bearing. The actual stale-hook-stripping logic
+    // is stripStaleGsdHookBlocks(), a structural TOML-section parser (see
+    // bin/install.js); assert on its presence instead (fvgsd identity Task 10).
+    assert.ok(src.includes('function stripStaleGsdHookBlocks('));
   });
 
   test('migration regex removes LF legacy hook block', () => {

@@ -169,7 +169,7 @@ describe('shouldSuppressFailureWarning', () => {
 describe('fvgsd/update-banner.js end-to-end', () => {
   function setupHome() {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-banner-home-'));
-    fs.mkdirSync(path.join(home, '.cache', 'gsd'), { recursive: true });
+    fs.mkdirSync(path.join(home, '.cache', 'fvgsd'), { recursive: true });
     return home;
   }
 
@@ -182,7 +182,7 @@ describe('fvgsd/update-banner.js end-to-end', () => {
 
   function writeCache(home, contents) {
     fs.writeFileSync(
-      path.join(home, '.cache', 'gsd', 'fvgsd-update-check.json'),
+      path.join(home, '.cache', 'fvgsd', 'update-check.json'),
       typeof contents === 'string' ? contents : JSON.stringify(contents)
     );
   }
@@ -261,7 +261,7 @@ describe('fvgsd/update-banner.js end-to-end', () => {
       assert.ok(/check failed/i.test(parsed1.systemMessage));
 
       // Sentinel should now exist so the next run is silent
-      const sentinel = path.join(home, '.cache', 'gsd', 'banner-failure-warned-at');
+      const sentinel = path.join(home, '.cache', 'fvgsd', 'banner-failure-warned-at');
       assert.ok(fs.existsSync(sentinel), 'first run must record the warning sentinel');
 
       const r2 = runHook(home);

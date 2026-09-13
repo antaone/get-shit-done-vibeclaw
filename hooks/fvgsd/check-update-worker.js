@@ -11,7 +11,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
 
 const cacheFile = process.env.FVGSD_CACHE_FILE;
 const projectVersionFile = process.env.FVGSD_PROJECT_VERSION_FILE;
@@ -88,26 +87,15 @@ if (configDir) {
   } catch (e) {}
 }
 
-let latest = null;
-try {
-  latest = execFileSync('npm', ['view', 'fvgsd', 'version'], {
-    encoding: 'utf8',
-    timeout: 10000,
-    windowsHide: true,
-    // On Windows, 'npm' is distributed as npm.cmd. Node's execFileSync does
-    // not apply PATHEXT resolution and looks for a literal 'npm' binary,
-    // failing with ENOENT. Setting shell:true on Windows routes through
-    // cmd.exe which resolves npm.cmd via PATHEXT.
-    // POSIX (Linux/macOS) is left untouched — no shell spawn, no extra
-    // signal/exit-code semantics, no overhead.
-    shell: process.platform === 'win32',
-  }).trim();
-} catch (e) {}
-
+// fvgsd is not published to npm, so there is no "latest" to query — the
+// update check is disabled (fvgsd identity Task 10; see
+// get-shit-done/bin/check-latest-version.cjs for the deterministic-check
+// script this mirrors). /fvgsd-update pulls the clone recorded in
+// .fvgsd-source instead of comparing against a registry version.
 const result = {
-  update_available: latest && isNewer(latest, installed),
+  update_available: false,
   installed,
-  latest: latest || 'unknown',
+  latest: 'unknown',
   checked: Math.floor(Date.now() / 1000),
   stale_hooks: staleHooks.length > 0 ? staleHooks : undefined,
 };

@@ -388,12 +388,10 @@ function runStatusline() {
     const gsdStateStr = task ? '' : formatGsdState(readGsdState(dir) || {});
 
     // GSD update available?
-    // Check shared cache first (#1421), fall back to runtime-specific cache for
-    // backward compatibility with older fvgsd/check-update.js versions.
+    // fvgsd's own shared, tool-agnostic cache (#1421). No fallback to any
+    // other install's cache — each fvgsd install reads only its own.
     let gsdUpdate = '';
-    const sharedCacheFile = path.join(homeDir, '.cache', 'gsd', 'fvgsd-update-check.json');
-    const legacyCacheFile = path.join(claudeDir, 'cache', 'fvgsd-update-check.json');
-    const cacheFile = fs.existsSync(sharedCacheFile) ? sharedCacheFile : legacyCacheFile;
+    const cacheFile = path.join(homeDir, '.cache', 'fvgsd', 'update-check.json');
     if (fs.existsSync(cacheFile)) {
       try {
         const cache = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));

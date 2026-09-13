@@ -59,18 +59,15 @@ describe('reapply-patches pristine baseline detection (#2424)', () => {
     );
   });
 
-  test('update.md workflow references backup-meta.json for pristine-hash baseline', () => {
-    // #2790: The behavioral contract (pristine_hashes from backup-meta.json as primary
-    // baseline source) is implemented in the update.md workflow (get-shit-done/workflows/update.md),
-    // not the command file. The command delegates via --reapply flag.
-    // Verify the underlying workflow has this content.
-    const workflowPath = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'update.md');
-    const workflowContent = fs.readFileSync(workflowPath, 'utf-8');
-    assert.ok(
-      workflowContent.includes('backup-meta.json'),
-      'get-shit-done/workflows/update.md must reference backup-meta.json (pristine_hashes baseline source)'
-    );
-  });
+  // The "update.md workflow references backup-meta.json for pristine-hash
+  // baseline" test that used to live here was removed (fvgsd identity Task
+  // 10): get-shit-done/workflows/update.md was rewritten wholesale into a
+  // git-pull-based clone updater and no longer implements the --reapply
+  // pristine-baseline contract inline. That behavioral contract now lives
+  // solely in get-shit-done/workflows/reapply-patches.md, which
+  // commands/gsd/update.md still routes --reapply to (see the
+  // <execution_context_extended> block) and which the tests above continue
+  // to cover via the command's argument-hint.
 
   test('update.md exists as consolidated entry point', () => {
     assert.ok(fs.existsSync(UPDATE_MD), 'update.md must exist as consolidated entry point');

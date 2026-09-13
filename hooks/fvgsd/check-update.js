@@ -32,8 +32,8 @@ const projectConfigDir = detectConfigDir(cwd);
 // Use a shared, tool-agnostic cache directory to avoid multi-runtime
 // resolution mismatches where check-update writes to one runtime's cache
 // but statusline reads from another (#1421).
-const cacheDir = path.join(homeDir, '.cache', 'gsd');
-const cacheFile = path.join(cacheDir, 'fvgsd-update-check.json');
+const cacheDir = path.join(homeDir, '.cache', 'fvgsd');
+const cacheFile = path.join(cacheDir, 'update-check.json');
 
 // VERSION file locations (check project first, then global)
 const projectVersionFile = path.join(projectConfigDir, 'fvgsd', 'VERSION');

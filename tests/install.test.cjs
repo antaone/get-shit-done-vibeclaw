@@ -569,8 +569,6 @@ describe('configureKiloPermissions', () => {
 
 describe('Kilo source integration assertions', () => {
   const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
-  const updateWorkflowSrc = fs.readFileSync(
-    path.join(__dirname, '..', 'get-shit-done', 'workflows', 'update.md'), 'utf8');
 
   test('--kilo flag parsing exists', () => {
     assert.ok(src.includes("args.includes('--kilo')"));
@@ -595,9 +593,9 @@ describe('Kilo source integration assertions', () => {
     assert.ok(src.includes('const configPath = resolveKiloConfigPath(targetDir);'));
   });
 
-  test('update workflow checks preferred custom config dirs', () => {
-    assert.ok(updateWorkflowSrc.includes('PREFERRED_CONFIG_DIR'));
-    assert.ok(updateWorkflowSrc.includes('kilo.jsonc'));
-    assert.ok(updateWorkflowSrc.includes('KILO_CONFIG'));
-  });
+  // The "update workflow checks preferred custom config dirs" test that used
+  // to live here was removed (fvgsd identity Task 10): the rewritten
+  // get-shit-done/workflows/update.md locates the install via .fvgsd-source
+  // (recorded at install time) rather than probing PREFERRED_CONFIG_DIR /
+  // KILO_CONFIG / kilo.jsonc from the workflow itself.
 });

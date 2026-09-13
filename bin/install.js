@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const {
   buildWindowsShimTriple: buildWindowsShimTripleFromProjection,
   formatSdkPathDiagnostic: formatSdkPathDiagnosticFromProjection,
+  execGit,
   isManagedHookBasename,
   isManagedHookCommand,
   projectLocalHookPrefix,
@@ -8882,6 +8883,27 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   // Write VERSION file
   const versionDest = path.join(targetDir, IDENTITY.installDir, 'VERSION');
   fs.writeFileSync(versionDest, pkg.version);
+
+  // Record which clone fvgsd was installed from, so /fvgsd-update can pull
+  // and reinstall from it instead of querying npm (fvgsd is not published
+  // there). Best-effort: git metadata is null when unavailable (#2992-family
+  // Task 10; see get-shit-done/workflows/update.md).
+  const repoRoot = path.resolve(__dirname, '..');
+  const gitValue = (args) => {
+    const r = execGit(args, { cwd: repoRoot });
+    return r.exitCode === 0 ? r.stdout.trim() : null;
+  };
+  fs.writeFileSync(
+    path.join(targetDir, IDENTITY.installDir, IDENTITY.sourceFile),
+    `${JSON.stringify({
+      repo: repoRoot,
+      remote: gitValue(['remote', 'get-url', 'origin']),
+      commit: gitValue(['rev-parse', 'HEAD']),
+      runtimes: [runtime],
+      scope: isGlobal ? 'global' : 'local',
+    }, null, 2)}\n`,
+  );
+
   if (verifyFileInstalled(versionDest, 'VERSION')) {
     console.log(`  ${green}✓${reset} Wrote VERSION (${pkg.version})`);
   } else {
@@ -8968,8 +8990,8 @@ function install(isGlobal, runtime = 'claude', options = {}) {
   }
 
   // Clear stale update cache so next session re-evaluates hook versions
-  // Cache lives at ~/.cache/gsd/ (see hooks/fvgsd/check-update.js line 35-36)
-  const updateCacheFile = path.join(os.homedir(), '.cache', 'gsd', 'fvgsd-update-check.json');
+  // Cache lives at ~/.cache/fvgsd/ (see hooks/fvgsd/check-update.js)
+  const updateCacheFile = path.join(os.homedir(), '.cache', IDENTITY.updateCacheDir, IDENTITY.updateCacheFile);
   try { fs.unlinkSync(updateCacheFile); } catch (e) { /* cache may not exist yet */ }
 
   if (failures.length > 0) {

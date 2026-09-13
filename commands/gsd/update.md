@@ -27,11 +27,10 @@ Parse the JSON response:
 Check for GSD updates, install if available, and display what changed.
 
 Routes to the update workflow which handles:
-- Version detection (local vs global installation)
-- npm version checking
-- Changelog fetching and display
-- User confirmation with clean install warning
-- Update execution and cache clearing
+- Locating the local clone fvgsd was installed from
+- Pulling the local clone (git pull --ff-only)
+- Reinstalling from the updated clone
+- Showing the commits that were pulled
 - Restart reminder
 </objective>
 

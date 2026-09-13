@@ -1240,38 +1240,32 @@ describe('stale hook path', () => {
 // ─── shared cache directory regression (#1421) ─────────────────────────────────
 
 describe('shared cache directory (#1421)', () => {
-  test('fvgsd/check-update.js writes cache to shared ~/.cache/gsd/ directory', () => {
+  test('fvgsd/check-update.js writes cache to shared ~/.cache/fvgsd/ directory', () => {
     const content = fs.readFileSync(
       path.join(__dirname, '..', 'hooks', 'fvgsd/check-update.js'), 'utf-8'
     );
     // Cache must use a tool-agnostic path so statusline can find it
     // regardless of which runtime (Claude, Gemini, OpenCode) ran the check
     assert.ok(
-      content.includes("path.join(homeDir, '.cache', 'gsd')"),
-      'check-update must write cache to ~/.cache/gsd/ (shared, tool-agnostic)'
+      content.includes("path.join(homeDir, '.cache', 'fvgsd')"),
+      'check-update must write cache to ~/.cache/fvgsd/ (shared, tool-agnostic)'
     );
   });
 
-  test('fvgsd/statusline.js checks shared cache first, falls back to legacy (#1421)', () => {
+  test('fvgsd/statusline.js checks only its own shared cache, no legacy fallback (#1421, fvgsd identity Task 10)', () => {
     const content = fs.readFileSync(
       path.join(__dirname, '..', 'hooks', 'fvgsd/statusline.js'), 'utf-8'
     );
-    // Statusline must check the shared cache path first
+    // Statusline must check the shared cache path
     assert.ok(
-      content.includes("path.join(homeDir, '.cache', 'gsd', 'fvgsd-update-check.json')"),
-      'statusline must check shared cache at ~/.cache/gsd/gsd-update-check.json'
+      content.includes("path.join(homeDir, '.cache', 'fvgsd', 'update-check.json')"),
+      'statusline must check shared cache at ~/.cache/fvgsd/update-check.json'
     );
-    // Must fall back to legacy runtime-specific cache for backward compat
+    // fvgsd never reads another install's cache — the legacy per-runtime
+    // fallback that used to exist here is gone, not just unreachable.
     assert.ok(
-      content.includes("path.join(claudeDir, 'cache', 'fvgsd-update-check.json')"),
-      'statusline must fall back to legacy cache at claudeDir/cache/gsd-update-check.json'
-    );
-    // Shared cache must be checked before legacy (existsSync order matters)
-    const sharedIdx = content.indexOf('sharedCacheFile');
-    const legacyIdx = content.indexOf('legacyCacheFile');
-    assert.ok(
-      sharedIdx < legacyIdx,
-      'shared cache must be defined and checked before legacy cache'
+      !content.includes('legacyCacheFile'),
+      'statusline must not fall back to any other install\'s cache'
     );
   });
 });

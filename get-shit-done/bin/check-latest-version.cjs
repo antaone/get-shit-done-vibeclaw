@@ -2,88 +2,46 @@
 'use strict';
 
 /**
- * Deterministic latest-version check for /fvgsd-update (#2992).
+ * Deterministic latest-version check for /fvgsd-update (#2992; disabled for
+ * fvgsd identity Task 10).
  *
- * The /fvgsd-update workflow's check_latest_version step was previously
- * prescribed in LLM-driven prose ("run `npm view fvgsd
- * version`"). The executing model could shortcut the prescription and
- * invent npm queries against wrong-shaped names (`@get-shit-done/cli`,
- * `get-shit-done-cli`, `gsd`), all of which 404 or — worse — return an
- * unrelated typosquat package.
+ * This script used to run `npm view fvgsd version` so the executing model
+ * could not shortcut the prescription and invent npm queries against
+ * wrong-shaped names. fvgsd is not published to npm at all — it installs
+ * from a local clone — so the npm lookup would always fail. checkLatestVersion()
+ * is now a hardcoded disabled result: it never spawns anything, npm included.
  *
- * This script makes the package name a CONSTANT in code, not a free
- * choice at execution time. The workflow calls it via `npm run
- * check-latest-version -- --json` and parses the structured response.
+ * /fvgsd-update instead reads the clone location the installer recorded at
+ * install time (`.fvgsd-source`, see IDENTITY.sourceFile) and pulls +
+ * reinstalls from it — see get-shit-done/workflows/update.md.
  *
  * Tests assert on the typed CHECK_REASON enum and the structured result
  * record, never on console prose. See CONTRIBUTING.md "Prohibited: Raw
  * Text Matching on Test Outputs".
  */
 
-const { execNpm } = require('./lib/shell-command-projection.cjs');
-
-// Hardcoded. Do not parameterise — the whole point of this script is that
-// the package name is not a runtime choice for the caller.
+// Retained for documentation of what package fvgsd would be if it were ever
+// published — not used by checkLatestVersion() below, which never queries npm.
 const PACKAGE_NAME = 'fvgsd';
 
 const CHECK_REASON = Object.freeze({
   OK: 'ok',
   FAIL_NPM_FAILED: 'fail_npm_failed',
   FAIL_INVALID_OUTPUT: 'fail_invalid_output',
+  DISABLED: 'disabled',
 });
 
-const SEMVER_RE = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
-
 /**
- * Pure-ish: takes an injected spawn function so tests don't actually run npm.
- * In production, defaults to execNpm() from the shell-projection seam.
+ * fvgsd never queries npm for its own version. Always returns the disabled
+ * result without spawning anything — the pre-fvgsd `spawn` injection point
+ * is gone along with the npm call it used to test.
  */
-function checkLatestVersion(opts = {}) {
-  // Default path routes through the shell-projection seam (execNpm owns the
-  // Windows shell-flag policy and timeout default). The injection point
-  // remains spawnSync-shaped for test compatibility — the adapter below
-  // translates { exitCode } → { status } so the consumer logic is unchanged.
-  // Bounded at 15s so a hung registry doesn't block /fvgsd-update (#2993 CR).
-  const defaultSpawn = () => {
-    const r = execNpm(['view', PACKAGE_NAME, 'version'], { timeout: 15_000 });
-    return {
-      status: r.exitCode,
-      stdout: r.stdout,
-      stderr: r.stderr,
-      signal: r.signal,
-      error: r.error,
-    };
+function checkLatestVersion() {
+  return {
+    ok: false,
+    reason: CHECK_REASON.DISABLED,
+    detail: 'fvgsd does not query npm; run /fvgsd-update to pull your clone',
   };
-  const spawn = opts.spawn || defaultSpawn;
-
-  const r = spawn();
-  if (!r || r.status !== 0) {
-    // Distinguish timeout (status null, signal set, stderr empty) from a
-    // genuine npm failure. Without this, both surfaced as "npm exited
-    // non-zero" and the operator couldn't tell which (#2993 CR).
-    let detail;
-    if (r && r.signal) {
-      detail = `npm timed out (signal: ${r.signal})`;
-    } else if (r && r.stderr) {
-      detail = r.stderr.trim();
-    } else {
-      detail = 'npm exited non-zero';
-    }
-    return {
-      ok: false,
-      reason: CHECK_REASON.FAIL_NPM_FAILED,
-      detail,
-    };
-  }
-  const version = (r.stdout || '').trim();
-  if (!SEMVER_RE.test(version)) {
-    return {
-      ok: false,
-      reason: CHECK_REASON.FAIL_INVALID_OUTPUT,
-      detail: version || '(empty)',
-    };
-  }
-  return { ok: true, version, reason: CHECK_REASON.OK };
 }
 
 function main() {

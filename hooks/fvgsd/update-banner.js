@@ -2,7 +2,7 @@
 // gsd-hook-version: {{FVGSD_VERSION}}
 // SessionStart banner that surfaces GSD update availability when GSD's
 // statusline isn't installed. Reads the cache that
-// fvgsd/check-update-worker.js writes to ~/.cache/gsd/gsd-update-check.json.
+// fvgsd/check-update-worker.js writes to ~/.cache/fvgsd/update-check.json.
 //
 // Opt-in by design: bin/install.js only registers this hook when the user
 // declines to install (or replace) the GSD statusline. The presence of the
@@ -95,8 +95,8 @@ function recordFailureWarning(sentinelFile, nowSeconds) {
 }
 
 function main() {
-  const cacheDir = path.join(os.homedir(), '.cache', 'gsd');
-  const cacheFile = path.join(cacheDir, 'fvgsd-update-check.json');
+  const cacheDir = path.join(os.homedir(), '.cache', 'fvgsd');
+  const cacheFile = path.join(cacheDir, 'update-check.json');
   const sentinelFile = path.join(cacheDir, 'banner-failure-warned-at');
   const now = Math.floor(Date.now() / 1000);
 
@@ -108,7 +108,7 @@ function main() {
 
   if (parseError && !suppressFailureWarning) {
     // Ensure cache dir exists before writing the sentinel — first-run case
-    // where ~/.cache/gsd was created by check-update but the parent dir got
+    // where ~/.cache/fvgsd was created by check-update but the parent dir got
     // wiped between runs.
     try {
       fs.mkdirSync(cacheDir, { recursive: true });
