@@ -19,8 +19,7 @@ name: Hotfix Release
 #   - Bundles SDK as both loose tree (sdk/dist/cli.js) and recoverable tarball
 #     (sdk-bundle/fvgsd-sdk.tgz) — parity with release-sdk.yml so a hotfix shipped
 #     during the @gsd-build-token outage carries the same payload shape.
-#   - Publishes to @latest, tags vX.YY.Z, re-points @next → vX.YY.Z, opens
-#     merge-back PR.
+#   - Tags vX.YY.Z, creates a GitHub Release, opens a merge-back PR.
 
 on:
   workflow_dispatch:
@@ -42,7 +41,7 @@ on:
         type: boolean
         default: true
       dry_run:
-        description: 'Dry run (skip npm publish, tagging, and push)'
+        description: 'Dry run (skip tagging and push)'
         required: false
         type: boolean
         default: false
@@ -379,15 +378,6 @@ jobs:
             git push origin "v${VERSION}"
           fi
 
-      - name: Re-point next dist-tag at this hotfix
-        if: ${{ !inputs.dry_run }}
-        env:
-          VERSION: ${{ inputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm dist-tag add "fvgsd@${VERSION}" next
-          echo "✅ next dist-tag re-pointed to v${VERSION} (matches latest)"
-
       - name: Create GitHub Release (idempotent)
         if: ${{ !inputs.dry_run }}
         env:
@@ -435,10 +425,8 @@ jobs:
             echo ""
             echo "- Base (cumulative-fix anchor): \`${BASE_TAG}\`"
             if [ "$DRY_RUN" = "true" ]; then
-              echo "- **DRY RUN** — npm publish, tagging, and push skipped"
+              echo "- **DRY RUN** — tagging and push skipped"
             else
-              echo "- Published to npm as \`latest\`"
-              echo "- \`next\` dist-tag re-pointed to v${VERSION}"
               echo "- Tagged \`v${VERSION}\` (anchor for the next hotfix's cherry-pick base)"
               echo "- SDK bundled at \`sdk-bundle/fvgsd-sdk.tgz\` inside CC tarball"
               echo "- Merge-back PR opened against main"

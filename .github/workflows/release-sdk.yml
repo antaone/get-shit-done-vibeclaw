@@ -1,22 +1,17 @@
 # Release SDK Bundle
 #
-# Stopgap workflow_dispatch publish path: builds fvgsd with the
-# compiled SDK and the SDK .tgz bundled inside the CC tarball, then
-# publishes the CC package to ONE chosen dist-tag (dev | next | latest)
-# per run.
+# fvgsd has no npm channel: builds fvgsd with the compiled SDK and the SDK
+# .tgz bundled inside the CC tarball, tags the release for ONE chosen stream
+# (dev | next | latest) per run, and creates a GitHub Release. bin/fvgsd-sdk.js
+# resolves sdk/dist/cli.js from inside the installed CC package, so the
+# bundled copy is sufficient for full functionality — CC users never consume
+# @fvgsd/sdk directly. This workflow additionally bakes a bundled
+# gsd-sdk-<version>.tgz at sdk-bundle/fvgsd-sdk.tgz inside the CC tarball as
+# a recoverable artifact.
 #
-# Why this exists: @fvgsd/sdk publishes from canary.yml and release.yml
-# fail because the @gsd-build npm token is currently unavailable. CC users
-# do not consume @fvgsd/sdk directly — bin/fvgsd-sdk.js resolves
-# sdk/dist/cli.js from inside the installed CC package, so the bundled
-# copy is sufficient for full functionality. This workflow ships CC alone
-# (no separate @fvgsd/sdk publish attempt) and additionally bakes a
-# bundled gsd-sdk-<version>.tgz at sdk-bundle/fvgsd-sdk.tgz inside the CC
-# tarball as a recoverable npm-installable artifact.
-#
-# Existing canary.yml and release.yml are intentionally untouched. They
-# remain the canonical two-package publish path; restore them to primary
-# use once @fvgsd/sdk ownership is recovered.
+# Existing canary.yml and release.yml are intentionally untouched; both tag
+# and create a GitHub Release the same way, without this workflow's SDK
+# tarball bundling.
 #
 # Tracking issues: #2925 (initial workflow), #2929 (CI-gate parity with release.yml)
 
@@ -34,7 +29,7 @@ on:
           - publish
           - hotfix
       tag:
-        description: 'npm dist-tag (publish action only; hotfix forces latest)'
+        description: 'Release stream — controls the version suffix (publish action only; hotfix forces latest)'
         required: false
         type: choice
         default: latest
@@ -56,12 +51,12 @@ on:
         type: boolean
         default: true
       dry_run:
-        description: 'Dry run (skip npm publish, git tag, and push). Hotfix branch creation/push also skipped.'
+        description: 'Dry run (skip git tag and push). Hotfix branch creation/push also skipped.'
         required: false
         type: boolean
         default: false
 
-# Per stream (dist-tag for publish, version for hotfix) — no concurrent publishes for the same stream.
+# Per stream (release stream for publish action, version for hotfix) — no concurrent runs for the same stream.
 concurrency:
   group: release-sdk-${{ inputs.action == 'hotfix' && format('hotfix-{0}', inputs.version) || inputs.tag }}
   cancel-in-progress: false
@@ -621,19 +616,6 @@ jobs:
           fi
           git push origin "v${VERSION}"
 
-      # Keep `next` from going stale relative to `latest`. When publishing a
-      # stable release, also point `next` at it so users on `@next` don't
-      # get stuck on an older pre-release than what's now stable. Parity
-      # with release.yml#finalize "Clean up next dist-tag" step.
-      - name: Re-point next dist-tag at the new latest (only when tag=latest)
-        if: ${{ !inputs.dry_run && steps.ver.outputs.tag == 'latest' }}
-        env:
-          VERSION: ${{ steps.ver.outputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm dist-tag add "fvgsd@${VERSION}" next
-          echo "✅ next dist-tag re-pointed to v${VERSION} (matches latest)"
-
       - name: Create GitHub Release (idempotent)
         if: ${{ !inputs.dry_run }}
         env:
@@ -701,17 +683,14 @@ jobs:
             fi
             echo ""
             if [ "$DRY_RUN" = "true" ]; then
-              echo "**DRY RUN** — npm publish, git tag, push, and GitHub Release were skipped."
+              echo "**DRY RUN** — git tag, push, and GitHub Release were skipped."
             else
-              echo "- Published \`fvgsd@${VERSION}\` to dist-tag \`${TAG}\`"
+              echo "- Version \`v${VERSION}\` (stream: \`${TAG}\`)"
               echo "- SDK bundled inside the CC tarball at:"
               echo "  - \`sdk/dist/cli.js\` (loose tree, consumed by \`bin/fvgsd-sdk.js\` shim)"
-              echo "  - \`sdk-bundle/fvgsd-sdk.tgz\` (npm-installable artifact)"
+              echo "  - \`sdk-bundle/fvgsd-sdk.tgz\` (recoverable artifact)"
               echo "- Git tag \`v${VERSION}\` pushed"
               echo "- GitHub Release \`v${VERSION}\` created"
-              if [ "$TAG" = "latest" ]; then
-                echo "- \`next\` dist-tag re-pointed at \`v${VERSION}\` (kept current with \`latest\`)"
-              fi
               if [ "$ACTION" = "hotfix" ]; then
                 # Auto-cherry-pick hotfixes only pick commits already on
                 # main, so there's nothing to merge back. The merge-back
@@ -720,6 +699,6 @@ jobs:
                 # that was never opened.
                 echo "- No merge-back PR (auto-picked commits are already on main)"
               fi
-              echo "- Install: \`npm install -g fvgsd@${TAG}\`"
+              echo "- Install: \`node bin/install.js\` from a clone checked out at this tag"
             fi
           } >> "$GITHUB_STEP_SUMMARY"

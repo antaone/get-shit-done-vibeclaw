@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       dry_run:
-        description: 'Dry run (skip npm publish, tagging, and push)'
+        description: 'Dry run (skip tagging and push)'
         required: false
         type: boolean
         default: false
@@ -232,11 +232,10 @@ jobs:
         run: |
           echo "## Pre-release v${PRE_VERSION}" >> "$GITHUB_STEP_SUMMARY"
           if [ "$DRY_RUN" = "true" ]; then
-            echo "**DRY RUN** — npm publish, tagging, and push skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "**DRY RUN** — tagging and push skipped" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "- Published to npm as \`next\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- SDK also published: \`@fvgsd/sdk@${PRE_VERSION}\` on \`next\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Install: \`npx fvgsd@next\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Tagged \`v${PRE_VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Install: \`node bin/install.js\` from a clone checked out at this tag" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "To publish another pre-release: run \`rc\` again" >> "$GITHUB_STEP_SUMMARY"
@@ -308,7 +307,7 @@ jobs:
         run: |
           # Non-fatal: repos that disable "Allow GitHub Actions to create and
           # approve pull requests" cause this step to fail with GraphQL 403.
-          # The release itself (tag + npm publish + GitHub Release) must still
+          # The release itself (tag + GitHub Release) must still
           # proceed. Open the merge-back PR manually afterwards with:
           #   gh pr create --base main --head release/${VERSION} \
           #     --title "chore: merge release v${VERSION} to main"
@@ -358,18 +357,6 @@ jobs:
             --generate-notes \
             --latest
 
-      - name: Clean up next dist-tag
-        if: ${{ !inputs.dry_run }}
-        env:
-          VERSION: ${{ inputs.version }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          # Point next to the stable release so @next never returns something
-          # older than @latest. This prevents stale pre-release installs.
-          npm dist-tag add "fvgsd@${VERSION}" next 2>/dev/null || true
-          npm dist-tag add "@fvgsd/sdk@${VERSION}" next 2>/dev/null || true
-          echo "✓ next dist-tag updated to v${VERSION}"
-
       - name: Summary
         env:
           VERSION: ${{ inputs.version }}
@@ -377,11 +364,9 @@ jobs:
         run: |
           echo "## Release v${VERSION}" >> "$GITHUB_STEP_SUMMARY"
           if [ "$DRY_RUN" = "true" ]; then
-            echo "**DRY RUN** — npm publish, tagging, and push skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "**DRY RUN** — tagging and push skipped" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "- Published to npm as \`latest\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- SDK also published: \`@fvgsd/sdk@${VERSION}\` as \`latest\`" >> "$GITHUB_STEP_SUMMARY"
             echo "- Tagged \`v${VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
             echo "- PR created to merge back to main" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Install: \`npx fvgsd@latest\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Install: \`node bin/install.js\` from a clone checked out at this tag" >> "$GITHUB_STEP_SUMMARY"
           fi

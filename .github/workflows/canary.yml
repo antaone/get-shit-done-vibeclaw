@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (skip npm publish, tagging, and push)'
+        description: 'Dry run (skip tagging and push)'
         required: false
         type: boolean
         default: false
@@ -98,12 +98,10 @@ jobs:
         run: |
           echo "## Canary v${CANARY_VERSION}" >> "$GITHUB_STEP_SUMMARY"
           if [ "$DRY_RUN" = "true" ]; then
-            echo "**DRY RUN** — npm publish, tagging, and push skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "**DRY RUN** — tagging and push skipped" >> "$GITHUB_STEP_SUMMARY"
           elif [ "$PUBLISH_ELIGIBLE" != "true" ]; then
-            echo "**VALIDATION ONLY** — publish/tag skipped for \`${BRANCH_REF}\`; canary publish is gated to \`refs/heads/dev\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "**VALIDATION ONLY** — tag skipped for \`${BRANCH_REF}\`; canary tagging is gated to \`refs/heads/dev\`." >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "- Published to npm as \`canary\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- SDK also published: \`@fvgsd/sdk@${CANARY_VERSION}\` on \`canary\`" >> "$GITHUB_STEP_SUMMARY"
             echo "- Tagged \`v${CANARY_VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
-            echo "- Install: \`npx fvgsd@canary\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Install: \`node bin/install.js\` from a clone checked out at this tag" >> "$GITHUB_STEP_SUMMARY"
           fi
