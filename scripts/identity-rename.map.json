@@ -16,6 +16,8 @@
     "sdk/src/identity.ts",
     "tests/identity.test.cjs",
     "tests/fvgsd-coexistence.install.test.cjs",
+    "tests/fvgsd-codex-coexistence.test.cjs",
+    "tests/fvgsd-codex-coexistence.install.test.cjs",
     "tests/fvgsd-install-ownership.test.cjs",
     "tests/fvgsd-install-ownership.install.test.cjs",
     "tests/helpers/foreign-installs.cjs",

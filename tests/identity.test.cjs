@@ -29,6 +29,8 @@ test('identity names every fvgsd surface', () => {
     updateCacheFile: 'update-check.json',
     codexMarker: '# FVGSD Agent Configuration — managed by fvgsd installer',
     codexHooksOwnershipPrefix: '# FVGSD codex_hooks ownership: ',
+    copilotInstructionsMarker: '<!-- FVGSD Configuration — managed by fvgsd installer -->',
+    copilotInstructionsCloseMarker: '<!-- /FVGSD Configuration -->',
     tempPrefix: 'fvgsd-',
     branchPrefix: 'fvgsd/',
     executionsDir: 'fvgsd/executions',

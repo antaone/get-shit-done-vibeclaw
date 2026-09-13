@@ -44,6 +44,7 @@ const {
   installCodexConfig,
   parseTomlToObject,
 } = require('../bin/install.js');
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 if (previousGsdTestMode === undefined) {
   delete process.env.FVGSD_TEST_MODE;
@@ -788,7 +789,7 @@ describe('#2760 CR4 finding 1 — atomicWriteFileSync failure aborts install (po
         let isHookWrite = false;
         try {
           const data = fs.readFileSync(src, 'utf8');
-          isHookWrite = /GSD codex_hooks ownership/.test(data);
+          isHookWrite = new RegExp(IDENTITY.codexHooksOwnershipPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(data);
         } catch (_) { /* ignore */ }
         if (isHookWrite) {
           throw new Error('simulated rename failure');

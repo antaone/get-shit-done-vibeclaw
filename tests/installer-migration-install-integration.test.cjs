@@ -264,17 +264,18 @@ function assertFreshInstallContract(runtime, targetDir) {
   );
 
   if (contract.codexConfig) {
-    assert.match(
-      fs.readFileSync(path.join(targetDir, 'config.toml'), 'utf8'),
-      /GSD Agent Configuration/,
-      'Codex should install config.toml with the GSD marker'
+    const codexConfig = fs.readFileSync(path.join(targetDir, 'config.toml'), 'utf8');
+    assert.equal(
+      installModule.codexConfigLayout(codexConfig).markers.some((marker) => marker.owner === 'fvgsd'),
+      true,
+      'Codex should install config.toml with the fvgsd marker'
     );
   }
 
   if (contract.copilotInstructions) {
     assert.match(
       fs.readFileSync(path.join(targetDir, 'copilot-instructions.md'), 'utf8'),
-      /GSD Configuration/,
+      new RegExp(IDENTITY.copilotInstructionsMarker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
       'Copilot should install managed copilot instructions'
     );
   }

@@ -19,6 +19,8 @@ const {
   projectShellCommandText,
   projectCodexHookTomlCommand,
 } = require('../get-shit-done/bin/lib/shell-command-projection.cjs');
+// fvgsd's installed names. Required before the marker constants below read it.
+const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
 
 // Bidirectional GSD command namespace transformer (#3583).
 // Required at module scope so the command list can be computed once per install
@@ -83,15 +85,16 @@ const dim = '\x1b[2m';
 const reset = '\x1b[0m';
 
 // Codex config.toml constants
-const FVGSD_CODEX_MARKER = '# GSD Agent Configuration \u2014 managed by get-shit-done installer';
-const FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX = '# GSD codex_hooks ownership: ';
+const FVGSD_CODEX_MARKER = IDENTITY.codexMarker;
+const FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX = IDENTITY.codexHooksOwnershipPrefix;
+// The ownership comment line written directly below fvgsd's marker.
+const CODEX_OWNERSHIP_LINE_RE = new RegExp(`^\\r?\\n${escapeRegExp(FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX)}(section|root_dotted)\\r?\\n`);
 // Codex's hook-enabling feature flag (issue #3566). Codex itself marks
 // `codex_hooks` as a `legacy_key` in codex-rs/features/src/legacy.rs; the
-// canonical current key under [features] is `hooks`. The installer always
-// emits the canonical key going forward, recognizes legacy aliases as
-// equivalent during reinstall, and migrates them forward on rewrite. The
-// audit-marker string above is intentionally unchanged so existing
-// installs' ownership lines continue to round-trip.
+// canonical current key under [features] is `hooks`. The installer emits the
+// canonical key when it adds the flag and treats legacy aliases as equivalent.
+// A key that is already set is left as written: the user or another install
+// owns it. The ownership comment above keeps its `codex_hooks` wording.
 const CODEX_HOOKS_FEATURE_KEY = 'hooks';
 const CODEX_HOOKS_FEATURE_LEGACY_KEYS = ['codex_hooks'];
 const CODEX_HOOKS_FEATURE_ALL_KEYS = [CODEX_HOOKS_FEATURE_KEY, ...CODEX_HOOKS_FEATURE_LEGACY_KEYS];
@@ -100,8 +103,8 @@ function isCodexHooksFeatureKey(key) {
 }
 
 // Copilot instructions marker constants
-const FVGSD_COPILOT_INSTRUCTIONS_MARKER = '<!-- GSD Configuration \u2014 managed by get-shit-done installer -->';
-const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = '<!-- /GSD Configuration -->';
+const FVGSD_COPILOT_INSTRUCTIONS_MARKER = IDENTITY.copilotInstructionsMarker;
+const FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER = IDENTITY.copilotInstructionsCloseMarker;
 
 // GSD-managed files under hooks/fvgsd/lib/ (helpers required by fvgsd-*.sh hooks).
 // git-cmd.js does not start with "fvgsd-" (shared classifier for #3129), graphify-rebuild.sh does.
@@ -155,7 +158,6 @@ const pkg = require('../package.json');
 // of cwd, but keeping the require at the top makes the dependency explicit and
 // surfaces resolution failures at process start instead of at first install call.
 const _gsdLibDir = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib');
-const IDENTITY = require(path.join(_gsdLibDir, 'identity.cjs'));
 const { MODEL_PROFILES: FVGSD_MODEL_PROFILES } = require(path.join(_gsdLibDir, 'model-profiles.cjs'));
 const {
   RUNTIME_PROFILE_MAP: FVGSD_RUNTIME_PROFILE_MAP,
@@ -2782,86 +2784,138 @@ function generateCodexConfigBlock(agents, targetDir) {
 }
 
 /**
- * Strip any managed GSD agent sections from a TOML string.
+ * True when a config.toml table is one of fvgsd's agent registrations.
+ * User-authored `[agents.<name>]` and `[[agents]]` entries never match.
  *
- * Used by the uninstall path (`stripGsdFromCodexConfig`). Removes only what GSD
- * owns; user-authored `[agents.<name>]` and `[[agents]]` entries are preserved
- * so uninstall returns the file to its pre-GSD shape.
- *
- * Handles BOTH shapes so reinstall self-heals configs from all GSD versions:
+ * Handles both shapes, so reinstall and uninstall clean configs from every version:
  *   - Current (#2727): `[agents.fvgsd-*]` struct tables (Codex 0.120.0+).
  *   - Legacy (#2645): `[[agents]]` array-of-tables whose `name = "fvgsd-*"`.
- *
- * A section runs from its header to the next `[` header or EOF.
  */
-function stripCodexGsdAgentSections(content) {
-  // Use the TOML-aware section parser so we never absorb adjacent user-authored
-  // tables — even if their headers are indented or otherwise oddly placed.
-  const sections = getTomlTableSections(content).filter((section) => {
-    // Current `[agents.fvgsd-<name>]` struct tables (#2727, Codex 0.120.0+).
-    if (!section.array && /^agents\.fvgsd-/.test(section.path)) {
-      return true;
-    }
-
-    // Legacy `[[agents]]` array-of-tables (#2645) — only strip blocks whose
-    // `name = "fvgsd-..."`, preserving user-authored [[agents]] entries.
-    if (section.array && section.path === 'agents') {
-      const body = content.slice(section.headerEnd, section.end);
-      const nameMatch = body.match(/^[ \t]*name[ \t]*=[ \t]*["']([^"']+)["']/m);
-      return Boolean(nameMatch && /^fvgsd-/.test(nameMatch[1]));
-    }
-
-    return false;
-  });
-
-  return removeContentRanges(
-    content,
-    sections.map(({ start, end }) => ({ start, end })),
-  );
+function isOwnCodexAgentSection(content, section) {
+  if (!section.array) return section.path.startsWith(`agents.${IDENTITY.agentPrefix}`);
+  if (section.path !== 'agents') return false;
+  const body = content.slice(section.headerEnd, section.end);
+  const nameMatch = body.match(/^[ \t]*name[ \t]*=[ \t]*["']([^"']+)["']/m);
+  return Boolean(nameMatch && nameMatch[1].startsWith(IDENTITY.agentPrefix));
 }
 
 /**
- * Strip GSD sections from Codex config.toml content.
- * Returns cleaned content, or null if file would be empty.
+ * Which installer wrote a config.toml agent marker line: 'fvgsd', 'gsd' for
+ * upstream GSD and VibeClaw (both write the same marker), or null.
  */
-function stripGsdFromCodexConfig(content) {
-  const eol = detectLineEnding(content);
-  const markerIndex = content.indexOf(FVGSD_CODEX_MARKER);
-  const codexHooksOwnership = getManagedCodexHooksOwnership(content);
+function codexMarkerOwner(text) {
+  const trimmed = text.trim();
+  if (trimmed === FVGSD_CODEX_MARKER) return 'fvgsd';
+  if (/^# GSD Agent Configuration\b/.test(trimmed)) return 'gsd';
+  return null;
+}
 
-  if (markerIndex !== -1) {
-    // Has GSD marker — remove everything from marker to EOF
-    let before = content.substring(0, markerIndex);
-    before = stripCodexHooksFeatureAssignments(before, codexHooksOwnership);
-    // Also strip GSD-injected feature keys above the marker (Case 3 inject)
-    before = before.replace(/^multi_agent\s*=\s*true\s*(?:\r?\n)?/m, '');
-    before = before.replace(/^default_mode_request_user_input\s*=\s*true\s*(?:\r?\n)?/m, '');
-    before = before.replace(/^\[features\]\s*\n(?=\[|$)/m, '');
-    before = before.replace(/^\[agents\]\s*\n(?=\[|$)/m, '');
-    before = before.replace(/^(?:\r?\n)+/, '').trimEnd();
-    if (!before) return null;
-    return before + eol;
+/**
+ * Where the agent markers and `[agents.*]` tables sit in a config.toml, as
+ * 0-based line numbers. Text inside multiline strings is not a marker.
+ *
+ * @param {string} content
+ * @returns {{ markers: Array<{ owner: 'fvgsd'|'gsd', line: number }>, agentSections: Array<{ name: string, line: number }> }}
+ */
+function codexConfigLayout(content) {
+  const records = getTomlLineRecords(content);
+  const markers = [];
+  records.forEach((record, line) => {
+    const owner = record.startsInMultilineString ? null : codexMarkerOwner(record.text);
+    if (owner) markers.push({ owner, line });
+  });
+  const agentSections = getTomlTableSections(content)
+    .filter((section) => !section.array && section.path.startsWith('agents.'))
+    .map((section) => ({
+      name: section.path.slice('agents.'.length),
+      line: records.findIndex((record) => record.start === section.start),
+    }));
+  return { markers, agentSections };
+}
+
+/**
+ * Offset of the first GSD or VibeClaw marker line, or -1. Those installers remove
+ * everything from their marker to the end of the file on uninstall.
+ */
+function foreignCodexMarkerOffset(content) {
+  const marker = getTomlLineRecords(content)
+    .find((record) => !record.startsInMultilineString && codexMarkerOwner(record.text) === 'gsd');
+  return marker ? marker.start : -1;
+}
+
+/**
+ * Byte range of a table's header and assignments. A section from
+ * getTomlTableSections runs to the next header, so it also holds the comment and
+ * blank lines written above that header, such as another installer's marker.
+ * The range returned here leaves those lines in place.
+ */
+function tomlTableOwnRange(records, section) {
+  let end = section.headerEnd;
+  for (const record of records) {
+    if (record.start < section.headerEnd || record.start >= section.end) continue;
+    const trimmed = record.text.trim();
+    if (record.startsInMultilineString || (trimmed !== '' && !trimmed.startsWith('#'))) {
+      end = record.end + record.eol.length;
+    }
   }
+  return { start: section.start, end };
+}
 
-  // No marker but may have GSD-injected feature keys
-  let cleaned = content;
-  cleaned = stripCodexHooksFeatureAssignments(cleaned, codexHooksOwnership);
-  cleaned = cleaned.replace(/^multi_agent\s*=\s*true\s*(?:\r?\n)?/m, '');
-  cleaned = cleaned.replace(/^default_mode_request_user_input\s*=\s*true\s*(?:\r?\n)?/m, '');
+/**
+ * Remove ranges from config.toml content and collapse the blank lines left
+ * behind. Collapsing stops at the first GSD or VibeClaw marker, so the bytes that
+ * installer owns stay exactly as written.
+ */
+function removeCodexConfigRanges(content, ranges) {
+  if (ranges.length === 0) return content;
+  const stripped = removeContentRanges(content, ranges);
+  const markerOffset = foreignCodexMarkerOffset(stripped);
+  if (markerOffset === -1) return collapseTomlBlankLines(stripped);
+  return collapseTomlBlankLines(stripped.slice(0, markerOffset)) + stripped.slice(markerOffset);
+}
 
-  // Remove [agents.fvgsd-*] sections (from header to next section or EOF)
-  cleaned = stripCodexGsdAgentSections(cleaned);
+/**
+ * Remove fvgsd's own block from config.toml content: its marker, its
+ * codex_hooks ownership comment and its agent tables. Every other byte is kept,
+ * including line endings and any GSD or VibeClaw marker with the tables below it.
+ */
+function stripOwnCodexBlock(content) {
+  const records = getTomlLineRecords(content);
+  const ownLines = records
+    .filter((record) => {
+      if (record.startsInMultilineString) return false;
+      const trimmed = record.text.trim();
+      return trimmed === FVGSD_CODEX_MARKER || trimmed.startsWith(FVGSD_CODEX_HOOKS_OWNERSHIP_PREFIX);
+    })
+    .map((record) => ({ start: record.start, end: record.end + record.eol.length }));
+  const ownTables = getTomlTableSections(content)
+    .filter((section) => isOwnCodexAgentSection(content, section))
+    .map((section) => tomlTableOwnRange(records, section));
+  return removeCodexConfigRanges(content, [...ownLines, ...ownTables]);
+}
 
-  // Remove [features] section if now empty (only header, no keys before next section)
+/**
+ * Remove fvgsd's block from Codex config.toml content (uninstall, and a
+ * full → minimal reinstall). The hooks feature key fvgsd recorded ownership of,
+ * and the multi_agent / default_mode_request_user_input keys, are removed only
+ * while no GSD or VibeClaw marker remains and `foreignHooksRemain` is false,
+ * that is, no other install's SessionStart hook is left in hooks.json.
+ * Returns cleaned content, or null if the file would be empty.
+ */
+function stripGsdFromCodexConfig(content, { foreignHooksRemain = false } = {}) {
+  const eol = detectLineEnding(content);
+  const foreignPresent = foreignHooksRemain
+    || codexConfigLayout(content).markers.some((marker) => marker.owner === 'gsd');
+  const ownership = foreignPresent ? null : getManagedCodexHooksOwnership(content);
+  let cleaned = stripOwnCodexBlock(stripCodexHooksFeatureAssignments(content, ownership));
+  if (!foreignPresent) {
+    cleaned = cleaned.replace(/^multi_agent\s*=\s*true\s*(?:\r?\n)?/m, '');
+    cleaned = cleaned.replace(/^default_mode_request_user_input\s*=\s*true\s*(?:\r?\n)?/m, '');
+  }
   cleaned = cleaned.replace(/^\[features\]\s*\n(?=\[|$)/m, '');
-
-  // Remove [agents] section if now empty
   cleaned = cleaned.replace(/^\[agents\]\s*\n(?=\[|$)/m, '');
-
   cleaned = cleaned.replace(/^(?:\r?\n)+/, '').trimEnd();
-
-  if (!cleaned) return null;
-  return cleaned + eol;
+  return cleaned ? cleaned + eol : null;
 }
 
 function detectLineEnding(content) {
@@ -3460,7 +3514,7 @@ function getManagedCodexHooksOwnership(content) {
   }
 
   const afterMarker = content.slice(markerIndex + FVGSD_CODEX_MARKER.length);
-  const match = afterMarker.match(/^\r?\n# GSD codex_hooks ownership: (section|root_dotted)\r?\n/);
+  const match = afterMarker.match(CODEX_OWNERSHIP_LINE_RE);
   return match ? match[1] : null;
 }
 
@@ -3473,10 +3527,7 @@ function setManagedCodexHooksOwnership(content, ownership) {
   const eol = detectLineEnding(content);
   const markerEnd = markerIndex + FVGSD_CODEX_MARKER.length;
   const afterMarker = content.slice(markerEnd);
-  const normalizedAfterMarker = afterMarker.replace(
-    /^\r?\n# GSD codex_hooks ownership: (?:section|root_dotted)\r?\n/,
-    eol
-  );
+  const normalizedAfterMarker = afterMarker.replace(CODEX_OWNERSHIP_LINE_RE, eol);
 
   if (!ownership) {
     return content.slice(0, markerEnd) + normalizedAfterMarker;
@@ -3549,20 +3600,10 @@ function stripLeakedGsdCodexSections(content) {
       return false;
     });
 
-  if (leakedSections.length === 0) {
-    return content;
-  }
-
-  let cleaned = '';
-  let cursor = 0;
-
-  for (const section of leakedSections) {
-    cleaned += content.slice(cursor, section.start);
-    cursor = section.end;
-  }
-
-  cleaned += content.slice(cursor);
-  return collapseTomlBlankLines(cleaned);
+  // Remove each table's header and assignments only, so a GSD or VibeClaw marker
+  // written directly below one of these tables stays.
+  const records = getTomlLineRecords(content);
+  return removeCodexConfigRanges(content, leakedSections.map((section) => tomlTableOwnRange(records, section)));
 }
 
 /**
@@ -3577,14 +3618,15 @@ function stripLeakedGsdCodexSections(content) {
  * lines outside any table.
  *
  * The structural approach: find every `hooks*` table whose body contains a
- * `command = "...gsd-(check-update|update-check).js"` value, remove its
- * exact byte range, and additionally remove any orphaned parent
- * `[[hooks.SessionStart]]` whose body becomes empty as a result (Shape 4).
- * The leading `# GSD Hooks` header line is swallowed by extending the
- * removal range backward through any single preceding comment line.
+ * `command` that runs fvgsd's own `hooks/fvgsd/check-update.js` (matched by
+ * `isManagedHookCommand` on the codex-toml surface), remove its exact byte
+ * range, and additionally remove any orphaned parent `[[hooks.SessionStart]]`
+ * whose body becomes empty as a result (Shape 4). A block that runs another
+ * install's hook, such as GSD's own check-update hook, is kept. A `# GSD Hooks`
+ * comment line directly above a removed table is removed with it.
  *
  * Pure function, exported for test coverage. Returns the input unchanged
- * if no GSD-managed hook section is present.
+ * if no fvgsd-managed hook section is present.
  */
 function stripStaleGsdHookBlocks(configContent) {
   const sections = getTomlTableSections(configContent);
@@ -3596,11 +3638,11 @@ function stripStaleGsdHookBlocks(configContent) {
     return configContent;
   }
 
-  // A section is GSD-managed if any structural `command` key inside its
-  // body parses to a string whose basename matches `fvgsd-(check-update|
-  // update-check).js`. The TOML line parser already classified each line's
-  // `keySegments`, so we never inspect raw text — this handles arbitrary
-  // whitespace, key reordering, and additional keys robustly.
+  // A section is fvgsd-managed if any structural `command` key inside its
+  // body parses to a string that runs `hooks/fvgsd/check-update.js`. The TOML
+  // line parser already classified each line's `keySegments`, so we never
+  // inspect raw text — this handles arbitrary whitespace, key reordering, and
+  // additional keys robustly.
   function sectionHasStaleCommand(section) {
     const records = lineRecords.filter(
       (r) => !r.startsInMultilineString
@@ -3908,9 +3950,9 @@ function migrateCodexHooksMapFormat(content) {
     }
   }
 
-  // Insert flat-AoT conversions before the GSD managed marker (if present) so
-  // the migrated user hooks stay in the "user" portion of the file and are not
-  // swept away when stripGsdFromCodexConfig strips from the marker to EOF.
+  // Insert flat-AoT conversions before fvgsd's marker (if present). fvgsd's
+  // block sits above any GSD or VibeClaw marker, and those installers remove
+  // everything below their marker, so the migrated user hooks stay above both.
   // If no marker exists, append at the end of the file.
   if (flatAotBlocks.length > 0) {
     const insertionText = flatAotBlocks.join('');
@@ -4469,13 +4511,6 @@ function validateCodexConfigSchema(content) {
   return { ok: true };
 }
 
-function normalizeCodexHooksLine(line, key) {
-  const leadingWhitespace = line.match(/^\s*/)[0];
-  const commentStart = findTomlCommentStart(line);
-  const comment = commentStart === -1 ? '' : line.slice(commentStart);
-  return `${leadingWhitespace}${key} = true${comment ? ` ${comment}` : ''}`;
-}
-
 function findTomlAssignmentBlockEnd(content, record) {
   const equalsIndex = findTomlAssignmentEquals(record.text);
   if (equalsIndex === -1) {
@@ -4580,39 +4615,6 @@ function findTomlAssignmentBlockEnd(content, record) {
   return content.length;
 }
 
-function rewriteTomlKeyLines(content, matches, key) {
-  if (matches.length === 0) {
-    return content;
-  }
-
-  let rewritten = '';
-  let cursor = 0;
-
-  matches.forEach((match, index) => {
-    rewritten += content.slice(cursor, match.start);
-    if (index === 0) {
-      const blockEnd = findTomlAssignmentBlockEnd(content, match);
-      const blockEol = blockEnd > 0 && content[blockEnd - 1] === '\n'
-        ? (blockEnd > 1 && content[blockEnd - 2] === '\r' ? '\r\n' : '\n')
-        : '';
-      // Preserve the existing key when one is present on the line
-      // (`match.keyRaw`). This respects user ownership: a user-authored
-      // `codex_hooks = true` line stays as `codex_hooks = true` even
-      // though `hooks` is the canonical key in current Codex (#3566).
-      // Codex's own `legacy_key` alias mechanism in codex-rs handles the
-      // backward compat at the runtime layer. Migration to canonical is
-      // a fresh-insert-only operation in ensureCodexHooksFeature.
-      rewritten += normalizeCodexHooksLine(match.text, match.keyRaw || key) + blockEol;
-      cursor = blockEnd;
-      return;
-    }
-    cursor = findTomlAssignmentBlockEnd(content, match);
-  });
-
-  rewritten += content.slice(cursor);
-  return rewritten;
-}
-
 /**
  * Atomic write — write to <target>.tmp-<pid>-<n> first, then renameSync over
  * the target. Eliminates the partial-write corruption window: an interrupted
@@ -4645,47 +4647,34 @@ function atomicWriteFileSync(target, data, options) {
 }
 
 /**
- * Merge GSD config block into an existing or new config.toml.
- * Three cases: new file, existing with GSD marker, existing without marker.
+ * Merge fvgsd's config block into an existing or new config.toml.
+ * fvgsd's previous marker, ownership comment and agent tables are removed first.
+ * The block is then written directly above the first GSD or VibeClaw marker, or at
+ * the end of the file when there is none. Every other byte is kept.
  *
  * All writes go through atomicWriteFileSync so a mid-write failure leaves
  * the original config.toml untouched (#2760 fix 4).
  */
 function mergeCodexConfig(configPath, gsdBlock) {
-  // Case 1: No config.toml — create fresh
   if (!fs.existsSync(configPath)) {
     atomicWriteFileSync(configPath, gsdBlock + '\n');
     return;
   }
-
   const existing = fs.readFileSync(configPath, 'utf8');
   const eol = detectLineEnding(existing);
-  const normalizedGsdBlock = gsdBlock.replace(/\r?\n/g, eol);
-  const markerIndex = existing.indexOf(FVGSD_CODEX_MARKER);
-
-  // Case 2: Has GSD marker — truncate and re-append
-  if (markerIndex !== -1) {
-    let before = existing.substring(0, markerIndex).trimEnd();
-    if (before) {
-      // Strip any GSD-managed sections that leaked above the marker from previous installs
-      before = stripLeakedGsdCodexSections(before).trimEnd();
-
-      atomicWriteFileSync(configPath, before + eol + eol + normalizedGsdBlock + eol);
-    } else {
-      atomicWriteFileSync(configPath, normalizedGsdBlock + eol);
-    }
+  const block = gsdBlock.replace(/\r?\n/g, eol);
+  const cleaned = stripOwnCodexBlock(stripLeakedGsdCodexSections(existing));
+  const markerOffset = foreignCodexMarkerOffset(cleaned);
+  if (markerOffset === -1) {
+    const trimmed = cleaned.trimEnd();
+    atomicWriteFileSync(configPath, trimmed ? `${trimmed}${eol}${eol}${block}${eol}` : `${block}${eol}`);
     return;
   }
-
-  // Case 3: No marker — append GSD block
-  let content = stripLeakedGsdCodexSections(existing).trimEnd();
-  if (content) {
-    content = content + eol + eol + normalizedGsdBlock + eol;
-  } else {
-    content = normalizedGsdBlock + eol;
-  }
-
-  atomicWriteFileSync(configPath, content);
+  // GSD and VibeClaw remove everything from their marker to the end of the file, so
+  // fvgsd's block goes above that marker, and the marker onward keeps its bytes.
+  const before = cleaned.slice(0, markerOffset).trimEnd();
+  const after = cleaned.slice(markerOffset);
+  atomicWriteFileSync(configPath, `${before ? `${before}${eol}${eol}` : ''}${block.trimEnd()}${eol}${eol}${after}`);
 }
 
 /**
@@ -4787,15 +4776,10 @@ function ensureCodexHooksFeature(configContent) {
       );
 
     if (sectionLines.length > 0) {
-      // Rewrite to canonical key — this migrates legacy `codex_hooks` to
-      // `hooks` in-place on every reinstall. If the file already has the
-      // canonical key the rewrite is a no-op shape-wise (same key, same
-      // value). The rewriteTomlKeyLines helper preserves indentation,
-      // trailing comments, and ownership-marker positioning, and always
-      // emits the caller-supplied canonical key (#3566).
-      const rewritten = rewriteTomlKeyLines(configContent, sectionLines, CODEX_HOOKS_FEATURE_KEY);
+      // The user or another install already set the feature key. Leave that
+      // line as written (key, value, comments) and record no ownership of it.
       return {
-        content: repairTrappedFeaturesKeys(rewritten),
+        content: repairTrappedFeaturesKeys(configContent),
         ownership: null,
       };
     }
@@ -4824,10 +4808,7 @@ function ensureCodexHooksFeature(configContent) {
     .filter((record) => record.keySegments.length === 2 && isCodexHooksFeatureKey(record.keySegments[1]));
 
   if (rootCodexHooksLines.length > 0) {
-    return {
-      content: rewriteTomlKeyLines(configContent, rootCodexHooksLines, `features.${CODEX_HOOKS_FEATURE_KEY}`),
-      ownership: null,
-    };
+    return { content: configContent, ownership: null };
   }
 
   const rootFeaturesValueLines = rootFeatureLines
@@ -6801,11 +6782,31 @@ function uninstall(isGlobal, runtime = 'claude') {
       }
     }
 
-    // Codex: clean GSD sections from config.toml
+    // Remove fvgsd's SessionStart hook first, so the config.toml cleanup below
+    // can tell whether another install's SessionStart hook still needs the
+    // hooks feature enabled.
+    const hooksJsonCleanup = removeCodexHooksJsonSessionStart(targetDir);
+    if (hooksJsonCleanup.changed) {
+      removedCount++;
+      console.log(`  ${green}✓${reset} Removed managed Codex SessionStart hook from hooks.json`);
+    }
+
+    const hooksJsonPath = path.join(targetDir, 'hooks.json');
+    let foreignHooksRemain = false;
+    if (fs.existsSync(hooksJsonPath)) {
+      try {
+        const parsedHooks = JSON.parse(fs.readFileSync(hooksJsonPath, 'utf8'));
+        const sessionStart = (parsedHooks.hooks && parsedHooks.hooks.SessionStart) || [];
+        foreignHooksRemain = sessionStart.some((entry) => (entry.hooks || []).some((hook) =>
+          typeof hook.command === 'string' && !isManagedHookCommand(hook.command, { surface: 'codex-hooks-json', configDir: targetDir })));
+      } catch (_) { foreignHooksRemain = true; }
+    }
+
+    // Codex: clean fvgsd's block from config.toml
     const codexConfigPath = path.join(targetDir, 'config.toml');
     if (fs.existsSync(codexConfigPath)) {
       const content = fs.readFileSync(codexConfigPath, 'utf8');
-      const cleaned = stripGsdFromCodexConfig(content);
+      const cleaned = stripGsdFromCodexConfig(content, { foreignHooksRemain });
       if (cleaned === null) {
         fs.unlinkSync(codexConfigPath);
         removedCount++;
@@ -6815,12 +6816,6 @@ function uninstall(isGlobal, runtime = 'claude') {
         removedCount++;
         console.log(`  ${green}✓${reset} Cleaned GSD sections from config.toml`);
       }
-    }
-
-    const hooksJsonCleanup = removeCodexHooksJsonSessionStart(targetDir);
-    if (hooksJsonCleanup.changed) {
-      removedCount++;
-      console.log(`  ${green}✓${reset} Removed managed Codex SessionStart hook from hooks.json`);
     }
   }
 
@@ -11232,6 +11227,7 @@ module.exports = {
     convertClaudeAgentToCodexAgent,
     generateCodexAgentToml,
     generateCodexConfigBlock,
+    codexConfigLayout,
     stripGsdFromCodexConfig,
     migrateCodexHooksMapFormat,
     stripStaleGsdHookBlocks,

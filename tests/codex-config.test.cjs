@@ -1099,7 +1099,7 @@ describe('mergeCodexConfig', () => {
     assert.ok(content.includes('[agents.custom-agent]'), 'preserves non-GSD agent section');
     assert.strictEqual(gsdStructCount, 1, 'keeps exactly one [agents.fvgsd-executor] struct entry');
     assert.strictEqual(markerCount, 1, 'adds exactly one marker block');
-    assert.ok(!/\n{3,}# GSD Agent Configuration/.test(content), 'does not leave extra blank lines before marker block');
+    assert.ok(!content.includes(`\n\n\n${FVGSD_CODEX_MARKER}`), 'does not leave extra blank lines before marker block');
   });
 
   test('idempotent: re-merge produces same result', () => {
@@ -1682,7 +1682,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assertNoDraftRootKeys(content);
   });
 
-  test('existing empty [features] and codex_hooks = false are normalized and remain idempotent', () => {
+  test('existing [features] codex_hooks = false is left as written and stays idempotent', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       'codex_hooks = false',
@@ -1700,17 +1700,17 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 1, 'keeps one [features] section');
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 1, 'normalizes to one codex_hooks = true');
-    assert.ok(!content.includes('codex_hooks = false'), 'removes false codex_hooks value');
+    assert.strictEqual(countMatches(content, /^codex_hooks = false$/gm), 1, 'keeps the existing codex_hooks = false line');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true$/gm), 0, 'does not enable the feature over the existing key');
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assert.ok(content.includes('command = "echo custom"'), 'preserves custom hook');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'does not duplicate GSD update hook in hooks.json');
+    assert.strictEqual(gsdEntries.length, 0, 'does not register the update hook while the feature is disabled');
     assertNoDraftRootKeys(content);
   });
 
-  test('quoted codex_hooks keys inside [features] are normalized without adding a bare duplicate', () => {
+  test('quoted codex_hooks keys inside [features] are left as written without adding a bare duplicate', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       '"codex_hooks" = false',
@@ -1723,8 +1723,8 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 1, 'keeps one [features] section');
-    assert.strictEqual(countMatches(content, /^"codex_hooks" = true$/gm), 1, 'normalizes the quoted key to true');
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 0, 'does not append a bare duplicate codex_hooks key');
+    assert.strictEqual(countMatches(content, /^"codex_hooks" = false$/gm), 1, 'keeps the quoted key as written');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true$/gm), 0, 'does not append a bare duplicate feature key');
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assertNoDraftRootKeys(content);
   });
@@ -1745,12 +1745,12 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[(?:"features"|'features'|features)\]\s*$/gm), 1, 'keeps one features table');
-    assert.strictEqual(countMatches(content, /^"codex_hooks" = true$/gm), 1, 'normalizes the quoted codex_hooks key to true');
+    assert.strictEqual(countMatches(content, /^"codex_hooks" = false$/gm), 1, 'keeps the quoted codex_hooks key as written');
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not prepend a second bare features table');
     assert.ok(content.includes('other_feature = true'), 'preserves existing feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'keeps one GSD update hook in hooks.json');
+    assert.strictEqual(gsdEntries.length, 0, 'does not register the update hook while the feature is disabled');
     assertNoDraftRootKeys(content);
   });
 
@@ -1841,7 +1841,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assertNoDraftRootKeys(content);
   });
 
-  test('quoted dotted codex_hooks keys stay dotted and are normalized without duplication', () => {
+  test('quoted dotted codex_hooks keys stay dotted and are left as written without duplication', () => {
     writeCodexConfig(codexHome, [
       'features."codex_hooks" = false',
       'features.other_feature = true',
@@ -1856,12 +1856,12 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 0, 'does not add a [features] table');
-    assert.strictEqual(countMatches(content, /^features\."codex_hooks" = true$/gm), 1, 'normalizes the quoted dotted key to true');
-    assert.strictEqual(countMatches(content, /^features\.codex_hooks = true$/gm), 0, 'does not append a bare dotted duplicate');
+    assert.strictEqual(countMatches(content, /^features\."codex_hooks" = false$/gm), 1, 'keeps the quoted dotted key as written');
+    assert.strictEqual(countMatches(content, /^features\.(?:codex_hooks|hooks) = true$/gm), 0, 'does not append a bare dotted duplicate');
     assert.ok(content.includes('features.other_feature = true'), 'preserves other dotted features keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'adds one GSD update hook for quoted dotted codex_hooks and remains idempotent');
+    assert.strictEqual(gsdEntries.length, 0, 'does not register the update hook while the feature is disabled');
     assertNoDraftRootKeys(content);
   });
 
@@ -1934,7 +1934,7 @@ describe('Codex install hook configuration (e2e)', () => {
     assertNoDraftRootKeys(content);
   });
 
-  test('non-boolean codex_hooks assignments are normalized to true without duplication', () => {
+  test('non-boolean codex_hooks assignments are left as written without duplication', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       'codex_hooks = "sometimes"',
@@ -1949,13 +1949,13 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 1, 'keeps one [features] section');
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 1, 'normalizes to one true value');
-    assert.ok(!content.includes('codex_hooks = "sometimes"'), 'removes non-boolean value');
+    assert.strictEqual(countMatches(content, /^codex_hooks = "sometimes"$/gm), 1, 'keeps the non-boolean value as written');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true$/gm), 0, 'does not add a second feature key');
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assertNoDraftRootKeys(content);
   });
 
-  test('multiline basic-string codex_hooks assignments are fully normalized without leaving trailing lines behind', () => {
+  test('multiline basic-string codex_hooks assignments are left as written with their continuation lines', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       'codex_hooks = """',
@@ -1973,16 +1973,16 @@ describe('Codex install hook configuration (e2e)', () => {
     runCodexInstall(codexHome);
 
     const content = readCodexConfig(codexHome);
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 1, 'replaces the multiline basic-string assignment with one true value');
-    assert.ok(!content.includes('multiline-basic-sentinel'), 'removes multiline basic-string continuation lines');
+    assert.ok(content.includes('codex_hooks = """\nmultiline-basic-sentinel\nstill-in-string\n"""\n'), 'keeps the multiline basic-string assignment');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true$/gm), 0, 'does not add a second feature key');
     assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
+    assert.strictEqual(gsdEntries.length, 0, 'does not register the update hook while the feature is not true');
     assertNoDraftRootKeys(content);
   });
 
-  test('multiline literal-string codex_hooks assignments are fully normalized without leaving trailing lines behind', () => {
+  test('multiline literal-string codex_hooks assignments are left as written with their continuation lines', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       'codex_hooks = \'\'\'',
@@ -2000,17 +2000,19 @@ describe('Codex install hook configuration (e2e)', () => {
     runCodexInstall(codexHome);
 
     const content = readCodexConfig(codexHome);
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 1, 'replaces the multiline literal-string assignment with one true value');
-    assert.ok(!content.includes('multiline-literal-sentinel'), 'removes multiline literal-string continuation lines');
+    assert.ok(content.includes('codex_hooks = \'\'\'\nmultiline-literal-sentinel\nstill-in-literal\n\'\'\'\n'), 'keeps the multiline literal-string assignment');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true$/gm), 0, 'does not add a second feature key');
     assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
     const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
     const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
+    assert.strictEqual(gsdEntries.length, 0, 'does not register the update hook while the feature is not true');
     assertNoDraftRootKeys(content);
   });
 
-  test('multiline array codex_hooks assignments are fully normalized without leaving trailing lines behind', () => {
-    writeCodexConfig(codexHome, [
+  test('multiline array codex_hooks assignments stop the install and leave config.toml unchanged', () => {
+    // The key is left as written, and the installer's post-write validation
+    // cannot parse a multiline array value, so the install restores the file.
+    const initialContent = [
       '[features]',
       'codex_hooks = [',
       '  "array-sentinel-1",',
@@ -2021,23 +2023,15 @@ describe('Codex install hook configuration (e2e)', () => {
       '[model]',
       'name = "o3"',
       '',
-    ].join('\n'));
+    ].join('\n');
+    writeCodexConfig(codexHome, initialContent);
 
-    runCodexInstall(codexHome);
-    runCodexInstall(codexHome);
+    assert.throws(() => runCodexInstall(codexHome));
 
-    const content = readCodexConfig(codexHome);
-    assert.strictEqual(countMatches(content, /^codex_hooks = true$/gm), 1, 'replaces the multiline array assignment with one true value');
-    assert.ok(!content.includes('array-sentinel-1'), 'removes multiline array continuation lines');
-    assert.ok(!content.includes('array-sentinel-2'), 'removes multiline array continuation lines');
-    assert.ok(content.includes('other_feature = true'), 'preserves following feature keys');
-    const hooksJsonCommands = readHooksSessionStartCommands(codexHome);
-    const gsdEntries = hooksJsonCommands.filter((cmd) => cmd.includes('fvgsd/check-update'));
-    assert.strictEqual(gsdEntries.length, 1, 'remains idempotent for the GSD hook block in hooks.json');
-    assertNoDraftRootKeys(content);
+    assert.strictEqual(readCodexConfig(codexHome), initialContent, 'restores the pre-install config bytes');
   });
 
-  test('triple-quoted codex_hooks values keep inline comments when normalized', () => {
+  test('triple-quoted codex_hooks values and inline comments are left as written', () => {
     writeCodexConfig(codexHome, [
       '[features]',
       'codex_hooks = """sometimes""" # keep me',
@@ -2052,8 +2046,8 @@ describe('Codex install hook configuration (e2e)', () => {
 
     const content = readCodexConfig(codexHome);
     assert.strictEqual(countMatches(content, /^\[features\]\s*$/gm), 1, 'keeps one [features] section');
-    assert.strictEqual(countMatches(content, /^codex_hooks = true # keep me$/gm), 1, 'normalizes to true and preserves inline comment');
-    assert.ok(!content.includes('"""sometimes"""'), 'removes the old triple-quoted value');
+    assert.strictEqual(countMatches(content, /^codex_hooks = """sometimes""" # keep me$/gm), 1, 'keeps the value and inline comment as written');
+    assert.strictEqual(countMatches(content, /^(?:codex_hooks|hooks) = true/gm), 0, 'does not add a second feature key');
     assert.ok(content.includes('other_feature = true'), 'preserves other feature keys');
     assertNoDraftRootKeys(content);
   });
@@ -2118,7 +2112,7 @@ describe('Codex install hook configuration (e2e)', () => {
     const content = readCodexConfig(codexHome);
     // [features] is inserted after top-level lines, before [model] — not prepended
     assert.ok(content.includes('# first line wins\n\n[features]\nhooks = true\n'), 'inserts features after top-level lines using first newline style');
-    assert.ok(content.includes(`# GSD Agent Configuration — managed by get-shit-done installer\n`), 'writes the managed agent block using the first newline style');
+    assert.ok(content.includes(`${FVGSD_CODEX_MARKER}\n`), 'writes the managed agent block using the first newline style');
     // Structural check: managed SessionStart hooks live in hooks.json.
     const parsedMixed = parseTomlToObject(content);
     assert.ok(!parsedMixed.hooks || !Array.isArray(parsedMixed.hooks.SessionStart), 'does not write managed SessionStart hooks to config.toml');

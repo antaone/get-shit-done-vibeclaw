@@ -486,7 +486,7 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
         '# user-owned setting',
         'model = "gpt-5"',
         '',
-        '# GSD Agent Configuration — managed by get-shit-done installer',
+        IDENTITY.codexMarker,
         '[agents.fvgsd-executor]',
         'cmd = "stale"',
         '',

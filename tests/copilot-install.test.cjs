@@ -999,6 +999,47 @@ describe('Copilot instructions merge/strip', () => {
       assert.strictEqual(result, content, 'returns content unchanged');
     });
   });
+
+  describe('upstream GSD instructions block in the same file', () => {
+    const upstreamBlock = [
+      '<!-- GSD Configuration — managed by get-shit-done installer -->',
+      '- Upstream workflow rules',
+      '- Upstream conventions',
+      '<!-- /GSD Configuration -->',
+    ].join('\n');
+    const original = `# My Setup\n\nCustom rules here.\n\n${upstreamBlock}\n`;
+    let tmpUpstreamDir;
+
+    beforeEach(() => {
+      tmpUpstreamDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-copilot-upstream-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tmpUpstreamDir, { recursive: true, force: true });
+    });
+
+    test('merging twice leaves upstream block and user text byte-identical and writes one fvgsd block', () => {
+      const filePath = path.join(tmpUpstreamDir, 'copilot-instructions.md');
+      fs.writeFileSync(filePath, original);
+
+      mergeCopilotInstructions(filePath, gsdContent);
+      mergeCopilotInstructions(filePath, gsdContent);
+      const result = fs.readFileSync(filePath, 'utf8');
+
+      const kept = original.trimEnd();
+      assert.strictEqual(result.slice(0, kept.length), kept, 'user text and upstream block unchanged');
+      assert.strictEqual(result.split(FVGSD_COPILOT_INSTRUCTIONS_MARKER).length - 1, 1, 'one fvgsd open marker');
+      assert.strictEqual(result.split(FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER).length - 1, 1, 'one fvgsd close marker');
+    });
+
+    test('strip removes only the fvgsd block and leaves upstream block and user text byte-identical', () => {
+      const fvgsdLast = `${original.trimEnd()}\n\n${makeGsdBlock(gsdContent)}\n`;
+      assert.strictEqual(stripGsdFromCopilotInstructions(fvgsdLast), original, 'fvgsd block after upstream block');
+
+      const fvgsdFirst = `${makeGsdBlock(gsdContent)}\n\n${upstreamBlock}\n`;
+      assert.strictEqual(stripGsdFromCopilotInstructions(fvgsdFirst), `${upstreamBlock}\n`, 'fvgsd block before upstream block');
+    });
+  });
 });
 
 // ─── Copilot uninstall skill removal ───────────────────────────────────────────
@@ -1276,10 +1317,10 @@ describe('E2E: Copilot full install verification', () => {
     const instrPath = path.join(tmpDir, '.github', 'copilot-instructions.md');
     assert.ok(fs.existsSync(instrPath), 'copilot-instructions.md should exist');
     const content = fs.readFileSync(instrPath, 'utf-8');
-    assert.ok(content.includes('<!-- GSD Configuration'),
-      'Should contain GSD Configuration open marker');
-    assert.ok(content.includes('<!-- /GSD Configuration -->'),
-      'Should contain GSD Configuration close marker');
+    assert.ok(content.includes(FVGSD_COPILOT_INSTRUCTIONS_MARKER),
+      'Should contain the fvgsd open marker');
+    assert.ok(content.includes(FVGSD_COPILOT_INSTRUCTIONS_CLOSE_MARKER),
+      'Should contain the fvgsd close marker');
   });
 
   test('creates manifest with correct structure', () => {
