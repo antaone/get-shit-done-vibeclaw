@@ -51,6 +51,8 @@ test('runtime formatter and artifact layout derive from the identity', () => {
   assert.equal(formatGsdSlash('help 1', 'claude'), `/${IDENTITY.commandPrefix}-help 1`);
   assert.equal(formatGsdSlash('help', 'gemini'), `/${IDENTITY.commandPrefix}:help`);
   assert.equal(formatGsdSlash('/vgsd:help', 'codex'), `$${IDENTITY.commandPrefix}-help`);
+  assert.equal(formatGsdSlash('vgsd-help', 'claude'), `/${IDENTITY.commandPrefix}-help`);
+  assert.equal(formatGsdSlash('$VGSD-help', 'gemini'), `/${IDENTITY.commandPrefix}:help`);
   const layout = resolveRuntimeArtifactLayout('claude', '/tmp/fvgsd-layout', 'local');
   assert.deepEqual(layout.kinds.map((kind) => [kind.kind, kind.prefix, kind.destSubpath]), [
     ['commands', `${IDENTITY.commandPrefix}-`, `commands/${IDENTITY.commandPrefix}`],

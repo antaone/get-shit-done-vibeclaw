@@ -6,9 +6,9 @@
  * ROADMAP.md entries, verify/validate fix hints, error messages, etc.).
  *
  * VibeClaw installs GSD commands under the collision-free `fvgsd` namespace.
- * The legacy `vgsd` and `gsd` prefixes are still accepted as input here so
- * persisted data from an older install can be upgraded in place, but they are
- * never emitted.
+ * The legacy VibeClaw and upstream prefixes are still accepted as input here
+ * so persisted data from an older install can be upgraded in place, but they
+ * are never emitted.
  * This module is the only place runtime output should decide which invocation
  * shape to emit.
  *
@@ -22,7 +22,9 @@
 
 const IDENTITY = require('./identity.cjs');
 
-const COMMAND_PREFIX_RE = new RegExp(`^[/$]?(?:${IDENTITY.commandPrefix}|vgsd|gsd)[-:]`, 'i');
+// `v?gsd` matches the legacy VibeClaw and upstream prefixes. Keep this spelling:
+// it gives the fvgsd rename script nothing to rewrite.
+const COMMAND_PREFIX_RE = new RegExp(`^[/$]?(?:${IDENTITY.commandPrefix}|v?gsd)[-:]`, 'i');
 
 function formatGsdSlash(commandName, runtime) {
   if (typeof commandName !== 'string') return commandName;
@@ -30,8 +32,8 @@ function formatGsdSlash(commandName, runtime) {
 
   // Strip any existing leading prefix so the helper is idempotent and accepts
   // both legacy `/fvgsd:<name>` and canonical hyphen-form input (plus the bare
-  // `gsd:<name>` shorthand, legacy `vgsd` prefixes and codex `$fvgsd-<name>`
-  // shell-var input).
+  // `gsd:<name>` shorthand, the legacy VibeClaw prefix and codex
+  // `$fvgsd-<name>` shell-var input).
   const stripped = commandName.replace(COMMAND_PREFIX_RE, '');
   // If the regex matched nothing (no prefix), the input is already a bare name.
   const bare = stripped === commandName ? commandName : stripped;
