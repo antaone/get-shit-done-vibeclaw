@@ -95,7 +95,9 @@ function normalizePublicCommandNamespaceToHyphen(content, cmdNames = null) {
  */
 function rewriteHookCommandReferences(content, runtime) {
   const references = [];
-  const next = content.replace(/\/gsd[:-]([a-z][a-z0-9-]*)/g, (from, command) => {
+  // The lookbehind skips URL and file path segments such as a `/gsd-build/`
+  // organization path, the same boundary convertSlashCommandsToGeminiMentions uses.
+  const next = content.replace(/(?<![A-Za-z0-9./])\/gsd[:-]([a-z][a-z0-9-]*)/g, (from, command) => {
     const to = formatGsdSlash(command, runtime);
     references.push({ from, to });
     return to;
