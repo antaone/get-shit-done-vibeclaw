@@ -45,12 +45,16 @@ function seed(configDir, rels) {
   return snapshot(configDir, rels);
 }
 
-function runInstaller(root, args) {
-  const result = spawnSync(process.execPath, [INSTALL_SCRIPT, ...args, '--no-sdk'], {
+function spawnInstaller(root, args) {
+  return spawnSync(process.execPath, [INSTALL_SCRIPT, ...args, '--no-sdk'], {
     cwd: root,
     encoding: 'utf8',
     env: installerEnv({ HOME: root, USERPROFILE: root }),
   });
+}
+
+function runInstaller(root, args) {
+  const result = spawnInstaller(root, args);
   assert.equal(result.status, 0, `install.js ${args.join(' ')} exited ${result.status}\n${result.stdout}\n${result.stderr}`);
 }
 
@@ -167,6 +171,27 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
     assert.deepEqual(snapshot(configDir, ['.clinerules']), foreign);
   });
 
+  test('cline --global: an install that fails after its copy steps writes no .clinerules, so the next install writes and records it', (t) => {
+    const root = tempRoot(t, 'cline-failed');
+    const configDir = path.join(root, 'config');
+    const clinerules = path.join(configDir, '.clinerules');
+    // A file where install creates agents/ makes the install throw after Cline's
+    // artifact step and before the file manifest is written.
+    seed(configDir, ['agents']);
+
+    const failed = spawnInstaller(root, ['--cline', '--global', '--config-dir', configDir]);
+    assert.notEqual(failed.status, 0, `the blocked install should fail\n${failed.stdout}\n${failed.stderr}`);
+    assert.equal(fs.existsSync(clinerules), false);
+
+    fs.rmSync(path.join(configDir, 'agents'));
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir]);
+    const manifest = JSON.parse(fs.readFileSync(path.join(configDir, IDENTITY.manifestFile), 'utf8'));
+    assert.equal(manifest.files['.clinerules'], snapshot(configDir, ['.clinerules'])['.clinerules']);
+
+    runInstaller(root, ['--cline', '--global', '--config-dir', configDir, '--uninstall']);
+    assert.equal(fs.existsSync(clinerules), false);
+  });
+
   describe('Gemini experimental.enableAgents: fvgsd takes back only the flag it set', () => {
     function gemini(root, configDir, extra = []) {
       runInstaller(root, ['--gemini', '--global', '--config-dir', configDir, ...extra]);
@@ -226,5 +251,82 @@ describe('fvgsd uninstall removes only what fvgsd installed', () => {
         assert.deepEqual(readSettings(configDir).experimental, { enableAgents: true });
       });
     }
+
+    test('fvgsd set the flag, then a symlinked gsd agent appears: uninstall keeps the flag', { skip: process.platform === 'win32' && 'creating symlinks needs extra rights on Windows' }, (t) => {
+      const root = tempRoot(t, 'gemini-flag-symlink');
+      const configDir = path.join(root, 'config');
+
+      gemini(root, configDir);
+      // Dotfiles managers link agent files in from elsewhere.
+      seed(root, ['dotfiles/gsd-planner.md']);
+      fs.symlinkSync(path.join(root, 'dotfiles', 'gsd-planner.md'), path.join(configDir, 'agents', 'gsd-planner.md'));
+
+      gemini(root, configDir, ['--uninstall']);
+      assert.deepEqual(readSettings(configDir).experimental, { enableAgents: true });
+    });
+
+    test('fvgsd set the flag, then the user sets it to false: uninstall leaves false', (t) => {
+      const root = tempRoot(t, 'gemini-flag-user-false');
+      const configDir = path.join(root, 'config');
+
+      gemini(root, configDir);
+      assert.deepEqual(flagRecord(configDir), { createdExperimental: true });
+      const settings = readSettings(configDir);
+      settings.experimental.enableAgents = false;
+      seedSettings(configDir, settings);
+
+      gemini(root, configDir, ['--uninstall']);
+      assert.deepEqual(readSettings(configDir).experimental, { enableAgents: false });
+    });
+
+    test('an experimental object fvgsd did not create stays after uninstall', (t) => {
+      const root = tempRoot(t, 'gemini-flag-user-object');
+      const configDir = path.join(root, 'config');
+      const before = seedSettings(configDir, { experimental: {} });
+
+      gemini(root, configDir);
+      assert.deepEqual(flagRecord(configDir), { createdExperimental: false });
+
+      gemini(root, configDir, ['--uninstall']);
+      assert.deepEqual(readSettings(configDir), before);
+    });
+
+    test('an experimental object fvgsd created keeps keys added after install through uninstall', (t) => {
+      const root = tempRoot(t, 'gemini-flag-grown-object');
+      const configDir = path.join(root, 'config');
+
+      gemini(root, configDir);
+      assert.deepEqual(flagRecord(configDir), { createdExperimental: true });
+      const settings = readSettings(configDir);
+      settings.experimental.userFeature = true;
+      seedSettings(configDir, settings);
+
+      gemini(root, configDir, ['--uninstall']);
+      assert.deepEqual(readSettings(configDir).experimental, { userFeature: true });
+    });
+
+    test('an install that fails while writing settings.json leaves no flag record', (t) => {
+      if (process.getuid && process.getuid() === 0) {
+        t.skip('file permissions do not stop root');
+        return;
+      }
+      const root = tempRoot(t, 'gemini-flag-unwritten');
+      const configDir = path.join(root, 'config');
+      const before = seedSettings(configDir, { theme: 'Dracula' });
+      const settingsPath = path.join(configDir, 'settings.json');
+
+      // Read-only settings.json: install reads it, then fails when it writes it back.
+      fs.chmodSync(settingsPath, 0o444);
+      let failed;
+      try {
+        failed = spawnInstaller(root, ['--gemini', '--global', '--config-dir', configDir]);
+      } finally {
+        fs.chmodSync(settingsPath, 0o644);
+      }
+
+      assert.notEqual(failed.status, 0, `the install should fail\n${failed.stdout}\n${failed.stderr}`);
+      assert.deepEqual(readSettings(configDir), before);
+      assert.equal(flagRecord(configDir), undefined);
+    });
   });
 });
