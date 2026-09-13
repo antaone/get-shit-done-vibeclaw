@@ -11,11 +11,9 @@
 <!-- rename-identity:off -->
 ## fvgsd
 
-This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `npm install && npm run build:hooks && node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
 <!-- rename-identity:on -->
 
-[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
-[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -26,7 +24,11 @@ This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs in
 <br>
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **支持 Mac、Windows 和 Linux。**
@@ -96,7 +98,11 @@ GSD 解决的就是这个问题。它是让 Claude Code 变得可靠的上下文
 ## 快速开始
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 安装器会提示你选择：
@@ -121,7 +127,11 @@ npx fvgsd@latest
 GSD 迭代很快，建议定期更新：
 
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 <details>
@@ -129,53 +139,53 @@ npx fvgsd@latest
 
 ```bash
 # Claude Code
-npx fvgsd --claude --global   # 安装到 ~/.claude/
-npx fvgsd --claude --local    # 安装到 ./.claude/
+node bin/install.js --claude --global   # 安装到 ~/.claude/
+node bin/install.js --claude --local    # 安装到 ./.claude/
 
 # OpenCode
-npx fvgsd --opencode --global # 安装到 ~/.config/opencode/
+node bin/install.js --opencode --global # 安装到 ~/.config/opencode/
 
 # Gemini CLI
-npx fvgsd --gemini --global   # 安装到 ~/.gemini/
+node bin/install.js --gemini --global   # 安装到 ~/.gemini/
 
 # Kilo
-npx fvgsd --kilo --global     # 安装到 ~/.config/kilo/
-npx fvgsd --kilo --local      # 安装到 ./.kilo/
+node bin/install.js --kilo --global     # 安装到 ~/.config/kilo/
+node bin/install.js --kilo --local      # 安装到 ./.kilo/
 
 # Codex
-npx fvgsd --codex --global    # 安装到 ~/.codex/
-npx fvgsd --codex --local     # 安装到 ./.codex/
+node bin/install.js --codex --global    # 安装到 ~/.codex/
+node bin/install.js --codex --local     # 安装到 ./.codex/
 
 # Copilot
-npx fvgsd --copilot --global  # 安装到 ~/.github/
-npx fvgsd --copilot --local   # 安装到 ./.github/
+node bin/install.js --copilot --global  # 安装到 ~/.github/
+node bin/install.js --copilot --local   # 安装到 ./.github/
 
 # Cursor CLI
-npx fvgsd --cursor --global   # 安装到 ~/.cursor/
-npx fvgsd --cursor --local    # 安装到 ./.cursor/
+node bin/install.js --cursor --global   # 安装到 ~/.cursor/
+node bin/install.js --cursor --local    # 安装到 ./.cursor/
 
 # Antigravity
-npx fvgsd --antigravity --global # 安装到 ~/.gemini/antigravity/
-npx fvgsd --antigravity --local  # 安装到 ./.agent/
+node bin/install.js --antigravity --global # 安装到 ~/.gemini/antigravity/
+node bin/install.js --antigravity --local  # 安装到 ./.agent/
 
 # Augment
-npx fvgsd --augment --global     # 安装到 ~/.augment/
-npx fvgsd --augment --local      # 安装到 ./.augment/
+node bin/install.js --augment --global     # 安装到 ~/.augment/
+node bin/install.js --augment --local      # 安装到 ./.augment/
 
 # Trae
-npx fvgsd --trae --global     # 安装到 ~/.trae/
-npx fvgsd --trae --local      # 安装到 ./.trae/
+node bin/install.js --trae --global     # 安装到 ~/.trae/
+node bin/install.js --trae --local      # 安装到 ./.trae/
 
 # CodeBuddy
-npx fvgsd --codebuddy --global # 安装到 ~/.codebuddy/
-npx fvgsd --codebuddy --local  # 安装到 ./.codebuddy/
+node bin/install.js --codebuddy --global # 安装到 ~/.codebuddy/
+node bin/install.js --codebuddy --local  # 安装到 ./.codebuddy/
 
 # Cline
-npx fvgsd --cline --global       # 安装到 ~/.cline/
-npx fvgsd --cline --local        # 安装到 ./.clinerules
+node bin/install.js --cline --global       # 安装到 ~/.cline/
+node bin/install.js --cline --local        # 安装到 ./.clinerules
 
 # 所有运行时
-npx fvgsd --all --global      # 安装到所有目录
+node bin/install.js --all --global      # 安装到所有目录
 ```
 
 使用 `--global`（`-g`）或 `--local`（`-l`）可以跳过安装位置提示。
@@ -760,18 +770,22 @@ GSD 的代码库映射和分析命令会读取文件来理解你的项目。**�
 
 **命令行为不符合预期？**
 - 运行 `/fvgsd-help` 确认安装成功
-- 重新执行 `npx fvgsd` 进行重装
+- 重新执行 `node bin/install.js` 进行重装
 
 **想更新到最新版本？**
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **在 Docker 或容器环境中使用？**
 
 如果使用波浪线路径（`~/.claude/...`）时读取失败，请在安装前设置 `CLAUDE_CONFIG_DIR`：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude node bin/install.js --global
 ```
 这样可以确保使用绝对路径，而不是在容器里可能无法正确展开的 `~`。
 
@@ -781,30 +795,30 @@ CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
 
 ```bash
 # 全局安装
-npx fvgsd --claude --global --uninstall
-npx fvgsd --opencode --global --uninstall
-npx fvgsd --gemini --global --uninstall
-npx fvgsd --kilo --global --uninstall
-npx fvgsd --codex --global --uninstall
-npx fvgsd --copilot --global --uninstall
-npx fvgsd --cursor --global --uninstall
-npx fvgsd --antigravity --global --uninstall
-npx fvgsd --augment --global --uninstall
-npx fvgsd --trae --global --uninstall
-npx fvgsd --cline --global --uninstall
+node bin/install.js --claude --global --uninstall
+node bin/install.js --opencode --global --uninstall
+node bin/install.js --gemini --global --uninstall
+node bin/install.js --kilo --global --uninstall
+node bin/install.js --codex --global --uninstall
+node bin/install.js --copilot --global --uninstall
+node bin/install.js --cursor --global --uninstall
+node bin/install.js --antigravity --global --uninstall
+node bin/install.js --augment --global --uninstall
+node bin/install.js --trae --global --uninstall
+node bin/install.js --cline --global --uninstall
 
 # 本地安装（当前项目）
-npx fvgsd --claude --local --uninstall
-npx fvgsd --opencode --local --uninstall
-npx fvgsd --gemini --local --uninstall
-npx fvgsd --kilo --local --uninstall
-npx fvgsd --codex --local --uninstall
-npx fvgsd --copilot --local --uninstall
-npx fvgsd --cursor --local --uninstall
-npx fvgsd --antigravity --local --uninstall
-npx fvgsd --augment --local --uninstall
-npx fvgsd --trae --local --uninstall
-npx fvgsd --cline --local --uninstall
+node bin/install.js --claude --local --uninstall
+node bin/install.js --opencode --local --uninstall
+node bin/install.js --gemini --local --uninstall
+node bin/install.js --kilo --local --uninstall
+node bin/install.js --codex --local --uninstall
+node bin/install.js --copilot --local --uninstall
+node bin/install.js --cursor --local --uninstall
+node bin/install.js --antigravity --local --uninstall
+node bin/install.js --augment --local --uninstall
+node bin/install.js --trae --local --uninstall
+node bin/install.js --cline --local --uninstall
 ```
 
 这会移除所有 GSD 命令、代理、hooks 和设置，但会保留你其他配置。
@@ -813,7 +827,7 @@ npx fvgsd --cline --local --uninstall
 
 ## 社区移植版本
 
-OpenCode、Gemini CLI、Kilo 和 Codex 现在都已经通过 `npx fvgsd` 获得原生支持。
+OpenCode、Gemini CLI、Kilo 和 Codex 现在都已经通过 `node bin/install.js` 获得原生支持。
 
 这些社区移植版本曾率先探索多运行时支持：
 

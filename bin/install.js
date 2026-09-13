@@ -188,6 +188,13 @@ const claudeToCopilotTools = {
 // Get version from package.json
 const pkg = require('../package.json');
 
+// fvgsd is installed from a clone of its repository, never from npm (the package
+// is private). Install, update and repair hints name the clone sequence: check
+// out or pull, npm install, build the hooks, then run this installer.
+const FVGSD_CLONE_URL = String((pkg.repository && pkg.repository.url) || '').replace(/^git\+/, '');
+const FVGSD_CLONE_INSTALL_COMMAND = `git clone ${FVGSD_CLONE_URL} && cd ${path.basename(FVGSD_CLONE_URL, '.git')} && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>`;
+const FVGSD_CLONE_UPDATE_COMMAND = 'git pull --ff-only && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>';
+
 // #2517 — runtime-aware tier resolution shared with core.cjs.
 // Hoisted to top with absolute __dirname-based paths so `gsd install codex` works
 // when invoked via npm global install (cwd is the user's project, not the gsd repo
@@ -335,7 +342,7 @@ Please install a Linux-native Node.js inside WSL:
   curl -fsSL https://fnm.vercel.app/install | bash
   fnm install --lts
 
-Then re-run: npx fvgsd@latest
+Then, from your fvgsd clone, re-run: npm install && npm run build:hooks && node bin/install.js
 `);
     process.exit(1);
   }
@@ -658,7 +665,7 @@ if (hasUninstall) {
 
 // Show help if requested
 if (hasHelp) {
-  console.log(`  ${yellow}Usage:${reset} npx fvgsd [options]\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--hermes${reset}                  Install for Hermes Agent only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n    ${cyan}--portable-hooks${reset}          Emit \$HOME-relative hook paths in settings.json\n                              (for WSL/Docker bind-mount setups; also FVGSD_PORTABLE_HOOKS=1)\n    ${cyan}--profile=<name>${reset}         Install a named skill profile. Profiles:\n                              core     — 9 main-loop skills incl. Vibe (~130 desc tokens)\n                              standard — 15 skills incl. phase, review, config (~700)\n                              full     — all 68 skills (default)\n                              Composable: --profile=core,audit installs union of closures.\n                              Profile is persisted and respected by \`gsd update\`.\n    ${cyan}--minimal${reset}                 Alias for --profile=core (back-compat).\n                              Cuts cold-start overhead from ~12k tokens to ~700.\n                              Alias: --core-only.\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    npx fvgsd\n\n    ${dim}# Install for Claude Code globally${reset}\n    npx fvgsd --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    npx fvgsd --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    npx fvgsd --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    npx fvgsd --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    npx fvgsd --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    npx fvgsd --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    npx fvgsd --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    npx fvgsd --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    npx fvgsd --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    npx fvgsd --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    npx fvgsd --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    npx fvgsd --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    npx fvgsd --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    npx fvgsd --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    npx fvgsd --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    npx fvgsd --trae --local\n\n    ${dim}# Install for Hermes Agent globally${reset}\n    npx fvgsd --hermes --global\n\n    ${dim}# Install for Hermes Agent locally${reset}\n    npx fvgsd --hermes --local\n\n    ${dim}# Install for Cline locally${reset}\n    npx fvgsd --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    npx fvgsd --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    npx fvgsd --codebuddy --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    npx fvgsd --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    npx fvgsd --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    npx fvgsd --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    npx fvgsd --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / HERMES_HOME / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR environment variables.\n`);
+  console.log(`  ${yellow}Usage:${reset} node bin/install.js [options]\n\n  Run it from a clone of fvgsd after \`npm install\` and \`npm run build:hooks\`; fvgsd is not published to npm.\n\n  ${yellow}Options:${reset}\n    ${cyan}-g, --global${reset}              Install globally (to config directory)\n    ${cyan}-l, --local${reset}               Install locally (to current directory)\n    ${cyan}--claude${reset}                  Install for Claude Code only\n    ${cyan}--opencode${reset}                Install for OpenCode only\n    ${cyan}--gemini${reset}                  Install for Gemini only\n    ${cyan}--kilo${reset}                    Install for Kilo only\n    ${cyan}--codex${reset}                   Install for Codex only\n    ${cyan}--copilot${reset}                 Install for Copilot only\n    ${cyan}--antigravity${reset}             Install for Antigravity only\n    ${cyan}--cursor${reset}                  Install for Cursor only\n    ${cyan}--windsurf${reset}                Install for Windsurf only\n    ${cyan}--augment${reset}                 Install for Augment only\n    ${cyan}--trae${reset}                    Install for Trae only\n    ${cyan}--qwen${reset}                    Install for Qwen Code only\n    ${cyan}--hermes${reset}                  Install for Hermes Agent only\n    ${cyan}--cline${reset}                   Install for Cline only\n    ${cyan}--codebuddy${reset}              Install for CodeBuddy only\n    ${cyan}--all${reset}                     Install for all runtimes\n    ${cyan}-u, --uninstall${reset}           Uninstall GSD (remove all GSD files)\n    ${cyan}-c, --config-dir <path>${reset}   Specify custom config directory\n    ${cyan}-h, --help${reset}                Show this help message\n    ${cyan}--force-statusline${reset}        Replace existing statusline config\n    ${cyan}--portable-hooks${reset}          Emit \$HOME-relative hook paths in settings.json\n                              (for WSL/Docker bind-mount setups; also FVGSD_PORTABLE_HOOKS=1)\n    ${cyan}--profile=<name>${reset}         Install a named skill profile. Profiles:\n                              core     — 9 main-loop skills incl. Vibe (~130 desc tokens)\n                              standard — 15 skills incl. phase, review, config (~700)\n                              full     — all 68 skills (default)\n                              Composable: --profile=core,audit installs union of closures.\n                              Profile is persisted and respected by \`gsd update\`.\n    ${cyan}--minimal${reset}                 Alias for --profile=core (back-compat).\n                              Cuts cold-start overhead from ~12k tokens to ~700.\n                              Alias: --core-only.\n\n  ${yellow}Examples:${reset}\n    ${dim}# Interactive install (prompts for runtime and location)${reset}\n    node bin/install.js\n\n    ${dim}# Install for Claude Code globally${reset}\n    node bin/install.js --claude --global\n\n    ${dim}# Install for Gemini globally${reset}\n    node bin/install.js --gemini --global\n\n    ${dim}# Install for Kilo globally${reset}\n    node bin/install.js --kilo --global\n\n    ${dim}# Install for Codex globally${reset}\n    node bin/install.js --codex --global\n\n    ${dim}# Install for Copilot globally${reset}\n    node bin/install.js --copilot --global\n\n    ${dim}# Install for Copilot locally${reset}\n    node bin/install.js --copilot --local\n\n    ${dim}# Install for Antigravity globally${reset}\n    node bin/install.js --antigravity --global\n\n    ${dim}# Install for Antigravity locally${reset}\n    node bin/install.js --antigravity --local\n\n    ${dim}# Install for Cursor globally${reset}\n    node bin/install.js --cursor --global\n\n    ${dim}# Install for Cursor locally${reset}\n    node bin/install.js --cursor --local\n\n    ${dim}# Install for Windsurf globally${reset}\n    node bin/install.js --windsurf --global\n\n    ${dim}# Install for Windsurf locally${reset}\n    node bin/install.js --windsurf --local\n\n    ${dim}# Install for Augment globally${reset}\n    node bin/install.js --augment --global\n\n    ${dim}# Install for Augment locally${reset}\n    node bin/install.js --augment --local\n\n    ${dim}# Install for Trae globally${reset}\n    node bin/install.js --trae --global\n\n    ${dim}# Install for Trae locally${reset}\n    node bin/install.js --trae --local\n\n    ${dim}# Install for Hermes Agent globally${reset}\n    node bin/install.js --hermes --global\n\n    ${dim}# Install for Hermes Agent locally${reset}\n    node bin/install.js --hermes --local\n\n    ${dim}# Install for Cline locally${reset}\n    node bin/install.js --cline --local\n\n    ${dim}# Install for CodeBuddy globally${reset}\n    node bin/install.js --codebuddy --global\n\n    ${dim}# Install for CodeBuddy locally${reset}\n    node bin/install.js --codebuddy --local\n\n    ${dim}# Install for all runtimes globally${reset}\n    node bin/install.js --all --global\n\n    ${dim}# Install to custom config directory${reset}\n    node bin/install.js --kilo --global --config-dir ~/.kilo-work\n\n    ${dim}# Install to current project only${reset}\n    node bin/install.js --claude --local\n\n    ${dim}# Uninstall GSD from Cursor globally${reset}\n    node bin/install.js --cursor --global --uninstall\n\n  ${yellow}Notes:${reset}\n    The --config-dir option is useful when you have multiple configurations.\n    It takes priority over CLAUDE_CONFIG_DIR / OPENCODE_CONFIG_DIR / GEMINI_CONFIG_DIR / KILO_CONFIG_DIR / CODEX_HOME / COPILOT_CONFIG_DIR / ANTIGRAVITY_CONFIG_DIR / CURSOR_CONFIG_DIR / WINDSURF_CONFIG_DIR / AUGMENT_CONFIG_DIR / TRAE_CONFIG_DIR / QWEN_CONFIG_DIR / HERMES_HOME / CLINE_CONFIG_DIR / CODEBUDDY_CONFIG_DIR environment variables.\n`);
   process.exit(0);
 }
 
@@ -10542,7 +10549,7 @@ function classifySdkInstall(sdkDir) {
  *     context: 'npx-cache' | 'tarball' | 'dev-clone',
  *     missing_path: '<path>/sdk/dist/cli.js',
  *     missing_artifact: 'sdk/dist',
- *     fix_command: 'npm install -g fvgsd@latest' | 'npm run build:sdk',
+ *     fix_command: FVGSD_CLONE_INSTALL_COMMAND | 'npm run build:sdk',
  *     attempted_nested_install: false,         // contract: never true
  *   }
  */
@@ -10551,7 +10558,7 @@ function buildSdkFailFastReport(sdkDir, sdkCliPath) {
   let context, fix_command;
   if (ctx.mode === 'tarball') {
     context = ctx.npxCache ? 'npx-cache' : 'tarball';
-    fix_command = 'npm install -g fvgsd@latest';
+    fix_command = FVGSD_CLONE_INSTALL_COMMAND;
   } else {
     context = 'dev-clone';
     fix_command = 'npm run build:sdk';
@@ -10585,19 +10592,13 @@ function renderSdkFailFastReport(ir) {
     console.error(`  Detected read-only npx cache install (${dim}${path.dirname(ir.missing_path).replace(/\/dist$/, '')}${reset}).`);
     console.error(`  The installer will ${bold}not${reset} attempt \`npm install\` inside the npx cache.`);
     console.error('');
-    console.error(`  Fix: install a version that ships sdk/dist/ globally:`);
+    console.error(`  Fix: install fvgsd from a clone (it is not published to npm):`);
     console.error(`    ${cyan}${ir.fix_command}${reset}`);
-    console.error(`  Or, if you prefer a one-shot run, clear the npx cache first:`);
-    console.error(`    ${cyan}npx --yes fvgsd@latest${reset}`);
-    console.error(`  Or build from source (git clone):`);
-    console.error(`    ${cyan}git clone https://github.com/gsd-build/get-shit-done && cd get-shit-done/sdk && npm install && npm run build${reset}`);
   } else if (ir.context === 'tarball') {
     console.error(`  The published tarball appears to be missing sdk/dist/ (see #2647).`);
     console.error('');
-    console.error(`  Fix: install a version that ships sdk/dist/ globally:`);
+    console.error(`  Fix: install fvgsd from a clone (it is not published to npm):`);
     console.error(`    ${cyan}${ir.fix_command}${reset}`);
-    console.error(`  Or build from source (git clone):`);
-    console.error(`    ${cyan}git clone https://github.com/gsd-build/get-shit-done && cd get-shit-done/sdk && npm install && npm run build${reset}`);
   } else {
     console.error(`  Running from a git clone — root npm install normally builds this automatically.`);
     console.error(`  To rebuild it explicitly:`);
@@ -10852,7 +10853,8 @@ function formatStaleStandaloneSdkWarning(info) {
     '',
     '   Remediation:',
     '     npm uninstall -g @fvgsd/sdk',
-    '     npx -y fvgsd@latest --<runtime> --global',
+    '     then, from your fvgsd clone:',
+    `     ${FVGSD_CLONE_UPDATE_COMMAND.replace('--<scope>', '--global')}`,
     '',
     '   Tracking: #3406 — https://github.com/gsd-build/get-shit-done/issues/3406',
   ].join('\n');
@@ -11015,7 +11017,7 @@ function buildGsdSdkVersionMismatchReport(sdkPath, expectedVersion) {
     sdk_path: sdkPath,
     actual_version: actualVersion,
     expected_version: expectedVersion,
-    fix_command: 'npm install -g fvgsd@latest',
+    fix_command: FVGSD_CLONE_UPDATE_COMMAND,
   };
 }
 
@@ -11026,7 +11028,7 @@ function renderGsdSdkVersionMismatchReport(ir) {
   console.log(`    Resolved version: ${ir.actual_version}`);
   console.log(`    Installer version: ${ir.expected_version}`);
   console.log(`    Workflows that call ${cyan}fvgsd-sdk query …${reset} will use the stale executable first.`);
-  console.log(`    Fix: ${cyan}${ir.fix_command}${reset}`);
+  console.log(`    Fix, from your fvgsd clone: ${cyan}${ir.fix_command}${reset}`);
   console.log(`    Or remove the stale global install / adjust PATH so the current shim is first.`);
   console.log('');
 }

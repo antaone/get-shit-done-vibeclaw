@@ -114,7 +114,8 @@ function missingLegacyCoreMessage(resolution: LegacySdkAssetResolution): string 
   return [
     'state load: get-shit-done/bin/lib/core.cjs not found.',
     `Checked: ${resolution.probes.join(', ')}`,
-    'Install GSD (e.g. npm i -g fvgsd) or clone with get-shit-done next to the SDK.',
+    'Install fvgsd from a clone (git clone, npm install, npm run build:hooks, node bin/install.js --<runtime> --<scope>),',
+    'or run the SDK from a clone that has get-shit-done next to it.',
   ].join(' ');
 }
 

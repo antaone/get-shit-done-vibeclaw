@@ -1308,7 +1308,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 55. マルチランタイムインストーラー選択
 
-**対象:** `npx fvgsd`
+**対象:** `node bin/install.js`
 
 **目的:** 1回のインタラクティブなインストールセッションで複数のランタイムを選択します。
 
@@ -1327,7 +1327,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 56. Windsurf ランタイムサポート
 
-**対象:** `npx fvgsd`
+**対象:** `node bin/install.js`
 
 **目的:** Windsurf AI IDE のサポートを追加します。
 
@@ -1568,7 +1568,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 68. Claude Code スキルマイグレーション
 
-**対象:** `npx fvgsd`
+**対象:** `node bin/install.js`
 
 **目的:** GSD コマンドを Claude Code 2.1.88+ のスキル形式に後方互換性を維持してマイグレーションします。
 
@@ -1831,7 +1831,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 85. 新規ランタイムサポート (Trae, Cline, Augment Code)
 
-**対象:** `npx fvgsd`
+**対象:** `node bin/install.js`
 
 **目的:** Trae IDE、Cline、Augment Code ランタイムへの GSD インストールを拡張します。
 

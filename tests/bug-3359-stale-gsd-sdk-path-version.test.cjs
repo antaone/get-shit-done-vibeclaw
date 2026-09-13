@@ -91,8 +91,8 @@ describe('bug #3359: installer detects stale fvgsd-sdk earlier on PATH',
       `warning must include detected and installer versions. Output:\n${combined}`,
     );
     assert.ok(
-      /npm install -g fvgsd@latest/.test(combined),
-      `warning must include global update remediation. Output:\n${combined}`,
+      combined.includes('git pull --ff-only && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>'),
+      `warning must include the clone update remediation. Output:\n${combined}`,
     );
     assert.ok(
       !/GSD SDK ready/.test(combined),

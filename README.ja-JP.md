@@ -11,11 +11,9 @@
 <!-- rename-identity:off -->
 ## fvgsd
 
-This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `npm install && npm run build:hooks && node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
 <!-- rename-identity:on -->
 
-[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
-[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -26,7 +24,11 @@ This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs in
 <br>
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **Mac、Windows、Linuxで動作します。**
@@ -98,7 +100,11 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 ## はじめに
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 インストーラーが以下の選択を求めます：
@@ -123,7 +129,11 @@ npx fvgsd@latest
 GSDは急速に進化しています。定期的にアップデートしてください：
 
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 <details>
@@ -131,49 +141,49 @@ npx fvgsd@latest
 
 ```bash
 # Claude Code
-npx fvgsd --claude --global   # ~/.claude/ にインストール
-npx fvgsd --claude --local    # ./.claude/ にインストール
+node bin/install.js --claude --global   # ~/.claude/ にインストール
+node bin/install.js --claude --local    # ./.claude/ にインストール
 
 # OpenCode
-npx fvgsd --opencode --global # ~/.config/opencode/ にインストール
+node bin/install.js --opencode --global # ~/.config/opencode/ にインストール
 
 # Gemini CLI
-npx fvgsd --gemini --global   # ~/.gemini/ にインストール
+node bin/install.js --gemini --global   # ~/.gemini/ にインストール
 
 # Kilo
-npx fvgsd --kilo --global     # ~/.config/kilo/ にインストール
-npx fvgsd --kilo --local      # ./.kilo/ にインストール
+node bin/install.js --kilo --global     # ~/.config/kilo/ にインストール
+node bin/install.js --kilo --local      # ./.kilo/ にインストール
 
 # Codex
-npx fvgsd --codex --global    # ~/.codex/ にインストール
-npx fvgsd --codex --local     # ./.codex/ にインストール
+node bin/install.js --codex --global    # ~/.codex/ にインストール
+node bin/install.js --codex --local     # ./.codex/ にインストール
 
 # Copilot
-npx fvgsd --copilot --global  # ~/.github/ にインストール
-npx fvgsd --copilot --local   # ./.github/ にインストール
+node bin/install.js --copilot --global  # ~/.github/ にインストール
+node bin/install.js --copilot --local   # ./.github/ にインストール
 
 # Cursor CLI
-npx fvgsd --cursor --global      # ~/.cursor/ にインストール
-npx fvgsd --cursor --local       # ./.cursor/ にインストール
+node bin/install.js --cursor --global      # ~/.cursor/ にインストール
+node bin/install.js --cursor --local       # ./.cursor/ にインストール
 
 # Antigravity
-npx fvgsd --antigravity --global # ~/.gemini/antigravity/ にインストール
-npx fvgsd --antigravity --local  # ./.agent/ にインストール
+node bin/install.js --antigravity --global # ~/.gemini/antigravity/ にインストール
+node bin/install.js --antigravity --local  # ./.agent/ にインストール
 
 # Augment
-npx fvgsd --augment --global     # ~/.augment/ にインストール
-npx fvgsd --augment --local      # ./.augment/ にインストール
+node bin/install.js --augment --global     # ~/.augment/ にインストール
+node bin/install.js --augment --local      # ./.augment/ にインストール
 
 # Trae
-npx fvgsd --trae --global        # ~/.trae/ にインストール
-npx fvgsd --trae --local         # ./.trae/ にインストール
+node bin/install.js --trae --global        # ~/.trae/ にインストール
+node bin/install.js --trae --local         # ./.trae/ にインストール
 
 # Cline
-npx fvgsd --cline --global       # ~/.cline/ にインストール
-npx fvgsd --cline --local        # ./.clinerules にインストール
+node bin/install.js --cline --global       # ~/.cline/ にインストール
+node bin/install.js --cline --local        # ./.clinerules にインストール
 
 # 全ランタイム
-npx fvgsd --all --global      # すべてのディレクトリにインストール
+node bin/install.js --all --global      # すべてのディレクトリにインストール
 ```
 
 `--global`（`-g`）または `--local`（`-l`）でインストール先の質問をスキップできます。
@@ -792,18 +802,22 @@ GSDのコードベースマッピングおよび分析コマンドは、プロ�
 
 **コマンドが期待通りに動作しない？**
 - `/fvgsd-help` を実行してインストールを確認してください
-- `npx fvgsd` を再実行して再インストールしてください
+- `node bin/install.js` を再実行して再インストールしてください
 
 **最新バージョンへのアップデート？**
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **Dockerまたはコンテナ化環境を使用している？**
 
 チルダパス（`~/.claude/...`）でファイル読み取りが失敗する場合、インストール前に `CLAUDE_CONFIG_DIR` を設定してください：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude node bin/install.js --global
 ```
 これにより、コンテナ内で正しく展開されない可能性がある `~` の代わりに絶対パスが使用されます。
 
@@ -813,26 +827,26 @@ GSDを完全に削除するには：
 
 ```bash
 # グローバルインストール
-npx fvgsd --claude --global --uninstall
-npx fvgsd --opencode --global --uninstall
-npx fvgsd --gemini --global --uninstall
-npx fvgsd --kilo --global --uninstall
-npx fvgsd --codex --global --uninstall
-npx fvgsd --copilot --global --uninstall
-npx fvgsd --cursor --global --uninstall
-npx fvgsd --antigravity --global --uninstall
-npx fvgsd --trae --global --uninstall
+node bin/install.js --claude --global --uninstall
+node bin/install.js --opencode --global --uninstall
+node bin/install.js --gemini --global --uninstall
+node bin/install.js --kilo --global --uninstall
+node bin/install.js --codex --global --uninstall
+node bin/install.js --copilot --global --uninstall
+node bin/install.js --cursor --global --uninstall
+node bin/install.js --antigravity --global --uninstall
+node bin/install.js --trae --global --uninstall
 
 # ローカルインストール（現在のプロジェクト）
-npx fvgsd --claude --local --uninstall
-npx fvgsd --opencode --local --uninstall
-npx fvgsd --gemini --local --uninstall
-npx fvgsd --kilo --local --uninstall
-npx fvgsd --codex --local --uninstall
-npx fvgsd --copilot --local --uninstall
-npx fvgsd --cursor --local --uninstall
-npx fvgsd --antigravity --local --uninstall
-npx fvgsd --trae --local --uninstall
+node bin/install.js --claude --local --uninstall
+node bin/install.js --opencode --local --uninstall
+node bin/install.js --gemini --local --uninstall
+node bin/install.js --kilo --local --uninstall
+node bin/install.js --codex --local --uninstall
+node bin/install.js --copilot --local --uninstall
+node bin/install.js --cursor --local --uninstall
+node bin/install.js --antigravity --local --uninstall
+node bin/install.js --trae --local --uninstall
 ```
 
 これにより、他の設定を保持しながら、すべてのGSDコマンド、エージェント、フック、設定が削除されます。
@@ -841,7 +855,7 @@ npx fvgsd --trae --local --uninstall
 
 ## コミュニティポート
 
-OpenCode、Gemini CLI、Kilo、Codexは `npx fvgsd` でネイティブサポートされています。
+OpenCode、Gemini CLI、Kilo、Codexは `node bin/install.js` でネイティブサポートされています。
 
 以下のコミュニティポートがマルチランタイムサポートの先駆けとなりました：
 

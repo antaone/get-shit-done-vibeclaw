@@ -155,7 +155,8 @@ describe('installer SDK dist-missing fail-fast (#2649)', () => {
       assert.strictEqual(ir.reason, 'sdk_fail_fast');
       assert.strictEqual(ir.context, 'npx-cache');
       assert.strictEqual(ir.missing_artifact, 'sdk/dist');
-      assert.strictEqual(ir.fix_command, 'npm install -g fvgsd@latest');
+      // fvgsd is not on npm: the fix is the clone install sequence.
+      assert.strictEqual(ir.fix_command, 'git clone https://github.com/antaone/get-shit-done-vibeclaw.git && cd get-shit-done-vibeclaw && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>');
       assert.strictEqual(ir.attempted_nested_install, false,
         'IR contract: nested-install must always be false (this is a hard invariant)');
     } finally {

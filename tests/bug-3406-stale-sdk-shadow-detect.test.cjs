@@ -164,6 +164,10 @@ describe('#3406: formatStaleStandaloneSdkWarning', () => {
       out.includes('npm uninstall -g @fvgsd/sdk'),
       'must include the remediation command verbatim'
     );
+    assert.ok(
+      out.includes('git pull --ff-only && npm install && npm run build:hooks && node bin/install.js --<runtime> --global'),
+      'must reinstall from the fvgsd clone, not from npm'
+    );
     assert.ok(out.includes('#3406'), 'must reference the issue for traceability');
   });
 });

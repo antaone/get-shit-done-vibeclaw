@@ -11,11 +11,9 @@
 <!-- rename-identity:off -->
 ## fvgsd
 
-This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `npm install && npm run build:hooks && node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
 <!-- rename-identity:on -->
 
-[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
-[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -26,7 +24,11 @@ This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs in
 <br>
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **Mac, Windows, Linux 모두 지원.**
@@ -98,7 +100,11 @@ GSD가 그걸 고칩니다. Claude Code를 신뢰할 수 있게 만드는 컨텍
 ## 시작하기
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 설치 중에 다음을 선택합니다:
@@ -123,7 +129,11 @@ npx fvgsd@latest
 GSD는 빠르게 발전합니다. 주기적으로 업데이트하세요:
 
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 <details>
@@ -131,49 +141,49 @@ npx fvgsd@latest
 
 ```bash
 # Claude Code
-npx fvgsd --claude --global   # ~/.claude/에 설치
-npx fvgsd --claude --local    # ./.claude/에 설치
+node bin/install.js --claude --global   # ~/.claude/에 설치
+node bin/install.js --claude --local    # ./.claude/에 설치
 
 # OpenCode
-npx fvgsd --opencode --global # ~/.config/opencode/에 설치
+node bin/install.js --opencode --global # ~/.config/opencode/에 설치
 
 # Gemini CLI
-npx fvgsd --gemini --global   # ~/.gemini/에 설치
+node bin/install.js --gemini --global   # ~/.gemini/에 설치
 
 # Kilo
-npx fvgsd --kilo --global     # ~/.config/kilo/에 설치
-npx fvgsd --kilo --local      # ./.kilo/에 설치
+node bin/install.js --kilo --global     # ~/.config/kilo/에 설치
+node bin/install.js --kilo --local      # ./.kilo/에 설치
 
 # Codex
-npx fvgsd --codex --global    # ~/.codex/에 설치
-npx fvgsd --codex --local     # ./.codex/에 설치
+node bin/install.js --codex --global    # ~/.codex/에 설치
+node bin/install.js --codex --local     # ./.codex/에 설치
 
 # Copilot
-npx fvgsd --copilot --global  # ~/.github/에 설치
-npx fvgsd --copilot --local   # ./.github/에 설치
+node bin/install.js --copilot --global  # ~/.github/에 설치
+node bin/install.js --copilot --local   # ./.github/에 설치
 
 # Cursor CLI
-npx fvgsd --cursor --global      # ~/.cursor/에 설치
-npx fvgsd --cursor --local       # ./.cursor/에 설치
+node bin/install.js --cursor --global      # ~/.cursor/에 설치
+node bin/install.js --cursor --local       # ./.cursor/에 설치
 
 # Antigravity
-npx fvgsd --antigravity --global # ~/.gemini/antigravity/에 설치
-npx fvgsd --antigravity --local  # ./.agent/에 설치
+node bin/install.js --antigravity --global # ~/.gemini/antigravity/에 설치
+node bin/install.js --antigravity --local  # ./.agent/에 설치
 
 # Augment
-npx fvgsd --augment --global     # ~/.augment/에 설치
-npx fvgsd --augment --local      # ./.augment/에 설치
+node bin/install.js --augment --global     # ~/.augment/에 설치
+node bin/install.js --augment --local      # ./.augment/에 설치
 
 # Trae
-npx fvgsd --trae --global        # ~/.trae/에 설치
-npx fvgsd --trae --local         # ./.trae/에 설치
+node bin/install.js --trae --global        # ~/.trae/에 설치
+node bin/install.js --trae --local         # ./.trae/에 설치
 
 # Cline
-npx fvgsd --cline --global       # ~/.cline/에 설치
-npx fvgsd --cline --local        # ./.clinerules에 설치
+node bin/install.js --cline --global       # ~/.cline/에 설치
+node bin/install.js --cline --local        # ./.clinerules에 설치
 
 # 전체 런타임
-npx fvgsd --all --global      # 모든 디렉터리에 설치
+node bin/install.js --all --global      # 모든 디렉터리에 설치
 ```
 
 위치 프롬프트 건너뛰기: `--global` (`-g`) 또는 `--local` (`-l`).
@@ -783,18 +793,22 @@ GSD의 코드베이스 매핑 및 분석 명령어는 프로젝트를 이해하�
 
 **명령어가 예상대로 작동하지 않나요?**
 - `/fvgsd-help`를 실행해 설치 확인
-- `npx fvgsd`를 다시 실행해 재설치
+- `node bin/install.js`를 다시 실행해 재설치
 
 **최신 버전으로 업데이트하나요?**
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **Docker 또는 컨테이너 환경을 사용하나요?**
 
 파일 읽기가 틸드 경로(`~/.claude/...`)로 실패하면 설치 전에 `CLAUDE_CONFIG_DIR`를 설정하세요:
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude node bin/install.js --global
 ```
 컨테이너에서 올바르게 확장되지 않을 수 있는 `~` 대신 절대 경로가 사용됩니다.
 
@@ -804,26 +818,26 @@ GSD를 완전히 제거하려면:
 
 ```bash
 # 전역 설치
-npx fvgsd --claude --global --uninstall
-npx fvgsd --opencode --global --uninstall
-npx fvgsd --gemini --global --uninstall
-npx fvgsd --kilo --global --uninstall
-npx fvgsd --codex --global --uninstall
-npx fvgsd --copilot --global --uninstall
-npx fvgsd --cursor --global --uninstall
-npx fvgsd --antigravity --global --uninstall
-npx fvgsd --trae --global --uninstall
+node bin/install.js --claude --global --uninstall
+node bin/install.js --opencode --global --uninstall
+node bin/install.js --gemini --global --uninstall
+node bin/install.js --kilo --global --uninstall
+node bin/install.js --codex --global --uninstall
+node bin/install.js --copilot --global --uninstall
+node bin/install.js --cursor --global --uninstall
+node bin/install.js --antigravity --global --uninstall
+node bin/install.js --trae --global --uninstall
 
 # 로컬 설치 (현재 프로젝트)
-npx fvgsd --claude --local --uninstall
-npx fvgsd --opencode --local --uninstall
-npx fvgsd --gemini --local --uninstall
-npx fvgsd --kilo --local --uninstall
-npx fvgsd --codex --local --uninstall
-npx fvgsd --copilot --local --uninstall
-npx fvgsd --cursor --local --uninstall
-npx fvgsd --antigravity --local --uninstall
-npx fvgsd --trae --local --uninstall
+node bin/install.js --claude --local --uninstall
+node bin/install.js --opencode --local --uninstall
+node bin/install.js --gemini --local --uninstall
+node bin/install.js --kilo --local --uninstall
+node bin/install.js --codex --local --uninstall
+node bin/install.js --copilot --local --uninstall
+node bin/install.js --cursor --local --uninstall
+node bin/install.js --antigravity --local --uninstall
+node bin/install.js --trae --local --uninstall
 ```
 
 다른 설정은 그대로 유지하면서 GSD의 모든 명령어, 에이전트, 훅, 설정을 제거합니다.
@@ -832,7 +846,7 @@ npx fvgsd --trae --local --uninstall
 
 ## 커뮤니티 포트
 
-OpenCode, Gemini CLI, Kilo, Codex는 이제 `npx fvgsd`를 통해 기본 지원됩니다.
+OpenCode, Gemini CLI, Kilo, Codex는 이제 `node bin/install.js`를 통해 기본 지원됩니다.
 
 이 커뮤니티 포트들이 멀티 런타임 지원의 선구자였습니다:
 

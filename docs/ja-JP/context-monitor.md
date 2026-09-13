@@ -60,7 +60,7 @@ GSD の `/fvgsd-pause-work` コマンドは実行状態を保存します。WARN
 
 ## セットアップ
 
-両フックは `npx fvgsd` のインストール時に自動的に登録されます:
+両フックは `node bin/install.js` のインストール時に自動的に登録されます:
 
 - **ステータスライン**（ブリッジファイルの書き込み）: settings.json の `statusLine` として登録
 - **コンテキストモニター**（ブリッジファイルの読み取り）: settings.json の `PostToolUse` フックとして登録（Gemini では `AfterTool`）

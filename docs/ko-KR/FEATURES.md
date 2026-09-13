@@ -1308,7 +1308,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 55. Multi-Runtime Installer Selection
 
-**일부:** `npx fvgsd`
+**일부:** `node bin/install.js`
 
 **목적:** 단일 대화형 설치 세션에서 여러 런타임을 선택합니다.
 
@@ -1327,7 +1327,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 56. Windsurf 런타임 지원
 
-**대상:** `npx fvgsd`
+**대상:** `node bin/install.js`
 
 **목적:** Windsurf AI IDE 지원을 추가합니다.
 
@@ -1568,7 +1568,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 68. Claude Code 스킬 마이그레이션
 
-**대상:** `npx fvgsd`
+**대상:** `node bin/install.js`
 
 **목적:** GSD 명령어를 하위 호환성을 유지하면서 Claude Code 2.1.88+ 스킬 형식으로 마이그레이션합니다.
 
@@ -1831,7 +1831,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 85. 신규 런타임 지원 (Trae, Cline, Augment Code)
 
-**대상:** `npx fvgsd`
+**대상:** `node bin/install.js`
 
 **목적:** Trae IDE, Cline, Augment Code 런타임으로 GSD 설치를 확장합니다.
 

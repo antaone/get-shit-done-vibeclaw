@@ -7,13 +7,11 @@
 <!-- rename-identity:off -->
 ## fvgsd
 
-This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `npm install && npm run build:hooks && node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
 <!-- rename-identity:on -->
 
 **解决上下文衰减 —— 即 Claude 填充上下文窗口时发生的质量退化问题。**
 
-[![npm version](https://img.shields.io/npm/v/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
-[![npm downloads](https://img.shields.io/npm/dm/fvgsd?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/fvgsd)
 [![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/vY2bv3FrzX)
 [![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
@@ -24,7 +22,11 @@ This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs in
 <br>
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **支持 Mac、Windows 和 Linux。**
@@ -84,7 +86,11 @@ GSD 解决了这个问题。它是让 Claude Code 变得可靠的上下文工程
 ## 快速开始
 
 ```bash
-npx fvgsd@latest
+git clone https://github.com/antaone/get-shit-done-vibeclaw.git
+cd get-shit-done-vibeclaw
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 安装程序会提示你选择：
@@ -105,7 +111,11 @@ npx fvgsd@latest
 GSD 快速迭代。定期更新：
 
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 <details>
@@ -113,25 +123,25 @@ npx fvgsd@latest
 
 ```bash
 # Claude Code
-npx fvgsd --claude --global   # 安装到 ~/.claude/
-npx fvgsd --claude --local    # 安装到 ./.claude/
+node bin/install.js --claude --global   # 安装到 ~/.claude/
+node bin/install.js --claude --local    # 安装到 ./.claude/
 
 # OpenCode
-npx fvgsd --opencode --global # 安装到 ~/.config/opencode/
+node bin/install.js --opencode --global # 安装到 ~/.config/opencode/
 
 # Gemini CLI
-npx fvgsd --gemini --global   # 安装到 ~/.gemini/
+node bin/install.js --gemini --global   # 安装到 ~/.gemini/
 
 # Kilo
-npx fvgsd --kilo --global     # 安装到 ~/.config/kilo/
-npx fvgsd --kilo --local      # 安装到 ./.kilo/
+node bin/install.js --kilo --global     # 安装到 ~/.config/kilo/
+node bin/install.js --kilo --local      # 安装到 ./.kilo/
 
 # Codex
-npx fvgsd --codex --global    # 安装到 ~/.codex/
-npx fvgsd --codex --local     # 安装到 ./.codex/
+node bin/install.js --codex --global    # 安装到 ~/.codex/
+node bin/install.js --codex --local     # 安装到 ./.codex/
 
 # 所有运行时
-npx fvgsd --all --global      # 安装到所有目录
+node bin/install.js --all --global      # 安装到所有目录
 ```
 
 使用 `--global`（`-g`）或 `--local`（`-l`）跳过位置提示。
@@ -658,18 +668,22 @@ GSD 的代码库映射和分析命令读取文件以了解你的项目。**保�
 
 **命令没有按预期工作？**
 - 运行 `/fvgsd-help` 验证安装
-- 重新运行 `npx fvgsd` 重新安装
+- 重新运行 `node bin/install.js` 重新安装
 
 **更新到最新版本？**
 ```bash
-npx fvgsd@latest
+cd get-shit-done-vibeclaw
+git pull --ff-only
+npm install
+npm run build:hooks
+node bin/install.js
 ```
 
 **使用 Docker 或容器化环境？**
 
 如果用波浪号路径（`~/.claude/...`）读取文件失败，在安装前设置 `CLAUDE_CONFIG_DIR`：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude node bin/install.js --global
 ```
 这确保使用绝对路径而不是 `~`，后者在容器中可能无法正确展开。
 
@@ -679,16 +693,16 @@ CLAUDE_CONFIG_DIR=/home/youruser/.claude npx fvgsd --global
 
 ```bash
 # 全局安装
-npx fvgsd --claude --global --uninstall
-npx fvgsd --opencode --global --uninstall
-npx fvgsd --kilo --global --uninstall
-npx fvgsd --codex --global --uninstall
+node bin/install.js --claude --global --uninstall
+node bin/install.js --opencode --global --uninstall
+node bin/install.js --kilo --global --uninstall
+node bin/install.js --codex --global --uninstall
 
 # 本地安装（当前项目）
-npx fvgsd --claude --local --uninstall
-npx fvgsd --opencode --local --uninstall
-npx fvgsd --kilo --local --uninstall
-npx fvgsd --codex --local --uninstall
+node bin/install.js --claude --local --uninstall
+node bin/install.js --opencode --local --uninstall
+node bin/install.js --kilo --local --uninstall
+node bin/install.js --codex --local --uninstall
 ```
 
 这删除所有 GSD 命令、代理、钩子和设置，同时保留你的其他配置。
@@ -697,7 +711,7 @@ npx fvgsd --codex --local --uninstall
 
 ## 社区移植
 
-OpenCode、Gemini CLI、Kilo 和 Codex 现在通过 `npx fvgsd` 原生支持。
+OpenCode、Gemini CLI、Kilo 和 Codex 现在通过 `node bin/install.js` 原生支持。
 
 这些社区移植开创了多运行时支持：
 
