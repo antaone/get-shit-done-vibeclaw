@@ -2862,22 +2862,53 @@ function tomlTableOwnRange(records, section) {
 }
 
 /**
- * Remove ranges from config.toml content and collapse the blank lines left
- * behind. Collapsing stops at the first GSD or VibeClaw marker, so the bytes that
- * installer owns stay exactly as written.
+ * Remove whole-line ranges from config.toml content. Blank lines change only at
+ * the seams the removal leaves: a run of removed and blank lines keeps one blank
+ * line between content lines, and none at the start or end of the file. Every
+ * other byte stays, including blank lines inside multiline strings and
+ * blank-line runs the removal doesn't reach.
+ *
+ * @param {string} content
+ * @param {Array<{ start: number, end: number }>} ranges - each covers whole lines
+ * @returns {string}
  */
 function removeCodexConfigRanges(content, ranges) {
-  if (ranges.length === 0) return content;
-  const stripped = removeContentRanges(content, ranges);
-  const markerOffset = foreignCodexMarkerOffset(stripped);
-  if (markerOffset === -1) return collapseTomlBlankLines(stripped);
-  return collapseTomlBlankLines(stripped.slice(0, markerOffset)) + stripped.slice(markerOffset);
+  const live = ranges.filter((range) => range && range.start < range.end);
+  if (live.length === 0) return content;
+  const records = getTomlLineRecords(content);
+  const removed = records.map((record) =>
+    live.some((range) => range.start <= record.start && record.end + record.eol.length <= range.end));
+  const isBlank = (record) => !record.startsInMultilineString && record.text.trim() === '';
+  const dropped = removed.slice();
+  let index = 0;
+  while (index < records.length) {
+    if (!removed[index] && !isBlank(records[index])) {
+      index += 1;
+      continue;
+    }
+    let zoneEnd = index;
+    while (zoneEnd < records.length && (removed[zoneEnd] || isBlank(records[zoneEnd]))) zoneEnd += 1;
+    if (removed.slice(index, zoneEnd).includes(true)) {
+      let keep = index === 0 || zoneEnd === records.length ? 0 : 1;
+      for (let line = index; line < zoneEnd; line += 1) {
+        if (removed[line]) continue;
+        if (keep > 0) keep -= 1;
+        else dropped[line] = true;
+      }
+    }
+    index = zoneEnd;
+  }
+  return records
+    .filter((_, line) => !dropped[line])
+    .map((record) => content.slice(record.start, record.end + record.eol.length))
+    .join('');
 }
 
 /**
  * Remove fvgsd's own block from config.toml content: its marker, its
- * codex_hooks ownership comment and its agent tables. Every other byte is kept,
- * including line endings and any GSD or VibeClaw marker with the tables below it.
+ * codex_hooks ownership comment and its agent tables. Blank lines change only at
+ * the seams of that removal. Every other byte is kept, including line endings,
+ * multiline strings and any GSD or VibeClaw marker with the tables below it.
  */
 function stripOwnCodexBlock(content) {
   const records = getTomlLineRecords(content);
@@ -2895,27 +2926,58 @@ function stripOwnCodexBlock(content) {
 }
 
 /**
+ * True when a table has nothing but blank lines between its header and the next
+ * header. Comments and lines inside multiline strings count as content.
+ */
+function tomlTableBodyIsBlank(records, section) {
+  return records.every((record) => record.start < section.headerEnd || record.start >= section.end
+    || (!record.startsInMultilineString && record.text.trim() === ''));
+}
+
+// The [features] and [agents] tables in config.toml content whose bodies are blank.
+function blankParentTableSections(content) {
+  const records = getTomlLineRecords(content);
+  return getTomlTableSections(content).filter((section) => !section.array
+    && (section.path === 'features' || section.path === 'agents')
+    && tomlTableBodyIsBlank(records, section));
+}
+
+// Remove the first `<key> = true` line that is not inside a multiline string.
+function removeTrueKeyLine(content, key) {
+  const pattern = new RegExp(`^${key}[ \\t]*=[ \\t]*true[ \\t]*$`);
+  const record = getTomlLineRecords(content)
+    .find((candidate) => !candidate.startsInMultilineString && pattern.test(candidate.text));
+  return record
+    ? removeCodexConfigRanges(content, [{ start: record.start, end: record.end + record.eol.length }])
+    : content;
+}
+
+/**
  * Remove fvgsd's block from Codex config.toml content (uninstall, and a
  * full → minimal reinstall). The hooks feature key fvgsd recorded ownership of,
  * and the multi_agent / default_mode_request_user_input keys, are removed only
  * while no GSD or VibeClaw marker remains and `foreignHooksRemain` is false,
  * that is, no other install's SessionStart hook is left in hooks.json.
- * Returns cleaned content, or null if the file would be empty.
+ * A [features] or [agents] table is removed only when this cleanup left it
+ * empty. Blank lines change only at the seams of what was removed, so the start
+ * and end of the file, and any GSD or VibeClaw region, keep their bytes.
+ * Returns the cleaned content, or null if nothing but blank lines would remain.
  */
 function stripGsdFromCodexConfig(content, { foreignHooksRemain = false } = {}) {
-  const eol = detectLineEnding(content);
   const foreignPresent = foreignHooksRemain
     || codexConfigLayout(content).markers.some((marker) => marker.owner === 'gsd');
   const ownership = foreignPresent ? null : getManagedCodexHooksOwnership(content);
+  const blankBefore = new Set(blankParentTableSections(content).map((section) => section.path));
   let cleaned = stripOwnCodexBlock(stripCodexHooksFeatureAssignments(content, ownership));
   if (!foreignPresent) {
-    cleaned = cleaned.replace(/^multi_agent\s*=\s*true\s*(?:\r?\n)?/m, '');
-    cleaned = cleaned.replace(/^default_mode_request_user_input\s*=\s*true\s*(?:\r?\n)?/m, '');
+    cleaned = removeTrueKeyLine(cleaned, 'multi_agent');
+    cleaned = removeTrueKeyLine(cleaned, 'default_mode_request_user_input');
   }
-  cleaned = cleaned.replace(/^\[features\]\s*\n(?=\[|$)/m, '');
-  cleaned = cleaned.replace(/^\[agents\]\s*\n(?=\[|$)/m, '');
-  cleaned = cleaned.replace(/^(?:\r?\n)+/, '').trimEnd();
-  return cleaned ? cleaned + eol : null;
+  const emptied = blankParentTableSections(cleaned)
+    .filter((section) => !blankBefore.has(section.path))
+    .map(({ start, end }) => ({ start, end }));
+  cleaned = removeCodexConfigRanges(cleaned, emptied);
+  return cleaned.trim() === '' ? null : cleaned;
 }
 
 function detectLineEnding(content) {

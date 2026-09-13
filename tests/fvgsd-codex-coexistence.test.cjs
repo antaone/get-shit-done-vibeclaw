@@ -67,3 +67,75 @@ test('uninstall removes the codex_hooks flag fvgsd owns when nothing else needs 
     '[agents.fvgsd-planner]\ndescription = "x"\nconfig_file = "y"\n';
   assert.equal(stripGsdFromCodexConfig(content, { foreignHooksRemain: false }), null);
 });
+
+test('user multiline strings and blank-line runs stay byte-identical through two merges and a strip', (t) => {
+  const dir = createTempDir('fvgsd-codex-');
+  t.after(() => cleanup(dir));
+  const configPath = path.join(dir, 'config.toml');
+  const userPart = [
+    'model = "gpt-5"',
+    '',
+    '[profiles.work]',
+    'developer_instructions = """',
+    'First paragraph.',
+    '',
+    '',
+    'Second paragraph.',
+    '"""',
+    '',
+    '',
+    '',
+    '[tui]',
+    'notifications = true',
+    '',
+  ].join('\n');
+  const instructions = 'First paragraph.\n\n\nSecond paragraph.\n';
+  const original = `${userPart}\n${GSD_BLOCK}`;
+  fs.writeFileSync(configPath, original);
+
+  mergeCodexConfig(configPath, OWN_BLOCK);
+  mergeCodexConfig(configPath, OWN_BLOCK);
+  const merged = fs.readFileSync(configPath, 'utf8');
+  assert.equal(merged.slice(0, userPart.length), userPart, 'user text is unchanged after two merges');
+  assert.equal(parseTomlToObject(merged).profiles.work.developer_instructions, instructions);
+
+  const stripped = stripGsdFromCodexConfig(merged);
+  assert.equal(stripped, original, 'strip restores the file');
+  assert.equal(parseTomlToObject(stripped).profiles.work.developer_instructions, instructions);
+});
+
+test('strip keeps [features] keys in their table and removes only tables its own cleanup empties', () => {
+  const ownBlock = `${IDENTITY.codexMarker}\n\n[agents.fvgsd-planner]\ndescription = "x"\nconfig_file = "y"\n`;
+
+  const keysAfterBlankLine = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[features]\n\nweb_search = true\n\n${ownBlock}`);
+  assert.deepEqual(parseTomlToObject(keysAfterBlankLine), { model: 'gpt-5', features: { web_search: true } });
+
+  const userEmptyTable = 'model = "gpt-5"\n\n[features]\n\n[tui]\nnotifications = true\n';
+  assert.equal(stripGsdFromCodexConfig(`${userEmptyTable}\n${ownBlock}`), userEmptyTable, 'an already-empty table stays');
+
+  const emptiedFeatures = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[features]\nmulti_agent = true\n\n${ownBlock}`);
+  assert.deepEqual(parseTomlToObject(emptiedFeatures), { model: 'gpt-5' }, 'a [features] table the cleanup empties is removed');
+
+  const emptiedAgents = stripGsdFromCodexConfig(`model = "gpt-5"\n\n[agents]\n${ownBlock}`);
+  assert.deepEqual(parseTomlToObject(emptiedAgents), { model: 'gpt-5' }, 'an [agents] table the cleanup empties is removed');
+});
+
+test('strip and a merge + strip round trip leave the GSD region byte-identical at the end of the file', (t) => {
+  const dir = createTempDir('fvgsd-codex-');
+  t.after(() => cleanup(dir));
+  const configPath = path.join(dir, 'config.toml');
+  const regions = {
+    'GSD region ending with a blank line': `${GSD_BLOCK}\n`,
+    'CRLF GSD region under an LF first line': GSD_BLOCK.replace(/\n/g, '\r\n'),
+  };
+  for (const [label, gsdRegion] of Object.entries(regions)) {
+    const original = `model = "gpt-5"\n\n${gsdRegion}`;
+    const installed = `model = "gpt-5"\n\n${OWN_BLOCK}\n${gsdRegion}`;
+    assert.equal(stripGsdFromCodexConfig(installed, { foreignHooksRemain: true }), original, `${label}: strip`);
+
+    fs.writeFileSync(configPath, original);
+    mergeCodexConfig(configPath, OWN_BLOCK);
+    const roundTrip = stripGsdFromCodexConfig(fs.readFileSync(configPath, 'utf8'), { foreignHooksRemain: true });
+    assert.equal(roundTrip, original, `${label}: merge + strip`);
+  }
+});
