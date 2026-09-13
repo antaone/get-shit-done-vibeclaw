@@ -41,10 +41,10 @@ const EXPECTED_RENAMES = [
   { from: 'tests/vgsd-sample.test.cjs', to: 'tests/fvgsd-sample.test.cjs' },
 ];
 
-function makeRepo(t) {
+function makeRepo(t, fixture = FIXTURE) {
   const root = createTempDir('fvgsd-rename-');
   t.after(() => cleanup(root));
-  for (const [rel, content] of Object.entries(FIXTURE)) {
+  for (const [rel, content] of Object.entries(fixture)) {
     fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
     fs.writeFileSync(path.join(root, rel), content);
   }
@@ -238,6 +238,32 @@ test('dry run reports totals and renames without writing', (t) => {
   for (const [rel, digest] of Object.entries(before)) {
     assert.equal(hash(path.join(root, rel)), digest, rel);
   }
+});
+
+test('a re-run after an upstream merge takes names from the renamed layout and nests hooks under fvgsd/', (t) => {
+  // The tree after the first run, plus text an upstream merge brings in.
+  const root = makeRepo(t, {
+    'agents/fvgsd-planner.md': 'name: fvgsd-planner\n',
+    'hooks/fvgsd/statusline.js': '// statusline\n',
+    'hooks/fvgsd/context-monitor.js': '// context monitor\n',
+    'hooks/fvgsd/lib/graphify-rebuild.sh': 'echo rebuild\n',
+    'get-shit-done/workflows/merged.md': 'Spawn gsd-planner, then read hooks/gsd-statusline.js.\n',
+    'get-shit-done/bin/lib/merged.cjs': "const monitor = 'gsd-context-monitor.js';\n" +
+      "const statusline = path.join(dir, 'hooks', 'gsd-statusline.js');\n" +
+      "const rebuild = 'hooks/lib/gsd-graphify-rebuild.sh';\n",
+  });
+  const applied = runScript(root);
+  assert.deepEqual(applied.renames, []);
+  assert.equal(fs.readFileSync(path.join(root, 'get-shit-done/workflows/merged.md'), 'utf8'),
+    'Spawn fvgsd-planner, then read hooks/fvgsd/statusline.js.\n');
+  // Never 'fvgsd-context-monitor.js' or 'fvgsd-statusline.js': GSD's installer finds
+  // its hooks by those substrings.
+  assert.equal(fs.readFileSync(path.join(root, 'get-shit-done/bin/lib/merged.cjs'), 'utf8'),
+    "const monitor = 'fvgsd/context-monitor.js';\n" +
+    "const statusline = path.join(dir, 'hooks', 'fvgsd/statusline.js');\n" +
+    "const rebuild = 'hooks/fvgsd/lib/graphify-rebuild.sh';\n");
+  execFileSync('git', ['add', '-A'], { cwd: root });
+  assert.deepEqual(runScript(root).totals, {});
 });
 
 test('apply renames files, leaves exclusions alone, and a second run changes nothing', (t) => {

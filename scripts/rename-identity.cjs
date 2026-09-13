@@ -41,6 +41,14 @@ function byLengthDesc(a, b) {
   return b.length - a.length || a.localeCompare(b);
 }
 
+// fvgsd's agent name is the upstream `gsd-<role>` name with this prefix. The
+// text rule, the file rename and the renamed-layout name scan all go through it.
+const FORK_AGENT_PREFIX = 'fv';
+
+function fvgsdAgentName(upstreamName) {
+  return `${FORK_AGENT_PREFIX}${upstreamName}`;
+}
+
 function buildRules({ agentRoles, hookNames, helperNames }) {
   const rules = [
     { id: 'fork-prefix', pattern: /(?<![fF])vgsd/g, replace: () => 'fvgsd' },
@@ -52,7 +60,7 @@ function buildRules({ agentRoles, hookNames, helperNames }) {
     },
   ];
   for (const role of [...agentRoles].sort(byLengthDesc)) {
-    rules.push(tokenRule('agent-names', role, `fv${role}`));
+    rules.push(tokenRule('agent-names', role, fvgsdAgentName(role)));
   }
   for (const hook of [...hookNames].sort(byLengthDesc)) {
     rules.push(tokenRule('hook-names', hook, `fvgsd/${hook.slice('gsd-'.length)}`));
@@ -160,7 +168,7 @@ function rewriteText(text, rules, { isCode }) {
 
 function renamedPath(relPath) {
   const parts = relPath.split('/');
-  if (parts.length === 2 && parts[0] === 'agents' && /^gsd-.+\.md$/.test(parts[1])) return `agents/fv${parts[1]}`;
+  if (parts.length === 2 && parts[0] === 'agents' && /^gsd-.+\.md$/.test(parts[1])) return `agents/${fvgsdAgentName(parts[1])}`;
   if (parts.length === 2 && parts[0] === 'hooks' && /^gsd-.+\.(?:js|sh)$/.test(parts[1])) {
     return `hooks/fvgsd/${parts[1].slice('gsd-'.length)}`;
   }
@@ -202,13 +210,37 @@ function namesFrom(root, dir, pattern) {
     .map((entry) => entry.name.replace(/\.(?:md|js|sh)$/, ''));
 }
 
+// Upstream agent, hook and helper names, read from the source tree in either
+// layout. After the first run the tree only has the renamed layout, and an
+// upstream merge still brings in upstream text, so both are needed for a re-run:
+//   agents/gsd-<role>.md   or agents/fvgsd-<role>.md      -> gsd-<role>
+//   hooks/gsd-<hook>.js    or hooks/fvgsd/<hook>.js       -> gsd-<hook>
+//   hooks/lib/gsd-<h>.sh   or hooks/fvgsd/lib/<h>.sh      -> gsd-<h>
+// A renamed helper that never had the prefix (git-cmd.js) yields a gsd- name
+// that no text uses, so its rule never fires.
+function upstreamNames(root) {
+  const upstreamFile = /^gsd-.+\.(?:js|sh)$/;
+  const hookFile = /\.(?:js|sh)$/;
+  const unique = (names) => [...new Set(names)];
+  return {
+    agentRoles: unique([
+      ...namesFrom(root, 'agents', /^gsd-.+\.md$/),
+      ...namesFrom(root, 'agents', /^fvgsd-.+\.md$/).map((name) => name.slice(FORK_AGENT_PREFIX.length)),
+    ]),
+    hookNames: unique([
+      ...namesFrom(root, 'hooks', upstreamFile),
+      ...namesFrom(root, path.join('hooks', 'fvgsd'), hookFile).map((name) => `gsd-${name}`),
+    ]),
+    helperNames: unique([
+      ...namesFrom(root, path.join('hooks', 'lib'), upstreamFile),
+      ...namesFrom(root, path.join('hooks', 'fvgsd', 'lib'), hookFile).map((name) => `gsd-${name}`),
+    ]),
+  };
+}
+
 function run({ root, dryRun }) {
   const exclude = MAP.exclude.map(globToRegExp);
-  const rules = buildRules({
-    agentRoles: namesFrom(root, 'agents', /^gsd-.+\.md$/),
-    hookNames: namesFrom(root, 'hooks', /^gsd-.+\.(?:js|sh)$/),
-    helperNames: namesFrom(root, path.join('hooks', 'lib'), /^gsd-.+\.(?:js|sh)$/),
-  });
+  const rules = buildRules(upstreamNames(root));
   const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' })
     .split('\0')
     .filter(Boolean)
