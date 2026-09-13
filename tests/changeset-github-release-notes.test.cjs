@@ -109,7 +109,7 @@ describe('changeset github release notes: tag-range renderer (#3382)', () => {
       fromRef: 'v1.0.0',
       toRef: 'v1.0.1',
       repoSlug: 'example/project',
-      installCommand: 'npx fvgsd@latest',
+      installCommand: 'git clone https://github.com/antaone/get-shit-done-vibeclaw.git && cd get-shit-done-vibeclaw && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>',
     });
     assert.equal(fs.readFileSync(output, 'utf8'), generated.body);
   });

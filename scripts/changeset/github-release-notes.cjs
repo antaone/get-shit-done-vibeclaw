@@ -146,7 +146,7 @@ function serializeGithubReleaseNotes({
   fromRef,
   toRef,
   repoSlug = 'gsd-build/get-shit-done',
-  installCommand = 'npx fvgsd@latest',
+  installCommand = 'git clone https://github.com/antaone/get-shit-done-vibeclaw.git && cd get-shit-done-vibeclaw && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>',
 }) {
   if (installCommand.includes('`')) {
     throw new Error('installCommand cannot contain backtick characters');

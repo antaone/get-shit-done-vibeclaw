@@ -32,7 +32,7 @@ function parseArgs(argv) {
     toRef: null,
     output: null,
     repoSlug: 'gsd-build/get-shit-done',
-    installCommand: 'npx fvgsd@latest',
+    installCommand: 'git clone https://github.com/antaone/get-shit-done-vibeclaw.git && cd get-shit-done-vibeclaw && npm install && npm run build:hooks && node bin/install.js --<runtime> --<scope>',
     json: false,
   };
   if (argv.length === 0) return { ok: true, opts };

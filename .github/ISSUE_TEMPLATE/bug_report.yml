@@ -17,7 +17,7 @@ body:
     id: version
     attributes:
       label: GSD Version
-      description: "Run: `npm list -g fvgsd` or check `npx fvgsd --version`"
+      description: "Run: `cat ~/.claude/fvgsd/VERSION` (Claude Code path shown; other runtimes use their own config folder)"
       placeholder: "e.g., 1.18.0"
     validations:
       required: true
@@ -78,8 +78,8 @@ body:
     attributes:
       label: Installation Method
       options:
-        - npx fvgsd@latest (fresh run)
-        - npm install -g fvgsd
+        - Fresh install from a clone (node bin/install.js)
+        - Update (/fvgsd-update)
         - Updated from a previous version
     validations:
       required: true
@@ -109,7 +109,7 @@ body:
       description: |
         Exact steps to reproduce the issue. Include the GSD command used.
       placeholder: |
-        1. Install GSD with `npx fvgsd@latest`
+        1. Install fvgsd from a clone: `node bin/install.js --<runtime> --global`
         2. Select runtime: Claude Code
         3. Run `/gsd-init` with a new project
         4. Run `/gsd-plan`
