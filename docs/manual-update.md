@@ -1,17 +1,17 @@
 # Manual Update (Non-npm Install)
 
-Use this procedure when `npx fvgsd@latest` is unavailable — e.g. during a publish outage or if you are working directly from the source repo.
+fvgsd is not published to npm. The normal way to update is `/fvgsd-update`, which pulls the clone fvgsd was installed from and reinstalls. Use this procedure when `/fvgsd-update` can't find an install record (for example, before the first install), or you would rather run the steps yourself.
 
 ## Prerequisites
 
 - Node.js installed
-- This repo cloned locally (`git clone https://github.com/gsd-build/get-shit-done`)
+- This repo cloned locally (`git clone https://github.com/antaone/get-shit-done-vibeclaw.git`)
 
 ## Steps
 
 ```bash
 # 1. Pull latest code
-git pull --rebase origin main
+git pull --ff-only
 
 # 2. Build the hooks dist (required — hooks/dist/ is generated, not checked in as source)
 node scripts/build-hooks.js
@@ -20,7 +20,7 @@ node scripts/build-hooks.js
 node bin/install.js --claude --global
 
 # 4. Clear the update cache so the statusline indicator resets
-rm -f ~/.cache/gsd/gsd-update-check.json
+rm -f ~/.cache/fvgsd/update-check.json
 ```
 
 **Step 5 — Restart your runtime** to pick up the new commands and agents.
@@ -46,17 +46,17 @@ Use `--local` instead of `--global` for a project-scoped install.
 
 ## What the installer replaces
 
-The installer performs a clean wipe-and-replace of GSD-managed directories only:
+The installer performs a clean wipe-and-replace of fvgsd-managed directories only:
 
 - `~/.claude/fvgsd/` — workflows, references, templates
-- `~/.claude/commands/gsd/` — slash commands
-- `~/.claude/agents/fvgsd-*.md` — GSD agents
-- `~/.claude/hooks/dist/` — compiled hooks
+- `~/.claude/commands/fvgsd/` — slash commands
+- `~/.claude/agents/fvgsd-*.md` — fvgsd agents
+- `~/.claude/hooks/fvgsd/` — compiled hooks
 
 **What is preserved:**
-- Custom agents not prefixed with `gsd-`
-- Custom commands outside `commands/gsd/`
+- Custom agents not prefixed with `fvgsd-`
+- Custom commands outside `commands/fvgsd/`
 - Your `CLAUDE.md` files
 - Custom hooks
 
-Locally modified GSD files are automatically backed up to `fvgsd-local-patches/` before the install. Run `/fvgsd-update --reapply` after updating to merge your modifications back in.
+Locally modified fvgsd files are automatically backed up to `fvgsd-local-patches/` before the install. Run `/fvgsd-update --reapply` after updating to merge your modifications back in.

@@ -81,13 +81,6 @@ jobs:
       - name: Verify tarball ships sdk/dist/cli.js (bug #2647)
         run: bash scripts/verify-tarball-sdk-dist.sh
 
-      - name: Dry-run publish validation
-        run: |
-          npm publish --dry-run --tag canary
-          cd sdk && npm publish --dry-run --tag canary
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Tag and push
         if: ${{ github.ref == 'refs/heads/dev' && !inputs.dry_run }}
         env:
@@ -95,47 +88,6 @@ jobs:
         run: |
           git tag "v${CANARY_VERSION}"
           git push origin "v${CANARY_VERSION}"
-
-      - name: Publish to npm (canary)
-        if: ${{ github.ref == 'refs/heads/dev' && !inputs.dry_run }}
-        run: npm publish --provenance --access public --tag canary
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish SDK to npm (canary)
-        if: ${{ github.ref == 'refs/heads/dev' && !inputs.dry_run }}
-        run: cd sdk && npm publish --provenance --access public --tag canary
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Verify publish
-        if: ${{ github.ref == 'refs/heads/dev' && !inputs.dry_run }}
-        env:
-          CANARY_VERSION: ${{ steps.canary.outputs.canary_version }}
-        run: |
-          PUBLISHED="NOT_FOUND"
-          SDK_PUBLISHED="NOT_FOUND"
-          for delay in 5 10 20 30 45; do
-            PUBLISHED=$(npm view fvgsd@"$CANARY_VERSION" version 2>/dev/null || echo "NOT_FOUND")
-            SDK_PUBLISHED=$(npm view @fvgsd/sdk@"$CANARY_VERSION" version 2>/dev/null || echo "NOT_FOUND")
-            if [ "$PUBLISHED" = "$CANARY_VERSION" ] && [ "$SDK_PUBLISHED" = "$CANARY_VERSION" ]; then
-              break
-            fi
-            echo "Not yet live (sleeping ${delay}s)..."
-            sleep "$delay"
-          done
-          if [ "$PUBLISHED" != "$CANARY_VERSION" ]; then
-            echo "::error::Published version verification failed. Expected $CANARY_VERSION, got $PUBLISHED"
-            exit 1
-          fi
-          echo "Verified: fvgsd@$CANARY_VERSION is live on npm"
-          if [ "$SDK_PUBLISHED" != "$CANARY_VERSION" ]; then
-            echo "::error::SDK version verification failed. Expected $CANARY_VERSION, got $SDK_PUBLISHED"
-            exit 1
-          fi
-          echo "Verified: @fvgsd/sdk@$CANARY_VERSION is live on npm"
-          CANARY_TAG=$(npm dist-tag ls fvgsd 2>/dev/null | grep "canary:" | awk '{print $2}')
-          echo "canary dist-tag points to: $CANARY_TAG"
 
       - name: Summary
         env:

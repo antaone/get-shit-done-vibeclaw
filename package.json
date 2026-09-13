@@ -1,12 +1,13 @@
 {
   "name": "fvgsd",
   "version": "1.51.0",
+  "private": true,
   "description": "A meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, Gemini and Codex by TÂCHES.",
   "bin": {
     "fvgsd": "bin/install.js",
     "fvgsd-sdk": "bin/fvgsd-sdk.js",
     "fvgsd-tools": "bin/fvgsd-sdk.js",
-    "vibe": "bin/vibe.js"
+    "fvgsd-vibe": "bin/vibe.js"
   },
   "files": [
     "bin",
@@ -39,11 +40,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gsd-build/get-shit-done.git"
+    "url": "git+https://github.com/antaone/get-shit-done-vibeclaw.git"
   },
-  "homepage": "https://github.com/gsd-build/get-shit-done",
+  "homepage": "https://github.com/antaone/get-shit-done-vibeclaw",
   "bugs": {
-    "url": "https://github.com/gsd-build/get-shit-done/issues"
+    "url": "https://github.com/antaone/get-shit-done-vibeclaw/issues"
   },
   "engines": {
     "node": ">=22.0.0"

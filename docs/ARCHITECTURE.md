@@ -660,7 +660,7 @@ Runtime Engine (Claude Code / Gemini CLI)
     │
     └── SessionStart event ──► fvgsd/check-update.js
         Reads: VERSION file
-        Writes: ~/.claude/cache/gsd-update-check.json (spawns background process)
+        Writes: ~/.cache/fvgsd/update-check.json (spawns background process)
 ```
 
 ### Context Monitor Thresholds

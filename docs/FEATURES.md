@@ -1048,13 +1048,13 @@ Color coding: <50% green, <65% yellow, <80% orange, ≥80% red with skull emoji
 
 **Update Banner (opt-in, when GSD statusline isn't used):**
 
-When the user declines (or keeps a non-GSD) statusline, the installer offers a SessionStart banner that surfaces update availability without occupying statusline real estate. The banner reads `~/.cache/gsd/gsd-update-check.json` (written by `fvgsd/check-update-worker.js`) and emits one line only when an update is available:
+When the user declines (or keeps a non-GSD) statusline, the installer offers a SessionStart banner that surfaces update availability without occupying statusline real estate. The banner reads `~/.cache/fvgsd/update-check.json` (written by `fvgsd/check-update-worker.js`) and emits one line only when an update is available:
 
 ```text
 GSD update available: 1.39.0 → 1.40.0. Run /fvgsd-update.
 ```
 
-The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by `npx @opengsd/get-shit-done-redux --uninstall` or by deleting the SessionStart entry that references `fvgsd/update-banner.js`.
+The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone, or by deleting the SessionStart entry that references `fvgsd/update-banner.js`.
 
 ### 38. Developer Profiling
 
@@ -2775,10 +2775,10 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 **Behavior:**
 - At install time, if the installer detects no GSD statusline, it offers an opt-in `SessionStart` hook.
-- The hook reads the existing `~/.cache/gsd/gsd-update-check.json` cache — the same cache used by the statusline — and prints a banner only when an update is available.
+- The hook reads the existing `~/.cache/fvgsd/update-check.json` cache — the same cache used by the statusline — and prints a banner only when an update is available.
 - Silent when up-to-date.
 - Failure diagnostics rate-limited to once per 24 h.
-- Cleanly removed by `npx @opengsd/get-shit-done-redux --uninstall`.
+- Cleanly removed by running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone.
 
 **Requirements:**
 - REQ-BANNER-01: Banner does not install without explicit opt-in.

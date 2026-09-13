@@ -1,35 +1,33 @@
 # Canary Stream
 
-The **canary** dist-tag is GSD's earliest preview channel. It exists so contributors and willing early adopters can exercise in-flight features against the long-lived `dev` integration branch before they have any expectation of stability.
+fvgsd has no npm channels: R28 removed every npm-publish workflow, so there is no `canary`, `next`, or `latest` dist-tag to install from. A pre-release build is simply a branch or commit checked out in your fvgsd clone and installed with `node bin/install.js`. This page describes tracking the long-lived `dev` integration branch — GSD's earliest preview line — before its work has any expectation of stability.
 
 ## Stream policy
 
-GSD ships through three npm dist-tags, each fed by exactly one git branch. **Streams do not mix.**
+GSD's release lines are fed by exactly one git branch each. **Streams do not mix.**
 
-| Branch | dist-tag | Audience | Stability |
+| Branch | Line | Audience | Stability |
 |---|---|---|---|
-| `dev` | `canary` | Contributors, willing early adopters | Best-effort. May regress between cuts. Roll-forward only. |
-| `main` | `next` | Maintainers, RC testers | Release-candidate quality. Bug-bar enforced. |
-| `main` | `latest` | Everyone else | Production stable. The default `npm install` target. |
+| `dev` | canary | Contributors, willing early adopters | Best-effort. May regress between commits. Roll-forward only. |
+| `main` (pre-tag) | next / RC | Maintainers, RC testers | Release-candidate quality. Bug-bar enforced. |
+| `main` (tagged release) | latest | Everyone else | Production stable. The default branch to install from. |
 
-`dev` is the integration branch for in-flight feature work (typically multi-PR vertical slices like the MVP/TDD/UAT track in 1.50.0). When the dev work stabilizes, it promotes to `main` as an RC train (`vX.Y.Z-rc.N` published to `next`), and after the RC train bakes, the same train promotes again to `latest`.
+`dev` is the integration branch for in-flight feature work (typically multi-PR vertical slices like the MVP/TDD/UAT track in 1.50.0). When the dev work stabilizes, it promotes to `main` as an RC train (tagged `vX.Y.Z-rc.N`), and after the RC train bakes, the same train promotes again to a stable `vX.Y.Z` tag.
 
-A canary build NEVER becomes a `next` build directly, and a `next` build NEVER becomes a `latest` build directly — every promotion goes through a fresh tag and a fresh release.
+A canary commit NEVER becomes an RC directly, and an RC NEVER becomes a stable release directly — every promotion goes through a fresh tag.
 
 ## Installing canary
 
 ```bash
-# One-off invocation (npx)
-npx fvgsd@canary
-
-# Pin to the canary dist-tag globally
-npm install -g fvgsd@canary
-
-# Pin to an exact canary version
-npm install -g fvgsd@1.50.0-canary.3
+# From your fvgsd clone
+git fetch origin
+git checkout dev
+git pull --ff-only
+npm install
+node bin/install.js --claude --global
 ```
 
-The CC installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
+Pin to an exact canary commit instead of `dev` by checking out its SHA before running the installer. The installer's defensive purge rewrites stale config blocks left by older GSD versions, so reinstalling on top of an existing project is safe.
 
 ## When to install canary
 
@@ -41,16 +39,19 @@ The CC installer's defensive purge rewrites stale config blocks left by older GS
 ❌ **Do NOT** install canary on:
 - Production projects you depend on for delivery
 - A machine where rolling back means recreating GSD state (use a profile or a workspace instead)
-- A demo or onboarding setup — pin to `@latest` so audiences see the stable surface
+- A demo or onboarding setup — install from `main` so audiences see the stable surface
 
 ## Rolling back from canary
 
 ```bash
-# Back to the current stable
-npm install -g fvgsd@latest
+# Back to the current stable, from your fvgsd clone
+git checkout main
+git pull --ff-only
+npm install
+node bin/install.js --claude --global
 
-# Or to the next/RC train
-npm install -g fvgsd@next
+# Or pin to a specific RC tag instead of `main`
+git checkout vX.Y.Z-rc.N
 ```
 
 If you have a local project that interacted with canary-only features (for instance, an MVP-mode phase planned by 1.50.0-canary), the planner artifacts in `.planning/` remain valid — older GSD versions will just ignore the `**Mode:** mvp` field on phases.

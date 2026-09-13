@@ -1338,13 +1338,13 @@ Set `commit_docs: false` during `/fvgsd-new-project` or via `/fvgsd-settings`. A
 
 Since v1.17, the installer backs up locally modified files to `fvgsd-local-patches/`. Run `/fvgsd-update --reapply` to merge your changes back.
 
-### Cannot Update via npm
+### Manual Update Without `/fvgsd-update`
 
-If `npx @opengsd/get-shit-done-redux` fails due to npm outages or network restrictions, see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure that works without npm access.
+fvgsd is not published to npm. If `/fvgsd-update` can't reach the clone's remote (network restrictions) or can't find an install record, see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure run from the clone.
 
 ### Surface GSD Update Notifications Without GSD's Statusline
 
-GSD checks for new versions in the background and writes the result to `~/.cache/gsd/gsd-update-check.json`. By default, GSD's statusline (`hooks/fvgsd/statusline.js`) reads that cache and shows the update indicator. If you use a different statusline (for example `ccstatusline`) or none at all, the update info is invisible.
+GSD checks for new versions in the background and writes the result to `~/.cache/fvgsd/update-check.json`. By default, GSD's statusline (`hooks/fvgsd/statusline.js`) reads that cache and shows the update indicator. If you use a different statusline (for example `ccstatusline`) or none at all, the update info is invisible.
 
 **Opt-in fix:** during interactive install, when you decline (or keep your existing) statusline, the installer offers a one-time prompt:
 
@@ -1362,7 +1362,7 @@ GSD update available: 1.39.0 → 1.40.0. Run /fvgsd-update.
 
 The banner is silent when no update is available. If the cache file is corrupt, GSD emits one diagnostic line (`GSD update check failed.`) and stays silent for 24 hours so a broken cache does not nag every session.
 
-**Opt-out / removal:** delete the SessionStart hook entry that references `fvgsd/update-banner.js` from your runtime's `settings.json` (Claude Code: `~/.claude/settings.json`; Gemini: `~/.gemini/settings.json`). `npx @opengsd/get-shit-done-redux --uninstall` removes both the script and the registration in one pass.
+**Opt-out / removal:** delete the SessionStart hook entry that references `fvgsd/update-banner.js` from your runtime's `settings.json` (Claude Code: `~/.claude/settings.json`; Gemini: `~/.gemini/settings.json`). Running `node bin/install.js --<runtime> --<scope> --uninstall` from the clone removes both the script and the registration in one pass.
 
 The banner is not offered when GSD's statusline is installed — that channel already surfaces update info, so re-prompting would be noise.
 

@@ -23,6 +23,10 @@ const {
 } = require('../get-shit-done/bin/lib/shell-command-projection.cjs');
 // fvgsd's installed names. Required before the marker constants below read it.
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
+// Single source of truth for the runtime-specific slash-command shape, used
+// by rewriteHookCommandReferences() below to retarget legacy `/gsd:<cmd>` /
+// `/gsd-<cmd>` literals baked into hook source files.
+const { formatGsdSlash } = require('../get-shit-done/bin/lib/runtime-slash.cjs');
 
 // Bidirectional GSD command namespace transformer (#3583).
 // Required at module scope so the command list can be computed once per install
@@ -75,6 +79,28 @@ function normalizeAgentBodyForRuntime(content, runtime, cmdNames) {
  */
 function normalizePublicCommandNamespaceToHyphen(content, cmdNames = null) {
   return transformContentToHyphen(content, cmdNames || readGsdCommandNames());
+}
+
+/**
+ * Rewrite legacy `/gsd:<cmd>` and `/gsd-<cmd>` literals baked into hook
+ * source files (workflow-guard.js, update-banner.js, statusline.js,
+ * context-monitor.js, session-state.sh, ...) into the target runtime's
+ * fvgsd slash-command shape, e.g. `/fvgsd-<cmd>` for claude/opencode,
+ * `$fvgsd-<cmd>` for codex, `/fvgsd:<cmd>` for gemini. Used by templateHook
+ * during hook installation so a hint printed by an installed hook always
+ * names a command that actually exists under fvgsd's own namespace.
+ * @param {string} content
+ * @param {string} runtime
+ * @returns {{ content: string, references: Array<{ from: string, to: string }> }}
+ */
+function rewriteHookCommandReferences(content, runtime) {
+  const references = [];
+  const next = content.replace(/\/gsd[:-]([a-z][a-z0-9-]*)/g, (from, command) => {
+    const to = formatGsdSlash(command, runtime);
+    references.push({ from, to });
+    return to;
+  });
+  return { content: next, references };
 }
 
 // Colors
@@ -8945,10 +8971,12 @@ function install(isGlobal, runtime = 'claude', options = {}) {
             content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
           }
           content = content.replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
+          content = rewriteHookCommandReferences(content, runtime).content;
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
         } else if (srcFile.endsWith('.sh')) {
-          const content = fs.readFileSync(srcFile, 'utf8').replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
+          let content = fs.readFileSync(srcFile, 'utf8').replace(/\{\{FVGSD_VERSION\}\}/g, pkg.version);
+          content = rewriteHookCommandReferences(content, runtime).content;
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
         } else {
@@ -11486,6 +11514,7 @@ module.exports = {
     // #3677 — hyphen-namespace normalization seam for agent bodies
     shouldNormalizeHyphenNamespaceInAgentBody,
     normalizeAgentBodyForRuntime,
+    rewriteHookCommandReferences,
     yamlIdentifier,
     computePathPrefix,
     getCodexSkillAdapterHeader,

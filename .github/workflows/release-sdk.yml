@@ -510,23 +510,6 @@ jobs:
           echo "tag=$INPUT_TAG" >> "$GITHUB_OUTPUT"
           echo "→ Will publish v${VERSION} to dist-tag '${INPUT_TAG}'"
 
-      # Reconciliation mode: if version is already on npm (a prior run
-       # published successfully but a downstream step failed), don't hard-fail.
-       # Set a flag and skip the publish step below; tag/release/PR/dist-tag
-       # steps still execute so the rerun can finish reconciling state.
-      - name: Detect prior publish (reconciliation mode)
-        id: prior_publish
-        env:
-          VERSION: ${{ steps.ver.outputs.version }}
-        run: |
-          EXISTING=$(npm view fvgsd@"$VERSION" version 2>/dev/null || true)
-          if [ -n "$EXISTING" ]; then
-            echo "::warning::fvgsd@${VERSION} is already on the registry — entering reconciliation mode (skip publish, continue with tag/release/PR/dist-tag)."
-            echo "skip_publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip_publish=false" >> "$GITHUB_OUTPUT"
-          fi
-
       # Tolerant tag-existence check (matches release.yml pattern). An
       # operator re-running after a mid-flight publish-step failure should
       # not be blocked just because the tag step succeeded last time. Only
@@ -626,21 +609,6 @@ jobs:
           echo "✅ CC tarball contains sdk-bundle/fvgsd-sdk.tgz"
           rm -f "$TARBALL"
 
-      - name: Dry-run publish validation
-        # Skip the rehearsal when the version is already on npm
-        # (reconciliation mode). `npm publish --dry-run` contacts the
-        # registry and fails with "You cannot publish over the
-        # previously published versions" if the version exists, even
-        # though no actual publish would be attempted. The real publish
-        # step (further down) is gated on the same condition; gate the
-        # rehearsal too so re-runs of an already-published hotfix don't
-        # fail here on a check that doesn't apply. Bug #2987.
-        if: ${{ steps.prior_publish.outputs.skip_publish != 'true' }}
-        env:
-          TAG: ${{ steps.ver.outputs.tag }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --dry-run --tag "$TAG"
-
       - name: Tag and push
         if: ${{ !inputs.dry_run }}
         env:
@@ -652,13 +620,6 @@ jobs:
             git tag "v${VERSION}"
           fi
           git push origin "v${VERSION}"
-
-      - name: Publish to npm (CC bundle, SDK included as both loose tree and .tgz)
-        if: ${{ !inputs.dry_run && steps.prior_publish.outputs.skip_publish != 'true' }}
-        env:
-          TAG: ${{ steps.ver.outputs.tag }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public --tag "$TAG"
 
       # Keep `next` from going stale relative to `latest`. When publishing a
       # stable release, also point `next` at it so users on `@next` don't
@@ -719,32 +680,6 @@ jobs:
       # requests (createPullRequest)` (org policy), but even if the
       # policy were lifted the PR would have nothing useful to merge.
       # Run 25232968975 was the trigger for removal.
-
-      - name: Verify publish landed on registry
-        if: ${{ !inputs.dry_run }}
-        env:
-          VERSION: ${{ steps.ver.outputs.version }}
-          TAG: ${{ steps.ver.outputs.tag }}
-        run: |
-          PUBLISHED="NOT_FOUND"
-          for delay in 5 10 20 30 45; do
-            PUBLISHED=$(npm view fvgsd@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
-            if [ "$PUBLISHED" = "$VERSION" ]; then
-              break
-            fi
-            echo "Waiting ${delay}s for registry to catch up (saw: $PUBLISHED)..."
-            sleep "$delay"
-          done
-          if [ "$PUBLISHED" != "$VERSION" ]; then
-            echo "::error::Version $VERSION did not appear on the registry within timeout"
-            exit 1
-          fi
-          TAG_VERSION=$(npm view fvgsd dist-tags."$TAG" 2>/dev/null || echo "NOT_FOUND")
-          if [ "$TAG_VERSION" != "$VERSION" ]; then
-            echo "::error::dist-tag '$TAG' resolves to '$TAG_VERSION', expected '$VERSION'"
-            exit 1
-          fi
-          echo "✅ fvgsd@${VERSION} live on dist-tag '${TAG}'"
 
       - name: Summary
         env:

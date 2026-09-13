@@ -78,13 +78,13 @@ used during setup. Both `--global` and `--local` are explicit safeguards; the
 installer refuses an uninstall when neither scope is supplied.
 
 ```bash
-# One runtime
-npx fvgsd@latest --codex --global --uninstall
-npx fvgsd@latest --gemini --local --uninstall
+# One runtime, run from the clone
+node bin/install.js --codex --global --uninstall
+node bin/install.js --gemini --local --uninstall
 
 # Every supported runtime in one scope
-npx fvgsd@latest --all --global --uninstall
-npx fvgsd@latest --all --local --uninstall
+node bin/install.js --all --global --uninstall
+node bin/install.js --all --local --uninstall
 ```
 
 Use the corresponding flag for any other installed runtime. This removes only

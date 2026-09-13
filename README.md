@@ -2,6 +2,10 @@
 
 VibeClaw is a repository-backed orchestration layer for running one GSD workflow across multiple AI coding tools.
 
+## fvgsd
+
+This fork installs as **fvgsd**. Its commands are `/fvgsd-*`, and it installs into its own folders (`<config>/fvgsd/`, `hooks/fvgsd/`, `fvgsd-*` agents), so it runs side by side with upstream GSD (`/gsd-*`) and VibeClaw vgsd (`/vgsd-*`) without changing their files. Projects keep using the shared `.planning/` folder. fvgsd is not published to npm: install it from a clone with `node bin/install.js --<runtime> --global`, and update it with `/fvgsd-update`, which pulls that clone.
+
 Gemini can research, Codex can plan, OpenCode and Claude Code Router can produce competing implementations, and Codex can verify the selected result. The tools never message each other. They coordinate through durable repository state, explicit Git commits, and human-controlled promotion.
 
 ```text
@@ -91,7 +95,7 @@ fvgsd --opencode --global
 fvgsd --all --global
 ```
 
-The published-package form is `npx fvgsd` with the same flags. Use `--local` instead of `--global` to install only into the current project. `--profile=core`, `--profile=standard`, and `--profile=full` control the installed skill surface; `full` is the default.
+Without `npm link`, run `node bin/install.js` with the same flags from the clone. Use `--local` instead of `--global` to install only into the current project. `--profile=core`, `--profile=standard`, and `--profile=full` control the installed skill surface; `full` is the default.
 
 The installer supports Claude Code, OpenCode, Gemini CLI, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Hermes Agent, Cline, and CodeBuddy.
 
@@ -102,16 +106,16 @@ that were used for installation. The scope is required so the installer never
 guesses which configuration tree it may change.
 
 ```bash
-# Remove one global runtime installation
-npx fvgsd@latest --codex --global --uninstall
-npx fvgsd@latest --claude --global --uninstall
+# Remove one global runtime installation, run from the clone
+node bin/install.js --codex --global --uninstall
+node bin/install.js --claude --global --uninstall
 
 # Remove the current project's local runtime installation
-npx fvgsd@latest --codex --local --uninstall
+node bin/install.js --codex --local --uninstall
 
 # Remove every supported runtime installation in the selected scope
-npx fvgsd@latest --all --global --uninstall
-npx fvgsd@latest --all --local --uninstall
+node bin/install.js --all --global --uninstall
+node bin/install.js --all --local --uninstall
 ```
 
 Replace `--codex` or `--claude` with the runtime originally installed. The

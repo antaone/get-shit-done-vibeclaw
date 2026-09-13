@@ -60,7 +60,7 @@ GSD's `/fvgsd-pause-work` command saves execution state. The WARNING message sug
 
 ## Setup
 
-Both hooks are automatically registered during `npx fvgsd` installation:
+Both hooks are automatically registered during `node bin/install.js` installation (run from the clone):
 
 - **Statusline** (writes bridge file): Registered as `statusLine` in settings.json
 - **Context Monitor** (reads bridge file): Registered as `PostToolUse` hook in settings.json (`AfterTool` for Gemini)

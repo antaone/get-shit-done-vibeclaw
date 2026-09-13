@@ -301,19 +301,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Detect prior publish (reconciliation mode)
-        id: prior_publish
-        env:
-          VERSION: ${{ inputs.version }}
-        run: |
-          EXISTING=$(npm view fvgsd@"$VERSION" version 2>/dev/null || true)
-          if [ -n "$EXISTING" ]; then
-            echo "::warning::fvgsd@${VERSION} is already on the registry — entering reconciliation mode (skip publish, continue with tag/release/PR/dist-tag)."
-            echo "skip_publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip_publish=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Install and test
         run: |
           npm ci
@@ -374,11 +361,6 @@ jobs:
           echo "✅ CC tarball contains sdk-bundle/fvgsd-sdk.tgz"
           rm -f "$TARBALL"
 
-      - name: Dry-run publish validation
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --dry-run --tag latest
-
       - name: Tag and push
         if: ${{ !inputs.dry_run }}
         env:
@@ -396,12 +378,6 @@ jobs:
             git tag "v${VERSION}"
             git push origin "v${VERSION}"
           fi
-
-      - name: Publish to npm (latest)
-        if: ${{ !inputs.dry_run && steps.prior_publish.outputs.skip_publish != 'true' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public --tag latest
 
       - name: Re-point next dist-tag at this hotfix
         if: ${{ !inputs.dry_run }}
@@ -447,31 +423,6 @@ jobs:
               --title "chore: merge hotfix v${VERSION} back to main" \
               --body "Merge hotfix changes back to main after v${VERSION} release."
           fi
-
-      - name: Verify publish landed on registry
-        if: ${{ !inputs.dry_run }}
-        env:
-          VERSION: ${{ inputs.version }}
-        run: |
-          PUBLISHED="NOT_FOUND"
-          for delay in 5 10 20 30 45; do
-            PUBLISHED=$(npm view fvgsd@"$VERSION" version 2>/dev/null || echo "NOT_FOUND")
-            if [ "$PUBLISHED" = "$VERSION" ]; then
-              break
-            fi
-            echo "Waiting ${delay}s for registry to catch up (saw: $PUBLISHED)..."
-            sleep "$delay"
-          done
-          if [ "$PUBLISHED" != "$VERSION" ]; then
-            echo "::error::Version $VERSION did not appear on the registry within timeout"
-            exit 1
-          fi
-          LATEST_VER=$(npm view fvgsd dist-tags.latest 2>/dev/null || echo "NOT_FOUND")
-          if [ "$LATEST_VER" != "$VERSION" ]; then
-            echo "::error::dist-tag 'latest' resolves to '$LATEST_VER', expected '$VERSION'"
-            exit 1
-          fi
-          echo "✓ Verified: fvgsd@$VERSION is live on @latest"
 
       - name: Summary
         env:
