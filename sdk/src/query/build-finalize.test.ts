@@ -135,14 +135,22 @@ describe('build.finalize', () => {
   });
 
   it('does not count an ID passed only in --requirements-completed, on the first run or a rerun', async () => {
-    await put(SUMMARY_PATH, summary(['## Decisions', '', '| Decision | Status | Notes |', '|---|---|---|', '| D-01 | done | argon2id |', '| D-02 | done | 30-day sessions |']));
+    // requirements-completed is finalize-owned; write it into the lead's own frontmatter too, as a
+    // lead copying the classic summary template might, so this still exercises F10's owned-key
+    // exclusion even though a refused run no longer writes anything on its own.
+    await put(SUMMARY_PATH, summary(
+      ['## Decisions', '', '| Decision | Status | Notes |', '|---|---|---|', '| D-01 | done | argon2id |', '| D-02 | done | 30-day sessions |'],
+      ['subsystem: auth', 'tags: [auth, sessions]', 'provides:', '  - "session cookies"', 'requirements-completed: [AUTH-01, AUTH-02]'],
+    ));
+    const before = await readFile(join(dir, SUMMARY_PATH), 'utf-8');
     const refused = { ok: false, missing: { decisions: [], requirements: ['AUTH-02'] } };
     expect((await finalize('AUTH-01,AUTH-02')).data).toEqual(refused);
-    // A refused run writes nothing, so the summary is identical for the rerun too — passing
-    // --requirements-completed AUTH-02 again still doesn't make AUTH-02 count as covered.
+    // Refused runs write nothing, and the lead's own requirements-completed value is excluded
+    // from the coverage search either way, so the rerun is refused identically and the file
+    // stays byte-for-byte unchanged.
     expect((await finalize('AUTH-01,AUTH-02')).data).toEqual(refused);
-    const written = await readFile(join(dir, SUMMARY_PATH), 'utf-8');
-    await writeFile(join(dir, SUMMARY_PATH), `${written}\n## Follow-ups\n\n- AUTH-02 is covered by the login tests\n`);
+    expect(await readFile(join(dir, SUMMARY_PATH), 'utf-8')).toBe(before);
+    await writeFile(join(dir, SUMMARY_PATH), `${before}\n## Follow-ups\n\n- AUTH-02 is covered by the login tests\n`);
     expect((await finalize('AUTH-01,AUTH-02')).data).toMatchObject({ ok: true });
   });
 
