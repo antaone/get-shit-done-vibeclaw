@@ -175,6 +175,14 @@ describe('build.merge-wave', () => {
     expect(data).toEqual({ error: 'working_tree_dirty' });
   });
 
+  it('refuses to run when a merge is already in progress', async () => {
+    const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
+    git(repo, 'merge', '-s', 'ours', '--no-commit', s1.branch);
+    const { data } = await buildMergeWave(['--phase', '3', '--base', base, '--results', JSON.stringify([s1])], repo);
+    expect(data).toEqual({ error: 'merge_in_progress' });
+    expect(existsSync(join(repo, '.git', 'MERGE_HEAD'))).toBe(true);
+  });
+
   it('rejects missing, conflicting and malformed inputs', async () => {
     await expect(buildMergeWave(['--phase', '3', '--results', '[]'], repo)).rejects.toThrow(GSDError);
     await expect(buildMergeWave(['--phase', '3', '--base', base], repo)).rejects.toThrow(GSDError);
