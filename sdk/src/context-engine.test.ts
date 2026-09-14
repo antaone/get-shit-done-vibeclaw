@@ -182,6 +182,38 @@ describe('ContextEngine', () => {
       // Empty string is still defined — the file exists
       expect(files.state).toBe('');
     });
+
+    it('prefers phase-folder CONTEXT.md and RESEARCH.md when phaseDir is given', async () => {
+      await createPlanningDir(projectDir, {
+        'STATE.md': '# State',
+        'ROADMAP.md': '# Roadmap',
+        'CONTEXT.md': '# Root context',
+      });
+      const phaseDir = join('.planning', 'phases', '03-user-auth');
+      await mkdir(join(projectDir, phaseDir), { recursive: true });
+      await writeFile(join(projectDir, phaseDir, '03-CONTEXT.md'), '# Phase context', 'utf-8');
+      await writeFile(join(projectDir, phaseDir, '03-RESEARCH.md'), '# Phase research', 'utf-8');
+
+      const files = await new ContextEngine(projectDir).resolveContextFiles(PhaseType.Plan, phaseDir);
+
+      expect(files.context).toBe('# Phase context');
+      expect(files.research).toBe('# Phase research');
+    });
+
+    it('falls back to the .planning root when the phase folder has no match', async () => {
+      await createPlanningDir(projectDir, {
+        'STATE.md': '# State',
+        'ROADMAP.md': '# Roadmap',
+        'CONTEXT.md': '# Root context',
+      });
+      const phaseDir = join('.planning', 'phases', '04-empty');
+      await mkdir(join(projectDir, phaseDir), { recursive: true });
+
+      const files = await new ContextEngine(projectDir).resolveContextFiles(PhaseType.Plan, phaseDir);
+
+      expect(files.context).toBe('# Root context');
+      expect(files.research).toBeUndefined();
+    });
   });
 
   describe('context truncation', () => {

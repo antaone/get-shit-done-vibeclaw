@@ -32,6 +32,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { checkResearchGate } from './research-gate.js';
 import { isDebtScannable, findDebtMarkers, type DebtMarkerFinding } from './debt-markers.js';
+import { runGit, changedFilesSince, firstAddCommit } from './query/build-shared.js';
+import { escapeRegex } from './query/helpers.js';
 
 // ─── Error type ──────────────────────────────────────────────────────────────
 
@@ -154,7 +156,7 @@ export class PhaseRunner {
         this.logger?.debug(`Skipping discuss: has_context=${phaseOp.has_context}, skip_discuss=${this.config.workflow.skip_discuss}`);
       } else if (!phaseOp.has_context && !this.config.workflow.skip_discuss && this.config.workflow.auto_advance) {
         // AI self-discuss: auto-mode with no context — run a self-discuss session
-        const result = await this.retryOnce('self-discuss', () => this.runSelfDiscussStep(phaseNumber, sessionOpts));
+        const result = await this.retryOnce('self-discuss', () => this.runSelfDiscussStep(phaseNumber, sessionOpts, phaseOp.phase_dir));
         steps.push(result);
 
         // Re-query phase state to check if context was created
@@ -171,7 +173,7 @@ export class PhaseRunner {
           }
         }
       } else if (!shouldSkip) {
-        const result = await this.retryOnce('discuss', () => this.runStep(PhaseStepType.Discuss, phaseNumber, sessionOpts));
+        const result = await this.retryOnce('discuss', () => this.runStep(PhaseStepType.Discuss, phaseNumber, sessionOpts, phaseOp.phase_dir));
         steps.push(result);
 
         // Re-query phase state to check if context was created
@@ -196,7 +198,7 @@ export class PhaseRunner {
       if (!this.config.workflow.research) {
         this.logger?.debug('Skipping research: config.workflow.research=false');
       } else {
-        const result = await this.retryOnce('research', () => this.runStep(PhaseStepType.Research, phaseNumber, sessionOpts));
+        const result = await this.retryOnce('research', () => this.runStep(PhaseStepType.Research, phaseNumber, sessionOpts, phaseOp.phase_dir));
         steps.push(result);
       }
     }
@@ -218,7 +220,7 @@ export class PhaseRunner {
 
     // ── Step 3: Plan ──
     if (!halted) {
-      const result = await this.retryOnce('plan', () => this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts));
+      const result = await this.retryOnce('plan', () => this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts, phaseOp.phase_dir));
       steps.push(result);
 
       // Re-query to check for plans
@@ -238,7 +240,7 @@ export class PhaseRunner {
 
     // ── Step 3.5: Plan Check ──
     if (!halted && this.config.workflow.plan_check) {
-      const planCheckResult = await this.retryOnce('plan-check', () => this.runPlanCheckStep(phaseNumber, sessionOpts));
+      const planCheckResult = await this.retryOnce('plan-check', () => this.runPlanCheckStep(phaseNumber, sessionOpts, phaseOp.phase_dir));
       steps.push(planCheckResult);
 
       // If plan-check failed, re-plan once then re-check once (D023)
@@ -246,11 +248,11 @@ export class PhaseRunner {
         this.logger?.info(`Plan check failed for phase ${phaseNumber}, re-planning once (D023)`);
 
         // Re-run plan step with feedback
-        const replanResult = await this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts);
+        const replanResult = await this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts, phaseOp.phase_dir);
         steps.push(replanResult);
 
         // Re-check once
-        const recheckResult = await this.runPlanCheckStep(phaseNumber, sessionOpts);
+        const recheckResult = await this.runPlanCheckStep(phaseNumber, sessionOpts, phaseOp.phase_dir);
         steps.push(recheckResult);
 
         if (!recheckResult.success) {
@@ -272,7 +274,7 @@ export class PhaseRunner {
       } else {
         // Verify has its own internal retry logic (gap closure). retryOnce only
         // retries on unexpected session throws, not on verification outcomes like gaps_found.
-        const verifyResult = await this.retryOnce('verify', () => this.runVerifyStep(phaseNumber, sessionOpts, callbacks, options));
+        const verifyResult = await this.retryOnce('verify', () => this.runVerifyStep(phaseNumber, sessionOpts, callbacks, options, phaseOp.phase_dir));
         steps.push(verifyResult);
 
         // Check if verify resulted in a halt
@@ -348,6 +350,7 @@ export class PhaseRunner {
   private async runPlanCheckStep(
     phaseNumber: string,
     sessionOpts: SessionOptions,
+    phaseDir?: string,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
 
@@ -365,7 +368,7 @@ export class PhaseRunner {
       const agentDef = await this.promptFactory.loadAgentDef(PhaseType.Verify);
 
       // Build prompt using Verify phase type for context resolution
-      const contextFiles = await this.contextEngine.resolveContextFiles(PhaseType.Verify);
+      const contextFiles = await this.contextEngine.resolveContextFiles(PhaseType.Verify, phaseDir);
       let prompt = await this.promptFactory.buildPrompt(PhaseType.Verify, null, contextFiles);
 
       // Supplement with plan-checker instructions
@@ -434,6 +437,7 @@ export class PhaseRunner {
   private async runSelfDiscussStep(
     phaseNumber: string,
     sessionOpts: SessionOptions,
+    phaseDir?: string,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
 
@@ -447,7 +451,7 @@ export class PhaseRunner {
 
     let planResult: PlanResult;
     try {
-      const contextFiles = await this.contextEngine.resolveContextFiles(PhaseType.Discuss);
+      const contextFiles = await this.contextEngine.resolveContextFiles(PhaseType.Discuss, phaseDir);
       let prompt = await this.promptFactory.buildPrompt(PhaseType.Discuss, null, contextFiles);
 
       // Prepend self-discuss override BEFORE the workflow prompt.
@@ -541,6 +545,7 @@ export class PhaseRunner {
     step: PhaseStepType,
     phaseNumber: string,
     sessionOpts: SessionOptions,
+    phaseDir?: string,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
 
@@ -556,7 +561,7 @@ export class PhaseRunner {
     try {
       // Map step to PhaseType for prompt/context resolution
       const phaseType = this.stepToPhaseType(step);
-      const contextFiles = await this.contextEngine.resolveContextFiles(phaseType);
+      const contextFiles = await this.contextEngine.resolveContextFiles(phaseType, phaseDir);
       const prompt = await this.promptFactory.buildPrompt(phaseType, null, contextFiles);
 
       planResult = await runPhaseStepSession(
@@ -657,6 +662,22 @@ export class PhaseRunner {
         durationMs,
         error: errorMsg,
       };
+    }
+
+    if (planIndex.plans.length === 0) {
+      const durationMs = Date.now() - stepStart;
+      const error = 'no plans found';
+      this.eventStream.emitEvent({
+        type: GSDEventType.PhaseStepComplete,
+        timestamp: new Date().toISOString(),
+        sessionId: '',
+        phaseNumber,
+        step: PhaseStepType.Execute,
+        success: false,
+        durationMs,
+        error,
+      });
+      return { step: PhaseStepType.Execute, success: false, durationMs, error };
     }
 
     // Filter to incomplete plans only (has_summary === false)
@@ -801,7 +822,7 @@ export class PhaseRunner {
       const parsedPlan = await parsePlanFile(planPath);
 
       const phaseType = PhaseType.Execute;
-      const contextFiles = await this.contextEngine.resolveContextFiles(phaseType);
+      const contextFiles = await this.contextEngine.resolveContextFiles(phaseType, phaseOp.phase_dir);
       const prompt = await this.promptFactory.buildPrompt(phaseType, parsedPlan, contextFiles, phaseOp.phase_dir);
 
       return await runPhaseStepSession(
@@ -841,6 +862,7 @@ export class PhaseRunner {
     sessionOpts: SessionOptions,
     callbacks: HumanGateCallbacks,
     options?: PhaseRunnerOptions,
+    phaseDir?: string,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
 
@@ -861,7 +883,7 @@ export class PhaseRunner {
     while (true) {
       try {
         const phaseType = PhaseType.Verify;
-        const contextFiles = await this.contextEngine.resolveContextFiles(phaseType);
+        const contextFiles = await this.contextEngine.resolveContextFiles(phaseType, phaseDir);
         const prompt = await this.promptFactory.buildPrompt(phaseType, null, contextFiles);
 
         lastResult = await runPhaseStepSession(
@@ -969,7 +991,7 @@ export class PhaseRunner {
 
           // 1. Run a plan step to create gap plans
           try {
-            const planResult = await this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts);
+            const planResult = await this.runStep(PhaseStepType.Plan, phaseNumber, sessionOpts, phaseDir);
             if (planResult.planResults) {
               allPlanResults.push(...planResult.planResults);
             }
@@ -1196,10 +1218,10 @@ export class PhaseRunner {
    * unresolved TBD/FIXME/XXX comments. Markers are allowed only when the same
    * line references tracked follow-up work (issue/PR number or DEF-* id).
    *
-   * The debt scan is intentionally scoped to literal source paths declared in
-   * phase plan frontmatter `files_modified` and task `files`. Glob patterns are
-   * not expanded, and files modified during execution but omitted from the plan
-   * are not scanned; git-diff-based coverage would be a separate enhancement.
+   * Classic plans are scanned by their declared `files_modified` and task
+   * `files`. Build briefs (`kind: brief`), and plans that declare no files, are
+   * scanned by the files changed since the phase started (`.planning/`
+   * excluded; see changedPhaseFiles).
    */
   private async checkArchitecturalDebt(phaseNumber: string): Promise<ArchitecturalDebtCheck> {
     let phaseOp: PhaseOpInfo;
@@ -1220,11 +1242,15 @@ export class PhaseRunner {
       this.logger?.warn(`No phase plans found for architectural debt check in phase ${phaseNumber}`);
       return { pass: false, findings: [], reason: 'scan_error' };
     }
-    const filesToScan = new Set<string>();
 
+    const filesToScan = new Set<string>();
+    let hasBrief = false;
     for (const planPath of planPaths) {
       try {
         const parsedPlan = await parsePlanFile(planPath);
+        if ((parsedPlan.frontmatter as unknown as Record<string, unknown>).kind === 'brief') {
+          hasBrief = true;
+        }
         for (const file of this.extractPlanFiles(parsedPlan)) {
           if (isDebtScannable(file)) {
             filesToScan.add(file);
@@ -1233,6 +1259,13 @@ export class PhaseRunner {
       } catch (err) {
         this.logger?.warn(`Could not parse plan for architectural debt check (${planPath}): ${err instanceof Error ? err.message : String(err)}`);
         return { pass: false, findings: [], reason: 'scan_error' };
+      }
+    }
+
+    if (hasBrief || filesToScan.size === 0) {
+      filesToScan.clear();
+      for (const file of this.changedPhaseFiles(phaseOp.phase_dir, phaseOp.padded_phase)) {
+        filesToScan.add(file);
       }
     }
 
@@ -1268,6 +1301,49 @@ export class PhaseRunner {
       findings,
       reason: findings.length === 0 ? undefined : hasDebtMarkers ? 'markers_found' : 'scan_error',
     };
+  }
+
+  /**
+   * Files changed since the phase started: the parent of the oldest commit that
+   * added a `*-PLAN.md` in the phase folder or, when no plan was ever committed
+   * (for example `.planning/` is not tracked), the parent of the oldest commit
+   * whose subject starts `feat(<padded>-`, `fix(<padded>-` or `chore(<padded>-`.
+   * With neither, nothing is scanned. Returns [] outside a git repository.
+   * A root commit is diffed against the empty tree.
+   */
+  private changedPhaseFiles(phaseDir: string, paddedPhase: string): string[] {
+    const root = this.realpathForBoundary(resolve(this.projectDir));
+    const absolutePhaseDir = this.resolveProjectPath(phaseDir);
+    if (!root || !absolutePhaseDir) return [];
+    const relPhaseDir = relative(root, absolutePhaseDir).split('\\').join('/');
+
+    const firstPhaseCommit = firstAddCommit(this.projectDir, `${relPhaseDir}/*-PLAN.md`)?.sha ?? this.firstPhaseScopedCommit(paddedPhase);
+    if (!firstPhaseCommit) return [];
+
+    const parent = runGit(this.projectDir, ['rev-parse', '--verify', '--quiet', `${firstPhaseCommit}^`]);
+    const base = parent.ok && parent.stdout
+      ? parent.stdout
+      : runGit(this.projectDir, ['hash-object', '-t', 'tree', '/dev/null']).stdout;
+    if (!base) return [];
+
+    return changedFilesSince(this.projectDir, base)
+      .filter((entry) => entry.status !== 'D' && isDebtScannable(entry.path))
+      .map((entry) => entry.path);
+  }
+
+  /** Oldest commit whose subject starts `feat(<padded>-`, `fix(<padded>-` or `chore(<padded>-`; undefined when none. */
+  private firstPhaseScopedCommit(paddedPhase: string): string | undefined {
+    if (!paddedPhase) return undefined;
+    const scope = escapeRegex(paddedPhase);
+    const subject = new RegExp(`^(?:feat|fix|chore)\\(${scope}-`);
+    const log = runGit(this.projectDir, ['log', '--format=%H%x09%s']);
+    if (!log.ok) return undefined;
+    const matches = log.stdout
+      .split('\n')
+      .map((line) => line.split('\t'))
+      .filter(([sha, ...rest]) => Boolean(sha) && subject.test(rest.join('\t')))
+      .map(([sha]) => sha);
+    return matches[matches.length - 1];
   }
 
   private async listPhasePlanPaths(phaseDir: string): Promise<string[]> {

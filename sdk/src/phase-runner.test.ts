@@ -13,6 +13,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mkdtemp, mkdir, writeFile, rm, symlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { PhaseRunner, PhaseRunnerError } from './phase-runner.js';
 import type { PhaseRunnerDeps, VerificationOutcome } from './phase-runner.js';
 import type {
@@ -229,6 +230,37 @@ function getEmittedEvents(deps: PhaseRunnerDeps): GSDEvent[] {
   return events;
 }
 
+function gitIn(dir: string, ...args: string[]): void {
+  execFileSync('git', args, { cwd: dir, stdio: 'pipe' });
+}
+
+/**
+ * Repo with an initial commit, a brief plan, then a committed src/x.ts containing sourceLine.
+ * The brief is committed unless trackPlanning is false, which git-ignores .planning/.
+ */
+async function commitBriefPhase(projectDir: string, sourceLine: string, trackPlanning = true): Promise<string> {
+  const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
+  await mkdir(phaseDir, { recursive: true });
+  await mkdir(join(projectDir, 'src'), { recursive: true });
+  gitIn(projectDir, 'init', '-q');
+  gitIn(projectDir, 'config', 'user.email', 'test@test.com');
+  gitIn(projectDir, 'config', 'user.name', 'Test');
+  gitIn(projectDir, 'config', 'commit.gpgsign', 'false');
+  await writeFile(join(projectDir, 'README.md'), '# fixture\n', 'utf-8');
+  if (!trackPlanning) await writeFile(join(projectDir, '.gitignore'), '.planning/\n', 'utf-8');
+  gitIn(projectDir, 'add', '-A');
+  gitIn(projectDir, 'commit', '-q', '-m', 'initial');
+  await writeFile(join(phaseDir, '01-01-PLAN.md'), '---\nkind: brief\nfiles_modified: []\n---\n', 'utf-8');
+  if (trackPlanning) {
+    gitIn(projectDir, 'add', '-A');
+    gitIn(projectDir, 'commit', '-q', '-m', 'docs(01): build brief');
+  }
+  await writeFile(join(projectDir, 'src', 'x.ts'), `export const retries = 1;\n${sourceLine}\n`, 'utf-8');
+  gitIn(projectDir, 'add', '-A');
+  gitIn(projectDir, 'commit', '-q', '-m', 'feat(01-s1): retries');
+  return phaseDir;
+}
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('PhaseRunner', () => {
@@ -391,7 +423,7 @@ describe('PhaseRunner', () => {
       expect(executeCallCount).toBe(3);
     });
 
-    it('handles zero plans gracefully', async () => {
+    it('fails the execute step when the phase has no plans', async () => {
       const phaseOp = makePhaseOp({ has_context: true, plan_count: 0, has_plans: true });
       const config = makeConfig({ workflow: { research: false, verifier: false, skip_discuss: true, plan_check: false } as any });
       const deps = makeDeps({ config });
@@ -403,6 +435,22 @@ describe('PhaseRunner', () => {
 
       const executeStep = result.steps.find(s => s.step === PhaseStepType.Execute);
       expect(executeStep).toBeDefined();
+      expect(executeStep!.success).toBe(false);
+      expect(executeStep!.error).toBe('no plans found');
+    });
+
+    it('keeps the execute step successful when every plan already has a summary', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, plan_count: 1, has_plans: true });
+      const config = makeConfig({ workflow: { research: false, verifier: false, skip_discuss: true, plan_check: false } as any });
+      const deps = makeDeps({ config });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      const index = makePlanIndex(1);
+      index.plans[0].has_summary = true;
+      (deps.tools.phasePlanIndex as ReturnType<typeof vi.fn>).mockResolvedValue(index);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const executeStep = result.steps.find(s => s.step === PhaseStepType.Execute);
       expect(executeStep!.success).toBe(true);
       expect(executeStep!.planResults).toHaveLength(0);
     });
@@ -815,6 +863,60 @@ Use TypeScript.`, 'utf-8');
       const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
       expect(verifyStep?.success).toBe(false);
       expect(verifyStep?.error).toBe('verification_gaps_found');
+    });
+
+    it('scans files changed since the first plan commit when the plan is a brief', async () => {
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-brief-debt-'));
+      tempProjectDirs.push(projectDir);
+      const phaseDir = await commitBriefPhase(projectDir, '// FIXME handle retries');
+      const phaseOp = makePhaseOp({ phase_dir: phaseDir, has_context: true, has_plans: true, plan_count: 1 });
+      const config = makeConfig({ workflow: { research: false, skip_discuss: true, plan_check: false } as any });
+      const deps = makeDeps({ projectDir, config });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      const brief = makeParsedPlan([]);
+      mockParsePlanFile.mockResolvedValue({ ...brief, frontmatter: { ...brief.frontmatter, kind: 'brief' } } as any);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
+      expect(verifyStep?.success).toBe(false);
+      expect(verifyStep?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+    });
+
+    it('passes the brief debt scan when the marker cites tracked work', async () => {
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-brief-tracked-'));
+      tempProjectDirs.push(projectDir);
+      const phaseDir = await commitBriefPhase(projectDir, '// FIXME #12 handle retries');
+      const phaseOp = makePhaseOp({ phase_dir: phaseDir, has_context: true, has_plans: true, plan_count: 1 });
+      const config = makeConfig({ workflow: { research: false, skip_discuss: true, plan_check: false } as any });
+      const deps = makeDeps({ projectDir, config });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      const brief = makeParsedPlan([]);
+      mockParsePlanFile.mockResolvedValue({ ...brief, frontmatter: { ...brief.frontmatter, kind: 'brief' } } as any);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(result.success).toBe(true);
+      expect(deps.tools.phaseComplete).toHaveBeenCalledWith('1');
+    });
+
+    it('falls back to the first phase-scoped commit when the brief was never committed', async () => {
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-brief-untracked-'));
+      tempProjectDirs.push(projectDir);
+      const phaseDir = await commitBriefPhase(projectDir, '// FIXME handle retries', false);
+      const phaseOp = makePhaseOp({ phase_dir: phaseDir, has_context: true, has_plans: true, plan_count: 1 });
+      const config = makeConfig({ workflow: { research: false, skip_discuss: true, plan_check: false } as any });
+      const deps = makeDeps({ projectDir, config });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      const brief = makeParsedPlan([]);
+      mockParsePlanFile.mockResolvedValue({ ...brief, frontmatter: { ...brief.frontmatter, kind: 'brief' } } as any);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
+      expect(verifyStep?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
     });
 
     it('allows changed-file debt markers when they reference tracked follow-up work', async () => {

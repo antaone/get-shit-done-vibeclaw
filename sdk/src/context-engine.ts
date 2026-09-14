@@ -12,8 +12,8 @@
  * - Truncation preserves headings + first paragraph per section
  */
 
-import { readFile, access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile, access, readdir } from 'node:fs/promises';
+import { isAbsolute, join } from 'node:path';
 import { constants } from 'node:fs';
 
 import type { ContextFiles } from './types.js';
@@ -76,14 +76,19 @@ const PHASE_FILE_MANIFEST: Record<PhaseType, FileSpec[]> = {
   ],
 };
 
+/** Manifest keys looked up in the phase folder (`NN-CONTEXT.md`, `CONTEXT.md`) before the .planning/ root. */
+const PHASE_FOLDER_KEYS: ReadonlySet<keyof ContextFiles> = new Set<keyof ContextFiles>(['context', 'research']);
+
 // ─── ContextEngine class ─────────────────────────────────────────────────────
 
 export class ContextEngine {
+  private readonly projectDir: string;
   private readonly planningDir: string;
   private readonly logger?: GSDLogger;
   private readonly truncation: TruncationOptions;
 
   constructor(projectDir: string, logger?: GSDLogger, truncation?: Partial<TruncationOptions>, workstream?: string) {
+    this.projectDir = projectDir;
     this.planningDir = join(projectDir, relPlanningPath(workstream));
     this.logger = logger;
     this.truncation = { ...DEFAULT_TRUNCATION_OPTIONS, ...truncation };
@@ -97,12 +102,12 @@ export class ContextEngine {
    * Files exceeding the truncation threshold are reduced to headings +
    * first paragraphs. ROADMAP.md is narrowed to the current milestone.
    */
-  async resolveContextFiles(phaseType: PhaseType): Promise<ContextFiles> {
+  async resolveContextFiles(phaseType: PhaseType, phaseDir?: string): Promise<ContextFiles> {
     const manifest = PHASE_FILE_MANIFEST[phaseType];
     const result: ContextFiles = {};
 
     for (const spec of manifest) {
-      const filePath = join(this.planningDir, spec.filename);
+      const filePath = await this.locateFile(spec, phaseDir);
       const content = await this.readFileIfExists(filePath);
 
       if (content !== undefined) {
@@ -151,6 +156,26 @@ export class ContextEngine {
     }
 
     return result;
+  }
+
+  /**
+   * Resolve where a manifest file is read from. CONTEXT.md and RESEARCH.md are
+   * looked up in the phase folder first (first sorted `*-CONTEXT.md` or
+   * `CONTEXT.md`), then at the .planning/ root.
+   */
+  private async locateFile(spec: FileSpec, phaseDir?: string): Promise<string> {
+    if (phaseDir && PHASE_FOLDER_KEYS.has(spec.key)) {
+      const dir = isAbsolute(phaseDir) ? phaseDir : join(this.projectDir, phaseDir);
+      try {
+        const match = (await readdir(dir))
+          .filter((name) => name === spec.filename || name.endsWith(`-${spec.filename}`))
+          .sort()[0];
+        if (match) return join(dir, match);
+      } catch {
+        // Missing phase folder: use the .planning/ root.
+      }
+    }
+    return join(this.planningDir, spec.filename);
   }
 
   /**
