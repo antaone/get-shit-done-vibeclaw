@@ -231,6 +231,7 @@ export enum PhaseType {
   Execute = 'execute',
   Verify = 'verify',
   Repair = 'repair',
+  Build = 'build',
 }
 
 /**
@@ -820,6 +821,8 @@ export interface ContextFiles {
   config?: string;
   plan?: string;
   summary?: string;
+  /** MILESTONE-CONTEXT.md, or MILESTONE-BRIEF.md when that is missing. */
+  milestone?: string;
 }
 
 /**
@@ -857,6 +860,7 @@ export enum PhaseStepType {
   PlanCheck = 'plan_check',
   Execute = 'execute',
   Verify = 'verify',
+  Build = 'build',
   Advance = 'advance',
 }
 

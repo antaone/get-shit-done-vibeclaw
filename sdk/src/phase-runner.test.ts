@@ -177,6 +177,7 @@ function makeConfig(overrides: Partial<GSDConfig> = {}): GSDConfig {
     ...overrides,
     workflow: {
       ...CONFIG_DEFAULTS.workflow,
+      build_mode: false,
       ...(overrides.workflow ?? {}),
     },
   } as GSDConfig;
@@ -1242,6 +1243,198 @@ Use TypeScript.`, 'utf-8');
       const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
       expect(verifyStep!.success).toBe(false);
       expect(verifyStep!.error).toBe('halted_by_callback');
+    });
+  });
+
+  // ─── Build mode ────────────────────────────────────────────────────────
+
+  describe('build mode (workflow.build_mode)', () => {
+    function buildConfig(workflow: Record<string, unknown> = {}) {
+      return makeConfig({ workflow: { build_mode: true, research: false, skip_discuss: true, plan_check: false, ...workflow } as any });
+    }
+
+    function mockBuildStates(deps: PhaseRunnerDeps, states: string[]): void {
+      const queue = [...states];
+      (deps.tools.exec as ReturnType<typeof vi.fn>).mockImplementation((cmd: string) => {
+        if (cmd === 'init.build') {
+          const state = queue.length > 1 ? queue.shift()! : queue[0];
+          return Promise.resolve({ resume: { state, plan: '01' } });
+        }
+        return Promise.resolve(undefined);
+      });
+    }
+
+    /** Writes the phase's 01-01-SUMMARY.md; build.finalize adds `kind: build-summary` only when it succeeds. */
+    async function writeBuildSummary(finalized: boolean): Promise<void> {
+      const frontmatter = finalized ? 'kind: build-summary\nsubsystem: auth\n' : 'subsystem: auth\n';
+      await writeFile(join(defaultProjectDir, defaultPhaseDir, '01-01-SUMMARY.md'), `---\n${frontmatter}---\n`, 'utf-8');
+    }
+
+    it('runs research, build, verify and advance through build.md', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_research: false, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig({ research: true }) });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['complete']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(result.steps.map(s => s.step)).toEqual([
+        PhaseStepType.Research, PhaseStepType.Build, PhaseStepType.Verify, PhaseStepType.Advance,
+      ]);
+      expect(mockRunPhaseStepSession.mock.calls.map(call => call[1])).toEqual([PhaseStepType.Research, PhaseStepType.Build]);
+      expect(mockRunPhaseStepSession.mock.calls[1][3]).toMatchObject({
+        allowedTools: ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob', 'Agent'],
+        maxTurns: 200,
+      });
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => [call[0], call[4]])).toEqual([
+        [PhaseType.Build, '1 --research-only'],
+        [PhaseType.Build, '1'],
+      ]);
+      expect(result.success).toBe(true);
+    });
+
+    it('reads the verification state from init.build without a verifier session', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['complete']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(deps.tools.exec).toHaveBeenCalledWith('init.build', ['1']);
+      expect(mockRunPhaseStepSession.mock.calls.map(call => call[1])).not.toContain(PhaseStepType.Verify);
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.success).toBe(true);
+    });
+
+    it('reruns build with --gaps when verification found gaps', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      await writeBuildSummary(true);
+      mockBuildStates(deps, ['gaps_found', 'complete']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1', '1 --gaps']);
+      expect(result.success).toBe(true);
+    });
+
+    it('reruns build without --gaps when the gaps_found summary was never finalized', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      await writeBuildSummary(false);
+      mockBuildStates(deps, ['gaps_found', 'complete']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1', '1']);
+      expect(result.success).toBe(true);
+    });
+
+    it('reruns build without --gaps for summarizing and never advances an unfinished build', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['summarizing']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1', '1']);
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.error).toBe('verification_gaps_found');
+      expect(result.steps.map(s => s.step)).not.toContain(PhaseStepType.Advance);
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+    });
+
+    it('fails verify with verification_gaps_found when gaps remain after the reruns', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['gaps_found']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
+      expect(verifyStep?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+    });
+
+    it('fails verify closed when init.build returns no resume state', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      (deps.tools.exec as ReturnType<typeof vi.fn>).mockImplementation((cmd: string) =>
+        Promise.resolve(cmd === 'init.build' ? { error: 'git_repository_required' } : undefined));
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(deps.tools.exec).toHaveBeenCalledWith('init.build', ['1']);
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+      expect(result.success).toBe(false);
+    });
+
+    it('treats a retry answer to human_needed as reject', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['human_needed']);
+      const onVerificationReview = vi.fn().mockResolvedValue('retry');
+
+      const result = await new PhaseRunner(deps).run('1', { callbacks: { onVerificationReview } });
+
+      expect(onVerificationReview).toHaveBeenCalledTimes(1);
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.error).toBe('halted_by_callback');
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1']);
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+      expect(result.success).toBe(false);
+    });
+
+    it('skips phase.complete when the roadmap already marks the phase complete', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      (deps.tools.roadmapAnalyze as ReturnType<typeof vi.fn>).mockResolvedValue({
+        phases: [{ number: '01', disk_status: 'complete', roadmap_complete: true, phase_name: 'Authentication' }],
+      });
+      mockBuildStates(deps, ['complete']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+      expect(result.steps.find(s => s.step === PhaseStepType.Advance)?.success).toBe(true);
+    });
+
+    it('starts build prompts with the headless override that build.md detects', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['complete']);
+
+      await new PhaseRunner(deps).run('1');
+
+      const prompt = mockRunPhaseStepSession.mock.calls[0][0];
+      expect(prompt.startsWith('## HEADLESS MODE')).toBe(true);
+      expect(prompt.endsWith('test prompt')).toBe(true);
+    });
+
+    it('keeps the classic path when build_mode is false', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: makeConfig({ workflow: { research: false, skip_discuss: true, plan_check: false } as any }) });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const stepTypes = result.steps.map(s => s.step);
+      expect(stepTypes).toContain(PhaseStepType.Plan);
+      expect(stepTypes).toContain(PhaseStepType.Execute);
+      expect(stepTypes).not.toContain(PhaseStepType.Build);
+      expect(deps.tools.exec).not.toHaveBeenCalledWith('init.build', expect.anything());
     });
   });
 
@@ -2860,11 +3053,12 @@ describe('Phase lifecycle types', () => {
       expect(PhaseStepType.Execute).toBe('execute');
       expect(PhaseStepType.Verify).toBe('verify');
       expect(PhaseStepType.Advance).toBe('advance');
+      expect(PhaseStepType.Build).toBe('build');
     });
 
-    it('has exactly 7 members', () => {
+    it('has exactly 8 members', () => {
       const values = Object.values(PhaseStepType);
-      expect(values).toHaveLength(7);
+      expect(values).toHaveLength(8);
     });
   });
 
@@ -3555,6 +3749,17 @@ describe('PromptFactory', () => {
       const prompt = await factory.buildPrompt(PhaseType.Discuss, null, contextFiles);
 
       expect(prompt).not.toContain('## Context');
+    });
+
+    it('appends the arguments section for build prompts', async () => {
+      await writeFile(join(workflowsDir, 'build.md'), makeWorkflowContent('Build the phase.', ['Initialize']));
+      const factory = makeFactory();
+
+      const prompt = await factory.buildPrompt(PhaseType.Build, null, { state: '# State' }, '.planning/phases/03-user-auth', '3 --gaps');
+
+      expect(prompt).toContain('Build the phase.');
+      expect(prompt).toContain('## Arguments\n\n$ARGUMENTS: 3 --gaps');
+      expect(prompt.indexOf('## Arguments')).toBeLessThan(prompt.indexOf('## Context'));
     });
   });
 

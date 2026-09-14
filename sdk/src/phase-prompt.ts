@@ -29,6 +29,7 @@ const PHASE_WORKFLOW_MAP: Record<PhaseType, string> = {
   [PhaseType.Verify]: 'verify-phase.md',
   [PhaseType.Discuss]: 'discuss-phase.md',
   [PhaseType.Repair]: 'execute-plan.md',
+  [PhaseType.Build]: 'build.md',
 };
 
 // ─── XML block extraction ────────────────────────────────────────────────────
@@ -104,13 +105,15 @@ export class PromptFactory {
    * Build a complete prompt for the given phase type.
    *
    * For execute phase with a plan, delegates to buildExecutorPrompt().
-   * For other phases, assembles: role + purpose + process steps + context.
+   * For other phases, assembles: role + purpose + process steps + arguments + context.
+   * A non-blank `args` becomes a `## Arguments` section, which workflows read as `$ARGUMENTS`.
    */
   async buildPrompt(
     phaseType: PhaseType,
     plan: ParsedPlan | null,
     contextFiles: ContextFiles,
     phaseDir?: string,
+    args?: string,
   ): Promise<string> {
     // Execute phase with a plan: delegate to existing buildExecutorPrompt
     if (phaseType === PhaseType.Execute && plan) {
@@ -157,6 +160,11 @@ export class PromptFactory {
     }
 
     // ── VARIABLE SUFFIX (project-specific, changes per run) ──
+
+    // ── Arguments (build.md reads them as $ARGUMENTS) ──
+    if (args && args.trim() !== '') {
+      sections.push(`## Arguments\n\n$ARGUMENTS: ${args.trim()}`);
+    }
 
     // ── Context files ──
     const contextSection = this.formatContextFiles(contextFiles);
@@ -241,6 +249,7 @@ export class PromptFactory {
       config: 'Config (config.json)',
       plan: 'Plan (PLAN.md)',
       summary: 'Summary (SUMMARY.md)',
+      milestone: 'Milestone brief (MILESTONE-CONTEXT.md)',
     };
 
     for (const [key, label] of Object.entries(fileLabels)) {

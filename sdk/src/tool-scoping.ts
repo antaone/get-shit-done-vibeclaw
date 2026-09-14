@@ -7,6 +7,7 @@
  * - Verify: read-only (no Write/Edit)
  * - Discuss: read-only
  * - Plan: read/write + web (for creating plan files)
+ * - Build: full read/write + Agent (the build lead spawns its builder and verifier agents)
  */
 
 import { PhaseType } from './types.js';
@@ -21,6 +22,7 @@ const PHASE_DEFAULT_TOOLS: Record<PhaseType, string[]> = {
   [PhaseType.Discuss]: ['Read', 'Bash', 'Grep', 'Glob'],
   [PhaseType.Plan]: ['Read', 'Write', 'Bash', 'Glob', 'Grep', 'WebFetch'],
   [PhaseType.Repair]: ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob'],
+  [PhaseType.Build]: ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob', 'Agent'],
 };
 
 // ─── Phase → agent definition filename ──────────────────────────────────────
@@ -36,6 +38,7 @@ export const PHASE_AGENT_MAP: Record<PhaseType, string | null> = {
   [PhaseType.Verify]: 'fvgsd-verifier.md',
   [PhaseType.Discuss]: null,
   [PhaseType.Repair]: null,
+  [PhaseType.Build]: null,
 };
 
 // ─── Public API ──────────────────────────────────────────────────────────────

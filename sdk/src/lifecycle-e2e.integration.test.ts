@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'node:child_process';
-import { mkdtemp, rm, readFile, stat, readdir } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, stat, readdir, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -157,6 +157,12 @@ describe.skipIf(!cliAvailable || !gsdToolsAvailable)('E2E Lifecycle: InitRunner 
     // Verify the phase exists via initPhaseOp
     const phaseOp = await tools.initPhaseOp(phase1Number!);
     expect(phaseOp.phase_found).toBe(true);
+
+    // This test asserts the classic lifecycle, and workflow.build_mode defaults to true.
+    const configPath = join(tmpDir, '.planning', 'config.json');
+    const projectConfig = existsSync(configPath) ? JSON.parse(await readFile(configPath, 'utf-8')) : {};
+    projectConfig.workflow = { ...(projectConfig.workflow ?? {}), build_mode: false };
+    await writeFile(configPath, `${JSON.stringify(projectConfig, null, 2)}\n`, 'utf-8');
 
     // Collect all events during the phase lifecycle
     const events: GSDEvent[] = [];

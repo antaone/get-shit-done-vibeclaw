@@ -32,6 +32,8 @@ import { relPlanningPath } from './workstream-utils.js';
 interface FileSpec {
   key: keyof ContextFiles;
   filename: string;
+  /** Other names tried at the .planning/ root when `filename` is missing. */
+  fallbacks?: string[];
   required: boolean;
 }
 
@@ -73,6 +75,14 @@ const PHASE_FILE_MANIFEST: Record<PhaseType, FileSpec[]> = {
     { key: 'state', filename: 'STATE.md', required: true },
     { key: 'roadmap', filename: 'ROADMAP.md', required: false },
     { key: 'context', filename: 'CONTEXT.md', required: false },
+  ],
+  [PhaseType.Build]: [
+    { key: 'state', filename: 'STATE.md', required: true },
+    { key: 'roadmap', filename: 'ROADMAP.md', required: true },
+    { key: 'context', filename: 'CONTEXT.md', required: true },
+    { key: 'research', filename: 'RESEARCH.md', required: false },
+    { key: 'requirements', filename: 'REQUIREMENTS.md', required: false },
+    { key: 'milestone', filename: 'MILESTONE-CONTEXT.md', fallbacks: ['MILESTONE-BRIEF.md'], required: false },
   ],
 };
 
@@ -141,6 +151,7 @@ export class ContextEngine {
       { key: 'requirements', filename: 'REQUIREMENTS.md' },
       { key: 'plan', filename: 'PLAN.md' },
       { key: 'summary', filename: 'SUMMARY.md' },
+      { key: 'milestone', filename: 'MILESTONE-CONTEXT.md' },
     ];
 
     for (const { key, filename } of truncatable) {
@@ -161,7 +172,8 @@ export class ContextEngine {
   /**
    * Resolve where a manifest file is read from. CONTEXT.md and RESEARCH.md are
    * looked up in the phase folder first (first sorted `*-CONTEXT.md` or
-   * `CONTEXT.md`), then at the .planning/ root.
+   * `CONTEXT.md`), then at the .planning/ root. When a spec's root file is
+   * missing, its `fallbacks` are tried at the root in order.
    */
   private async locateFile(spec: FileSpec, phaseDir?: string): Promise<string> {
     if (phaseDir && PHASE_FOLDER_KEYS.has(spec.key)) {
@@ -175,7 +187,13 @@ export class ContextEngine {
         // Missing phase folder: use the .planning/ root.
       }
     }
-    return join(this.planningDir, spec.filename);
+    const primary = join(this.planningDir, spec.filename);
+    if (!spec.fallbacks || (await this.readFileIfExists(primary)) !== undefined) return primary;
+    for (const name of spec.fallbacks) {
+      const candidate = join(this.planningDir, name);
+      if ((await this.readFileIfExists(candidate)) !== undefined) return candidate;
+    }
+    return primary;
   }
 
   /**

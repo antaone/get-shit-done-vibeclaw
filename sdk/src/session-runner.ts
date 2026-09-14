@@ -270,6 +270,7 @@ function stepTypeToPhaseType(step: PhaseStepType): PhaseType {
     plan_check: PhaseType.Verify,
     execute: PhaseType.Execute,
     verify: PhaseType.Verify,
+    build: PhaseType.Build,
   };
   return mapping[step] ?? PhaseType.Execute;
 }

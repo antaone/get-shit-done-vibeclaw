@@ -158,3 +158,10 @@ describe('PHASE_DEFAULT_TOOLS', () => {
     }
   });
 });
+
+describe('build phase tools', () => {
+  it('lets the build lead edit files and spawn agents, with no agent definition', () => {
+    expect(getToolsForPhase(PhaseType.Build)).toEqual(['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob', 'Agent']);
+    expect(PHASE_AGENT_MAP[PhaseType.Build]).toBeNull();
+  });
+});

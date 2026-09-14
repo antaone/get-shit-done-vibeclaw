@@ -3,7 +3,8 @@
  *
  * Orchestrates: discuss → research → plan → execute → verify → advance
  * with config-driven step skipping, human gate callbacks, event emission,
- * and structured error handling per step.
+ * and structured error handling per step. With `workflow.build_mode`, the
+ * steps after discuss are research → build (build.md) → verify → advance.
  */
 
 import type {
@@ -31,9 +32,10 @@ import { realpathSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { checkResearchGate } from './research-gate.js';
+import { getToolsForPhase } from './tool-scoping.js';
 import { isDebtScannable, findDebtMarkers, type DebtMarkerFinding } from './debt-markers.js';
-import { runGit, changedFilesSince, firstAddCommit } from './query/build-shared.js';
-import { escapeRegex } from './query/helpers.js';
+import { runGit, changedFilesSince, firstAddCommit, summaryIsFinalized } from './query/build-shared.js';
+import { escapeRegex, normalizePhaseName } from './query/helpers.js';
 
 // ─── Error type ──────────────────────────────────────────────────────────────
 
@@ -75,6 +77,28 @@ export interface PhaseRunnerDeps {
   logger?: GSDLogger;
 }
 
+/** The part of `init.build`'s resume object the build lifecycle reads. */
+interface BuildResume {
+  state: string;
+  /** NN of the brief the state describes; null when init.build names none. */
+  plan: string | null;
+}
+
+/** Prepended to build.md prompts: the SDK runner has no human to answer questions. */
+const HEADLESS_BUILD_OVERRIDE = [
+  '## HEADLESS MODE — MANDATORY OVERRIDE',
+  '',
+  'This session runs headless under the fvgsd SDK phase runner. No human is present.',
+  '',
+  '- Do not use AskUserQuestion and do not wait for input.',
+  '- `--confirm` records a blocker with `fvgsd-sdk query state.add-blocker` instead of waiting for approval, then the run ends with `## BUILD BLOCKED`.',
+  '- Ignore `config.mode: interactive`; it never pauses a headless build.',
+  '- Record every question you would ask, and every `user_setup` item, with `fvgsd-sdk query state.add-blocker --text "<question>"`, then end with `## BUILD BLOCKED`.',
+  '',
+  '---',
+  '',
+].join('\n');
+
 // ─── PhaseRunner ─────────────────────────────────────────────────────────────
 
 export class PhaseRunner {
@@ -98,6 +122,8 @@ export class PhaseRunner {
 
   /**
    * Run a full phase lifecycle: discuss → research → plan → plan-check → execute → verify → advance.
+   * With `workflow.build_mode === true`, the steps after discuss are research → build → verify →
+   * advance instead (see runBuildLifecycle).
    *
    * Each step is gated by config flags and phase state. Human gate callbacks
    * are invoked at decision points; when not provided, auto-approve is used.
@@ -191,6 +217,14 @@ export class PhaseRunner {
           }
         }
       }
+    }
+
+    // ── Build mode: research → build → verify (status read) → advance ──
+    if (this.config.workflow.build_mode === true) {
+      if (!halted) {
+        halted = await this.runBuildLifecycle(phaseNumber, phaseOp, sessionOpts, callbacks, options, steps);
+      }
+      return this.finishRun(phaseNumber, phaseName, steps, halted, startTime);
     }
 
     // ── Step 2: Research ──
@@ -294,6 +328,17 @@ export class PhaseRunner {
       this.logger?.warn(`Skipping advance for phase ${phaseNumber}: verification found gaps`);
     }
 
+    return this.finishRun(phaseNumber, phaseName, steps, halted, startTime);
+  }
+
+  /** Totals, the phase_complete event and the result object shared by both lifecycles. */
+  private finishRun(
+    phaseNumber: string,
+    phaseName: string,
+    steps: PhaseStepResult[],
+    halted: boolean,
+    startTime: number,
+  ): PhaseRunnerResult {
     const totalDurationMs = Date.now() - startTime;
     const totalCostUsd = steps.reduce((sum, s) => {
       const stepCost = s.planResults?.reduce((c, pr) => c + pr.totalCostUsd, 0) ?? 0;
@@ -1054,11 +1099,14 @@ export class PhaseRunner {
   /**
    * Run the advance step — mark phase complete.
    * Gated by config.workflow.auto_advance or callback approval.
+   * With `skipIfComplete`, phase.complete is skipped when the ROADMAP already marks
+   * the phase complete (build.finalize completed it).
    */
   private async runAdvanceStep(
     phaseNumber: string,
     _sessionOpts: SessionOptions,
     callbacks: HumanGateCallbacks,
+    skipIfComplete = false,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
 
@@ -1110,8 +1158,11 @@ export class PhaseRunner {
       };
     }
 
+    const alreadyComplete = skipIfComplete && await this.isPhaseMarkedComplete(phaseNumber);
     try {
-      await this.tools.phaseComplete(phaseNumber);
+      if (!alreadyComplete) {
+        await this.tools.phaseComplete(phaseNumber);
+      }
     } catch (err) {
       const durationMs = Date.now() - stepStart;
       const errorMsg = err instanceof Error ? err.message : String(err);
@@ -1154,6 +1205,270 @@ export class PhaseRunner {
     };
   }
 
+  // ─── Build lifecycle (workflow.build_mode) ────────────────────────────
+
+  /** Research (only when RESEARCH.md is missing), gate, Build, Verify, Advance. Returns true when halted. */
+  private async runBuildLifecycle(
+    phaseNumber: string,
+    initialPhaseOp: PhaseOpInfo,
+    sessionOpts: SessionOptions,
+    callbacks: HumanGateCallbacks,
+    options: PhaseRunnerOptions | undefined,
+    steps: PhaseStepResult[],
+  ): Promise<boolean> {
+    let phaseOp = initialPhaseOp;
+
+    if (this.config.workflow.research && !phaseOp.has_research) {
+      const researchResult = await this.retryOnce('research', () =>
+        this.runBuildSession(PhaseStepType.Research, phaseNumber, sessionOpts, `${phaseNumber} --research-only`, phaseOp.phase_dir));
+      steps.push(researchResult);
+      phaseOp = await this.requeryPhaseOp(phaseNumber, phaseOp);
+    }
+
+    if (phaseOp.has_research) {
+      const gateResult = await this.checkResearchGate(phaseOp);
+      if (!gateResult.pass) {
+        const error = `RESEARCH.md has unresolved open questions: ${gateResult.unresolvedQuestions.join(', ')}`;
+        this.logger?.warn(error, { phase: phaseNumber });
+        const decision = await this.invokeBlockerCallback(callbacks, phaseNumber, PhaseStepType.Research, error);
+        if (decision === 'stop') return true;
+      }
+    }
+
+    const buildResult = await this.retryOnce('build', () =>
+      this.runBuildSession(PhaseStepType.Build, phaseNumber, sessionOpts, phaseNumber, phaseOp.phase_dir));
+    steps.push(buildResult);
+    phaseOp = await this.requeryPhaseOp(phaseNumber, phaseOp);
+    if (!phaseOp.has_plans || phaseOp.plan_count === 0) {
+      const decision = await this.invokeBlockerCallback(callbacks, phaseNumber, PhaseStepType.Build, 'No brief created after build step');
+      if (decision === 'stop') return true;
+    }
+
+    const verifyResult = await this.runBuildVerifyStep(phaseNumber, sessionOpts, callbacks, options, phaseOp);
+    steps.push(verifyResult);
+    if (!verifyResult.success && verifyResult.error === 'halted_by_callback') return true;
+
+    if (verifyResult.success) {
+      steps.push(await this.runAdvanceStep(phaseNumber, sessionOpts, callbacks, true));
+    } else {
+      this.logger?.warn(`Skipping advance for phase ${phaseNumber}: build verification did not pass`);
+    }
+    return false;
+  }
+
+  /** One headless session that follows build.md with the given arguments. */
+  private async runBuildSession(
+    step: PhaseStepType,
+    phaseNumber: string,
+    sessionOpts: SessionOptions,
+    args: string,
+    phaseDir: string,
+  ): Promise<PhaseStepResult> {
+    const stepStart = Date.now();
+
+    this.eventStream.emitEvent({
+      type: GSDEventType.PhaseStepStart,
+      timestamp: new Date().toISOString(),
+      sessionId: '',
+      phaseNumber,
+      step,
+    });
+
+    let planResult: PlanResult;
+    try {
+      const contextFiles = await this.contextEngine.resolveContextFiles(PhaseType.Build, phaseDir);
+      const prompt = HEADLESS_BUILD_OVERRIDE
+        + await this.promptFactory.buildPrompt(PhaseType.Build, null, contextFiles, phaseDir, args);
+      planResult = await runPhaseStepSession(
+        prompt,
+        step,
+        this.config,
+        {
+          ...sessionOpts,
+          allowedTools: getToolsForPhase(PhaseType.Build),
+          maxTurns: (sessionOpts.maxTurns ?? 50) * 4,
+          maxBudgetUsd: (sessionOpts.maxBudgetUsd ?? 5) * 4,
+        },
+        this.eventStream,
+        { phase: PhaseType.Build },
+      );
+    } catch (err) {
+      const durationMs = Date.now() - stepStart;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      this.eventStream.emitEvent({
+        type: GSDEventType.PhaseStepComplete,
+        timestamp: new Date().toISOString(),
+        sessionId: '',
+        phaseNumber,
+        step,
+        success: false,
+        durationMs,
+        error: errorMsg,
+      });
+      return { step, success: false, durationMs, error: errorMsg };
+    }
+
+    const durationMs = Date.now() - stepStart;
+    const error = planResult.error?.messages.join('; ') || undefined;
+    this.eventStream.emitEvent({
+      type: GSDEventType.PhaseStepComplete,
+      timestamp: new Date().toISOString(),
+      sessionId: planResult.sessionId,
+      phaseNumber,
+      step,
+      success: planResult.success,
+      durationMs,
+      error,
+    });
+    return { step, success: planResult.success, durationMs, error, planResults: [planResult] };
+  }
+
+  /**
+   * Verify for build mode: no verifier session. Reads init.build resume.state
+   * (complete / human_needed / gaps_found / other) and reruns Build up to maxGapRetries
+   * times: with --gaps for gaps_found once the brief's summary is finalized, as a resume
+   * otherwise. A resume finalizes an unfinalized summary, which can sit under gaps_found
+   * as well as summarizing.
+   * For human_needed, a `retry` answer from the verification callback halts like `reject`.
+   */
+  private async runBuildVerifyStep(
+    phaseNumber: string,
+    sessionOpts: SessionOptions,
+    callbacks: HumanGateCallbacks,
+    options: PhaseRunnerOptions | undefined,
+    phaseOp: PhaseOpInfo,
+  ): Promise<PhaseStepResult> {
+    const stepStart = Date.now();
+    this.eventStream.emitEvent({
+      type: GSDEventType.PhaseStepStart,
+      timestamp: new Date().toISOString(),
+      sessionId: '',
+      phaseNumber,
+      step: PhaseStepType.Verify,
+    });
+
+    const maxGapRetries = options?.maxGapRetries ?? 1;
+    let reruns = 0;
+    let outcome: VerificationOutcome = 'status_unreadable';
+    const allPlanResults: PlanResult[] = [];
+
+    while (true) {
+      let resume: BuildResume;
+      try {
+        resume = await this.readBuildResume(phaseNumber);
+      } catch (err) {
+        this.logger?.warn(`Could not read build state for phase ${phaseNumber}: ${err instanceof Error ? err.message : String(err)}`);
+        outcome = 'status_unreadable';
+        break;
+      }
+      const { state } = resume;
+
+      if (state === 'complete') {
+        const debtCheck = await this.checkArchitecturalDebt(phaseNumber);
+        if (debtCheck.pass) {
+          outcome = 'passed';
+        } else {
+          this.logger?.warn(`Verification blocked by architectural debt in phase ${phaseNumber}`, {
+            phase: phaseNumber,
+            reason: debtCheck.reason,
+            findingCount: debtCheck.findings.length,
+          });
+          outcome = 'architectural_debt';
+        }
+        break;
+      }
+
+      if (state === 'human_needed') {
+        outcome = 'human_needed';
+        const decision = await this.invokeVerificationCallback(callbacks, phaseNumber, {
+          step: PhaseStepType.Verify,
+          success: false,
+          durationMs: Date.now() - stepStart,
+          planResults: allPlanResults,
+        });
+        // Only `accept` continues. `retry` is treated as `reject`: a build has nothing to rerun for
+        // human-only checks (verify-work answers them), and re-reading the same state cannot change it.
+        if (decision === 'accept') break;
+        const durationMs = Date.now() - stepStart;
+        this.eventStream.emitEvent({
+          type: GSDEventType.PhaseStepComplete,
+          timestamp: new Date().toISOString(),
+          sessionId: '',
+          phaseNumber,
+          step: PhaseStepType.Verify,
+          success: false,
+          durationMs,
+          error: 'halted_by_callback',
+        });
+        return { step: PhaseStepType.Verify, success: false, durationMs, error: 'halted_by_callback', planResults: allPlanResults };
+      }
+
+      outcome = 'gaps_found';
+      if (reruns >= maxGapRetries) break;
+      reruns++;
+      // --gaps starts a gap brief, so it follows only a finalized summary. An unfinalized summary
+      // (finalize refused or never ran) can also sit under gaps_found; a plain rerun finalizes it.
+      const gaps = state === 'gaps_found' && resume.plan !== null
+        && summaryIsFinalized(resolve(this.projectDir, phaseOp.phase_dir), phaseOp.padded_phase, resume.plan);
+      const args = gaps ? `${phaseNumber} --gaps` : phaseNumber;
+      this.logger?.info(`Build rerun ${reruns}/${maxGapRetries} for phase ${phaseNumber} (state: ${state})`);
+      const rerun = await this.runBuildSession(PhaseStepType.Build, phaseNumber, sessionOpts, args, phaseOp.phase_dir);
+      if (rerun.planResults) allPlanResults.push(...rerun.planResults);
+    }
+
+    const durationMs = Date.now() - stepStart;
+    const verifySuccess = outcome === 'passed';
+    this.eventStream.emitEvent({
+      type: GSDEventType.PhaseStepComplete,
+      timestamp: new Date().toISOString(),
+      sessionId: '',
+      phaseNumber,
+      step: PhaseStepType.Verify,
+      success: verifySuccess,
+      durationMs,
+      ...(!verifySuccess && { error: this.verificationErrorForOutcome(outcome) }),
+    });
+    return {
+      step: PhaseStepType.Verify,
+      success: verifySuccess,
+      durationMs,
+      planResults: allPlanResults,
+      ...(!verifySuccess && { error: this.verificationErrorForOutcome(outcome) }),
+    };
+  }
+
+  /** `init.build`'s resume state and brief number; throws when the query returns no state (error, phase not found). */
+  private async readBuildResume(phaseNumber: string): Promise<BuildResume> {
+    const raw = await this.tools.exec('init.build', [phaseNumber]);
+    const data = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, unknown> | null | undefined;
+    const resume = data?.resume as Record<string, unknown> | undefined;
+    if (typeof resume?.state !== 'string' || resume.state === '') {
+      throw new Error(`init.build returned no resume.state for phase ${phaseNumber}`);
+    }
+    return { state: resume.state, plan: typeof resume.plan === 'string' && resume.plan !== '' ? resume.plan : null };
+  }
+
+  private async requeryPhaseOp(phaseNumber: string, fallback: PhaseOpInfo): Promise<PhaseOpInfo> {
+    try {
+      return await this.tools.initPhaseOp(phaseNumber);
+    } catch {
+      return fallback;
+    }
+  }
+
+  /** True when roadmap.analyze reports the phase complete (build.finalize already ran phase.complete). */
+  private async isPhaseMarkedComplete(phaseNumber: string): Promise<boolean> {
+    try {
+      const analysis = await this.tools.roadmapAnalyze();
+      const target = normalizePhaseName(phaseNumber);
+      return Boolean(analysis?.phases?.some(
+        (phase) => normalizePhaseName(String(phase.number)) === target && phase.roadmap_complete === true,
+      ));
+    } catch {
+      return false;
+    }
+  }
+
   // ─── Helpers ───────────────────────────────────────────────────────────
 
   /**
@@ -1167,6 +1482,7 @@ export class PhaseRunner {
       [PhaseStepType.PlanCheck]: PhaseType.Verify,
       [PhaseStepType.Execute]: PhaseType.Execute,
       [PhaseStepType.Verify]: PhaseType.Verify,
+      [PhaseStepType.Build]: PhaseType.Build,
     };
     return mapping[step] ?? PhaseType.Execute;
   }

@@ -48,6 +48,7 @@ async function createTempPlanningDir(): Promise<string> {
         verifier: true,
         auto_advance: true,
         skip_discuss: false,
+        build_mode: false,
       },
     }),
   );

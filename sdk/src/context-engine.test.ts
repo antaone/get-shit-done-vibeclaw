@@ -214,6 +214,38 @@ describe('ContextEngine', () => {
       expect(files.context).toBe('# Root context');
       expect(files.research).toBeUndefined();
     });
+
+    it('resolves the build manifest with the MILESTONE-BRIEF.md fallback', async () => {
+      await createPlanningDir(projectDir, {
+        'STATE.md': '# State',
+        'ROADMAP.md': '# Roadmap',
+        'REQUIREMENTS.md': '# Requirements',
+        'MILESTONE-BRIEF.md': '# Milestone brief',
+      });
+      const phaseDir = join('.planning', 'phases', '03-user-auth');
+      await mkdir(join(projectDir, phaseDir), { recursive: true });
+      await writeFile(join(projectDir, phaseDir, '03-CONTEXT.md'), '# Phase context', 'utf-8');
+
+      const files = await new ContextEngine(projectDir).resolveContextFiles(PhaseType.Build, phaseDir);
+
+      expect(files.context).toBe('# Phase context');
+      expect(files.requirements).toBe('# Requirements');
+      expect(files.milestone).toBe('# Milestone brief');
+    });
+
+    it('prefers MILESTONE-CONTEXT.md over MILESTONE-BRIEF.md', async () => {
+      await createPlanningDir(projectDir, {
+        'STATE.md': '# State',
+        'ROADMAP.md': '# Roadmap',
+        'CONTEXT.md': '# Context',
+        'MILESTONE-CONTEXT.md': '# Milestone context',
+        'MILESTONE-BRIEF.md': '# Milestone brief',
+      });
+
+      const files = await new ContextEngine(projectDir).resolveContextFiles(PhaseType.Build);
+
+      expect(files.milestone).toBe('# Milestone context');
+    });
   });
 
   describe('context truncation', () => {
