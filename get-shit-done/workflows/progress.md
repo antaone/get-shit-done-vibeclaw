@@ -227,6 +227,7 @@ This is a WARNING, not a blocker — routing proceeds normally. The debt is visi
 |-----------|---------|--------|
 | uat_partial > 0 | UAT testing incomplete | Go to **Route E.2** |
 | uat_with_gaps > 0 | UAT gaps need fix plans | Go to **Route E** |
+| a `kind: brief` plan whose `{P}-{NN}-SUMMARY.md` frontmatter lacks `kind: build-summary` | Build not finalized | Go to **Route A** |
 | summaries = plans, a plan has `kind: brief`, VERIFICATION.md has `status: gaps_found`, `workflow.build_mode` is true | Build left gaps | Go to **Route E.3** |
 | summaries < plans | Unexecuted plans exist | Go to **Route A** |
 | summaries = plans AND plans > 0 | Phase complete | Go to Step 3 |

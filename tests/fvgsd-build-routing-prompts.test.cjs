@@ -49,6 +49,20 @@ describe('workflow prompts route discussed phases to /fvgsd-build', () => {
     assert.ok(!/build phase/i.test(execute.intent), 'the execute-phase row still claims "build phase N"');
   });
 
+  test('progress.md routes an unfinalized brief summary to Route A ahead of Route E.3 and Phase complete', () => {
+    const section = headingSection(read('progress.md'), '**Step 2: Route based on counts**');
+    const rows = tableRows(section).map(([condition, meaning, action]) => ({ condition, meaning, action }));
+    const unfinalized = rows.findIndex((row) => row.condition.includes('kind: build-summary'));
+    const gaps = rows.findIndex((row) => row.action.includes('Route E.3'));
+    const complete = rows.findIndex((row) => row.meaning === 'Phase complete');
+    assert.ok(unfinalized !== -1, 'no row names an unfinalized (kind: build-summary) brief summary');
+    assert.ok(rows[unfinalized].action.includes('Route A'), 'the unfinalized-summary row must route to Route A');
+    assert.ok(gaps !== -1, 'no Route E.3 row');
+    assert.ok(complete !== -1, 'no Phase complete row');
+    assert.ok(unfinalized < gaps, 'the unfinalized-summary row must precede the Route E.3 row');
+    assert.ok(unfinalized < complete, 'the unfinalized-summary row must precede the Phase complete row');
+  });
+
   test('manager.md has a Build Phase N handler that runs the build skill', () => {
     const section = headingSection(read('manager.md'), '### Build Phase N');
     assert.ok(section.includes('Skill(skill=\\"fvgsd-build\\"'));
