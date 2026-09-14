@@ -83,4 +83,7 @@ export const NON_FAMILY_COMMAND_MANIFEST: readonly NonFamilyCommandManifestEntry
   { canonical: 'verify-summary', aliases: ['verify.summary', 'verify summary'], mutation: false, outputMode: 'raw' },
 
   { canonical: 'agent.classify-failure', aliases: ['agent classify-failure'], mutation: false, outputMode: 'json' },
+
+  { canonical: 'checks.detect', aliases: ['checks detect'], mutation: false, outputMode: 'json' },
+  { canonical: 'build.run-checks', aliases: ['build run-checks'], mutation: false, outputMode: 'json' },
 ] as const;

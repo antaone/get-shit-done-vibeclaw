@@ -104,9 +104,11 @@ export interface NonFamilyCommandAlias {
 
 export const NON_FAMILY_COMMAND_ALIASES: readonly NonFamilyCommandAlias[] = [
   { canonical: 'agent.classify-failure', aliases: ['agent classify-failure'], mutation: false },
+  { canonical: 'build.run-checks', aliases: ['build run-checks'], mutation: false },
   { canonical: 'check-commit', aliases: [], mutation: true },
   { canonical: 'check.decision-coverage-plan', aliases: ['check decision-coverage-plan'], mutation: false },
   { canonical: 'check.decision-coverage-verify', aliases: ['check decision-coverage-verify'], mutation: false },
+  { canonical: 'checks.detect', aliases: ['checks detect'], mutation: false },
   { canonical: 'commit', aliases: [], mutation: true },
   { canonical: 'commit-to-subrepo', aliases: [], mutation: true },
   { canonical: 'config-ensure-section', aliases: [], mutation: true },

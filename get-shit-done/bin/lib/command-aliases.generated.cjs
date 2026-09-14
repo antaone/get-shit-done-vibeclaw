@@ -553,6 +553,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": false
   },
   {
+    "canonical": "build.run-checks",
+    "aliases": [
+      "build run-checks"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "check-commit",
     "aliases": [],
     "mutation": true
@@ -568,6 +575,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "canonical": "check.decision-coverage-verify",
     "aliases": [
       "check decision-coverage-verify"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "checks.detect",
+    "aliases": [
+      "checks detect"
     ],
     "mutation": false
   },

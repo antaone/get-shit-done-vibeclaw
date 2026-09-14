@@ -8,34 +8,12 @@ detect.
 **Step A — Build gate:**
 
 ```bash
-# Resolve build command: project config > Xcode > Makefile > language sniff
-BUILD_CMD=$(fvgsd-sdk query config-get workflow.build_command --default "" 2>/dev/null || true)
+# Resolve build and test commands once: workflow.build_command / workflow.test_command win,
+# otherwise checks.detect applies the Xcode > Makefile > language rules.
+CHECKS_JSON=$(fvgsd-sdk query checks.detect 2>/dev/null || echo '{}')
+BUILD_CMD=$(printf '%s' "$CHECKS_JSON" | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d;}).on("end",()=>{try{process.stdout.write(JSON.parse(s).build||"");}catch{}})')
 if [ -z "$BUILD_CMD" ]; then
-  XCODEPROJ=$(find . -maxdepth 2 -name "*.xcodeproj" -not -path "*/node_modules/*" 2>/dev/null | head -1)
-  if [ -n "$XCODEPROJ" ]; then
-    # Xcode project: get first scheme from xcodebuild -list -json
-    XCODE_SCHEME=$(xcodebuild -list -json -project "$XCODEPROJ" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('project',{}).get('schemes',[None])[0] or '')" 2>/dev/null || true)
-    if [ -n "$XCODE_SCHEME" ]; then
-      BUILD_CMD="xcodebuild build -scheme '$XCODE_SCHEME' -destination 'platform=iOS Simulator,name=iPhone 16'"
-    else
-      BUILD_CMD="xcodebuild build -destination 'platform=iOS Simulator,name=iPhone 16'"
-    fi
-  elif [ -f "Makefile" ] && grep -q "^build:" Makefile; then
-    BUILD_CMD="make build"
-  elif [ -f "Justfile" ] || [ -f "justfile" ]; then
-    BUILD_CMD="just build"
-  elif [ -f "Cargo.toml" ]; then
-    BUILD_CMD="cargo build"
-  elif [ -f "go.mod" ]; then
-    BUILD_CMD="go build ./..."
-  elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
-    BUILD_CMD="python -m py_compile $(find . -name '*.py' -not -path './.planning/*' -not -path './node_modules/*' | head -20 | tr '\n' ' ')"
-  elif [ -f "package.json" ] && grep -q '"build"' package.json; then
-    BUILD_CMD="npm run build"
-  else
-    BUILD_CMD=""
-    echo "⚠ No build command detected — skipping build gate"
-  fi
+  echo "⚠ No build command detected — skipping build gate"
 fi
 # Run build with 5-minute timeout
 BUILD_EXIT=0
@@ -62,36 +40,12 @@ fi
 **Step B — Test gate:**
 
 ```bash
-# Resolve test command: project config > Xcode > Makefile > language sniff
-TEST_CMD=$(fvgsd-sdk query config-get workflow.test_command --default "" 2>/dev/null || true)
+# Test command from the same checks.detect result as Step A.
+[ -n "${CHECKS_JSON:-}" ] || CHECKS_JSON=$(fvgsd-sdk query checks.detect 2>/dev/null || echo '{}')
+TEST_CMD=$(printf '%s' "$CHECKS_JSON" | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d;}).on("end",()=>{try{process.stdout.write(JSON.parse(s).test||"");}catch{}})')
 if [ -z "$TEST_CMD" ]; then
-  XCODEPROJ=$(find . -maxdepth 2 -name "*.xcodeproj" -not -path "*/node_modules/*" 2>/dev/null | head -1)
-  if [ -n "$XCODEPROJ" ]; then
-    # Xcode project: reuse scheme detected above (or re-detect)
-    if [ -z "${XCODE_SCHEME:-}" ]; then
-      XCODE_SCHEME=$(xcodebuild -list -json -project "$XCODEPROJ" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('project',{}).get('schemes',[None])[0] or '')" 2>/dev/null || true)
-    fi
-    if [ -n "$XCODE_SCHEME" ]; then
-      TEST_CMD="xcodebuild test -scheme '$XCODE_SCHEME' -destination 'platform=iOS Simulator,name=iPhone 16'"
-    else
-      TEST_CMD="xcodebuild test -destination 'platform=iOS Simulator,name=iPhone 16'"
-    fi
-  elif [ -f "Makefile" ] && grep -q "^test:" Makefile; then
-    TEST_CMD="make test"
-  elif [ -f "Justfile" ] || [ -f "justfile" ]; then
-    TEST_CMD="just test"
-  elif [ -f "package.json" ]; then
-    TEST_CMD="npm test"
-  elif [ -f "Cargo.toml" ]; then
-    TEST_CMD="cargo test"
-  elif [ -f "go.mod" ]; then
-    TEST_CMD="go test ./..."
-  elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
-    TEST_CMD="python -m pytest -x -q --tb=short 2>&1 || uv run python -m pytest -x -q --tb=short"
-  else
-    TEST_CMD="true"
-    echo "⚠ No test runner detected — skipping post-merge test gate"
-  fi
+  TEST_CMD="true"
+  echo "⚠ No test runner detected — skipping post-merge test gate"
 fi
 # Run test suite with 5-minute timeout
 TEST_EXIT=0
