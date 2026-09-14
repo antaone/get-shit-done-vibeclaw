@@ -179,6 +179,10 @@ If plans exist but not all have matching summaries, run `fvgsd-sdk query phase-p
 → A plan has `kind: "brief"` and either `has_summary: false`, or a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary`: `/fvgsd:build <current-phase>` (resumes the build; execute-phase refuses briefs)
 → Otherwise: `/fvgsd:execute-phase <current-phase>`
 
+**Route 4a: Build phase has an unfinalized summary → resume the build**
+If a plan in the current phase has `kind: "brief"` and a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary`, regardless of `workflow.build_mode`:
+→ Next action: `/fvgsd:build <current-phase>` (resumes the build; execute-phase refuses briefs)
+
 **Route 4b: Build phase has verification gaps → gap build**
 If `fvgsd-sdk query config-get workflow.build_mode --default true` prints `true`, a plan in the current phase has `kind: "brief"`, every plan has a summary, and the phase VERIFICATION.md frontmatter has `status: gaps_found`:
 → Next action: `/fvgsd:build <current-phase> --gaps`

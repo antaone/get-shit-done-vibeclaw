@@ -63,6 +63,21 @@ describe('workflow prompts route discussed phases to /fvgsd-build', () => {
     assert.ok(unfinalized < complete, 'the unfinalized-summary row must precede the Phase complete row');
   });
 
+  test('next.md routes an unfinalized brief summary to /fvgsd:build ahead of Route 4b and Route 5', () => {
+    const body = stepBody(read('next.md'), 'determine_next_action');
+    const route4a = body.indexOf('**Route 4a:');
+    const route4b = body.indexOf('**Route 4b:');
+    const route5 = body.indexOf('**Route 5:');
+    assert.ok(route4a !== -1, 'no route for an unfinalized (kind: build-summary) brief summary');
+    assert.ok(route4b !== -1, 'no Route 4b');
+    assert.ok(route5 !== -1, 'no Route 5');
+    assert.ok(route4a < route4b, 'the unfinalized-summary route must precede Route 4b');
+    assert.ok(route4a < route5, 'the unfinalized-summary route must precede Route 5');
+    const route4aBlock = body.slice(route4a, route4b);
+    assert.ok(route4aBlock.includes('kind: build-summary'), 'the route must name kind: build-summary');
+    assert.ok(route4aBlock.includes('/fvgsd:build'), 'the route must point to /fvgsd:build');
+  });
+
   test('manager.md has a Build Phase N handler that runs the build skill', () => {
     const section = headingSection(read('manager.md'), '### Build Phase N');
     assert.ok(section.includes('Skill(skill=\\"fvgsd-build\\"'));
