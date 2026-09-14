@@ -18,7 +18,7 @@
  * ```
  */
 
-import { existsSync, readdirSync, statSync, type Dirent } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, type Dirent } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
@@ -42,6 +42,8 @@ import {
 } from './roadmap.js';
 import { agentSkills } from './skills.js';
 import { withProjectRoot } from './init.js';
+import { extractFrontmatter } from './frontmatter.js';
+import { listPhasePlanFiles, readVerification } from './build-shared.js';
 import type { QueryHandler } from './utils.js';
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
@@ -213,6 +215,15 @@ function listPhasePlanAndSummaryCounts(phasePath: string): { plans: string[]; su
     plans: rootPlans.concat(nestedPlans),
     summaries: rootSummaries.concat(nestedSummaries),
   };
+}
+
+/** True once build.finalize has marked the summary `kind: build-summary`; a refused finalize never writes it. */
+function isFinalizedSummary(phaseDirAbs: string, summaryFile: string): boolean {
+  try {
+    return extractFrontmatter(readFileSync(join(phaseDirAbs, summaryFile), 'utf-8')).kind === 'build-summary';
+  } catch {
+    return false;
+  }
 }
 
 // ─── initNewProject ───────────────────────────────────────────────────────
@@ -556,6 +567,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
 
   const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:\s*([^\n]+)/gi;
   const phases: Record<string, unknown>[] = [];
+  const buildInfo = new Map<string, { hasBrief: boolean; incompleteBrief: boolean; verification: string | null }>();
   let pMatch: RegExpExecArray | null;
 
   while ((pMatch = phasePattern.exec(content)) !== null) {
@@ -613,6 +625,17 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
           lastActivity = new Date(newestMtime).toISOString();
           isActive = (now - newestMtime) < 300000; // 5 minutes
         }
+
+        // Build facts in their own try/catch: a read failure here must not turn the phase into no_directory.
+        try {
+          const briefs = listPhasePlanFiles(fullDir, normalized).filter(plan => plan.kind === 'brief');
+          buildInfo.set(phaseNum, {
+            hasBrief: briefs.length > 0,
+            // A brief stays unfinished until build.finalize marks its summary `kind: build-summary`.
+            incompleteBrief: briefs.some(plan => !isFinalizedSummary(fullDir, `${normalized}-${plan.nn}-SUMMARY.md`)),
+            verification: readVerification(fullDir, normalized)?.status ?? null,
+          });
+        } catch { /* no build facts: the classic recommendations apply */ }
       }
     } catch { /* intentionally empty */ }
 
@@ -702,11 +725,38 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     return p.is_active && (status === 'discussed' || status === 'researched');
   });
 
+  const workflowConfig = (config as Record<string, unknown>).workflow as Record<string, unknown> | undefined;
+  const buildMode = workflowConfig?.build_mode !== false;
+  const independentOf = (phaseNumber: string, active: Record<string, unknown>[]): boolean =>
+    active.every(a => !reaches(phaseNumber, a.number as string) && !reaches(a.number as string, phaseNumber));
+
   const recommendedActions: Record<string, unknown>[] = [];
   for (const phase of phases) {
     const status = phase.disk_status as string;
+    const number = phase.number as string;
+    if (/^999(?:\.|$)/.test(number)) continue;
+
+    const info = buildInfo.get(number);
+    if (info?.hasBrief && !phase.roadmap_complete) {
+      // Decision 13: an unfinished brief (no summary yet, or one build.finalize never marked)
+      // resumes build even with build_mode off; the --gaps suggestion still follows build_mode.
+      // Summaries make disk_status 'complete', so only the ROADMAP checkbox shows a passed finalize.
+      const resume = info.incompleteBrief && Boolean(phase.deps_satisfied);
+      const gaps = buildMode && !info.incompleteBrief && status === 'complete' && info.verification === 'gaps_found';
+      if (resume || gaps) {
+        if (independentOf(number, activeExecuting) && independentOf(number, activePlanning)) {
+          recommendedActions.push({
+            phase: phase.number,
+            phase_name: phase.name,
+            action: 'build',
+            reason: gaps ? 'Verification found gaps' : 'Build in progress — resume',
+            command: gaps ? `/fvgsd-build ${phase.number} --gaps` : `/fvgsd-build ${phase.number}`,
+          });
+        }
+        continue;
+      }
+    }
     if (status === 'complete') continue;
-    if (/^999(?:\.|$)/.test(phase.number as string)) continue;
 
     if (status === 'planned' && phase.deps_satisfied) {
       const action = {
@@ -720,16 +770,37 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         activeExecuting.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
       if (isAllowed) recommendedActions.push(action);
     } else if (status === 'discussed' || status === 'researched') {
-      const action = {
-        phase: phase.number,
-        phase_name: phase.name,
-        action: 'plan',
-        reason: 'Context gathered, ready for planning',
-        command: `/fvgsd-plan-phase ${phase.number}`,
-      };
-      const isAllowed = activePlanning.length === 0 ||
-        activePlanning.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
-      if (isAllowed) recommendedActions.push(action);
+      if (buildMode && !phase.has_context) {
+        // A build needs CONTEXT.md: a researched phase without it is discussed first.
+        recommendedActions.push({
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'discuss',
+          reason: 'Research exists but no CONTEXT.md',
+          command: `/fvgsd-discuss-phase ${phase.number}`,
+        });
+      } else if (buildMode) {
+        if (phase.deps_satisfied && independentOf(number, activeExecuting) && independentOf(number, activePlanning)) {
+          recommendedActions.push({
+            phase: phase.number,
+            phase_name: phase.name,
+            action: 'build',
+            reason: 'Context gathered, ready to build',
+            command: `/fvgsd-build ${phase.number}`,
+          });
+        }
+      } else {
+        const action = {
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'plan',
+          reason: 'Context gathered, ready for planning',
+          command: `/fvgsd-plan-phase ${phase.number}`,
+        };
+        const isAllowed = activePlanning.length === 0 ||
+          activePlanning.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
+        if (isAllowed) recommendedActions.push(action);
+      }
     } else if ((status === 'empty' || status === 'no_directory') && phase.is_next_to_discuss) {
       recommendedActions.push({
         phase: phase.number,

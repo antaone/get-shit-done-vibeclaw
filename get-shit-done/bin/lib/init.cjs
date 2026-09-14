@@ -6,12 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const IDENTITY = require('./identity.cjs');
 const { execGit, platformWriteSync, platformReadSync } = require('./shell-command-projection.cjs');
-const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, gitWorktreeInfoInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
+const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, gitWorktreeInfoInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches, escapeRegex } = require('./core.cjs');
 const { planningPaths, planningDir, planningRoot, findContextMdIn } = require('./planning-workspace.cjs');
 const { maskIfSecret } = require('./secrets.cjs');
 const scanPhasePlans = require('./plan-scan.cjs');
 const { stateExtractField } = require('./state-document.cjs');
 const { formatGsdSlash, resolveRuntime } = require('./runtime-slash.cjs');
+const { extractFrontmatter } = require('./frontmatter.cjs');
 const { determinePhaseStatus } = require('./commands.cjs');
 
 // Accept all bold/colon variants of the Requirements header (#2769):
@@ -25,6 +26,52 @@ function listPhaseSummaryFiles(phaseDir) {
 
 function listPhasePlanFiles(phaseDir) {
   return scanPhasePlans(phaseDir).planFiles;
+}
+
+// `workflow.build_mode` (default true). A raw read keeps loadConfig's flat
+// shape unchanged; unreadable config keeps the default.
+function readBuildMode(cwd) {
+  try {
+    const raw = platformReadSync(path.join(planningDir(cwd), 'config.json'));
+    if (raw === null) return true;
+    const parsed = JSON.parse(raw);
+    return !(parsed && parsed.workflow && parsed.workflow.build_mode === false);
+  } catch {
+    return true;
+  }
+}
+
+// /fvgsd-build facts for one phase directory, matched the way the SDK readers
+// in sdk/src/query/build-shared.ts match them so both managers agree: any
+// `{P}-{NN}[-slug]-PLAN.md` brief, any brief whose `{P}-{NN}-SUMMARY.md`
+// build.finalize has not marked `kind: build-summary` (a refused finalize never
+// writes it), and the `{P}-VERIFICATION.md` frontmatter status.
+function readPhaseBuildInfo(phaseDir, padded) {
+  const info = { hasBrief: false, incompleteBrief: false, verification: null };
+  const frontmatterOf = (file) => {
+    try {
+      const raw = platformReadSync(path.join(phaseDir, file));
+      return raw === null ? {} : extractFrontmatter(raw);
+    } catch {
+      return {};
+    }
+  };
+  let files;
+  try {
+    files = fs.readdirSync(phaseDir);
+  } catch {
+    return info;
+  }
+  const planPattern = new RegExp(`^${escapeRegex(padded)}-(\\d{2,})(?:-[^/]*)?-PLAN\\.md$`);
+  for (const file of files) {
+    const match = file.match(planPattern);
+    if (!match || frontmatterOf(file).kind !== 'brief') continue;
+    info.hasBrief = true;
+    if (frontmatterOf(`${padded}-${match[1]}-SUMMARY.md`).kind !== 'build-summary') info.incompleteBrief = true;
+  }
+  const status = frontmatterOf(`${padded}-VERIFICATION.md`).status;
+  info.verification = typeof status === 'string' && status.trim() !== '' ? status.trim() : null;
+  return info;
 }
 
 function getLatestCompletedMilestone(cwd) {
@@ -1160,6 +1207,7 @@ function cmdInitManager(cwd, raw) {
   while ((_cbMatch = _cbPattern.exec(content)) !== null) {
     _checkboxStates.set(_cbMatch[2], _cbMatch[1].toLowerCase() === 'x');
   }
+  const buildInfoByPhase = new Map();
 
   const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:\s*([^\n]+)/gi;
   const phases = [];
@@ -1201,6 +1249,7 @@ function cmdInitManager(cwd, raw) {
         summaryCount = listPhaseSummaryFiles(fullDir).length;
         hasContext = findContextMdIn(fullDir) !== null;
         hasResearch = phaseFiles.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md');
+        buildInfoByPhase.set(phaseNum, readPhaseBuildInfo(fullDir, normalized));
 
         if (summaryCount >= planCount && planCount > 0) diskStatus = 'complete';
         else if (summaryCount > 0) diskStatus = 'partial';
@@ -1304,12 +1353,34 @@ function cmdInitManager(cwd, raw) {
     }
   } catch { /* intentionally empty */ }
 
-  // Compute recommended actions (execute > plan > discuss)
+  // Compute recommended actions (execute > plan > discuss). While
+  // workflow.build_mode is on, build replaces plan and suggests --gaps.
+  // An unfinished brief resumes build in either mode (execute-phase refuses briefs).
   // Skip BACKLOG phases (999.x numbering) — they are parked ideas, not active work
+  const buildMode = readBuildMode(cwd);
   const recommendedActions = [];
   for (const phase of phases) {
-    if (phase.disk_status === 'complete') continue;
     if (/^999(?:\.|$)/.test(phase.number)) continue;
+
+    const buildInfo = buildInfoByPhase.get(phase.number);
+    if (buildInfo && buildInfo.hasBrief && !phase.roadmap_complete) {
+      // A brief with no summary yet, or one build.finalize never marked, resumes
+      // build. Summaries make disk_status 'complete', so only the ROADMAP
+      // checkbox shows a passed finalize.
+      const resume = buildInfo.incompleteBrief && phase.deps_satisfied;
+      const gaps = buildMode && !buildInfo.incompleteBrief && phase.disk_status === 'complete' && buildInfo.verification === 'gaps_found';
+      if (resume || gaps) {
+        recommendedActions.push({
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'build',
+          reason: gaps ? 'Verification found gaps' : 'Build in progress — resume',
+          command: `${formatGsdSlash('build', _slashRuntime)} ${phase.number}${gaps ? ' --gaps' : ''}`,
+        });
+        continue;
+      }
+    }
+    if (phase.disk_status === 'complete') continue;
 
     if (phase.disk_status === 'planned' && phase.deps_satisfied) {
       recommendedActions.push({
@@ -1320,13 +1391,32 @@ function cmdInitManager(cwd, raw) {
         command: `${formatGsdSlash('execute-phase', _slashRuntime)} ${phase.number}`,
       });
     } else if (phase.disk_status === 'discussed' || phase.disk_status === 'researched') {
-      recommendedActions.push({
-        phase: phase.number,
-        phase_name: phase.name,
-        action: 'plan',
-        reason: 'Context gathered, ready for planning',
-        command: `${formatGsdSlash('plan-phase', _slashRuntime)} ${phase.number}`,
-      });
+      if (!buildMode) {
+        recommendedActions.push({
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'plan',
+          reason: 'Context gathered, ready for planning',
+          command: `${formatGsdSlash('plan-phase', _slashRuntime)} ${phase.number}`,
+        });
+      } else if (!phase.has_context) {
+        // A build needs CONTEXT.md: a researched phase without it is discussed first.
+        recommendedActions.push({
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'discuss',
+          reason: 'Research exists but no CONTEXT.md',
+          command: `${formatGsdSlash('discuss-phase', _slashRuntime)} ${phase.number}`,
+        });
+      } else if (phase.deps_satisfied) {
+        recommendedActions.push({
+          phase: phase.number,
+          phase_name: phase.name,
+          action: 'build',
+          reason: 'Context gathered, ready to build',
+          command: `${formatGsdSlash('build', _slashRuntime)} ${phase.number}`,
+        });
+      }
     } else if ((phase.disk_status === 'empty' || phase.disk_status === 'no_directory') && phase.is_next_to_discuss) {
       recommendedActions.push({
         phase: phase.number,
@@ -1365,6 +1455,10 @@ function cmdInitManager(cwd, raw) {
   );
 
   const filteredActions = recommendedActions.filter(action => {
+    if (action.action === 'build') {
+      // A build plans and executes, so it must be independent of all active work.
+      return [...activeExecuting, ...activePlanning].every(active => !hasDepRelationship(action.phase, active.number));
+    }
     if (action.action === 'execute' && activeExecuting.length > 0) {
       // Only allow if independent of ALL actively-executing phases
       return activeExecuting.every(active => !hasDepRelationship(action.phase, active.number));

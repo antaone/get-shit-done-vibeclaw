@@ -502,6 +502,8 @@ export interface PlanInfo {
   files_modified: string[];
   task_count: number;
   has_summary: boolean;
+  /** Frontmatter `kind` (e.g. `brief` for /fvgsd-build plans), null when absent. */
+  kind?: string | null;
 }
 
 /**

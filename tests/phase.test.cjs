@@ -242,6 +242,18 @@ describe('phase-plan-index command', () => {
     assert.ok(output.warning === undefined, 'truly empty dir must not emit a warning');
   });
 
+  test('reports each plan kind from frontmatter, null when absent', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '03-api');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '03-01-PLAN.md'), ['---', 'phase: 03-api', 'plan: 01', 'kind: brief', '---', '<objective>', 'Build the API.', '</objective>', ''].join('\n'));
+    fs.writeFileSync(path.join(phaseDir, '03-02-PLAN.md'), ['---', 'phase: 03-api', 'plan: 02', '---', '<objective>', 'Classic plan.', '</objective>', ''].join('\n'));
+
+    const result = runGsdTools('phase-plan-index 03', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+    const output = JSON.parse(result.output);
+    assert.deepStrictEqual(output.plans.map((plan) => [plan.id, plan.kind]), [['03-01', 'brief'], ['03-02', null]]);
+  });
+
   // #2893 — when the planner produces filenames that don't match the canonical
   // `{padded_phase}-{NN}-PLAN.md` contract, the executor used to silently see
   // plan_count: 0 with no signal. Now the response must include a `warning`

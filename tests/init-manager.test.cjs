@@ -30,6 +30,11 @@ function writeState(tmpDir) {
   fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), '---\nstatus: active\n---\n# State\n');
 }
 
+// The existing describes below assert the classic plan/execute routing.
+function writeClassicConfig(tmpDir) {
+  fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({ workflow: { build_mode: false } }));
+}
+
 // Helper: scaffold a phase directory with specific artifacts
 function scaffoldPhase(tmpDir, num, opts = {}) {
   const padded = String(num).padStart(2, '0');
@@ -60,6 +65,7 @@ describe('init manager', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
+    writeClassicConfig(tmpDir);
   });
 
   afterEach(() => {
@@ -610,6 +616,7 @@ describe('init manager — cross-milestone dependency satisfaction (#2267)', () 
 
   beforeEach(() => {
     tmpDir = createTempProject();
+    writeClassicConfig(tmpDir);
   });
 
   afterEach(() => {
@@ -709,5 +716,122 @@ describe('init manager — cross-milestone dependency satisfaction (#2267)', () 
       false,
       'Phase 7 dep on non-existent Phase 99 should not be satisfied'
     );
+  });
+});
+
+describe('init manager — build mode', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    writeState(tmpDir);
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  function writePhaseFile(num, slug, name, content) {
+    const padded = String(num).padStart(2, '0');
+    const dir = path.join(tmpDir, '.planning', 'phases', `${padded}-${slug}`);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, name.replace('{P}', padded)), content);
+  }
+
+  const brief = ['---', 'phase: 01-auth', 'plan: 01', 'kind: brief', '---', '<objective>', 'Build it.', '</objective>', ''].join('\n');
+  // A summary build.finalize has marked. A summary without `kind: build-summary` was never finalized.
+  const buildSummary = ['---', 'phase: 01-auth', 'plan: 01', 'kind: build-summary', '---', '# Summary', ''].join('\n');
+
+  function actionsFor(env = { FVGSD_RUNTIME: 'claude' }) {
+    const result = runGsdTools('init manager', tmpDir, env);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+    return JSON.parse(result.output).recommended_actions.map(({ phase, action, command }) => ({ phase, action, command }));
+  }
+
+  test('recommends build for a discussed phase whose dependencies are complete', () => {
+    writeRoadmap(tmpDir, [
+      { number: '1', name: 'Base', complete: true },
+      { number: '2', name: 'Next', depends_on: 'Phase 1' },
+    ]);
+    scaffoldPhase(tmpDir, 1, { slug: 'base', context: true, plans: 1, summaries: 1 });
+    scaffoldPhase(tmpDir, 2, { slug: 'next', context: true });
+    assert.deepStrictEqual(actionsFor(), [{ phase: '2', action: 'build', command: '/fvgsd-build 2' }]);
+  });
+
+  test('does not recommend build while a dependency is incomplete', () => {
+    writeRoadmap(tmpDir, [
+      { number: '1', name: 'Base' },
+      { number: '2', name: 'Next', depends_on: 'Phase 1' },
+    ]);
+    scaffoldPhase(tmpDir, 1, { slug: 'base', context: true, plans: 1 });
+    scaffoldPhase(tmpDir, 2, { slug: 'next', context: true });
+    assert.deepStrictEqual(actionsFor().filter((a) => a.phase === '2'), []);
+  });
+
+  test('resumes build for a planned phase whose plan is a brief', () => {
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-CONTEXT.md', '# Context');
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1' }]);
+  });
+
+  test('resumes build for an unfinished brief even when workflow.build_mode is false', () => {
+    writeClassicConfig(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-CONTEXT.md', '# Context');
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1' }]);
+  });
+
+  test('resumes build when build.finalize never marked the summary, even though verification passed', () => {
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    writePhaseFile(1, 'auth', '{P}-01-SUMMARY.md', '# Summary');
+    writePhaseFile(1, 'auth', '{P}-VERIFICATION.md', ['---', 'phase: 01-auth', 'status: passed', '---', ''].join('\n'));
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1' }]);
+  });
+
+  test('resumes build, not a gap build, when a summary with verification gaps was never finalized', () => {
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    writePhaseFile(1, 'auth', '{P}-01-SUMMARY.md', '# Summary');
+    writePhaseFile(1, 'auth', '{P}-VERIFICATION.md', ['---', 'phase: 01-auth', 'status: gaps_found', '---', ''].join('\n'));
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1' }]);
+  });
+
+  test('resumes build for a never-finalized summary even when workflow.build_mode is false', () => {
+    writeClassicConfig(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    writePhaseFile(1, 'auth', '{P}-01-SUMMARY.md', '# Summary');
+    writePhaseFile(1, 'auth', '{P}-VERIFICATION.md', ['---', 'phase: 01-auth', 'status: gaps_found', '---', ''].join('\n'));
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1' }]);
+  });
+
+  test('recommends a gap build for a complete build phase whose verification found gaps', () => {
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    writePhaseFile(1, 'auth', '{P}-01-SUMMARY.md', buildSummary);
+    writePhaseFile(1, 'auth', '{P}-VERIFICATION.md', ['---', 'phase: 01-auth', 'status: gaps_found', '---', ''].join('\n'));
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1 --gaps' }]);
+  });
+
+  test('renders build commands in the codex skill form', () => {
+    writeRoadmap(tmpDir, [{ number: '3', name: 'Api' }]);
+    scaffoldPhase(tmpDir, 3, { slug: 'api', context: true });
+    assert.deepStrictEqual(actionsFor({ FVGSD_RUNTIME: 'codex' }), [{ phase: '3', action: 'build', command: '$fvgsd-build 3' }]);
+  });
+
+  test('keeps the plan recommendation when workflow.build_mode is false', () => {
+    writeClassicConfig(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    scaffoldPhase(tmpDir, 1, { slug: 'auth', context: true });
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'plan', command: '/fvgsd-plan-phase 1' }]);
+  });
+
+  test('recommends discuss for a researched phase without CONTEXT.md', () => {
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    scaffoldPhase(tmpDir, 1, { slug: 'auth', research: true });
+    assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'discuss', command: '/fvgsd-discuss-phase 1' }]);
   });
 });

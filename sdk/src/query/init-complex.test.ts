@@ -32,7 +32,7 @@ beforeEach(async () => {
       milestone_branch_template: 'gsd/{milestone}-{slug}',
       quick_branch_template: null,
     },
-    workflow: { research: true, plan_check: true, verifier: true, nyquist_validation: true },
+    workflow: { research: true, plan_check: true, verifier: true, nyquist_validation: true, build_mode: false },
   }));
 
   // STATE.md
@@ -784,5 +784,121 @@ describe('initProgress + initManager precedence (#2674)', () => {
 
     expect(progress.completed_count).toBe(1);
     expect(manager.completed_count).toBe(1);
+  });
+});
+
+describe('initManager — build mode', () => {
+  const BRIEF = ['---', 'phase: 20-auth', 'plan: 01', 'kind: brief', '---', '<objective>', 'Build it.', '</objective>', ''].join('\n');
+  /** A summary build.finalize has marked. A summary without `kind: build-summary` was never finalized. */
+  const BUILD_SUMMARY = ['---', 'phase: 20-auth', 'plan: 01', 'kind: build-summary', '---', '# Done', ''].join('\n');
+
+  async function scaffold(
+    phases: Array<{ number: string; slug: string; dependsOn?: string; files: Record<string, string> }>,
+    buildMode = true,
+  ): Promise<void> {
+    await writeFile(join(tmpDir, '.planning', 'config.json'), JSON.stringify({ model_profile: 'balanced', commit_docs: false, workflow: { build_mode: buildMode } }));
+    const roadmap = ['# Roadmap', '', '## v3.0: SDK-First Migration', ''];
+    for (const phase of phases) {
+      roadmap.push(`### Phase ${phase.number}: ${phase.slug}`, '', '**Goal:** Build it', '', `**Depends on:** ${phase.dependsOn ?? 'None'}`, '');
+      const dir = join(tmpDir, '.planning', 'phases', `${phase.number}-${phase.slug}`);
+      await mkdir(dir, { recursive: true });
+      for (const [name, content] of Object.entries(phase.files)) {
+        await writeFile(join(dir, name), content);
+      }
+    }
+    await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), roadmap.join('\n'));
+  }
+
+  async function actions(): Promise<Array<Record<string, unknown>>> {
+    const data = (await initManager([], tmpDir)).data as Record<string, unknown>;
+    return (data.recommended_actions as Array<Record<string, unknown>>).map(({ phase, action, command }) => ({ phase, action, command }));
+  }
+
+  it('recommends build for a discussed phase whose dependencies are complete', async () => {
+    await scaffold([
+      { number: '20', slug: 'base', files: { '20-01-PLAN.md': BRIEF, '20-01-SUMMARY.md': BUILD_SUMMARY } },
+      { number: '21', slug: 'next', dependsOn: 'Phase 20', files: { '21-CONTEXT.md': '# Context' } },
+    ]);
+    expect(await actions()).toEqual([{ phase: '21', action: 'build', command: '/fvgsd-build 21' }]);
+  });
+
+  it('does not recommend build while a dependency is incomplete', async () => {
+    await scaffold([
+      { number: '20', slug: 'base', files: { '20-01-PLAN.md': '---\nphase: 20-base\nplan: 01\n---\n' } },
+      { number: '21', slug: 'next', dependsOn: 'Phase 20', files: { '21-CONTEXT.md': '# Context' } },
+    ]);
+    expect((await actions()).filter(a => a.phase === '21')).toEqual([]);
+  });
+
+  it('resumes build for a planned phase whose plan is a brief', async () => {
+    await scaffold([{ number: '20', slug: 'auth', files: { '20-CONTEXT.md': '# Context', '20-01-PLAN.md': BRIEF } }]);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20' }]);
+  });
+
+  it('resumes build for an unfinished brief even when workflow.build_mode is false', async () => {
+    await scaffold([{ number: '20', slug: 'auth', files: { '20-CONTEXT.md': '# Context', '20-01-PLAN.md': BRIEF } }], false);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20' }]);
+  });
+
+  it('resumes build when build.finalize never marked the summary, even though verification passed', async () => {
+    await scaffold([{
+      number: '20',
+      slug: 'auth',
+      files: {
+        '20-01-PLAN.md': BRIEF,
+        '20-01-SUMMARY.md': '# Done',
+        '20-VERIFICATION.md': '---\nphase: 20-auth\nstatus: passed\n---\n',
+      },
+    }]);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20' }]);
+  });
+
+  it('resumes build, not a gap build, when a summary with verification gaps was never finalized', async () => {
+    await scaffold([{
+      number: '20',
+      slug: 'auth',
+      files: {
+        '20-01-PLAN.md': BRIEF,
+        '20-01-SUMMARY.md': '# Done',
+        '20-VERIFICATION.md': '---\nphase: 20-auth\nstatus: gaps_found\n---\n',
+      },
+    }]);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20' }]);
+  });
+
+  it('resumes build for a never-finalized summary even when workflow.build_mode is false', async () => {
+    await scaffold([{
+      number: '20',
+      slug: 'auth',
+      files: {
+        '20-01-PLAN.md': BRIEF,
+        '20-01-SUMMARY.md': '# Done',
+        '20-VERIFICATION.md': '---\nphase: 20-auth\nstatus: gaps_found\n---\n',
+      },
+    }], false);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20' }]);
+  });
+
+  it('recommends a gap build when a complete build phase has verification gaps', async () => {
+    await scaffold([{
+      number: '20',
+      slug: 'auth',
+      files: {
+        '20-01-PLAN.md': BRIEF,
+        '20-01-SUMMARY.md': BUILD_SUMMARY,
+        '20-VERIFICATION.md': '---\nphase: 20-auth\nstatus: gaps_found\n---\n',
+      },
+    }]);
+    expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20 --gaps' }]);
+  });
+
+  it('keeps the plan recommendation when workflow.build_mode is false', async () => {
+    await scaffold([{ number: '20', slug: 'auth', files: { '20-CONTEXT.md': '# Context' } }], false);
+    expect(await actions()).toEqual([{ phase: '20', action: 'plan', command: '/fvgsd-plan-phase 20' }]);
+  });
+
+  it('recommends discuss for a researched phase without CONTEXT.md', async () => {
+    await scaffold([{ number: '20', slug: 'auth', files: { '20-RESEARCH.md': '# Research' } }]);
+    expect(await actions()).toEqual([{ phase: '20', action: 'discuss', command: '/fvgsd-discuss-phase 20' }]);
   });
 });

@@ -437,6 +437,7 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
     filesModified: string[];
     taskCount: number;
     hasSummary: boolean;
+    kind: string | null;
   }
 
   const rawPlans: RawPlan[] = [];
@@ -493,6 +494,7 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
       filesModified,
       taskCount,
       hasSummary,
+      kind: typeof fm.kind === 'string' && fm.kind.trim() !== '' ? fm.kind.trim() : null,
     });
   }
 
@@ -644,6 +646,7 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
       files_modified: raw.filesModified,
       task_count: raw.taskCount,
       has_summary: raw.hasSummary,
+      kind: raw.kind,
     };
 
     plans.push(plan);

@@ -290,6 +290,18 @@ describe('phasePlanIndex', () => {
     expect(filesModified).toContain('sdk/src/errors.test.ts');
   });
 
+  it('reports each plan kind from frontmatter, null when absent', async () => {
+    const phase11 = join(tmpDir, '.planning', 'phases', '11-build');
+    await mkdir(phase11, { recursive: true });
+    await writeFile(join(phase11, '11-01-PLAN.md'), '---\nphase: 11-build\nplan: 01\nkind: brief\n---\n<objective>\nBuild it.\n</objective>\n');
+
+    const briefPlans = ((await phasePlanIndex(['11'], tmpDir)).data as Record<string, unknown>).plans as Array<Record<string, unknown>>;
+    expect(briefPlans.map(p => p.kind)).toEqual(['brief']);
+
+    const classicPlans = ((await phasePlanIndex(['9'], tmpDir)).data as Record<string, unknown>).plans as Array<Record<string, unknown>>;
+    expect(classicPlans.map(p => p.kind)).toEqual([null, null, null]);
+  });
+
   it('throws GSDError with Validation classification when no args', async () => {
     await expect(phasePlanIndex([], tmpDir)).rejects.toThrow(GSDError);
     try {

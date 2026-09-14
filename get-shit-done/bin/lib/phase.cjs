@@ -439,6 +439,7 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
       filesModified,
       taskCount,
       hasSummary,
+      kind: typeof fm.kind === 'string' && fm.kind.trim() !== '' ? fm.kind.trim() : null,
     });
   }
 
@@ -543,6 +544,7 @@ function cmdPhasePlanIndex(cwd, phase, raw) {
       files_modified: raw.filesModified,
       task_count: raw.taskCount,
       has_summary: raw.hasSummary,
+      kind: raw.kind,
     };
 
     plans.push(plan);

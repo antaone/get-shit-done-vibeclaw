@@ -8,10 +8,12 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { loadConfig } from '../config.js';
+import { extractFrontmatter } from './frontmatter.js';
 import { planningPaths, normalizePhaseName, comparePhaseNum } from './helpers.js';
 import { stateJson } from './state.js';
 import { roadmapAnalyze } from './roadmap.js';
-import { findPhase } from './phase.js';
+import { findPhase, phasePlanIndex } from './phase.js';
 import type { QueryHandler } from './utils.js';
 
 function readConsecutiveCallCount(planningDir: string): number {
@@ -49,6 +51,58 @@ async function verificationPassed(phaseDirAbs: string): Promise<boolean> {
     return /status:\s*passed/i.test(content);
   } catch {
     return false;
+  }
+}
+
+/** `workflow.build_mode` (default true); unreadable config keeps the default. */
+async function isBuildMode(projectDir: string, workstream?: string): Promise<boolean> {
+  try {
+    const config = await loadConfig(projectDir, workstream);
+    const workflow = (config as Record<string, unknown>).workflow as Record<string, unknown> | undefined;
+    return workflow?.build_mode !== false;
+  } catch {
+    return true;
+  }
+}
+
+/** True once build.finalize has marked the summary `kind: build-summary`; a refused finalize never writes it. */
+async function summaryFinalized(summaryPath: string): Promise<boolean> {
+  try {
+    return extractFrontmatter(await readFile(summaryPath, 'utf-8')).kind === 'build-summary';
+  } catch {
+    return false;
+  }
+}
+
+/** Plan kinds from phase-plan-index, and whether each summary was finalized; empty when the index cannot be built. */
+async function planKinds(
+  phase: string,
+  phaseDirAbs: string,
+  projectDir: string,
+  workstream?: string,
+): Promise<Array<{ kind: string | null; finalized: boolean }>> {
+  try {
+    const index = await phasePlanIndex([phase], projectDir, workstream);
+    const plans = ((index.data as Record<string, unknown>).plans as Array<Record<string, unknown>> | undefined) ?? [];
+    return await Promise.all(plans.map(async (plan) => ({
+      kind: typeof plan.kind === 'string' ? plan.kind : null,
+      finalized: plan.has_summary === true && await summaryFinalized(join(phaseDirAbs, `${String(plan.id)}-SUMMARY.md`)),
+    })));
+  } catch {
+    return [];
+  }
+}
+
+/** Frontmatter `status` of the phase VERIFICATION.md, null when absent. */
+async function verificationStatus(phaseDirAbs: string): Promise<string | null> {
+  try {
+    const files = await readdir(phaseDirAbs);
+    const vf = files.find(f => f === 'VERIFICATION.md' || f.endsWith('-VERIFICATION.md'));
+    if (!vf) return null;
+    const fm = extractFrontmatter(await readFile(join(phaseDirAbs, vf), 'utf-8'));
+    return typeof fm.status === 'string' ? fm.status : null;
+  } catch {
+    return null;
   }
 }
 
@@ -242,6 +296,7 @@ export const routeNextAction: QueryHandler = async (_args, projectDir, workstrea
   const hasContext = Boolean(pd.has_context);
   const hasResearch = Boolean(pd.has_research);
   const phaseDirAbs = pd.directory ? join(projectDir, pd.directory as string) : '';
+  const buildMode = await isBuildMode(projectDir, workstream);
 
   // Route 2
   if (!hasContext && !hasResearch) {
@@ -264,9 +319,14 @@ export const routeNextAction: QueryHandler = async (_args, projectDir, workstrea
     const ctx = await buildContext(currentPhase);
     return {
       data: {
-        command: '/fvgsd-plan-phase',
+        // A build needs CONTEXT.md: a phase with only RESEARCH.md is discussed first.
+        command: !buildMode ? '/fvgsd-plan-phase' : hasContext ? '/fvgsd-build' : '/fvgsd-discuss-phase',
         args: cp,
-        reason: 'Context exists but no PLAN.md files',
+        reason: !buildMode
+          ? 'Context exists but no PLAN.md files'
+          : hasContext
+            ? 'Context exists — build the phase (plan and execute in one step)'
+            : 'Research exists but no CONTEXT.md — discuss the phase before building',
         current_phase: currentPhase,
         phase_name: displayName,
         gates,
@@ -275,14 +335,38 @@ export const routeNextAction: QueryHandler = async (_args, projectDir, workstrea
     };
   }
 
+  const planInfo = phaseDirAbs ? await planKinds(cp, phaseDirAbs, projectDir, workstream) : [];
+  // A brief is unfinished until build.finalize marks its summary: a refused finalize leaves
+  // STATE, ROADMAP and REQUIREMENTS untouched, and /fvgsd-build resumes it.
+  const resumeBuild = planInfo.some(plan => plan.kind === 'brief' && !plan.finalized);
+
   // Route 4
-  if (incomplete.length > 0) {
+  if (incomplete.length > 0 || resumeBuild) {
+    const ctx = await buildContext(currentPhase);
+    // Decision 13: execute-phase refuses briefs, so an unfinished brief resumes
+    // /fvgsd-build even when workflow.build_mode is false.
+    return {
+      data: {
+        command: resumeBuild ? '/fvgsd-build' : '/fvgsd-execute-phase',
+        args: cp,
+        reason: resumeBuild ? 'Build in progress — resume' : `${incomplete.length} plan(s) still need SUMMARY.md`,
+        current_phase: currentPhase,
+        phase_name: displayName,
+        gates,
+        context: ctx,
+      },
+    };
+  }
+
+  // Route 4b — a /fvgsd-build phase whose verification found gaps
+  const isBuildPhase = planInfo.some(plan => plan.kind === 'brief');
+  if (buildMode && isBuildPhase && (await verificationStatus(phaseDirAbs)) === 'gaps_found') {
     const ctx = await buildContext(currentPhase);
     return {
       data: {
-        command: '/fvgsd-execute-phase',
-        args: cp,
-        reason: `${incomplete.length} plan(s) still need SUMMARY.md`,
+        command: '/fvgsd-build',
+        args: `${cp} --gaps`,
+        reason: 'Verification found gaps',
         current_phase: currentPhase,
         phase_name: displayName,
         gates,
