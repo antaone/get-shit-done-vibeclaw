@@ -52,7 +52,7 @@ describe('VibeClaw orchestration core', () => {
     assert.deepEqual(vibe.listRoutes().map((route) => route.name), ['cheap', 'quality']);
     assert.deepEqual(
       vibe.listWorkflows().map((workflow) => workflow.name),
-      ['feature-development', 'milestone-bootstrap', 'project-bootstrap'],
+      ['feature-build', 'feature-development', 'milestone-bootstrap', 'project-bootstrap'],
     );
     assert.equal(vibe.loadWorkflow('feature-development').stages.execute.mutates_source, true);
     assert.equal(vibe.loadWorkflow('project-bootstrap').stages.project.gsd.command, 'fvgsd:new-project');
@@ -168,6 +168,55 @@ describe('VibeClaw orchestration core', () => {
     assert.equal(gemini.gsd.invocation, '/fvgsd:new-project');
     assert.equal(codex.gsd.invocation, '$fvgsd-new-project');
     assert.equal(claude.gsd.invocation, '/fvgsd-new-project');
+  });
+
+  test('feature-build passes gsd args through to every tool-native invocation', () => {
+    const workflow = vibe.loadWorkflow('feature-build');
+    assert.deepEqual(Object.keys(workflow.stages), ['research', 'discuss', 'brief', 'build', 'verify', 'review']);
+    assert.equal(workflow.stages.build.mutates_source, true);
+    assert.deepEqual(workflow.stages.research.gsd, { command: 'fvgsd:build', args: ['--research-only'] });
+    assert.deepEqual(workflow.stages.brief.gsd, { command: 'fvgsd:build', args: ['--brief-only'] });
+    assert.deepEqual(workflow.stages.build.gsd, { command: 'fvgsd:build' });
+
+    vibe.startRun('feature-build', { id: 'build-context' });
+    const invocations = ['claude', 'codex', 'gemini'].map((tool) => {
+      const context = vibe.context(vibe.prepareStage('research', { tool }).candidate.id);
+      return [tool, context.gsd.args, context.gsd.invocation];
+    });
+    assert.deepEqual(invocations, [
+      ['claude', ['--research-only'], '/fvgsd-build --research-only'],
+      ['codex', ['--research-only'], '$fvgsd-build --research-only'],
+      ['gemini', ['--research-only'], '/fvgsd:build --research-only'],
+    ]);
+  });
+
+  test('rejects gsd args that are not --flag values', () => {
+    const workflowsDir = path.join(project, '.planning-fvgsd-vibe', 'workflows');
+    const writeWorkflow = (name, argsLines) => fs.writeFileSync(path.join(workflowsDir, `${name}.yaml`), [
+      'version: 1',
+      `name: ${name}`,
+      'stages:',
+      '  build:',
+      '    mutates_source: true',
+      '    gsd:',
+      '      command: fvgsd:build',
+      ...argsLines,
+      '',
+    ].join('\n'), 'utf8');
+    writeWorkflow('bad-arg-item', ['      args:', '        - rm -rf']);
+    writeWorkflow('bad-arg-scalar', ['      args: --research-only']);
+    assert.throws(() => vibe.loadWorkflow('bad-arg-item'), expectCode('SCHEMA_INVALID'));
+    assert.throws(() => vibe.loadWorkflow('bad-arg-scalar'), expectCode('SCHEMA_INVALID'));
+  });
+
+  test('bundled routes assign default tools to the brief and build stages', () => {
+    assert.deepEqual(
+      ['cheap', 'quality'].map((name) => {
+        const route = vibe.loadRoute(name);
+        return [name, route.stages.brief.tool, route.stages.build.tool];
+      }),
+      [['cheap', 'codex', 'opencode'], ['quality', 'codex', 'claude-router']],
+    );
   });
 
   test('completion captures provenance and metrics but remains unpromoted', () => {

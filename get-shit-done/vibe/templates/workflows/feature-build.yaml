@@ -1,0 +1,115 @@
+version: 1
+name: feature-build
+description: Research, optional discussion and brief, then build, verify, and review a phase with /fvgsd-build.
+stages:
+  research:
+    description: Research the feature and persist evidence for the build.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: false
+      promoted_stages: []
+    output:
+      - research_artifact
+      - summary
+    completion:
+      - research artifact persisted
+      - candidate summary written
+      - candidate work committed when tracked
+    gsd:
+      command: fvgsd:build
+      args:
+        - --research-only
+  discuss:
+    description: Capture operator decisions using the existing GSD discussion workflow.
+    optional: true
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - research
+    output:
+      - context_artifact
+      - summary
+    completion:
+      - decisions persisted
+      - candidate summary written
+    gsd:
+      command: fvgsd:discuss-phase
+  brief:
+    description: Write the build brief from the latest promoted research or discussion without changing source.
+    optional: true
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - research
+        - discuss
+    output:
+      - plan_artifact
+      - summary
+    completion:
+      - build brief committed
+      - build brief passes build.check-brief
+      - candidate summary written
+    gsd:
+      command: fvgsd:build
+      args:
+        - --brief-only
+  build:
+    description: Build the phase from the promoted brief, discussion, or research in an isolated candidate branch and worktree.
+    mutates_source: true
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - brief
+        - discuss
+        - research
+    output:
+      - source_commit
+      - verification_artifact
+      - summary
+    completion:
+      - implementation complete
+      - build checks run
+      - build summary and verification committed
+      - all candidate changes committed
+      - candidate summary written
+    gsd:
+      command: fvgsd:build
+  verify:
+    description: Verify the promoted implementation without selecting a winner automatically.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - build
+    output:
+      - verification_artifact
+      - summary
+    completion:
+      - verification executed
+      - evidence persisted
+      - candidate summary written
+    gsd:
+      command: fvgsd:verify-work
+  review:
+    description: Review the promoted verification result and implementation.
+    mutates_source: false
+    requires_git_candidate: true
+    input:
+      required: true
+      promoted_stages:
+        - verify
+    output:
+      - review_artifact
+      - summary
+    completion:
+      - review findings persisted
+      - candidate summary written
+    gsd:
+      command: fvgsd:review

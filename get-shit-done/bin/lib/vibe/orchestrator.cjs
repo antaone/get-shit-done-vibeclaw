@@ -83,6 +83,7 @@ class VibeOrchestrator {
         ['routes', 'cheap.yaml'],
         ['routes', 'quality.yaml'],
         ['workflows', 'feature-development.yaml'],
+        ['workflows', 'feature-build.yaml'],
         ['workflows', 'project-bootstrap.yaml'],
         ['workflows', 'milestone-bootstrap.yaml'],
       ]) {
@@ -485,6 +486,7 @@ class VibeOrchestrator {
     const contextPath = this.store.contextPath(candidate.id, 'markdown');
     const summaryPath = path.join(this.store.candidateDir(candidate.id), 'summary.md');
     const gsdCommand = candidate.contract.gsd.command || null;
+    const gsdArgs = candidate.contract.gsd.args || [];
     const handoff = candidate.git.handoff && candidate.git.handoff.mode === 'multi-machine'
       ? {
         ...candidate.git.handoff,
@@ -520,7 +522,8 @@ class VibeOrchestrator {
       completion_requirements: candidate.contract.completion,
       gsd: {
         command: gsdCommand,
-        invocation: gsdCommand ? formatGsdSlash(gsdCommand, candidate.tool.id) : null,
+        args: gsdArgs,
+        invocation: gsdCommand ? formatGsdSlash([gsdCommand, ...gsdArgs].join(' '), candidate.tool.id) : null,
       },
       persistence: {
         manifest: this.store.candidatePath(candidate.id),

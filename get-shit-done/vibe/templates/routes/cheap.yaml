@@ -12,7 +12,11 @@ stages:
     tool: claude
   plan:
     tool: codex
+  brief:
+    tool: codex
   execute:
+    tool: opencode
+  build:
     tool: opencode
   verify:
     tool: codex

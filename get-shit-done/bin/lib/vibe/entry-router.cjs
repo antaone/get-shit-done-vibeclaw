@@ -19,6 +19,7 @@ const LIFECYCLE_ENTRIES = Object.freeze({
   'execute-phase': Object.freeze({ workflow: 'feature-development', stage: 'execute' }),
   'verify-work': Object.freeze({ workflow: 'feature-development', stage: 'verify' }),
   review: Object.freeze({ workflow: 'feature-development', stage: 'review' }),
+  build: Object.freeze({ workflow: 'feature-build', stage: 'build' }),
 });
 
 const DIRECT_COMMANDS = new Set([

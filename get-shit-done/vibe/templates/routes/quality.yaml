@@ -12,7 +12,11 @@ stages:
     tool: claude
   plan:
     tool: codex
+  brief:
+    tool: codex
   execute:
+    tool: claude-router
+  build:
     tool: claude-router
   verify:
     tool: codex

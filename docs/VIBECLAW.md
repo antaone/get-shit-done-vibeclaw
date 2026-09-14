@@ -576,6 +576,9 @@ The bundled workflows are:
 | `project-bootstrap` | `project` | Compare GSD new-project foundations from the same brief and base commit |
 | `milestone-bootstrap` | `milestone` | Compare next-milestone definitions from the same brief and base commit |
 | `feature-development` | `research`, optional `discuss`, `plan`, `execute`, `verify`, `review` | Repeatable phase delivery lifecycle |
+| `feature-build` | `research`, optional `discuss`, optional `brief`, `build`, `verify`, `review` | Phase delivery with `/fvgsd-build`, which plans and executes in one stage |
+
+`feature-build` runs `/fvgsd-build` in three stages: `research` passes `--research-only`, `brief` passes `--brief-only`, and `build` runs the command without flags. A stage passes flags through `gsd.args`, a list of `--flag` values appended to the rendered invocation.
 
 The `feature-development` workflow declares contracts for:
 

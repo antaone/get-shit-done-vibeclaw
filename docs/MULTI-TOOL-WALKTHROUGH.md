@@ -189,13 +189,14 @@ git add .planning-fvgsd-vibe
 git commit -m "chore: initialize VibeClaw"
 ```
 
-Initialization installs three bundled workflows:
+Initialization installs four bundled workflows:
 
 | Workflow | Purpose |
 | --- | --- |
 | `project-bootstrap` | Compete on `/fvgsd-new-project` and promote one `.planning/` foundation |
 | `milestone-bootstrap` | Compete on `/fvgsd-new-milestone` and promote one milestone definition |
 | `feature-development` | Research → optional discuss → plan → execute → verify → review |
+| `feature-build` | Research → optional discuss → optional brief → build → verify → review, with `/fvgsd-build` |
 
 ## 2. Bootstrap a new project with Gemini, Codex, and Claude
 

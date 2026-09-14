@@ -42,6 +42,14 @@ describe('fvgsd to Vibe entry routing', () => {
     assert.equal(resolveCommandEntry('new-milestone').workflow, 'milestone-bootstrap');
     assert.equal(resolveCommandEntry('execute-phase').stage, 'execute');
     assert.equal(resolveCommandEntry('review').stage, 'review');
+    assert.deepEqual(resolveCommandEntry('build'), {
+      command: 'build',
+      orchestratable: true,
+      kind: 'lifecycle',
+      workflow: 'feature-build',
+      stage: 'build',
+      generated_workflow: false,
+    });
   });
 
   test('treats quick, fast, debug, and future commands as generated single-command workflows', () => {

@@ -73,6 +73,19 @@ function normalizeRoute(value, knownTools) {
   return { version: value.version ?? 1, name, description: String(value.description || ''), stages };
 }
 
+const GSD_ARG_PATTERN = /^--[a-z][a-z0-9-]*$/;
+
+function normalizeGsd(raw, stage) {
+  if (!raw || typeof raw !== 'object') return { command: '' };
+  const args = raw.args ?? [];
+  invariant(
+    Array.isArray(args) && args.every((arg) => typeof arg === 'string' && GSD_ARG_PATTERN.test(arg)),
+    'SCHEMA_INVALID',
+    `workflow.stages.${stage}.gsd.args must be a list of --flag values`,
+  );
+  return { command: String(raw.command || ''), ...(args.length ? { args: [...args] } : {}) };
+}
+
 function normalizeWorkflow(value) {
   assertObject(value, 'workflow');
   invariant((value.version ?? 1) === 1, 'SCHEMA_INVALID', 'workflow.version must be 1');
@@ -105,7 +118,7 @@ function normalizeWorkflow(value) {
       },
       output: output.map(String),
       completion: Array.isArray(raw.completion) ? raw.completion.map(String) : [],
-      gsd: raw.gsd && typeof raw.gsd === 'object' ? { command: String(raw.gsd.command || '') } : { command: '' },
+      gsd: normalizeGsd(raw.gsd, stage),
     };
   }
   invariant(Object.keys(stages).length > 0, 'SCHEMA_INVALID', `Workflow '${name}' must define at least one stage`);
