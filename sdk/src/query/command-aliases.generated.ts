@@ -106,6 +106,7 @@ export const NON_FAMILY_COMMAND_ALIASES: readonly NonFamilyCommandAlias[] = [
   { canonical: 'agent.classify-failure', aliases: ['agent classify-failure'], mutation: false },
   { canonical: 'build.check-brief', aliases: ['build check-brief'], mutation: false },
   { canonical: 'build.run-checks', aliases: ['build run-checks'], mutation: false },
+  { canonical: 'build.scan-stubs', aliases: ['build scan-stubs'], mutation: false },
   { canonical: 'build.waves', aliases: ['build waves'], mutation: false },
   { canonical: 'check-commit', aliases: [], mutation: true },
   { canonical: 'check.decision-coverage-plan', aliases: ['check decision-coverage-plan'], mutation: false },

@@ -31,6 +31,7 @@ import { realpathSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { checkResearchGate } from './research-gate.js';
+import { isDebtScannable, findDebtMarkers, type DebtMarkerFinding } from './debt-markers.js';
 
 // ─── Error type ──────────────────────────────────────────────────────────────
 
@@ -50,12 +51,7 @@ export class PhaseRunnerError extends Error {
 
 export type VerificationOutcome = 'passed' | 'human_needed' | 'gaps_found' | 'architectural_debt' | 'status_unreadable';
 
-interface ArchitecturalDebtFinding {
-  file: string;
-  line: number;
-  marker: string;
-  text: string;
-}
+type ArchitecturalDebtFinding = DebtMarkerFinding;
 
 type ArchitecturalDebtCheckReason = 'markers_found' | 'scan_error';
 
@@ -1230,7 +1226,7 @@ export class PhaseRunner {
       try {
         const parsedPlan = await parsePlanFile(planPath);
         for (const file of this.extractPlanFiles(parsedPlan)) {
-          if (this.shouldScanForArchitecturalDebt(file)) {
+          if (isDebtScannable(file)) {
             filesToScan.add(file);
           }
         }
@@ -1250,7 +1246,7 @@ export class PhaseRunner {
 
       try {
         const content = await readFile(absolutePath, 'utf-8');
-        findings.push(...this.findUnresolvedDebtMarkers(file, content));
+        findings.push(...findDebtMarkers(file, content));
       } catch (err) {
         const code = typeof err === 'object' && err !== null && 'code' in err ? (err as { code?: unknown }).code : undefined;
         if (code === 'ENOENT') {
@@ -1304,37 +1300,6 @@ export class PhaseRunner {
       }
     }
     return [...files];
-  }
-
-  private shouldScanForArchitecturalDebt(file: string): boolean {
-    return !/\.(md|markdown)$/i.test(file);
-  }
-
-  private findUnresolvedDebtMarkers(file: string, content: string): ArchitecturalDebtFinding[] {
-    const findings: ArchitecturalDebtFinding[] = [];
-    const markerPattern = /(?:^|[^\w.])(TBD|FIXME|XXX)(?=\b(?:\.(?:\s|$)|[^\w.]|$))/i;
-    const lines = content.split(/\r?\n/);
-
-    lines.forEach((line, index) => {
-      const match = markerPattern.exec(line);
-      if (match) {
-        const markerSegment = line.slice(match.index);
-        if (this.hasFormalDebtReference(markerSegment)) return;
-
-        findings.push({
-          file,
-          line: index + 1,
-          marker: match[1].toUpperCase(),
-          text: line.trim(),
-        });
-      }
-    });
-
-    return findings;
-  }
-
-  private hasFormalDebtReference(line: string): boolean {
-    return /\bDEF-[A-Z0-9-]+\b/i.test(line) || /\b(?:issue|issues|pr|pull request)\s+#?\d+\b/i.test(line) || /(?:^|\s)#\d+\b/.test(line);
   }
 
   private resolveProjectPath(pathValue: string): string | undefined {

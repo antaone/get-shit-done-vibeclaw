@@ -24,6 +24,7 @@ import { worktreeCleanupWave, worktreeReapOrphans } from './worktree.js';
 import { promptBudget } from './prompt-budget.js';
 import { checksDetect, buildRunChecks } from './build-checks.js';
 import { buildCheckBrief, buildWaves } from './build-brief.js';
+import { buildScanStubs } from './build-stubs.js';
 
 export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler]> = [
   ['agent-skills', agentSkills],
@@ -110,6 +111,8 @@ export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler
   ['user-story.validate', userStoryValidate],
   ['user-story validate', userStoryValidate],
   ['prompt-budget', promptBudget],
+  ['build.scan-stubs', buildScanStubs],
+  ['build scan-stubs', buildScanStubs],
   // ── Build queries ──
   ['checks.detect', checksDetect],
   ['checks detect', checksDetect],

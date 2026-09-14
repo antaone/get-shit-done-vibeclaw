@@ -155,3 +155,52 @@ export async function phaseRequirementIds(projectDir: string, phase: string, wor
     .filter((item) => item !== '' && item.toUpperCase() !== 'TBD');
   return [...new Set(ids)];
 }
+
+// ─── Changed files (Task 5) ─────────────────────────────────────────────────
+
+export interface ChangedFile {
+  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'T';
+  path: string;
+}
+
+/**
+ * Files changed between `base` and HEAD, relative to the project directory,
+ * excluding `.planning/`. Renames and copies report the new path.
+ */
+export function changedFilesSince(projectDir: string, base: string): ChangedFile[] {
+  const result = runGit(projectDir, [
+    'diff', '--name-status', '-z', '--find-renames', '--relative', `${base}..HEAD`, '--', '.', ':(exclude).planning',
+  ]);
+  if (!result.ok || result.stdout === '') return [];
+  const parts = result.stdout.split('\0');
+  if (parts[parts.length - 1] === '') parts.pop();
+  const changes: ChangedFile[] = [];
+  let index = 0;
+  while (index < parts.length) {
+    const letter = (parts[index] ?? '').charAt(0);
+    index += 1;
+    if (letter === 'R' || letter === 'C') {
+      index += 1; // skip the old path
+      const path = parts[index];
+      index += 1;
+      if (path) changes.push({ status: letter, path });
+    } else {
+      const path = parts[index];
+      index += 1;
+      if (path && (letter === 'A' || letter === 'M' || letter === 'D' || letter === 'T')) {
+        changes.push({ status: letter, path });
+      }
+    }
+  }
+  return changes;
+}
+
+/**
+ * Latest commit on the first-parent line that changed files outside `.planning/`, or null.
+ * `--first-parent` makes a `--no-ff` slice merge count as the change, instead of the
+ * slice commit that history simplification would otherwise follow.
+ */
+export function codeHead(projectDir: string): string | null {
+  const result = runGit(projectDir, ['log', '-1', '--first-parent', '--format=%H', '--', '.', ':(exclude).planning']);
+  return result.ok && /^[0-9a-f]{40,64}$/.test(result.stdout) ? result.stdout : null;
+}

@@ -567,6 +567,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": false
   },
   {
+    "canonical": "build.scan-stubs",
+    "aliases": [
+      "build scan-stubs"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "build.waves",
     "aliases": [
       "build waves"
