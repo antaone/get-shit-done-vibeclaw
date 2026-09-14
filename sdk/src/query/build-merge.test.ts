@@ -2,10 +2,14 @@ import { describe, it, expect } from 'vitest';
 import type { GitResult } from './build-shared.js';
 import { verifyMergeAborted } from './build-merge.js';
 
-// Real-git repro of an abort failure needs a held `.git/index.lock` during
-// the abort call itself, which isn't reproducible deterministically inside
-// build-merge.integration.test.ts. verifyMergeAborted is a pure function
-// over its two git results precisely so this branch is testable without one.
+// build-merge.integration.test.ts's "reports merge_abort_failed and stops
+// the wave when git merge --abort itself fails" test covers this branch
+// end-to-end with real git (a pre-merge-commit hook leaves a stray
+// .git/index.lock that then blocks the abort itself). The tests here
+// exercise verifyMergeAborted directly as a pure function so every branch —
+// a failed abort reporting via stderr, via stdout only, via neither, and a
+// successful abort that still somehow leaves MERGE_HEAD behind — is covered
+// without needing a separate real-git fixture for each one.
 function gitResult(ok: boolean, extra: Partial<Pick<GitResult, 'stdout' | 'stderr'>> = {}): GitResult {
   return { ok, code: ok ? 0 : 1, stdout: extra.stdout ?? '', stderr: extra.stderr ?? '' };
 }

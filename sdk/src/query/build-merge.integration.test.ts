@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, chmod } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
@@ -181,6 +181,60 @@ describe('build.merge-wave', () => {
     const { data } = await buildMergeWave(['--phase', '3', '--base', base, '--results', JSON.stringify([s1])], repo);
     expect(data).toEqual({ error: 'merge_in_progress' });
     expect(existsSync(join(repo, '.git', 'MERGE_HEAD'))).toBe(true);
+  });
+
+  it('reports merge_abort_failed and stops the wave when git merge --abort itself fails', async () => {
+    const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
+    const s2 = await addSlice(repo, root, 's2', 'b.txt', 'b\n');
+    const s3 = await addSlice(repo, root, 's3', 'c.txt', 'c\n');
+
+    // A repository-local core.hooksPath (never the ambient global one) makes
+    // this deterministic. The pre-merge-commit hook fires only for s2's
+    // merge — matched via the GITHEAD_<sha>=<branch> env var git sets for
+    // hooks, since MERGE_MSG/MERGE_HEAD aren't written yet at this point
+    // when merging with -m — and creates a stray .git/index.lock before
+    // failing. That leaves MERGE_HEAD in place with no conflicted files, so
+    // when buildMergeWave then runs `git merge --abort`, the abort itself
+    // fails because the lock file already exists: the same shape of failure
+    // a held .git/index.lock from an external process (e.g. an IDE's
+    // background `git status`) would cause, without needing a real race.
+    const hooksDir = join(root, 'hooks');
+    await mkdir(hooksDir, { recursive: true });
+    const hookPath = join(hooksDir, 'pre-merge-commit');
+    await writeFile(
+      hookPath,
+      '#!/bin/sh\n'
+      + 'GITDIR=$(git rev-parse --git-dir)\n'
+      + "if env | grep '^GITHEAD_' | grep -q 'worktree-agent-s2'; then\n"
+      + '  : > "${GIT_INDEX_FILE:-$GITDIR/index}.lock"\n'
+      + '  exit 1\n'
+      + 'fi\n'
+      + 'exit 0\n',
+    );
+    await chmod(hookPath, 0o755);
+    git(repo, 'config', 'core.hooksPath', hooksDir);
+
+    const { data } = await buildMergeWave(['--phase', '3', '--base', base, '--results', JSON.stringify([s1, s2, s3])], repo);
+    expect(data).toEqual({
+      merged: ['s1'],
+      conflicts: [],
+      blocked: [],
+      skipped: [],
+      cleaned: [s1.worktree_path],
+      error: 'merge_abort_failed',
+      slice: 's2',
+      detail: expect.stringContaining('index.lock'),
+    });
+    expect(existsSync(join(repo, '.git', 'MERGE_HEAD'))).toBe(true);
+    // s3 was never reached: its branch and worktree are untouched.
+    expect(existsSync(s3.worktree_path)).toBe(true);
+    expect(git(repo, 'branch', '--list', s3.branch)).not.toBe('');
+
+    // Remove the lock file and abort the stuck merge so the outer afterEach's
+    // directory removal isn't the only thing standing between this test and
+    // a leftover lock file or in-progress merge.
+    await rm(join(repo, '.git', 'index.lock'), { force: true });
+    git(repo, 'merge', '--abort');
   });
 
   it('rejects missing, conflicting and malformed inputs', async () => {

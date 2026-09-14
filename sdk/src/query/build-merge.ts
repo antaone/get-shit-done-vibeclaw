@@ -147,13 +147,15 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
   //     `^worktree-agent-[A-Za-z0-9._/-]+$` — an allowlist, not a denylist;
   //   - it continues past a blocked or conflicting slice instead of stopping
   //     the whole wave, so one bad slice doesn't hold up the rest;
-  //   - it aborts a conflicting `git merge` and verifies the abort actually
-  //     cleared MERGE_HEAD (`verifyMergeAborted`), stopping the wave with a
-  //     top-level `merge_abort_failed` error — reporting what already
-  //     merged — if it didn't; and it refuses to run at all when a merge is
-  //     already in progress before the loop starts (`merge_in_progress`).
-  //     The CJS sequence has neither check: its one caller always hands it a
-  //     freshly prepared tree, and never inspects the abort's own result;
+  //   - it aborts a conflicting or failed merge and verifies the abort
+  //     actually cleared MERGE_HEAD (`verifyMergeAborted`), stopping the
+  //     wave with a top-level `merge_abort_failed` error — reporting what
+  //     already merged — if it didn't; and it refuses to run at all when a
+  //     merge is already in progress before the loop starts
+  //     (`merge_in_progress`). The CJS sequence never runs `merge --abort`
+  //     at all: on a failed merge it records `merge_failed`, stops the
+  //     wave, and leaves MERGE_HEAD in place for its caller to resolve by
+  //     hand;
   //   - the base check accepts a branch whose merge base with HEAD is newer
   //     than the wave `--base` (as long as `--base` is still its ancestor),
   //     so a conflict-resolved branch that has merged the current branch in
@@ -166,8 +168,12 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
   //     merge (fail closed), though this file reports it under the existing
   //     `merge_failed` reason rather than a separate one;
   //   - a failed branch delete after a successful merge is `cleanup_failed`
-  //     (blocked) here; the CJS sequence only warns and still reports the
-  //     slice as merged.
+  //     (blocked) here, and the slice still appears in `merged`. The CJS
+  //     sequence marks the entry `status: 'warning'` / `reason:
+  //     'branch_delete_failed'` (not the `merged_removed` other successes
+  //     get) but continues to the next entry rather than stopping the wave;
+  //     its overall result still turns `cleanup_blocked` and the CLI
+  //     wrapper (`cmdWorktreeCleanupWave`) exits 1.
   // Fixes to either sequence should be considered for the other by hand.
   for (const result of results) {
     const { slice, branch } = result;
