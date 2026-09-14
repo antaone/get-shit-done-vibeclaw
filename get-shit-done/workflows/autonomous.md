@@ -319,6 +319,34 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 
 **If `HAS_UI` is 1 (no frontend indicators) OR `UI_SPEC_FILE` is not empty (UI-SPEC already exists) OR `UI_PHASE_CFG` is `false`:** Skip silently to 3b.
 
+**3b′. Build mode**
+
+```bash
+BUILD_MODE=$(fvgsd-sdk query config-get workflow.build_mode --default true 2>/dev/null || echo "true")
+```
+
+**If `BUILD_MODE` is not `false`, or `fvgsd-sdk query phase-plan-index ${PHASE_NUM}` shows a plan with `kind: "brief"` and either `has_summary: false` or a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary` (execute-phase refuses briefs):** run one build step instead of 3b, 3c and 3c.5, then continue at 3d (post-execution routing). Skip the 3c.5 code review: the build reviews its own diff when `workflow.build_code_review` is true.
+
+**If `INTERACTIVE` is set:** dispatch the build as a background agent, and wait for it before post-execution routing for this phase:
+
+```
+Agent(
+  description="Build phase ${PHASE_NUM}: ${PHASE_NAME}",
+  run_in_background=true,
+  prompt="Run build for phase ${PHASE_NUM}: Skill(skill=\"fvgsd-build\", args=\"${PHASE_NUM}\")"
+)
+```
+
+**If `INTERACTIVE` is NOT set (default):**
+
+```
+Skill(skill="fvgsd-build", args="${PHASE_NUM}")
+```
+
+Verify the build produced a brief: re-run `init phase-op` and check `has_plans`. If false → go to handle_blocker: "Build for phase ${PHASE_NUM} did not produce a brief."
+
+**Otherwise:** continue with 3b and 3c.
+
 **3b. Plan**
 
 **If `INTERACTIVE` is set:** Dispatch plan as a background agent to keep the main context lean. While plan runs, the workflow can immediately start discussing the next phase (see step 4).
@@ -445,7 +473,15 @@ Ask user via AskUserQuestion:
 - **question:** "Gaps found in phase ${PHASE_NUM}. How to proceed?"
 - **options:** "Run gap closure" / "Continue without fixing" / "Stop autonomous mode"
 
-On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt):
+On **"Run gap closure"**: Execute gap closure cycle (limit: 1 attempt).
+
+**If `BUILD_MODE` is not `false`:** run the gap build, then go straight to "Re-read verification status" below:
+
+```
+Skill(skill="fvgsd-build", args="${PHASE_NUM} --gaps")
+```
+
+**If `BUILD_MODE` is `false`:**
 
 ```
 Skill(skill="fvgsd-plan-phase", args="${PHASE_NUM} --gaps")

@@ -8,6 +8,7 @@ verification. Users should never be told to run `/fvgsd-transition`.
 
 **Valid user commands for phase progression:**
 - `/fvgsd:discuss-phase {N}` — discuss a phase before planning
+- `/fvgsd:build {N}` — plan and execute a discussed phase in one step
 - `/fvgsd:plan-phase {N}` — plan a phase
 - `/fvgsd:execute-phase {N}` — execute a phase
 - `/fvgsd:progress` — see roadmap progress
@@ -458,7 +459,19 @@ ls .planning/phases/*[X+1]*/*-CONTEXT.md 2>/dev/null || true
 
 <if mode="yolo">
 
-**If CONTEXT.md exists:**
+**If CONTEXT.md exists and `fvgsd-sdk query config-get workflow.build_mode --default true` prints `true`:**
+
+```
+Phase [X] marked complete.
+
+Next: Phase [X+1] — [Name]
+
+⚡ Auto-continuing: Build Phase [X+1]
+```
+
+Exit skill and invoke SlashCommand("/fvgsd:build [X+1] ${FVGSD_WS}")
+
+**If CONTEXT.md exists and build mode is off:**
 
 ```
 Phase [X] marked complete.
@@ -510,7 +523,32 @@ Exit skill and invoke SlashCommand("/fvgsd:discuss-phase [X+1] --auto ${FVGSD_WS
 ---
 ```
 
-**If CONTEXT.md exists:**
+**If CONTEXT.md exists and `fvgsd-sdk query config-get workflow.build_mode --default true` prints `true`:**
+
+```
+## ✓ Phase [X] Complete
+
+---
+
+## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
+
+**Phase [X+1]: [Name]** — [Goal from ROADMAP.md]
+<sub>✓ Context gathered, ready to build</sub>
+
+`/clear` then:
+
+`/fvgsd:build [X+1] ${FVGSD_WS}`
+
+---
+
+**Also available:**
+- `/fvgsd:plan-phase [X+1] ${FVGSD_WS}` — plan and execute as separate steps
+- `/fvgsd:discuss-phase [X+1] ${FVGSD_WS}` — revisit context
+
+---
+```
+
+**If CONTEXT.md exists and build mode is off:**
 
 ```
 ## ✓ Phase [X] Complete

@@ -227,6 +227,7 @@ This is a WARNING, not a blocker — routing proceeds normally. The debt is visi
 |-----------|---------|--------|
 | uat_partial > 0 | UAT testing incomplete | Go to **Route E.2** |
 | uat_with_gaps > 0 | UAT gaps need fix plans | Go to **Route E** |
+| summaries = plans, a plan has `kind: brief`, VERIFICATION.md has `status: gaps_found`, `workflow.build_mode` is true | Build left gaps | Go to **Route E.3** |
 | summaries < plans | Unexecuted plans exist | Go to **Route A** |
 | summaries = plans AND plans > 0 | Phase complete | Go to Step 3 |
 | plans = 0 | Phase not yet planned | Go to **Route B** |
@@ -235,8 +236,10 @@ This is a WARNING, not a blocker — routing proceeds normally. The debt is visi
 
 **Route A: Unexecuted plan exists**
 
-Find the first PLAN.md without matching SUMMARY.md.
-Read its `<objective>` section.
+Find the first unfinished plan: a PLAN.md without a matching SUMMARY.md, or (for a `kind: brief` plan) one whose matching `{P}-{NN}-SUMMARY.md` frontmatter lacks `kind: build-summary`.
+Read its `<objective>` section and its frontmatter `kind`.
+
+**If `kind` is `brief`**, a build is in progress: show `/fvgsd:build {phase} ${FVGSD_WS}` (it resumes the build) instead of `/fvgsd:execute-phase` in the block below. This holds even when `workflow.build_mode` is `false`, because execute-phase refuses build briefs.
 
 ```
 ---
@@ -265,7 +268,29 @@ PHASE_SECTION=$(fvgsd-sdk query roadmap.get-phase "${CURRENT_PHASE}" 2>/dev/null
 PHASE_HAS_UI=$(echo "$PHASE_SECTION" | grep -qi "UI hint.*yes" && echo "true" || echo "false")
 ```
 
-**If CONTEXT.md exists:**
+**If CONTEXT.md exists and `fvgsd-sdk query config-get workflow.build_mode --default true` prints `true`:**
+
+```
+---
+
+## ▶ Next Up — [${PROJECT_CODE}] ${PROJECT_TITLE}
+
+**Phase {N}: {Name}** — {Goal from ROADMAP.md}
+<sub>✓ Context gathered, ready to build</sub>
+
+`/clear` then:
+
+`/fvgsd:build {phase-number} ${FVGSD_WS}`
+
+---
+
+**Also available:**
+- `/fvgsd:plan-phase {phase-number} ${FVGSD_WS}` — plan and execute as separate steps
+
+---
+```
+
+**If CONTEXT.md exists and build mode is off:**
 
 ```
 ---
@@ -375,6 +400,31 @@ UAT.md exists with `status: partial` — testing session ended before all items 
 **Also available:**
 - `/fvgsd:audit-uat ${FVGSD_WS}` — full cross-phase UAT audit
 - `/fvgsd:execute-phase {phase} ${FVGSD_WS}` — execute phase plans
+
+---
+```
+
+---
+
+**Route E.3: Build left verification gaps**
+
+A plan in this phase has `kind: brief`, every plan has a summary, and `{phase_num}-VERIFICATION.md` has `status: gaps_found`.
+
+```
+---
+
+## ⚠ Build Gaps Found
+
+**{phase_num}-VERIFICATION.md** lists {N} gaps.
+
+`/clear` then:
+
+`/fvgsd:build {phase} --gaps ${FVGSD_WS}`
+
+---
+
+**Also available:**
+- `/fvgsd:verify-work {phase} ${FVGSD_WS}` — check the build by hand first
 
 ---
 ```

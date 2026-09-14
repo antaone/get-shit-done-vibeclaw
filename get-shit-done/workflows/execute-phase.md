@@ -143,6 +143,7 @@ When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned t
 
 **If `phase_found` is false:** Error — phase directory not found.
 **If `plan_count` is 0:** Error — no plans found in phase.
+**If the phase was started with `/fvgsd-build`:** run `fvgsd-sdk query phase-plan-index "${PHASE_ARG}"`. When any plan has `kind: "brief"` and either `has_summary: false`, or a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary`, stop with: `Phase ${PHASE_ARG} was started with /fvgsd-build — run /fvgsd-build ${PHASE_ARG} to resume.`
 **If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
 
 When `parallelization` is false, plans within a wave execute sequentially.

@@ -49,8 +49,9 @@ Evaluate `$ARGUMENTS` against these routing rules. Apply the **first matching** 
 | Exploring, researching, comparing, or "how does X work" | `/fvgsd:explore` | Socratic ideation and idea routing |
 | Discussing vision, "how should X look", brainstorming | `/fvgsd:discuss-phase` | Needs context gathering |
 | A complex task: refactoring, migration, multi-file architecture, system redesign | `/fvgsd:phase` | Needs a full phase with plan/build cycle |
+| Building a discussed phase or "build phase N" | `/fvgsd:build` | Plan and execute in one step |
 | Planning a specific phase or "plan phase N" | `/fvgsd:plan-phase` | Direct planning request |
-| Executing a phase or "build phase N", "run phase N" | `/fvgsd:execute-phase` | Direct execution request |
+| Executing a phase or "run phase N", "execute phase N" | `/fvgsd:execute-phase` | Direct execution request |
 | Running all remaining phases automatically | `/fvgsd:autonomous` | Full autonomous execution |
 | A review or quality concern about existing work | `/fvgsd:verify-work` | Needs verification |
 | Checking progress, status, "where am I" | `/fvgsd:progress` | Status check |
@@ -59,6 +60,8 @@ Evaluate `$ARGUMENTS` against these routing rules. Apply the **first matching** 
 | Adding tests, "write tests", "test coverage" | `/fvgsd:add-tests` | Test generation |
 | Completing a milestone, shipping, releasing | `/fvgsd:complete-milestone` | Milestone lifecycle |
 | A specific, actionable, small task (add feature, fix typo, update config) | `/fvgsd:quick` | Self-contained, single executor |
+
+**Build mode:** before dispatching `/fvgsd:build`, run `fvgsd-sdk query config-get workflow.build_mode --default true`. When it prints `false`, route "build phase N" to `/fvgsd:execute-phase` instead, or to `/fvgsd:plan-phase` when the phase has no plans yet. Keep `/fvgsd:build` when `fvgsd-sdk query phase-plan-index N` shows a plan with `kind: "brief"` and either `has_summary: false`, or a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary`, because execute-phase refuses build briefs.
 
 **Requires `.planning/` directory:** All routes except `/fvgsd:new-project`, `/fvgsd:map-codebase`, `/fvgsd:spike`, `/fvgsd:sketch`, and `/fvgsd:help`. If the project doesn't exist and the route requires it, suggest `/fvgsd:new-project` first.
 

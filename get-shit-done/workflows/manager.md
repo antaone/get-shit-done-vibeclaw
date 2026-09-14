@@ -1,6 +1,6 @@
 <purpose>
 
-Interactive command center for managing a milestone from a single terminal. Shows a dashboard of all phases with visual status, dispatches discuss inline and plan/execute as background agents, and loops back to the dashboard after each action. Enables parallel phase work from one terminal.
+Interactive command center for managing a milestone from a single terminal. Shows a dashboard of all phases with visual status, dispatches discuss inline and plan/execute/build as background agents, and loops back to the dashboard after each action. Enables parallel phase work from one terminal.
 
 </purpose>
 
@@ -156,7 +156,7 @@ Handle responses:
 
 **Building options:**
 
-1. Collect all background actions (execute and plan recommendations) — there can be multiple of each.
+1. Collect all background actions (execute, plan, and build recommendations) — there can be multiple of each.
 2. Collect the inline action (discuss recommendation, if any — there will be at most one since discuss is sequential).
 3. Build compound options:
 
@@ -188,6 +188,7 @@ Display recommendations compactly:
 
 Continue:
   → Execute Phase 32 (background)
+  → Build Phase 33 (background)
   → Plan Phase 34 (background)
   → Discuss Phase 35 (inline)
 ```
@@ -220,7 +221,7 @@ Go to exit step.
 
 When the user selects a compound option:
 
-1. **Spawn all background agents first** (plan/execute) — dispatch them in parallel using the Plan Phase N / Execute Phase N handlers below.
+1. **Spawn all background agents first** (plan/execute/build) — dispatch them in parallel using the Plan Phase N / Execute Phase N / Build Phase N handlers below.
 2. **Then run the inline discuss:**
 
 ```
@@ -307,6 +308,37 @@ Display:
 
 Loop back to dashboard step.
 
+### Build Phase N
+
+Building runs autonomously: one command plans, builds, verifies and summarizes the phase. Spawn a background agent that delegates to the Skill pipeline. When the recommended command ends in `--gaps`, pass `--gaps` too:
+
+```
+Agent(
+  description="Build phase {N}: {phase_name}",
+  run_in_background=true,
+  prompt="You are running the GSD build workflow for phase {N} of the project.
+
+Working directory: {cwd}
+Phase: {N} — {phase_name}
+Goal: {goal}
+
+Run the build Skill (args=\"{N} --gaps\" when the recommended command ends in --gaps):
+Skill(skill=\"fvgsd-build\", args=\"{N}\")
+
+Important: You are running in the background. Do NOT use AskUserQuestion — make autonomous decisions. When the build needs an answer it records a blocker in STATE.md and stops with its BUILD BLOCKED marker; report that. Do NOT use --no-verify on git commits."
+)
+```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above with `run_in_background=true`, do NOT do any build work for this phase independently. Return to the dashboard immediately and wait for the background agent to report back.
+
+Display:
+
+```
+◆ Spawning builder for Phase {N}: {phase_name}...
+```
+
+Loop back to dashboard step.
+
 </step>
 
 <step name="background_completion">
@@ -335,7 +367,7 @@ Classify the error:
   - **question:** "Phase {N} failed — permission denied for `{tool_or_command}`. Want me to add it to settings.local.json so it's allowed?"
   - **options:** "Add permission and retry" / "Run this phase inline instead" / "Skip and continue"
   - "Add permission and retry": Use `Skill(skill="update-config")` to add the permission to `settings.local.json`, then re-spawn the background agent. Loop to dashboard.
-  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution, or `Skill(skill="fvgsd-build", args="{N}")` if the failed action was a build. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
 
 **Other errors** (git lock, file conflict, logic error, etc.):
@@ -343,7 +375,7 @@ Classify the error:
   - **question:** "Background agent for Phase {N} encountered an issue: {error}. What next?"
   - **options:** "Retry" / "Run inline instead" / "Skip and continue" / "View details"
   - "Retry": Re-spawn the same background agent. Loop to dashboard.
-  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="fvgsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="fvgsd-execute-phase", args="{N}")` if the failed action was execution, or `Skill(skill="fvgsd-build", args="{N}")` if the failed action was a build. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
   - "View details": Read STATE.md blockers section, display, then re-present options.
 
@@ -377,10 +409,11 @@ Display final status with progress bar:
 - [ ] Dashboard displays all phases with correct status indicators (D/P/E/V columns)
 - [ ] Progress bar shows accurate completion percentage
 - [ ] Dependency resolution: blocked phases show which deps are missing
-- [ ] Recommendations prioritize: execute > plan > discuss
+- [ ] Recommendations prioritize: execute and build > plan > discuss
 - [ ] Discuss phases run inline via Skill() — interactive questions work
 - [ ] Plan phases spawn background Task agents — return to dashboard immediately
 - [ ] Execute phases spawn background Task agents — return to dashboard immediately
+- [ ] Build phases spawn background Task agents — return to dashboard immediately
 - [ ] Dashboard refreshes pick up changes from background agents via disk state
 - [ ] Background agent completion triggers notification and dashboard refresh
 - [ ] Background agent errors present retry/skip options

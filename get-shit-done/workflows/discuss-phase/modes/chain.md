@@ -8,8 +8,9 @@
 
 - Discussion is **fully interactive** — questions, gray-area selection, and
   follow-ups behave exactly the same as default mode.
-- After discussion completes, **auto-advance to plan-phase → execute-phase**
-  (same downstream behavior as `--auto`).
+- After discussion completes, **auto-advance to `/fvgsd:build`** when
+  `workflow.build_mode` is true, or to plan-phase → execute-phase when it is
+  false (same downstream behavior as `--auto`).
 - This is the middle ground: the user controls the discuss decisions, then
   plan and execute run autonomously.
 
@@ -42,7 +43,28 @@
    ```
 
 5. **If `--auto` flag present OR `--chain` flag present OR `AUTO_MODE` is
-   true:** display banner and launch plan-phase.
+   true:** check build mode first:
+   ```bash
+   BUILD_MODE=$(fvgsd-sdk query config-get workflow.build_mode --default true 2>/dev/null || echo "true")
+   ```
+
+   **If `BUILD_MODE` is not `false`:** display the banner with
+   `GSD ► AUTO-ADVANCING TO BUILD`, then launch the build with the Skill tool
+   (the same flat-nesting reason as the plan-phase launch below):
+   ```
+   Skill(skill="fvgsd-build", args="${PHASE} ${FVGSD_WS}")
+   ```
+   Handle the build's end marker:
+   - `## BUILD COMPLETE` → show the PHASE COMPLETE banner from step 6 with
+     `Next: /fvgsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${FVGSD_WS}`
+   - `## BUILD GAPS FOUND` → `Auto-advance stopped: Gaps found during the build.`
+     and `Continue: /fvgsd:build ${PHASE} --gaps ${FVGSD_WS}`
+   - `## BUILD BLOCKED` or `## BUILD STOPPED` → `Auto-advance stopped: The build needs input.`
+     and `Continue: /fvgsd:build ${PHASE} ${FVGSD_WS}`
+
+   Skip the plan-phase launch and step 6.
+
+   **If `BUILD_MODE` is `false`:** display banner and launch plan-phase.
 
    Banner:
    ```

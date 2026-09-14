@@ -168,13 +168,20 @@ If ROADMAP has phases but no phase directories exist on disk:
 If the current phase directory exists but has neither CONTEXT.md nor RESEARCH.md:
 → Next action: `/fvgsd:discuss-phase <current-phase>`
 
-**Route 3: Phase has context but no plans → plan**
-If the current phase has CONTEXT.md (or RESEARCH.md) but no PLAN.md files:
-→ Next action: `/fvgsd:plan-phase <current-phase>`
+**Route 3: Phase has context but no plans → build (or plan)**
+If the current phase has CONTEXT.md (or RESEARCH.md) but no PLAN.md files, run `fvgsd-sdk query config-get workflow.build_mode --default true`:
+→ Prints `true` and the phase has CONTEXT.md: `/fvgsd:build <current-phase>`
+→ Prints `true` and the phase has only RESEARCH.md: `/fvgsd:discuss-phase <current-phase>` (a build needs CONTEXT.md)
+→ Otherwise: `/fvgsd:plan-phase <current-phase>`
 
-**Route 4: Phase has plans but incomplete summaries → execute**
-If plans exist but not all have matching summaries:
-→ Next action: `/fvgsd:execute-phase <current-phase>`
+**Route 4: Phase has plans but incomplete summaries → resume the build (or execute)**
+If plans exist but not all have matching summaries, run `fvgsd-sdk query phase-plan-index <current-phase>`:
+→ A plan has `kind: "brief"` and either `has_summary: false`, or a matching `{P}-{NN}-SUMMARY.md` whose frontmatter lacks `kind: build-summary`: `/fvgsd:build <current-phase>` (resumes the build; execute-phase refuses briefs)
+→ Otherwise: `/fvgsd:execute-phase <current-phase>`
+
+**Route 4b: Build phase has verification gaps → gap build**
+If `fvgsd-sdk query config-get workflow.build_mode --default true` prints `true`, a plan in the current phase has `kind: "brief"`, every plan has a summary, and the phase VERIFICATION.md frontmatter has `status: gaps_found`:
+→ Next action: `/fvgsd:build <current-phase> --gaps`
 
 **Route 5: All plans have summaries → verify and complete**
 If all plans in the current phase have summaries:
