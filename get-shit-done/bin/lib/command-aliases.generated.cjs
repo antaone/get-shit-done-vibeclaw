@@ -369,6 +369,14 @@ const INIT_COMMAND_ALIASES = [
     ],
     "subcommand": "remove-workspace",
     "mutation": false
+  },
+  {
+    "canonical": "init.build",
+    "aliases": [
+      "init build"
+    ],
+    "subcommand": "build",
+    "mutation": false
   }
 ];
 

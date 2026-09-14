@@ -35,6 +35,7 @@ import {
   initListWorkspaces, initRemoveWorkspace,
 } from './init.js';
 import { initNewProject, initProgress, initManager } from './init-complex.js';
+import { initBuild } from './build-init.js';
 
 export const FAMILY_HANDLERS: Record<string, Readonly<Record<string, QueryHandler>>> = {
   state: {
@@ -117,5 +118,6 @@ export const FAMILY_HANDLERS: Record<string, Readonly<Record<string, QueryHandle
     'init.new-workspace': initNewWorkspace,
     'init.list-workspaces': initListWorkspaces,
     'init.remove-workspace': initRemoveWorkspace,
+    'init.build': initBuild,
   },
 };

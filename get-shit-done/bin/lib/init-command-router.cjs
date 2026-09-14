@@ -17,7 +17,7 @@ const { tryLoadSdk, getExecuteForCjs } = require('./cjs-sdk-bridge.cjs');
  * - SDK is unavailable (build not present).
  *
  * CJS-only subcommands: none.
- * SDK-only (unsupported in CJS router): none.
+ * SDK-only (no CJS fallback): build.
  */
 function routeInitCommand({ init, args, cwd, raw, parseNamedArgs, error }) {
   const activeWorkstream = process.env.FVGSD_WORKSTREAM;
@@ -164,6 +164,12 @@ function routeInitCommand({ init, args, cwd, raw, parseNamedArgs, error }) {
         args.slice(2),
         args.slice(1),
         () => init.cmdInitRemoveWorkspace(cwd, args[2], raw),
+      ),
+      build: sdkHandler(
+        'init.build',
+        args.slice(2),
+        args.slice(1),
+        () => error('init build requires the fvgsd SDK — run npm run build:sdk'),
       ),
     },
   });

@@ -62,6 +62,7 @@ export const INIT_COMMAND_ALIASES: readonly FamilyCommandAlias[] = [
   { canonical: 'init.new-workspace', aliases: ['init new-workspace'], subcommand: 'new-workspace', mutation: false },
   { canonical: 'init.list-workspaces', aliases: ['init list-workspaces'], subcommand: 'list-workspaces', mutation: false },
   { canonical: 'init.remove-workspace', aliases: ['init remove-workspace'], subcommand: 'remove-workspace', mutation: false },
+  { canonical: 'init.build', aliases: ['init build'], subcommand: 'build', mutation: false },
 ] as const;
 
 export const PHASE_COMMAND_ALIASES: readonly FamilyCommandAlias[] = [

@@ -21,4 +21,5 @@ export const INIT_COMMAND_MANIFEST: readonly CommandManifestEntry[] = [
   { family: 'init', canonical: 'init.new-workspace', aliases: ['init new-workspace'], mutation: false, outputMode: 'json' },
   { family: 'init', canonical: 'init.list-workspaces', aliases: ['init list-workspaces'], mutation: false, outputMode: 'json' },
   { family: 'init', canonical: 'init.remove-workspace', aliases: ['init remove-workspace'], mutation: false, outputMode: 'json' },
+  { family: 'init', canonical: 'init.build', aliases: ['init build'], mutation: false, outputMode: 'json' },
 ] as const;

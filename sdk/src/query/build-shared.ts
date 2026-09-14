@@ -7,9 +7,11 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
+import { extractFrontmatter } from './frontmatter.js';
+import { escapeRegex } from './helpers.js';
 import { findPhase } from './phase.js';
 import { roadmapGetPhase } from './roadmap.js';
 
@@ -203,4 +205,99 @@ export function changedFilesSince(projectDir: string, base: string): ChangedFile
 export function codeHead(projectDir: string): string | null {
   const result = runGit(projectDir, ['log', '-1', '--first-parent', '--format=%H', '--', '.', ':(exclude).planning']);
   return result.ok && /^[0-9a-f]{40,64}$/.test(result.stdout) ? result.stdout : null;
+}
+
+// ─── Commit history (init.build, build.finalize) ────────────────────────────
+
+const FULL_SHA = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
+
+/**
+ * The oldest commit reachable from HEAD that added a path matching `pathspec`, with its
+ * ISO 8601 committer date. Null when no commit added one, or outside a repository.
+ */
+export function firstAddCommit(projectDir: string, pathspec: string): { sha: string; time: string } | null {
+  const log = runGit(projectDir, ['log', '--diff-filter=A', '--format=%H%x09%cI', '--', pathspec]);
+  if (!log.ok || log.stdout === '') return null;
+  const lines = log.stdout.split('\n');
+  const [sha = '', time = ''] = lines[lines.length - 1].split('\t');
+  return FULL_SHA.test(sha) && time !== '' ? { sha, time } : null;
+}
+
+/**
+ * Decision 15: a check result recorded at `commit` still applies at `head` when both commits
+ * have the same tree outside `.planning/`. False unless `commit` is a full lowercase SHA.
+ */
+export function sameCodeTree(projectDir: string, commit: string | null, head: string): boolean {
+  if (typeof commit !== 'string' || !FULL_SHA.test(commit)) return false;
+  if (commit === head) return true;
+  return runGit(projectDir, ['diff', '--quiet', commit, head, '--', '.', ':(exclude).planning']).ok;
+}
+
+// ─── Plan and verification readers (init.build, routing) ────────────────────
+
+export interface PhasePlanFile {
+  file: string;
+  nn: string;
+  num: number;
+  kind: string | null;
+  gapClosure: boolean;
+  sliceIds: string[];
+  hasSummary: boolean;
+}
+
+/** Plans named `{padded}-{NN}[-slug]-PLAN.md`, sorted by plan number. */
+export function listPhasePlanFiles(phaseDirAbs: string, padded: string): PhasePlanFile[] {
+  let files: string[];
+  try {
+    files = readdirSync(phaseDirAbs);
+  } catch {
+    return [];
+  }
+  const prefix = escapeRegex(padded);
+  const planPattern = new RegExp(`^${prefix}-(\\d{2,})(?:-[^/]*)?-PLAN\\.md$`);
+  const plans: PhasePlanFile[] = [];
+  for (const file of files) {
+    const match = file.match(planPattern);
+    if (!match) continue;
+    const nn = match[1];
+    const summaryPattern = new RegExp(`^${prefix}-${nn}(?:-[^/]*)?-SUMMARY\\.md$`);
+    let frontmatter: Record<string, unknown> = {};
+    try {
+      frontmatter = extractFrontmatter(readFileSync(join(phaseDirAbs, file), 'utf-8'));
+    } catch {
+      // An unreadable plan is reported without kind, like a classic plan.
+    }
+    const slices = Array.isArray(frontmatter.slices) ? frontmatter.slices : [];
+    plans.push({
+      file,
+      nn,
+      num: Number.parseInt(nn, 10),
+      kind: typeof frontmatter.kind === 'string' && frontmatter.kind !== '' ? frontmatter.kind : null,
+      gapClosure: frontmatter.gap_closure === true || frontmatter.gap_closure === 'true',
+      sliceIds: slices
+        .map((slice) => (slice && typeof slice === 'object' ? String((slice as Record<string, unknown>).id ?? '') : ''))
+        .filter((id) => id !== ''),
+      hasSummary: files.some((candidate) => summaryPattern.test(candidate)),
+    });
+  }
+  return plans.sort((a, b) => a.num - b.num || a.file.localeCompare(b.file));
+}
+
+export interface VerificationInfo {
+  /** Absolute path of `{padded}-VERIFICATION.md`. */
+  path: string;
+  status: string | null;
+  mtimeMs: number;
+}
+
+export function readVerification(phaseDirAbs: string, padded: string): VerificationInfo | null {
+  const path = join(phaseDirAbs, `${padded}-VERIFICATION.md`);
+  try {
+    const { mtimeMs } = statSync(path);
+    const frontmatter = extractFrontmatter(readFileSync(path, 'utf-8'));
+    const status = typeof frontmatter.status === 'string' && frontmatter.status.trim() !== '' ? frontmatter.status.trim() : null;
+    return { path, status, mtimeMs };
+  } catch {
+    return null;
+  }
 }
