@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, mkdir, writeFile, rm, chmod } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, rm, chmod } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
@@ -235,6 +235,56 @@ describe('build.merge-wave', () => {
     // a leftover lock file or in-progress merge.
     await rm(join(repo, '.git', 'index.lock'), { force: true });
     git(repo, 'merge', '--abort');
+  });
+
+  it('ignores an uncommitted .planning/ change in the main tree and merges a clean slice', async () => {
+    await mkdir(join(repo, '.planning'), { recursive: true });
+    await writeFile(join(repo, '.planning', 'STATE.md'), 'committed\n');
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'add STATE.md');
+    const planningBase = git(repo, 'rev-parse', 'HEAD');
+    // Simulates state.begin-phase's mid-run, uncommitted STATE.md update.
+    await writeFile(join(repo, '.planning', 'STATE.md'), 'uncommitted state\n');
+
+    const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
+    const data = await merge(repo, planningBase, [s1]);
+    expect(data.merged).toEqual(['s1']);
+    expect(await readFile(join(repo, '.planning', 'STATE.md'), 'utf-8')).toBe('uncommitted state\n');
+  });
+
+  it('still refuses to merge when a tracked code file is dirty in the main tree', async () => {
+    const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
+    await writeFile(join(repo, 'shared.txt'), 'edited\n');
+    const { data } = await buildMergeWave(['--phase', '3', '--base', base, '--results', JSON.stringify([s1])], repo);
+    expect(data).toEqual({ error: 'working_tree_dirty' });
+  });
+
+  it('blocks with merge_failed when a slice touches a .planning/ file that is also dirty in the main tree', async () => {
+    await mkdir(join(repo, '.planning'), { recursive: true });
+    await writeFile(join(repo, '.planning', 'STATE.md'), 'committed\n');
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'add STATE.md');
+    const planningBase = git(repo, 'rev-parse', 'HEAD');
+
+    const branch = 'worktree-agent-s1';
+    const worktree = join(root, 'wt-s1');
+    git(repo, 'worktree', 'add', '-q', '-b', branch, worktree, 'HEAD');
+    await writeFile(join(worktree, '.planning', 'STATE.md'), 'slice state\n');
+    git(worktree, 'add', '--', '.planning/STATE.md');
+    git(worktree, 'commit', '-q', '-m', 'feat(03-s1): state');
+
+    // A dirty main-tree copy of the very file the slice also changes. git
+    // itself refuses this merge ("local changes would be overwritten") before
+    // ever creating MERGE_HEAD — verified directly against real git 2.50.1
+    // before writing this assertion, since the ruling requires reporting
+    // reality rather than assuming it.
+    await writeFile(join(repo, '.planning', 'STATE.md'), 'dirty local edit\n');
+
+    const data = await merge(repo, planningBase, [{ slice: 's1', status: 'done', branch, worktree_path: worktree }]);
+    expect(data.merged).toEqual([]);
+    expect(data.blocked.map((entry) => [entry.slice, entry.reason])).toEqual([['s1', 'merge_failed']]);
+    expect(existsSync(join(repo, '.git', 'MERGE_HEAD'))).toBe(false);
+    expect(await readFile(join(repo, '.planning', 'STATE.md'), 'utf-8')).toBe('dirty local edit\n');
   });
 
   it('rejects missing, conflicting and malformed inputs', async () => {

@@ -116,7 +116,12 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
   }
   const base = baseCheck.stdout;
 
-  const status = runGit(projectDir, ['status', '--porcelain', '--untracked-files=no']);
+  // .planning/ is excluded: the build workflow updates tracked planning files
+  // (STATE.md, VERIFICATION.md, …) without committing them mid-run, and that
+  // must not block a merge. This stays safe — git itself refuses a merge
+  // that would overwrite a dirty file, so a slice branch that touches a
+  // .planning/ file which is dirty here still fails the merge (merge_failed).
+  const status = runGit(projectDir, ['status', '--porcelain', '--untracked-files=no', '--', '.', ':(exclude).planning']);
   if (!status.ok) return { data: { error: 'git_repository_required' } };
   if (status.stdout !== '') return { data: { error: 'working_tree_dirty' } };
 
