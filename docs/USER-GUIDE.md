@@ -163,6 +163,14 @@ GSD spawns four parallel research agents (stack, features, architecture, pitfall
 </task>
 ```
 
+**Or build it in one step:**
+
+```
+/fvgsd-build 1
+```
+
+`/fvgsd-build` replaces the plan and execute steps for a discussed phase. It writes a short brief (`01-01-PLAN.md`), builds it in vertical slices, runs your build, typecheck, lint and test commands, verifies once, fixes what remains in up to two rounds, and writes `01-01-SUMMARY.md` and `01-VERIFICATION.md`. With `workflow.build_mode: true` (the default), next-step suggestions point to it; the separate steps below stay available.
+
 ### 3. Execute
 
 ```
@@ -284,6 +292,8 @@ When all phases are done:
 | `--validate` | `/fvgsd-quick` | Add plan-checking and post-execution verification |
 | `--chain` | `/fvgsd-discuss-phase` | Auto-chain discuss → plan → execute without stopping |
 | `--skip-research` | `/fvgsd-plan-phase` | Skip research agents when the domain is already familiar |
+| `--confirm` | `/fvgsd-build` | Review the brief before any code is written |
+| `--gaps` | `/fvgsd-build` | Close the gaps a build's verification found |
 | `--draft` | `/fvgsd-ship` | Create a draft PR instead of a ready-for-review one |
 
 For the full command reference with all flags, see [`docs/COMMANDS.md`](COMMANDS.md). For configuration options (model profiles, workflow agents, git branching), see [`docs/CONFIGURATION.md`](CONFIGURATION.md).

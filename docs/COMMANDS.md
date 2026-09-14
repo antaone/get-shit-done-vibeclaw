@@ -131,6 +131,34 @@ Generate UI design contract for frontend phases.
 
 ---
 
+### `/fvgsd-build`
+
+Plan and execute a discussed phase in one step: a short brief, vertical slices (parallel where the runtime allows), the project's own checks, one verifier pass, and capped fix rounds.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `N` | **Yes** | Phase number to build |
+
+| Flag | Description |
+|------|-------------|
+| `--confirm` | Show the brief's objective, slices and decisions, and ask before building |
+| `--gaps` | Build a follow-up plan that closes the gaps listed in VERIFICATION.md |
+| `--research-only` | Research the phase (only when RESEARCH.md is missing), then stop |
+| `--brief-only` | Write and check the brief, then stop |
+
+**Prerequisites:** the phase has CONTEXT.md (`/fvgsd-discuss-phase N`)
+**Produces:** `{phase}-{N}-PLAN.md` (the brief), `{phase}-{N}-SUMMARY.md`, `{phase}-VERIFICATION.md`, plus `{phase}-RESEARCH.md` when it was missing and `{phase}-HUMAN-UAT.md` when human-only checks exist
+
+With `workflow.build_mode: true` (the default), `/fvgsd-progress`, `/fvgsd-manager`, `/fvgsd-autonomous` and `/fvgsd-discuss-phase --chain` suggest this command instead of plan-phase and execute-phase. See [Configuration](CONFIGURATION.md) for the `workflow.build_*` settings.
+
+```bash
+/fvgsd-build 3               # Build phase 3
+/fvgsd-build 3 --confirm     # Review the brief before any code is written
+/fvgsd-build 3 --gaps        # Close the gaps verification found
+```
+
+---
+
 ### `/fvgsd-plan-phase`
 
 Research, plan, and verify a phase.

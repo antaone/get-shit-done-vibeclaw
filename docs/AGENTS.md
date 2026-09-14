@@ -488,7 +488,7 @@ Thirteen additional agents ship under `agents/fvgsd-*.md` and are used by specia
 
 | Property | Value |
 |----------|-------|
-| **Spawned by** | The build workflow (brief mode once per build; slice mode once per slice, fix group or merge conflict) |
+| **Spawned by** | `/fvgsd-build` (brief mode once per build; slice mode once per slice, fix group or merge conflict) |
 | **Parallelism** | One per slice within a wave, in isolated worktrees where the runtime supports it |
 | **Tools** | Read, Write, Edit, Bash, Grep, Glob |
 | **Model (balanced)** | Sonnet (brief mode and `strong` slices use the planning-tier model) |

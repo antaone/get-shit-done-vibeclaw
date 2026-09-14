@@ -37,7 +37,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 | fvgsd-doc-writer | Writes and updates project documentation. | `/fvgsd-docs-update` | primary |
 | fvgsd-doc-verifier | Verifies factual claims in generated documentation. | `/fvgsd-docs-update` | primary |
 | fvgsd-security-auditor | Verifies threat mitigations from PLAN.md threat model. | `/fvgsd-secure-phase` | primary |
-| fvgsd-builder | Writes the build brief for a phase, or builds one slice of it (brief and slice modes). | `build.md` workflow | advanced stub |
+| fvgsd-builder | Writes the build brief for a phase, or builds one slice of it (brief and slice modes). | `/fvgsd-build` | advanced stub |
 | fvgsd-pattern-mapper | Maps new files to closest existing analogs; writes PATTERNS.md for the planner. | `/fvgsd-plan-phase` (between research and planning) | advanced stub |
 | fvgsd-debug-session-manager | Runs the full `/fvgsd-debug` checkpoint-and-continuation loop in isolated context so main stays lean. | `/fvgsd-debug` | advanced stub |
 | fvgsd-code-reviewer | Reviews source files for bugs, security issues, and code-quality problems; produces REVIEW.md. | `/fvgsd-code-review` | advanced stub |
@@ -55,7 +55,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 
 ---
 
-## Commands (68 shipped)
+## Commands (69 shipped)
 
 Full roster at `commands/gsd/*.md`. The groupings below mirror `docs/COMMANDS.md` section order; each row carries the command name, a one-line role derived from the command's frontmatter `description:`, and a link to the source file. `tests/command-count-sync.test.cjs` locks the count against the filesystem.
 
@@ -83,6 +83,7 @@ These six routers are descriptor-only entries that the model picks first; the bo
 | `/fvgsd-spec-phase` | Socratic spec refinement producing a SPEC.md with falsifiable requirements. | [commands/gsd/spec-phase.md](../commands/gsd/spec-phase.md) |
 | `/fvgsd-ui-phase` | Generate UI design contract (UI-SPEC.md) for frontend phases. | [commands/gsd/ui-phase.md](../commands/gsd/ui-phase.md) |
 | `/fvgsd-ai-integration-phase` | Generate AI design contract (AI-SPEC.md) via framework selection, research, and eval planning. | [commands/gsd/ai-integration-phase.md](../commands/gsd/ai-integration-phase.md) |
+| `/fvgsd-build` | Plan and execute a discussed phase in one step with slices, checks, and verification. | [commands/gsd/build.md](../commands/gsd/build.md) |
 | `/fvgsd-plan-phase` | Create detailed phase plan (PLAN.md) with verification loop. | [commands/gsd/plan-phase.md](../commands/gsd/plan-phase.md) |
 | `/fvgsd-plan-review-convergence` | Cross-AI plan convergence loop — replan with review feedback until no HIGH concerns remain (max 3 cycles). | [commands/gsd/plan-review-convergence.md](../commands/gsd/plan-review-convergence.md) |
 | `/fvgsd-ultraplan-phase` | [BETA] Offload plan phase to Claude Code's ultraplan cloud — drafts remotely, review in browser, import back via `/fvgsd-import`. Claude Code only. | [commands/gsd/ultraplan-phase.md](../commands/gsd/ultraplan-phase.md) |
@@ -166,7 +167,7 @@ These six routers are descriptor-only entries that the model picks first; the bo
 
 ---
 
-## Workflows (88 shipped)
+## Workflows (89 shipped)
 
 Full roster at `get-shit-done/workflows/*.md`. Workflows are thin orchestrators that commands reference internally; most are not read directly by end users. Rows below map each workflow file to its role (derived from the `<purpose>` block) and, where applicable, to the command that invokes it.
 
@@ -182,6 +183,7 @@ Full roster at `get-shit-done/workflows/*.md`. Workflows are thin orchestrators 
 | `audit-milestone.md` | Verify milestone met its definition of done by aggregating phase verifications. | `/fvgsd-audit-milestone` |
 | `audit-uat.md` | Cross-phase audit of UAT and verification files; produces prioritized outstanding-items list. | `/fvgsd-audit-uat` |
 | `autonomous.md` | Drive milestone phases autonomously — all remaining, a range, or a single phase. | `/fvgsd-autonomous` |
+| `build.md` | Plan and execute a discussed phase in one run: brief, slices, checks, verification, fix rounds and summary. | `/fvgsd-build` |
 | `check-todos.md` | List pending todos, allow selection, load context, and route to the appropriate action. | `/fvgsd-capture --list` |
 | `cleanup.md` | Archive accumulated phase directories from completed milestones. | `/fvgsd-cleanup` |
 | `code-review-fix.md` | Auto-fix issues from REVIEW.md via fvgsd-code-fixer with per-fix atomic commits. | `/fvgsd-code-review --fix` |

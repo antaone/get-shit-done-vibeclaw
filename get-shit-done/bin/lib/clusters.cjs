@@ -17,6 +17,7 @@ const CLUSTERS = Object.freeze({
   core_loop: Object.freeze([
     'new-project',
     'discuss-phase',
+    'build',
     'plan-phase',
     'execute-phase',
     'help',

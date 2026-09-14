@@ -9,7 +9,7 @@
  * dropped skills when users stack multiple plugins (#3408).
  *
  * Profile model: three named profiles replace the old minimal/full binary:
- *  - core     — nine skills covering the main project loop and Vibe entry surface
+ *  - core     — ten skills covering the main project loop and Vibe entry surface
  *  - standard — core + phase management and workspace skills
  *  - full     — all skills (previous default, '*' sentinel)
  * Profiles compose: --profile=core,audit resolves to union(closure(core), closure(audit)).
@@ -59,6 +59,7 @@ const PROFILES = Object.freeze({
   core: Object.freeze([
     'new-project',
     'discuss-phase',
+    'build',
     'plan-phase',
     'execute-phase',
     'phase',
@@ -71,6 +72,7 @@ const PROFILES = Object.freeze({
     // Core loop
     'new-project',
     'discuss-phase',
+    'build',
     'plan-phase',
     'execute-phase',
     'help',

@@ -107,6 +107,17 @@ Result: Creates `.planning/phases/01-foundation/01-01-PLAN.md`
 
 **PRD Express Path:** Pass `--prd path/to/requirements.md` to skip discuss-phase entirely. Your PRD becomes locked decisions in CONTEXT.md. Useful when you already have clear acceptance criteria.
 
+**`/fvgsd:build <phase> [--confirm] [--gaps] [--research-only] [--brief-only]`**
+Plan and execute a discussed phase in one step: a short brief, vertical slices, the project's own checks, one verifier pass, and capped fix rounds.
+
+- `--confirm` — show the brief's objective, slices and decisions, and ask before building
+- `--gaps` — build a follow-up plan that closes the gaps listed in VERIFICATION.md
+- `--research-only` — research the phase (only when RESEARCH.md is missing), then stop
+- `--brief-only` — write and check the brief, then stop
+
+Usage: `/fvgsd:build 1`
+Result: Creates `01-01-PLAN.md` (the brief), `01-01-SUMMARY.md` and `01-VERIFICATION.md` in the phase directory
+
 ### Execution
 
 **`/fvgsd:execute-phase <phase-number> [--wave N] [--gaps-only] [--tdd]`**

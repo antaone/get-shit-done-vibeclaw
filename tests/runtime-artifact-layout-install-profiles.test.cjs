@@ -313,11 +313,12 @@ describe('PROFILES map', () => {
     assert.ok('full' in PROFILES, 'PROFILES.full missing');
   });
 
-  test('PROFILES.core contains the 9 main-loop skills (including Vibe routing)', () => {
+  test('PROFILES.core contains the 10 main-loop skills (including build and Vibe routing)', () => {
     const core = PROFILES.core;
     assert.ok(Array.isArray(core), 'core should be an array');
     const sorted = [...core].sort();
     assert.deepStrictEqual(sorted, [
+      'build',
       'discuss-phase',
       'execute-phase',
       'help',

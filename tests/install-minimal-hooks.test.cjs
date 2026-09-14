@@ -71,7 +71,7 @@ describe('install-profiles: MINIMAL_SKILL_ALLOWLIST', () => {
   test('contains exactly the main-loop core (frozen)', () => {
     assert.deepStrictEqual(
       [...MINIMAL_SKILL_ALLOWLIST].sort(),
-      ['discuss-phase', 'execute-phase', 'help', 'new-project', 'phase', 'plan-phase', 'surface', 'update', 'vibe'],
+      ['build', 'discuss-phase', 'execute-phase', 'help', 'new-project', 'phase', 'plan-phase', 'surface', 'update', 'vibe'],
     );
     assert.ok(Object.isFrozen(MINIMAL_SKILL_ALLOWLIST));
   });
@@ -397,23 +397,23 @@ describe('install: manifest records mode for both profiles', () => {
     assert.ok(r.agentCount > 0);
   });
 
-  test('--minimal records mode: "minimal" with exactly 9 skills and 0 agents', () => {
+  test('--minimal records mode: "minimal" with exactly 10 skills and 0 agents', () => {
     const r = manifestModeAfterInstall(['--minimal']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 9);
+    assert.strictEqual(r.skillCount, 10);
     assert.strictEqual(r.agentCount, 0);
   });
 
   test('--core-only is an alias for --minimal', () => {
     const r = manifestModeAfterInstall(['--core-only']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 9);
+    assert.strictEqual(r.skillCount, 10);
     assert.strictEqual(r.agentCount, 0);
   });
 });
 
 describe('install-minimal-backcompat: PROFILES.core matches MINIMAL_SKILL_ALLOWLIST', () => {
-  test('PROFILES.core contains the same 9 skills as MINIMAL_SKILL_ALLOWLIST', () => {
+  test('PROFILES.core contains the same 10 skills as MINIMAL_SKILL_ALLOWLIST', () => {
     assert.deepStrictEqual(
       [...PROFILES.core].sort(),
       [...MINIMAL_SKILL_ALLOWLIST].sort(),
@@ -444,10 +444,10 @@ describe('install-minimal-backcompat: --minimal and --profile=core produce same 
     }
   }
 
-  test('--minimal produces mode "minimal" with exactly 9 skills', () => {
+  test('--minimal produces mode "minimal" with exactly 10 skills', () => {
     const r = installAndGetManifest(['--minimal']);
     assert.strictEqual(r.mode, 'minimal');
-    assert.strictEqual(r.skillCount, 9);
+    assert.strictEqual(r.skillCount, 10);
   });
 
   test('--minimal writes .fvgsd-profile marker "core"', () => {

@@ -227,6 +227,8 @@ Using the common hyphen-style command form:
 /fvgsd-complete-milestone
 ```
 
+For a discussed phase, `/fvgsd-build 1` replaces the plan and execute steps: it writes a short brief, builds it in slices, runs your checks and verifies the result. `/fvgsd-plan-phase` and `/fvgsd-execute-phase` stay available.
+
 For an existing codebase, run `/fvgsd-map-codebase` before `/fvgsd-new-project`. Use `/fvgsd-progress` to inspect the current position and `/fvgsd-resume-work` after a context reset or a new session.
 
 ### What GSD provides

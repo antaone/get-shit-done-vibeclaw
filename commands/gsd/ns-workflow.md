@@ -1,12 +1,12 @@
 ---
 name: fvgsd-workflow
-description: "workflow | discuss plan execute verify phase progress"
+description: "workflow | discuss build plan execute verify phase progress"
 argument-hint: ""
 allowed-tools:
   - Read
   - Skill
   - Bash
-requires: [discuss-phase, spec-phase, plan-phase, execute-phase, verify-work, phase, progress, ultraplan-phase, plan-review-convergence]
+requires: [discuss-phase, spec-phase, build, plan-phase, execute-phase, verify-work, phase, progress, ultraplan-phase, plan-review-convergence]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
@@ -29,6 +29,7 @@ absorbs the former next/do commands.
 |---|---|
 | Gather context before planning | fvgsd-discuss-phase |
 | Clarify what a phase delivers | fvgsd-spec-phase |
+| Plan and execute a discussed phase in one step | fvgsd-build |
 | Create a PLAN.md | fvgsd-plan-phase |
 | Execute plans in a phase | fvgsd-execute-phase |
 | Verify built features through UAT | fvgsd-verify-work |
