@@ -164,6 +164,7 @@ const CODEX_AGENT_SANDBOX = {
   'fvgsd-codebase-mapper': 'workspace-write',
   'fvgsd-roadmapper': 'workspace-write',
   'fvgsd-debugger': 'workspace-write',
+  'fvgsd-builder': 'workspace-write',
   'fvgsd-plan-checker': 'read-only',
   'fvgsd-integration-checker': 'read-only',
 };
@@ -5235,6 +5236,23 @@ function convertClaudeToGeminiMarkdown(content, { isCommand = false } = {}) {
   return converted;
 }
 
+// Agent frontmatter keys only Claude Code reads. Other runtimes ignore them or
+// reject the agent file (Gemini CLI validates agent frontmatter), so they are
+// removed before any runtime conversion.
+const CLAUDE_ONLY_AGENT_KEYS = ['effort'];
+
+function stripUnsupportedAgentKeys(content, runtime) {
+  if (runtime === 'claude' || typeof content !== 'string' || !content.startsWith('---')) return content;
+  const end = content.indexOf('\n---', 3);
+  if (end === -1) return content;
+  const frontmatter = content
+    .slice(0, end)
+    .split('\n')
+    .filter((line) => !CLAUDE_ONLY_AGENT_KEYS.some((key) => line.startsWith(`${key}:`)))
+    .join('\n');
+  return frontmatter + content.slice(end);
+}
+
 function convertClaudeToGeminiAgent(content) {
   if (!content.startsWith('---')) return content;
 
@@ -8762,6 +8780,7 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           content = content.replace(bareHomeDirRegex, normalizedPathPrefix);
         }
         content = processAttribution(content, getCommitAttribution(runtime));
+        content = stripUnsupportedAgentKeys(content, runtime);
         // Convert frontmatter for runtime compatibility (agents need different handling)
         if (isOpencode) {
           // Resolve per-agent model for OpenCode agents.
@@ -11481,6 +11500,7 @@ module.exports = {
     convertSlashCommandsToGeminiMentions,
     _resetGsdCommandRoster,
     convertClaudeToGeminiAgent,
+    stripUnsupportedAgentKeys,
     convertClaudeAgentToCodexAgent,
     generateCodexAgentToml,
     generateCodexConfigBlock,

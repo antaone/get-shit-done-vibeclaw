@@ -9,6 +9,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 | fvgsd-planner | opus | opus | sonnet | opus | inherit |
 | fvgsd-roadmapper | opus | sonnet | sonnet | sonnet | inherit |
 | fvgsd-executor | opus | sonnet | sonnet | sonnet | inherit |
+| fvgsd-builder | opus | sonnet | sonnet | sonnet | inherit |
 | fvgsd-phase-researcher | opus | sonnet | haiku | sonnet | inherit |
 | fvgsd-project-researcher | opus | sonnet | haiku | sonnet | inherit |
 | fvgsd-research-synthesizer | sonnet | sonnet | haiku | haiku | inherit |
@@ -47,7 +48,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 | `planning` | fvgsd-planner, fvgsd-roadmapper, fvgsd-pattern-mapper |
 | `discuss` | (reserved — no subagent today) |
 | `research` | fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-research-synthesizer, fvgsd-codebase-mapper, fvgsd-ui-researcher |
-| `execution` | fvgsd-executor, fvgsd-debugger, fvgsd-doc-writer |
+| `execution` | fvgsd-executor, fvgsd-builder, fvgsd-debugger, fvgsd-doc-writer |
 | `verification` | fvgsd-verifier, fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-nyquist-auditor, fvgsd-ui-checker, fvgsd-ui-auditor, fvgsd-doc-verifier |
 | `completion` | (reserved — no subagent today) |
 
@@ -157,7 +158,7 @@ When `dynamic_routing.enabled = true` in `.planning/config.json`, the resolver p
 | Tier | Agents | Use case |
 |---|---|---|
 | `light` | fvgsd-codebase-mapper, fvgsd-pattern-mapper, fvgsd-research-synthesizer, fvgsd-plan-checker, fvgsd-integration-checker, fvgsd-nyquist-auditor, fvgsd-ui-checker, fvgsd-ui-auditor, fvgsd-doc-verifier | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-verifier, fvgsd-doc-writer, fvgsd-ui-researcher | Default workhorse — research, writing, primary verification |
+| `standard` | fvgsd-executor, fvgsd-builder, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-verifier, fvgsd-doc-writer, fvgsd-ui-researcher | Default workhorse — research, writing, primary verification |
 | `heavy` | fvgsd-planner, fvgsd-roadmapper, fvgsd-debugger | Deep reasoning — already at top, can't escalate further |
 
 **Escalation flow** (orchestrator-driven):

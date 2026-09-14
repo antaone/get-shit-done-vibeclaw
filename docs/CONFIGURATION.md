@@ -773,6 +773,7 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 | fvgsd-planner | Opus | Opus | Sonnet | Inherit |
 | fvgsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
 | fvgsd-executor | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-builder | Opus | Sonnet | Sonnet | Inherit |
 | fvgsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
@@ -789,7 +790,7 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 | fvgsd-doc-writer | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-doc-verifier | Sonnet | Sonnet | Haiku | Inherit |
 
-> **All 33 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
+> **All 34 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
 
 ### Per-Agent Overrides
 
@@ -848,7 +849,7 @@ for the change to take effect. See issue #2256.
 | `planning` | `fvgsd-planner`, `fvgsd-roadmapper`, `fvgsd-pattern-mapper` |
 | `discuss` | (reserved — no subagent today) |
 | `research` | `fvgsd-phase-researcher`, `fvgsd-project-researcher`, `fvgsd-research-synthesizer`, `fvgsd-codebase-mapper`, `fvgsd-ui-researcher` |
-| `execution` | `fvgsd-executor`, `fvgsd-debugger`, `fvgsd-doc-writer` |
+| `execution` | `fvgsd-executor`, `fvgsd-builder`, `fvgsd-debugger`, `fvgsd-doc-writer` |
 | `verification` | `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-nyquist-auditor`, `fvgsd-ui-checker`, `fvgsd-ui-auditor`, `fvgsd-doc-verifier` |
 | `completion` | (reserved — no subagent today) |
 
@@ -930,7 +931,7 @@ Each agent in `MODEL_PROFILES` declares one of three default tiers. The resolver
 | Tier | Agents | Use case |
 |---|---|---|
 | `light` | fvgsd-codebase-mapper, fvgsd-doc-classifier, fvgsd-doc-verifier, fvgsd-integration-checker, fvgsd-intel-updater, fvgsd-nyquist-auditor, fvgsd-pattern-mapper, fvgsd-plan-checker, fvgsd-research-synthesizer, fvgsd-ui-auditor, fvgsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | fvgsd-advisor-researcher, fvgsd-ai-researcher, fvgsd-code-fixer, fvgsd-code-reviewer, fvgsd-doc-synthesizer, fvgsd-doc-writer, fvgsd-domain-researcher, fvgsd-eval-auditor, fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-ui-researcher, fvgsd-verifier | Default workhorse — research, writing, primary verification |
+| `standard` | fvgsd-advisor-researcher, fvgsd-ai-researcher, fvgsd-builder, fvgsd-code-fixer, fvgsd-code-reviewer, fvgsd-doc-synthesizer, fvgsd-doc-writer, fvgsd-domain-researcher, fvgsd-eval-auditor, fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-ui-researcher, fvgsd-verifier | Default workhorse — research, writing, primary verification |
 | `heavy` | fvgsd-assumptions-analyzer, fvgsd-debug-session-manager, fvgsd-debugger, fvgsd-eval-planner, fvgsd-framework-selector, fvgsd-planner, fvgsd-roadmapper, fvgsd-security-auditor, fvgsd-user-profiler | Deep reasoning — already at top, can't escalate further |
 
 #### Escalation flow

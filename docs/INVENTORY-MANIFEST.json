@@ -5,6 +5,7 @@
       "fvgsd-advisor-researcher",
       "fvgsd-ai-researcher",
       "fvgsd-assumptions-analyzer",
+      "fvgsd-builder",
       "fvgsd-code-fixer",
       "fvgsd-code-reviewer",
       "fvgsd-codebase-mapper",

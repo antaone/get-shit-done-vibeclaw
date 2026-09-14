@@ -667,6 +667,61 @@ If `valid != true`, refuse to verify. Surface the discrepancy and ask the user t
 
 </mvp_mode_verification>
 
+<build_mode>
+
+## Build Mode
+
+This section applies only when your prompt contains a `<build_mode>` block. That block holds `key: value` lines: `brief`, `verification_path`, `human_uat_path`, `human_checks` (`defer` or `block`), `checks_json`, `stubs_json`, `slice_results`, `diff_stat`, `changed_files`, `context`, `roadmap`, `requirement_ids`, `recheck_gaps`.
+
+It changes the standard process as follows:
+
+1. **Must-haves:** take `must_haves` (truths, artifacts, key_links) from the brief's frontmatter. There are no other PLAN files to read.
+2. **Checks:** the checks have already run, so do not rerun the full test suite. `checks_json` is the full `build.run-checks` result:
+   - a failing result with `preexisting: false` is a gap
+   - list `preexisting: true` failures in the report, but don't make them gaps
+   - you may run targeted probes: one test file, one endpoint, one CLI call
+3. **Stubs:** every `stubs_json` finding is a gap, unless the surrounding code shows it is tracked work.
+4. **Coverage:** check every CONTEXT `<decisions>` entry, every ROADMAP success criterion, and every id in `requirement_ids` against the changed code (`changed_files`, `diff_stat`).
+5. **Report:** write `verification_path` in the VERIFICATION.md format from `<output>` (frontmatter `phase`, `verified`, `status`, `score`, plus `gaps`).
+6. **Human-only checks** (visual or manual flows) go to `human_uat_path`:
+
+   ```markdown
+   ---
+   status: partial
+   phase: {phase_num}-{phase_name}
+   source: [{phase_num}-VERIFICATION.md]
+   started: [now ISO]
+   updated: [now ISO]
+   ---
+
+   ## Current Test
+
+   [awaiting human testing]
+
+   ## Tests
+
+   ### {N}. {item description}
+   expected: {expected behavior}
+   result: [pending]
+
+   ## Summary
+
+   total: {count}
+   passed: 0
+   issues: 0
+   pending: {count}
+   skipped: 0
+   blocked: 0
+
+   ## Gaps
+   ```
+
+   With `human_checks: defer`, these items do not change `status` (Step 9 rule 2 does not apply). With `human_checks: block`, set `status: human_needed` when any exist.
+7. **Recheck:** when `recheck_gaps` lists gaps, re-verify only those gaps and whatever the fix commits touched. Then rewrite `verification_path` with the updated status, score and remaining gaps.
+8. **Do not commit.** The lead commits both files through `build.finalize`.
+
+</build_mode>
+
 <output>
 
 ## Create VERIFICATION.md

@@ -1279,6 +1279,7 @@ describe('E2E: Copilot full install verification', () => {
       'fvgsd-advisor-researcher.agent.md',
       'fvgsd-ai-researcher.agent.md',
       'fvgsd-assumptions-analyzer.agent.md',
+      'fvgsd-builder.agent.md',
       'fvgsd-code-fixer.agent.md',
       'fvgsd-code-reviewer.agent.md',
       'fvgsd-codebase-mapper.agent.md',

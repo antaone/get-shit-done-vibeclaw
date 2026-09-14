@@ -10,7 +10,7 @@
 
 ---
 
-## Agents (33 shipped)
+## Agents (34 shipped)
 
 Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`docs/AGENTS.md`](AGENTS.md) carries a full role card (*primary*), a short stub in the "Advanced and Specialized Agents" section (*advanced stub*), or no coverage (*inventory only*).
 
@@ -37,6 +37,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 | fvgsd-doc-writer | Writes and updates project documentation. | `/fvgsd-docs-update` | primary |
 | fvgsd-doc-verifier | Verifies factual claims in generated documentation. | `/fvgsd-docs-update` | primary |
 | fvgsd-security-auditor | Verifies threat mitigations from PLAN.md threat model. | `/fvgsd-secure-phase` | primary |
+| fvgsd-builder | Writes the build brief for a phase, or builds one slice of it (brief and slice modes). | `build.md` workflow | advanced stub |
 | fvgsd-pattern-mapper | Maps new files to closest existing analogs; writes PATTERNS.md for the planner. | `/fvgsd-plan-phase` (between research and planning) | advanced stub |
 | fvgsd-debug-session-manager | Runs the full `/fvgsd-debug` checkpoint-and-continuation loop in isolated context so main stays lean. | `/fvgsd-debug` | advanced stub |
 | fvgsd-code-reviewer | Reviews source files for bugs, security issues, and code-quality problems; produces REVIEW.md. | `/fvgsd-code-review` | advanced stub |
