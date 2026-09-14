@@ -3,8 +3,10 @@
  *
  * Orchestrates: discuss → research → plan → execute → verify → advance
  * with config-driven step skipping, human gate callbacks, event emission,
- * and structured error handling per step. With `workflow.build_mode`, the
- * steps after discuss are research → build (build.md) → verify → advance.
+ * and structured error handling per step. With `workflow.build_mode`, a phase
+ * without classic plans (no plans yet, or a `kind: brief` plan) runs research →
+ * build (build.md) → verify → advance after discuss; a phase planned with
+ * plan-phase keeps the classic steps.
  */
 
 import type {
@@ -122,8 +124,9 @@ export class PhaseRunner {
 
   /**
    * Run a full phase lifecycle: discuss → research → plan → plan-check → execute → verify → advance.
-   * With `workflow.build_mode === true`, the steps after discuss are research → build → verify →
-   * advance instead (see runBuildLifecycle).
+   * With `workflow.build_mode === true`, a phase without classic plans (no plans yet, or a `kind: brief`
+   * plan) runs research → build → verify → advance after discuss instead (see runBuildLifecycle); a
+   * phase whose plans include no brief keeps the classic steps.
    *
    * Each step is gated by config flags and phase state. Human gate callbacks
    * are invoked at decision points; when not provided, auto-approve is used.
@@ -220,10 +223,10 @@ export class PhaseRunner {
     }
 
     // ── Build mode: research → build → verify (status read) → advance ──
-    if (this.config.workflow.build_mode === true) {
-      if (!halted) {
-        halted = await this.runBuildLifecycle(phaseNumber, phaseOp, sessionOpts, callbacks, options, steps);
-      }
+    // Only for a phase without classic plans. A phase whose plans include no brief was planned with
+    // plan-phase, so it falls through to the classic steps below, as with build_mode false.
+    if (!halted && this.config.workflow.build_mode === true && !(await this.hasClassicPlans(phaseNumber))) {
+      halted = await this.runBuildLifecycle(phaseNumber, phaseOp, sessionOpts, callbacks, options, steps);
       return this.finishRun(phaseNumber, phaseName, steps, halted, startTime);
     }
 
@@ -1453,6 +1456,21 @@ export class PhaseRunner {
       return await this.tools.initPhaseOp(phaseNumber);
     } catch {
       return fallback;
+    }
+  }
+
+  /**
+   * True when the phase has plans and none is a build brief (`kind: brief`): plan-phase planned it,
+   * so build mode leaves it on the classic steps. Reads `phase-plan-index`, the plan list the classic
+   * Execute step runs. A failed read returns false, which keeps the build path and its error handling.
+   */
+  private async hasClassicPlans(phaseNumber: string): Promise<boolean> {
+    try {
+      const { plans } = await this.tools.phasePlanIndex(phaseNumber);
+      return plans.length > 0 && !plans.some((plan) => plan.kind === 'brief');
+    } catch (err) {
+      this.logger?.warn(`Could not read the plan index for phase ${phaseNumber}; keeping build mode: ${err instanceof Error ? err.message : String(err)}`);
+      return false;
     }
   }
 

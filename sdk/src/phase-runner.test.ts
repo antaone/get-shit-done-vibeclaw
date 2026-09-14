@@ -1253,7 +1253,15 @@ Use TypeScript.`, 'utf-8');
       return makeConfig({ workflow: { build_mode: true, research: false, skip_discuss: true, plan_check: false, ...workflow } as any });
     }
 
-    function mockBuildStates(deps: PhaseRunnerDeps, states: string[]): void {
+    /** `phase-plan-index` lists one plan per entry of `kinds`; build mode reads these kinds to pick its path. */
+    function mockPlanKinds(deps: PhaseRunnerDeps, kinds: Array<string | null>): void {
+      const plans = kinds.map((kind, i) => makePlanInfo({ id: `01-${String(i + 1).padStart(2, '0')}`, kind }));
+      (deps.tools.phasePlanIndex as ReturnType<typeof vi.fn>).mockResolvedValue(makePlanIndex(0, { plans }));
+    }
+
+    /** A build phase: its plans have `planKinds` (one brief by default), and init.build reports `states` in order. */
+    function mockBuildStates(deps: PhaseRunnerDeps, states: string[], planKinds: Array<string | null> = ['brief']): void {
+      mockPlanKinds(deps, planKinds);
       const queue = [...states];
       (deps.tools.exec as ReturnType<typeof vi.fn>).mockImplementation((cmd: string) => {
         if (cmd === 'init.build') {
@@ -1274,7 +1282,8 @@ Use TypeScript.`, 'utf-8');
       const phaseOp = makePhaseOp({ has_context: true, has_research: false, has_plans: true, plan_count: 1 });
       const deps = makeDeps({ config: buildConfig({ research: true }) });
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
-      mockBuildStates(deps, ['complete']);
+      // No plans before the run: the Build step writes the brief.
+      mockBuildStates(deps, ['complete'], []);
 
       const result = await new PhaseRunner(deps).run('1');
 
@@ -1367,6 +1376,7 @@ Use TypeScript.`, 'utf-8');
       const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
       const deps = makeDeps({ config: buildConfig() });
       (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockPlanKinds(deps, ['brief']);
       (deps.tools.exec as ReturnType<typeof vi.fn>).mockImplementation((cmd: string) =>
         Promise.resolve(cmd === 'init.build' ? { error: 'git_repository_required' } : undefined));
 
@@ -1421,6 +1431,33 @@ Use TypeScript.`, 'utf-8');
       const prompt = mockRunPhaseStepSession.mock.calls[0][0];
       expect(prompt.startsWith('## HEADLESS MODE')).toBe(true);
       expect(prompt.endsWith('test prompt')).toBe(true);
+    });
+
+    it('keeps plan-phase plans on the classic steps when build_mode is true', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockPlanKinds(deps, [null]);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const stepTypes = result.steps.map(s => s.step);
+      expect(stepTypes).toContain(PhaseStepType.Execute);
+      expect(stepTypes).not.toContain(PhaseStepType.Build);
+      expect(mockRunPhaseStepSession.mock.calls.map(call => call[1])).not.toContain(PhaseStepType.Build);
+      expect(deps.tools.exec).not.toHaveBeenCalledWith('init.build', expect.anything());
+    });
+
+    it('still runs build for a phase with a brief plan beside classic plans', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 2 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['complete'], [null, 'brief']);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      expect(result.steps.map(s => s.step)).toEqual([PhaseStepType.Build, PhaseStepType.Verify, PhaseStepType.Advance]);
+      expect(deps.tools.exec).toHaveBeenCalledWith('init.build', ['1']);
     });
 
     it('keeps the classic path when build_mode is false', async () => {
