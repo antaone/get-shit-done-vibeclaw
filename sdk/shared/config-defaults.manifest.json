@@ -53,7 +53,16 @@
     "post_planning_gaps": true,
     "security_enforcement": true,
     "security_asvs_level": 1,
-    "security_block_on": "high"
+    "security_block_on": "high",
+    "build_mode": true,
+    "build_fix_rounds": 2,
+    "build_human_checks": "defer",
+    "build_code_review": false,
+    "build_parallel": "auto",
+    "build_engine": "agents",
+    "build_check_timeout_seconds": 1800,
+    "lint_command": "",
+    "typecheck_command": ""
   },
   "planning": {
     "commit_docs": true,

@@ -302,4 +302,4 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
   return { runtime, configDir, kinds };
 }
 
-module.exports = { resolveRuntimeArtifactLayout, findInstallSourceRoot };
+module.exports = { ALLOWED_RUNTIMES, resolveRuntimeArtifactLayout, findInstallSourceRoot };

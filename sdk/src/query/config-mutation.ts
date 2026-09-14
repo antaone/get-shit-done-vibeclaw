@@ -215,6 +215,48 @@ export function parseConfigValue(value: string): unknown {
   return value;
 }
 
+// ─── validateBuildSetting ─────────────────────────────────────────────────
+
+const BUILD_SETTING_BOOLEANS = new Set(['workflow.build_mode', 'workflow.build_code_review']);
+const BUILD_SETTING_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  'workflow.build_human_checks': ['defer', 'block'],
+  'workflow.build_parallel': ['auto', 'off'],
+  'workflow.build_engine': ['agents', 'workflow'],
+};
+const BUILD_SETTING_STRINGS = new Set([
+  'workflow.lint_command',
+  'workflow.typecheck_command',
+  'workflow.build_command',
+  'workflow.test_command',
+]);
+
+/**
+ * Validate a build setting value after CLI coercion.
+ * Returns an error sentence, or null when the value is acceptable or the key is not a build setting.
+ * Mirrored by validateBuildSetting in get-shit-done/bin/lib/config.cjs.
+ */
+export function validateBuildSetting(keyPath: string, value: unknown): string | null {
+  if (BUILD_SETTING_BOOLEANS.has(keyPath) && typeof value !== 'boolean') {
+    return 'Must be a boolean (true or false).';
+  }
+  const allowed = Object.prototype.hasOwnProperty.call(BUILD_SETTING_ENUMS, keyPath) ? BUILD_SETTING_ENUMS[keyPath] : null;
+  if (allowed && !allowed.includes(String(value))) {
+    return `Valid values: ${allowed.join(', ')}`;
+  }
+  if (keyPath === 'workflow.build_fix_rounds'
+    && !(typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5)) {
+    return 'Must be an integer from 0 to 5.';
+  }
+  if (keyPath === 'workflow.build_check_timeout_seconds'
+    && !(typeof value === 'number' && Number.isInteger(value) && value > 0)) {
+    return 'Must be a positive integer.';
+  }
+  if (BUILD_SETTING_STRINGS.has(keyPath) && typeof value !== 'string') {
+    return 'Must be a string.';
+  }
+  return null;
+}
+
 // ─── setConfigValue ───────────────────────────────────────────────────────
 
 /**
@@ -343,6 +385,12 @@ export const configSet: QueryHandler = async (args, projectDir, workstream) => {
       `Invalid workflow.human_verify_mode '${rawValue}'. Valid values: ${VALID_HUMAN_VERIFY_MODES.join(', ')}`,
       ErrorClassification.Validation,
     );
+  }
+
+  // Build settings — keep in sync with validateBuildSetting in config.cjs.
+  const buildSettingError = validateBuildSetting(keyPath, parsedValue);
+  if (buildSettingError) {
+    throw new GSDError(`Invalid ${keyPath} '${rawValue}'. ${buildSettingError}`, ErrorClassification.Validation);
   }
 
   // Context position enum validation (#2937) — port of config.cjs:463-466.

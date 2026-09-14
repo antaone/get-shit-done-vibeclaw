@@ -1,0 +1,17 @@
+{
+  "claude": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": true, "agent_effort": true, "background_tasks": true, "workflow_scripts": true },
+  "cursor": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": false, "agent_effort": true, "background_tasks": false, "workflow_scripts": false },
+  "gemini": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "codex": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": true, "agent_effort": true, "background_tasks": true, "workflow_scripts": false },
+  "copilot": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": true, "workflow_scripts": false },
+  "antigravity": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "windsurf": { "spawn_agents": false, "parallel_agents": false, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "augment": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "trae": { "spawn_agents": false, "parallel_agents": false, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "qwen": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": false, "agent_effort": false, "background_tasks": true, "workflow_scripts": false },
+  "hermes": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": true, "workflow_scripts": false },
+  "codebuddy": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": true, "per_call_model": false, "agent_effort": true, "background_tasks": true, "workflow_scripts": false },
+  "cline": { "spawn_agents": false, "parallel_agents": false, "worktree_isolation": false, "per_call_model": false, "agent_effort": false, "background_tasks": false, "workflow_scripts": false },
+  "opencode": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": true, "background_tasks": false, "workflow_scripts": false },
+  "kilo": { "spawn_agents": true, "parallel_agents": true, "worktree_isolation": false, "per_call_model": false, "agent_effort": true, "background_tasks": false, "workflow_scripts": false }
+}

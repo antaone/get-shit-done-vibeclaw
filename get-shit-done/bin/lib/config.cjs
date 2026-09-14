@@ -339,6 +339,42 @@ function cmdConfigEnsureSection(cwd, raw) {
   }
 }
 
+const BUILD_SETTING_BOOLEANS = new Set(['workflow.build_mode', 'workflow.build_code_review']);
+const BUILD_SETTING_ENUMS = {
+  'workflow.build_human_checks': ['defer', 'block'],
+  'workflow.build_parallel': ['auto', 'off'],
+  'workflow.build_engine': ['agents', 'workflow'],
+};
+const BUILD_SETTING_STRINGS = new Set([
+  'workflow.lint_command',
+  'workflow.typecheck_command',
+  'workflow.build_command',
+  'workflow.test_command',
+]);
+
+// Mirrors validateBuildSetting in sdk/src/query/config-mutation.ts.
+function validateBuildSetting(keyPath, value) {
+  if (BUILD_SETTING_BOOLEANS.has(keyPath) && typeof value !== 'boolean') {
+    return 'Must be a boolean (true or false).';
+  }
+  const allowed = Object.prototype.hasOwnProperty.call(BUILD_SETTING_ENUMS, keyPath) ? BUILD_SETTING_ENUMS[keyPath] : null;
+  if (allowed && !allowed.includes(String(value))) {
+    return `Valid values: ${allowed.join(', ')}`;
+  }
+  if (keyPath === 'workflow.build_fix_rounds'
+    && !(typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5)) {
+    return 'Must be an integer from 0 to 5.';
+  }
+  if (keyPath === 'workflow.build_check_timeout_seconds'
+    && !(typeof value === 'number' && Number.isInteger(value) && value > 0)) {
+    return 'Must be a positive integer.';
+  }
+  if (BUILD_SETTING_STRINGS.has(keyPath) && typeof value !== 'string') {
+    return 'Must be a string.';
+  }
+  return null;
+}
+
 /**
  * Sets a value in the config file, allowing nested values via dot notation (e.g.,
  * "workflow.research").
@@ -458,6 +494,12 @@ function cmdConfigSet(cwd, keyPath, value, raw) {
   const VALID_HUMAN_VERIFY_MODES = ['mid-flight', 'end-of-phase'];
   if (keyPath === 'workflow.human_verify_mode' && !VALID_HUMAN_VERIFY_MODES.includes(String(parsedValue))) {
     error(`Invalid workflow.human_verify_mode '${value}'. Valid values: ${VALID_HUMAN_VERIFY_MODES.join(', ')}`);
+  }
+
+  // Build settings — keep in sync with sdk/src/query/config-mutation.ts.
+  const buildSettingError = validateBuildSetting(keyPath, parsedValue);
+  if (buildSettingError) {
+    error(`Invalid ${keyPath} '${value}'. ${buildSettingError}`);
   }
 
   // Context position enum validation (#2937)
@@ -694,6 +736,7 @@ async function cmdMigrateConfig(cwd, raw) {
 
 module.exports = {
   VALID_CONFIG_KEYS,
+  validateBuildSetting,
   cmdConfigEnsureSection,
   cmdConfigSet,
   cmdConfigGet,

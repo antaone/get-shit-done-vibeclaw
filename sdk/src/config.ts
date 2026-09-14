@@ -64,6 +64,25 @@ export interface WorkflowConfig {
    * verify-phase (validation gate, non-blocking). Set false to disable both.
    */
   context_coverage_gate: boolean;
+  /** Route discussed phases to the build command instead of plan-phase + execute-phase (default true). */
+  build_mode?: boolean;
+  /** Fix rounds after build verification, integer 0–5 (default 2). */
+  build_fix_rounds?: number;
+  /** 'defer' keeps human-only checks out of verification status; 'block' makes it human_needed. */
+  build_human_checks?: 'defer' | 'block';
+  /** Run fvgsd-code-reviewer once over the build diff. */
+  build_code_review?: boolean;
+  /** 'auto' builds a wave's slices in parallel where the runtime supports it; 'off' builds one at a time. */
+  build_parallel?: 'auto' | 'off';
+  /** 'agents' (default) or the saved Claude Code workflow engine. */
+  build_engine?: 'agents' | 'workflow';
+  /** Per-command timeout for build.run-checks, in seconds (default 1800). */
+  build_check_timeout_seconds?: number;
+  /** Check commands. An empty or missing value means checks.detect decides. */
+  build_command?: string;
+  typecheck_command?: string;
+  lint_command?: string;
+  test_command?: string;
 }
 
 export interface HooksConfig {
