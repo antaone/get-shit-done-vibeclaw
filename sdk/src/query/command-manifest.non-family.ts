@@ -85,6 +85,7 @@ export const NON_FAMILY_COMMAND_MANIFEST: readonly NonFamilyCommandManifestEntry
   { canonical: 'build.scan-stubs', aliases: ['build scan-stubs'], mutation: false, outputMode: 'json' },
   { canonical: 'build.merge-wave', aliases: ['build merge-wave'], mutation: true, outputMode: 'json' },
   { canonical: 'build.group-problems', aliases: ['build group-problems'], mutation: false, outputMode: 'json' },
+  { canonical: 'build.finalize', aliases: ['build finalize'], mutation: true, outputMode: 'json' },
   { canonical: 'agent.classify-failure', aliases: ['agent classify-failure'], mutation: false, outputMode: 'json' },
 
   { canonical: 'checks.detect', aliases: ['checks detect'], mutation: false, outputMode: 'json' },

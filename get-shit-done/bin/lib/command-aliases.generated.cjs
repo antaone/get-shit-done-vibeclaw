@@ -568,6 +568,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": false
   },
   {
+    "canonical": "build.finalize",
+    "aliases": [
+      "build finalize"
+    ],
+    "mutation": true
+  },
+  {
     "canonical": "build.group-problems",
     "aliases": [
       "build group-problems"
