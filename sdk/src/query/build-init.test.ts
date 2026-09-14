@@ -144,8 +144,9 @@ describe('init.build', () => {
     expect(data.baseline).toEqual({ last_passing_commit: null, code_head: null, needs_run: true });
   });
 
-  it('finds research, spec, UI spec and the milestone brief', async () => {
+  it('finds research, spec, UI spec and the milestone brief, never taking AI-SPEC.md as the spec', async () => {
     await put(`${PHASE_DIR}/03-RESEARCH.md`, '# Research\n');
+    await put(`${PHASE_DIR}/03-AI-SPEC.md`, '# AI spec\n');
     await put(`${PHASE_DIR}/03-SPEC.md`, '# Spec\n');
     await put(`${PHASE_DIR}/03-UI-SPEC.md`, '# UI spec\n');
     await put('.planning/MILESTONE-BRIEF.md', '# Milestone\n');
@@ -229,6 +230,25 @@ describe('init.build', () => {
     expect((await init('3', '--gaps')).resume).toMatchObject({
       state: 'slices_in_progress', plan: '02', done_slices: ['s1'], base_commit: earlier,
     });
+  });
+
+  it('bases an uncommitted brief on a commit made in the same second as the brief', async () => {
+    const briefSecond = Number(git('log', '-1', '--format=%ct')) + 200;
+    await commitAt(briefSecond - 100, 'src/tooling/lint.ts', 'export {};\n', 'chore: add lint tooling');
+    const sameSecond = await commitAt(briefSecond, 'src/tooling/format.ts', 'export {};\n', 'chore: add format tooling');
+    await put(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'));
+    await utimes(join(dir, PHASE_DIR, '03-01-PLAN.md'), briefSecond, briefSecond);
+    await commitAt(briefSecond + 10, 'src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    expect((await init('3')).resume).toMatchObject({ state: 'slices_in_progress', done_slices: ['s1'], base_commit: sameSecond });
+  });
+
+  it('bases an uncommitted brief older than every commit on the root commit', async () => {
+    const start = Number(git('log', '-1', '--format=%ct'));
+    const root = git('rev-list', '--max-parents=0', 'HEAD');
+    await commitAt(start + 10, 'src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    await put(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'));
+    await utimes(join(dir, PHASE_DIR, '03-01-PLAN.md'), start - 100, start - 100);
+    expect((await init('3')).resume).toMatchObject({ state: 'slices_in_progress', done_slices: ['s1'], base_commit: root });
   });
 
   it('skips the baseline only when the latest passing commit has the code head tree', async () => {

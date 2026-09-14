@@ -40,9 +40,9 @@ function relPath(projectDir: string, absPath: string): string {
   return toPosixPath(relative(projectDir, absPath));
 }
 
-function findInput(files: readonly string[], name: string, exclude?: string): string | null {
+function findInput(files: readonly string[], name: string, exclude: readonly string[] = []): string | null {
   const matches = (file: string, candidate: string) => file === candidate || file.endsWith(`-${candidate}`);
-  return files.find((file) => matches(file, name) && !(exclude && matches(file, exclude))) ?? null;
+  return files.find((file) => matches(file, name) && !exclude.some((other) => matches(file, other))) ?? null;
 }
 
 async function modelFor(agent: string, projectDir: string, workstream?: string): Promise<string> {
@@ -281,7 +281,8 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
       inputs: {
         context: phaseFile(findInput(files, 'CONTEXT.md')),
         research: phaseFile(findInput(files, 'RESEARCH.md')),
-        spec: phaseFile(findInput(files, 'SPEC.md', 'UI-SPEC.md')),
+        // AI-SPEC.md is the ai-integration-phase design contract, not the phase spec; spec-phase skips it too.
+        spec: phaseFile(findInput(files, 'SPEC.md', ['UI-SPEC.md', 'AI-SPEC.md'])),
         ui_spec: phaseFile(findInput(files, 'UI-SPEC.md')),
         milestone_brief: milestoneBrief ? relPath(projectDir, milestoneBrief) : null,
         roadmap: relPath(projectDir, paths.roadmap),
