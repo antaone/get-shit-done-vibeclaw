@@ -41,9 +41,9 @@ Stop cases, in order:
 - `resume.state` = `classic` → say the phase was planned with plan-phase; `OUTCOME=stopped`, `NEXT=execute-phase {PHASE}` → `next`.
 - `complete` → show `resume.summary`; `OUTCOME=complete` → `next`.
 - `human_needed` → say human checks are pending; `OUTCOME=stopped`, `NEXT=verify-work {PHASE}` → `next`.
-- `gaps_found` with `resume.summary` not null → read that summary's frontmatter. With `kind: build-summary` → say gaps remain; `OUTCOME=gaps`, `NEXT=build {PHASE} --gaps` → `next`. Without it, finalize never completed: resume at `summary`.
+- `gaps_found` with `resume.summary` not null → read that summary's frontmatter. With `kind: build-summary` → say gaps remain; `OUTCOME=gaps`, `NEXT=build {PHASE} --gaps` → `next`. Without it, finalize never completed: handle the state as `summarizing`.
 
-**Query errors:** read `error` first in every `build.run-checks` and `build.merge-wave` result (a background baseline's too), before any list. `error` present → show it; `OUTCOME=blocked` → `next`. With `merge_abort_failed`, also show its `slice`, `detail` and the lists collected so far; that slice is in none of them.
+**Query errors:** read `error` first in every `build.waves`, `build.run-checks` and `build.merge-wave` result (a background baseline's too), before any list. `error` present → show it (for `build.waves`, its `errors` too); `OUTCOME=blocked` → `next`. With `merge_abort_failed`, also show its `slice`, `detail` and the lists collected so far; that slice is in none of them.
 
 Record: `N` = `phase.number`, `P` = `phase.padded`, `PHASE_DIR` = `phase.dir`, `PLAN` = `resume.plan`, `BASE` = `resume.base_commit`, `BRIEF` = `{PHASE_DIR}/{P}-{PLAN}-PLAN.md`, `SUMMARY` = `{PHASE_DIR}/{P}-{PLAN}-SUMMARY.md`, `VERIFICATION` = `{PHASE_DIR}/{P}-VERIFICATION.md`, `HUMAN_UAT` = `{PHASE_DIR}/{P}-HUMAN-UAT.md`, `ROUND=0`.
 
@@ -173,7 +173,7 @@ Before this step ends by any path, wait for a background baseline to finish; no 
 fvgsd-sdk query build.waves "{BRIEF}"
 ```
 
-`waves` lists slice ids in the order they must run. Skip slices already done (`resume.done_slices`, or a kept `status: done` result); a kept `blocked` or `partial` result goes to **Slice results** below. For every other slice the builder prompt is:
+Check `error` first: with `invalid_brief`, show its `errors`; `OUTCOME=blocked` → `next`. Otherwise `waves` lists slice ids in the order they must run. Skip slices already done (`resume.done_slices`, or a kept `status: done` result); a kept `blocked` or `partial` result goes to **Slice results** below. For every other slice the builder prompt is:
 
 ```
 <build_inputs>
@@ -309,11 +309,12 @@ Pass `--requirements-completed` only when `IDS` holds at least one ID; otherwise
 If a background baseline is still running, wait for it to finish. Then print a short actions-taken report: slices built, merge-wave `blocked` and `skipped` slices, commits, checks (pass, fail, skipped, pre-existing), verification status, fix rounds used, and any `warnings`.
 
 Then suggest one next command in this runtime's command form (the fvgsd command prefix followed by the name and arguments below). Use `NEXT` when a step set it; otherwise:
+- The run is `blocked` or `stopped` with an unfinished brief (`{BRIEF}` exists, and `{SUMMARY}` is missing or has no `kind: build-summary`) → `build {N}`
 - The phase is complete → `fvgsd-sdk query roadmap.analyze`: take the first later phase that is not complete. Suggest `build <it>` only when it has CONTEXT.md (`has_context` true) and no plans yet (`disk_status` `discussed` or `researched`), `discuss-phase <it>` otherwise, and `complete-milestone` when no phase remains.
 - Gaps remain → `build {N} --gaps`
 - HUMAN-UAT items are pending → `verify-work {N}`
 
-When `fvgsd-sdk query config-get workflow.build_mode --default true` prints `false`, suggest `plan-phase` in place of `build` in any suggestion above or in `NEXT` (`build {N} --gaps` becomes `plan-phase {N} --gaps`).
+When `fvgsd-sdk query config-get workflow.build_mode --default true` prints `false`, suggest `plan-phase` in place of `build` in any suggestion above or in `NEXT` (`build {N} --gaps` becomes `plan-phase {N} --gaps`). Never replace the unfinished-brief suggestion: it stays `build {N}`, because execute-phase refuses briefs.
 
 End with exactly one of these lines, matching `OUTCOME`:
 

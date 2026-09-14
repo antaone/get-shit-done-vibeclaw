@@ -104,8 +104,8 @@ describe('VibeClaw public command namespace', () => {
       .sort((a, b) => b.length - a.length)
       .map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
       .join('|');
-    // A following "/" marks a path or repository slug (the upstream gsd-build/get-shit-done), not a command.
-    const legacyReference = new RegExp(`(?<![A-Za-z0-9_-])(?:/|\\$)?gsd[:-](?:${commandAlternation})(?=[^A-Za-z0-9_/-]|$)`);
+    // The upstream repository slug gsd-build/get-shit-done is not a command reference.
+    const legacyReference = new RegExp(`(?<![A-Za-z0-9_-])(?:/|\\$)?(?!gsd-build/get-shit-done)gsd[:-](?:${commandAlternation})(?=[^A-Za-z0-9_-]|$)`);
     const roots = [
       COMMANDS_DIR,
       path.join(ROOT, 'agents'),
