@@ -8,7 +8,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
 import { findPhase } from './phase.js';
 
@@ -74,10 +74,22 @@ export function runGit(cwd: string, args: readonly string[]): GitResult {
   };
 }
 
-/** Absolute git common dir, shared by every linked worktree; null outside a repository. */
+/**
+ * Absolute git common dir, shared by every linked worktree; null outside a repository.
+ *
+ * Deliberately omits `--path-format=absolute` (git 2.31+ only). Git silently accepts and
+ * echoes back options it doesn't recognise instead of failing, so on older git this would
+ * exit 0 with stdout like "--path-format=absolute\n.git" — a two-line, mostly-garbage
+ * value that callers would otherwise join paths onto. `--git-common-dir` alone works on
+ * every git version and returns a path relative to `projectDir`, which `resolve` turns
+ * absolute (and leaves untouched on the versions/setups that already return one).
+ */
 export function gitCommonDir(projectDir: string): string | null {
-  const result = runGit(projectDir, ['rev-parse', '--path-format=absolute', '--git-common-dir']);
-  return result.ok && result.stdout ? result.stdout : null;
+  const result = runGit(projectDir, ['rev-parse', '--git-common-dir']);
+  if (!result.ok || !result.stdout) return null;
+  const lines = result.stdout.split('\n');
+  if (lines.length !== 1 || lines[0] === '') return null;
+  return resolve(projectDir, lines[0]);
 }
 
 /** Full SHA of HEAD, or null when there is no repository or no commit. */

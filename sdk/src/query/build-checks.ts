@@ -13,7 +13,7 @@ import { join, relative } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
 import { loadConfig } from '../config.js';
 import { normalizePhaseName, toPosixPath } from './helpers.js';
-import { buildStateDir, headCommit, parseFlags, writeJsonAtomic } from './build-shared.js';
+import { buildStateDir, headCommit, parseFlags, resolveBuildPhase, writeJsonAtomic } from './build-shared.js';
 import type { QueryHandler } from './utils.js';
 
 export type CheckName = 'build' | 'typecheck' | 'lint' | 'test';
@@ -75,6 +75,11 @@ function readText(filePath: string): string | null {
 }
 
 function shellQuote(value: string): string {
+  if (process.platform === 'win32') {
+    // cmd.exe has no equivalent to POSIX single-quoting; wrap in double quotes and
+    // escape embedded ones so the value survives CommandLineToArgvW-style parsing.
+    return `"${value.replace(/"/g, '\\"')}"`;
+  }
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
@@ -246,13 +251,26 @@ function tailOf(text: string): string {
   return lines.slice(-TAIL_LINES).join('\n');
 }
 
+/** Grace period after the direct child exits before we give up on 'close' and force completion. */
+const KILL_GRACE_MS = 1000;
+
 function killTree(child: ChildProcess): void {
-  if (process.platform !== 'win32' && typeof child.pid === 'number') {
+  if (typeof child.pid !== 'number') return;
+  if (process.platform === 'win32') {
+    try {
+      // /T kills the process tree, /F forces it — cmd.exe's SIGKILL never
+      // reaches a descendant such as the node process behind `npm test`.
+      spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F']);
+      return;
+    } catch {
+      // Fall through to killing the direct child only.
+    }
+  } else {
     try {
       process.kill(-child.pid, 'SIGKILL');
       return;
     } catch {
-      // Fall through to killing the shell only.
+      // Fall through to killing the direct child only.
     }
   }
   try {
@@ -268,7 +286,9 @@ function runShellCommand(command: string, cwd: string, timeoutMs: number): Promi
     let buffer = '';
     let settled = false;
     let timedOut = false;
+    let lastExitCode: number | null = null;
     let timer: NodeJS.Timeout | undefined;
+    let graceTimer: NodeJS.Timeout | undefined;
     const append = (chunk: Buffer | string): void => {
       buffer += chunk.toString();
       if (buffer.length > TAIL_BYTES) buffer = buffer.slice(buffer.length - TAIL_BYTES);
@@ -277,7 +297,23 @@ function runShellCommand(command: string, cwd: string, timeoutMs: number): Promi
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
+      if (graceTimer) clearTimeout(graceTimer);
       resolve({ exit: timedOut ? null : exit, timedOut, tail: tailOf(buffer), durationMs: Date.now() - started });
+    };
+    // A descendant that escaped the process group (setsid, or a detached helper
+    // inheriting stdio) can keep the pipes open indefinitely, so 'close' alone
+    // would wait for that descendant's full natural runtime — including when the
+    // direct child already exited (e.g. right after firing off such a detached
+    // helper) before the timeout below even fires. Once timed out, give 'close' a
+    // short grace period and then force completion ourselves regardless of
+    // whether the direct child's own 'exit' arrives before or after that point.
+    const scheduleGrace = (): void => {
+      if (graceTimer || settled) return;
+      graceTimer = setTimeout(() => {
+        child.stdout?.destroy();
+        child.stderr?.destroy();
+        finish(lastExitCode);
+      }, KILL_GRACE_MS);
     };
     let child: ChildProcess;
     try {
@@ -290,12 +326,17 @@ function runShellCommand(command: string, cwd: string, timeoutMs: number): Promi
     timer = setTimeout(() => {
       timedOut = true;
       killTree(child);
+      scheduleGrace();
     }, timeoutMs);
     child.stdout?.on('data', append);
     child.stderr?.on('data', append);
     child.on('error', (err) => {
       append(`\n${err.message}\n`);
       finish(127);
+    });
+    child.on('exit', (code) => {
+      lastExitCode = code ?? 1;
+      if (timedOut) scheduleGrace();
     });
     child.on('close', (code) => finish(code ?? 1));
   });
@@ -353,7 +394,14 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   const { flags, positionals } = parseFlags(args, { values: ['phase', 'set', 'label', 'only'] });
   if (positionals.length > 0) throw invalid(`unexpected argument: ${positionals[0]}`);
   if (typeof flags.phase !== 'string') throw invalid('--phase is required');
-  const padded = normalizePhaseName(flags.phase.trim());
+  const phaseArg = flags.phase.trim();
+  // Key the results folder off the phase's actual on-disk directory when one exists
+  // (case preserved, e.g. "03a"), so it agrees with build.finalize's later
+  // readLatestChecks(phase.padded) lookup on case-sensitive filesystems. Only fall
+  // back to re-normalizing the flag (which uppercases letter suffixes) when the
+  // phase has no directory yet.
+  const resolvedPhase = await resolveBuildPhase(projectDir, phaseArg, workstream);
+  const padded = resolvedPhase?.padded ?? normalizePhaseName(phaseArg);
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(padded)) throw invalid(`invalid --phase: ${flags.phase}`);
   if (typeof flags.set !== 'string') throw invalid('--set is required');
   if (!Object.prototype.hasOwnProperty.call(CHECK_SETS, flags.set)) throw invalid('--set must be quick, wave or full');

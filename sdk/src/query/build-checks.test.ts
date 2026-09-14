@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, readdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -181,6 +181,21 @@ describe('build.run-checks', () => {
     expect(Date.now() - started).toBeLessThan(8000);
   }, 30_000);
 
+  it('kills the timed-out command even when a detached grandchild keeps stdio open', async () => {
+    // The direct child spawns a grandchild that escapes the process group (detached)
+    // while inheriting stdio, then exits immediately itself. Without the 'exit' +
+    // grace-period fallback, 'close' would not fire until the grandchild's own
+    // sleep ends, so the timeout budget above would be ignored.
+    const grandchildScript = "const {spawn}=require('child_process');"
+      + "const gc=spawn(process.execPath,['-e','setTimeout(()=>{},4000)'],{detached:true,stdio:'inherit'});"
+      + 'gc.unref();';
+    const dir = await repoWithConfig({ build_command: `${NODE} -e "${grandchildScript}"`, build_check_timeout_seconds: 1 });
+    const started = Date.now();
+    const [result] = (await run(dir, ['--phase', '3', '--set', 'wave', '--only', 'build'])).results;
+    expect([result.timed_out, result.exit]).toEqual([true, null]);
+    expect(Date.now() - started).toBeLessThan(3500);
+  }, 30_000);
+
   it('marks failures that also failed in the baseline as preexisting', async () => {
     const dir = await repoWithConfig({
       build_command: `${NODE} -e "process.exit(0)"`,
@@ -216,6 +231,22 @@ describe('build.run-checks', () => {
     expect([latest.build.commit, latest.build.passed]).toEqual([second, true]);
     expect([latest.test.commit, latest.test.passed]).toEqual([first, true]);
     expect([latest.lint.skipped, latest.lint.passed]).toEqual([true, false]);
+  }, 30_000);
+
+  it('keys the results folder by the resolved phase directory, not a re-normalized flag', async () => {
+    const dir = await repoWithConfig({
+      build_command: `${NODE} -e "process.exit(0)"`,
+      build_check_timeout_seconds: 60,
+    });
+    // "03a" normalizes to "03A" (letter suffixes are uppercased), but the phase
+    // directory on disk uses the lowercase form — the results folder must match
+    // the directory's actual casing so build.finalize's later
+    // readLatestChecks(phase.padded) lookup finds it on case-sensitive filesystems.
+    await mkdir(join(dir, '.planning', 'phases', '03a-user-auth'), { recursive: true });
+    await run(dir, ['--phase', '03a', '--set', 'wave', '--only', 'build']);
+    const buildDirs = await readdir(join(dir, '.git', 'fvgsd', 'build'));
+    expect(buildDirs).toEqual(['03a']);
+    expect(readLatestChecks(dir, '03a').build?.passed).toBe(true);
   }, 30_000);
 
   it('keeps the last 200 output lines', async () => {
