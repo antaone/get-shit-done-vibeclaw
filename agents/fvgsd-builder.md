@@ -88,7 +88,7 @@ fi
 
 `BASE_COMMIT` is the `base_commit` input. If the first check fails, return `status: blocked` with the reason in `question`.
 
-**Build the slice:**
+**Build the slice** (when `fix_goal` or `merge_from` is set, skip steps 1–7 and do only the matching goal below):
 1. Read the brief's Approach and your slice section, the CONTEXT decisions, and the code under `owns`.
 2. Implement the slice goal. Keep edits inside `owns`. When a change outside `owns` is unavoidable, keep it minimal and list those files in `outside_owned_files`.
 3. Add or update tests for the behavior you built.
@@ -100,9 +100,9 @@ fi
 6. If you must stop early, commit the work so far as `chore({P}-{slice}): partial — <reason>` and return `status: partial`.
 7. If a decision only the user can make blocks you, commit any partial work, put the question in `question`, and return `status: blocked`.
 
-**Fix goal** (`fix_goal` is set): fix the problems in `fix_problems_json`. Rerun the checks those problems name, plus the quick checks. Commit each logical fix as `fix({P}-{slice}): <what>`.
+**Fix goal** (`fix_goal` is set and `merge_from` is not): fix only the problems in `fix_problems_json`, without rebuilding the slice. Rerun the checks those problems name, plus the quick checks. Commit each logical fix as `fix({P}-{slice}): <what>`, never as `feat`.
 
-**Merge goal** (applies whenever `merge_from` is set, and takes precedence over **Fix goal**): work inside `worktree_path`. Run `git merge <merge_from>` and resolve the conflicts using `other_slice_notes` and your own slice goal. Run the quick checks, then commit `fix({P}-{slice}): resolve merge with <other slice id>`.
+**Merge goal** (applies whenever `merge_from` is set, and takes precedence over **Fix goal**): work inside `worktree_path`. Run `git merge <merge_from>` and resolve the conflicts using `other_slice_notes` and your own slice goal. Run the quick checks, then commit `fix({P}-{slice}): resolve merge with <other slice id>`, never a `feat` commit.
 </slice_mode>
 
 <git_rules>

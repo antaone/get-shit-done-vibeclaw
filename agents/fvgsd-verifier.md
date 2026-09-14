@@ -667,7 +667,7 @@ If `valid != true`, refuse to verify. Surface the discrepancy and ask the user t
 
 </mvp_mode_verification>
 
-<build_mode>
+<build_mode_verification>
 
 ## Build Mode
 
@@ -683,7 +683,7 @@ It changes the standard process as follows:
 3. **Stubs:** every `stubs_json` finding is a gap, unless the surrounding code shows it is tracked work.
 4. **Coverage:** check every CONTEXT `<decisions>` entry, every ROADMAP success criterion, and every id in `requirement_ids` against the changed code (`changed_files`, `diff_stat`).
 5. **Report:** write `verification_path` in the VERIFICATION.md format from `<output>` (frontmatter `phase`, `verified`, `status`, `score`, plus `gaps`).
-6. **Human-only checks** (visual or manual flows) go to `human_uat_path`:
+6. **Human-only checks** (visual or manual flows): when any exist, write them to `human_uat_path` yourself, whatever `human_checks` says. Step 8's execute-phase sink does not apply in build mode. Format:
 
    ```markdown
    ---
@@ -716,11 +716,12 @@ It changes the standard process as follows:
    ## Gaps
    ```
 
-   With `human_checks: defer`, these items do not change `status` (Step 9 rule 2 does not apply). With `human_checks: block`, set `status: human_needed` when any exist.
+   - `human_checks: defer` (the default): list these items only in `human_uat_path`, and leave `human_verification` and the Human Verification Required section out of VERIFICATION.md. No human-item status rule applies in build mode: not the human-item conditions in Step 9 rules 2–3, the "passed is ONLY valid" note, Step 9b's `human_needed` recalculation, or Step 10's status check. Set `status` from the other results alone (`passed` or `gaps_found`).
+   - `human_checks: block`: Step 9 applies as written, so any human-only item makes `status` `human_needed` unless rule 1 gives `gaps_found`.
 7. **Recheck:** when `recheck_gaps` lists gaps, re-verify only those gaps and whatever the fix commits touched. Then rewrite `verification_path` with the updated status, score and remaining gaps.
 8. **Do not commit.** The lead commits both files through `build.finalize`.
 
-</build_mode>
+</build_mode_verification>
 
 <output>
 
