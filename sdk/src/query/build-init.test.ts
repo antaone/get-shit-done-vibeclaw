@@ -180,11 +180,27 @@ describe('init.build', () => {
     await writeFile(verificationPath, verification('passed'));
     expect((await init('3')).resume.state).toBe('summarizing');
 
-    await put(`${PHASE_DIR}/03-01-SUMMARY.md`, '# Summary\n');
+    await put(`${PHASE_DIR}/03-01-SUMMARY.md`, ['---', 'kind: build-summary', '---', '', '# Summary', ''].join('\n'));
     expect((await init('3')).resume).toMatchObject({ state: 'complete', summary: `${PHASE_DIR}/03-01-SUMMARY.md` });
 
     await writeFile(verificationPath, verification('human_needed'));
     expect((await init('3')).resume.state).toBe('human_needed');
+  });
+
+  it('reports summarizing, not complete, when the summary exists but has no kind: build-summary yet', async () => {
+    await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    await commit('src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    await commit('src/routes/login.ts', 'export {};\n', 'feat(03-s2): login routes');
+    const verificationPath = join(dir, PHASE_DIR, '03-VERIFICATION.md');
+    await writeFile(verificationPath, verification('passed'));
+
+    // The lead has written the summary body and its own frontmatter, but build.finalize
+    // hasn't run yet, so `kind: build-summary` is still missing.
+    await put(`${PHASE_DIR}/03-01-SUMMARY.md`, ['---', 'subsystem: auth', 'tags: [auth]', '---', '', '# Summary', ''].join('\n'));
+    expect((await init('3')).resume).toMatchObject({ state: 'summarizing', summary: `${PHASE_DIR}/03-01-SUMMARY.md` });
+
+    await put(`${PHASE_DIR}/03-01-SUMMARY.md`, ['---', 'subsystem: auth', 'tags: [auth]', 'kind: build-summary', '---', '', '# Summary', ''].join('\n'));
+    expect((await init('3')).resume.state).toBe('complete');
   });
 
   it('reports classic when the phase already has plans that are not briefs', async () => {

@@ -7,6 +7,7 @@ import { GSDError } from '../errors.js';
 import { extractFrontmatter, stripFrontmatter } from './frontmatter.js';
 import { buildFinalize, upsertFrontmatterKeys } from './build-finalize.js';
 import { buildStateDir, codeHead, writeJsonAtomic } from './build-shared.js';
+import { roadmapAnalyze } from './roadmap.js';
 
 const PHASE_DIR = '.planning/phases/03-user-auth';
 const SUMMARY_PATH = `${PHASE_DIR}/03-01-SUMMARY.md`;
@@ -119,13 +120,17 @@ describe('build.finalize', () => {
     expect(git('status', '--porcelain')).toBe('');
   });
 
-  it('refuses when a decision or requirement ID is missing and leaves state untouched', async () => {
+  it('refuses when a decision or requirement ID is missing and leaves state and the summary untouched', async () => {
     await put(SUMMARY_PATH, summary(['| D-01 | done | argon2id |', 'D-020 is a different decision.']));
     const stateBefore = await readFile(join(dir, '.planning/STATE.md'), 'utf-8');
+    const summaryBefore = await readFile(join(dir, SUMMARY_PATH), 'utf-8');
     const headBefore = git('rev-parse', 'HEAD');
     const data = (await finalize('AUTH-01')).data;
     expect(data).toEqual({ ok: false, missing: { decisions: ['D-02'], requirements: ['AUTH-02'] } });
     expect(await readFile(join(dir, '.planning/STATE.md'), 'utf-8')).toBe(stateBefore);
+    // A refused run must not write finalize's frontmatter — otherwise init.build could see
+    // kind: build-summary on disk for a build that never actually finalized.
+    expect(await readFile(join(dir, SUMMARY_PATH), 'utf-8')).toBe(summaryBefore);
     expect(git('rev-parse', 'HEAD')).toBe(headBefore);
   });
 
@@ -133,7 +138,8 @@ describe('build.finalize', () => {
     await put(SUMMARY_PATH, summary(['## Decisions', '', '| Decision | Status | Notes |', '|---|---|---|', '| D-01 | done | argon2id |', '| D-02 | done | 30-day sessions |']));
     const refused = { ok: false, missing: { decisions: [], requirements: ['AUTH-02'] } };
     expect((await finalize('AUTH-01,AUTH-02')).data).toEqual(refused);
-    // The first run wrote requirements-completed: [AUTH-01, AUTH-02] into the summary frontmatter.
+    // A refused run writes nothing, so the summary is identical for the rerun too — passing
+    // --requirements-completed AUTH-02 again still doesn't make AUTH-02 count as covered.
     expect((await finalize('AUTH-01,AUTH-02')).data).toEqual(refused);
     const written = await readFile(join(dir, SUMMARY_PATH), 'utf-8');
     await writeFile(join(dir, SUMMARY_PATH), `${written}\n## Follow-ups\n\n- AUTH-02 is covered by the login tests\n`);
@@ -204,6 +210,20 @@ describe('build.finalize', () => {
     await put(SUMMARY_PATH, summary(COVERING_BODY));
     expect((await finalize()).data).toMatchObject({ ok: true, commit: null });
   });
+
+  it('completes the phase only when VERIFICATION.md is passed, but still commits a gaps_found one', async () => {
+    await put(`${PHASE_DIR}/03-VERIFICATION.md`, ['---', 'phase: 03-user-auth', 'verified: 2026-09-13T10:00:00Z', 'status: gaps_found', 'score: 0/1', '---', '', '# Verification', ''].join('\n'));
+    await put(SUMMARY_PATH, summary(COVERING_BODY));
+    const data = (await finalize()).data as Record<string, unknown>;
+    expect(data).toMatchObject({ ok: true, phase_complete: false });
+    expect(typeof data.commit).toBe('string');
+
+    const roadmap = (await roadmapAnalyze([], dir)).data as { phases: Array<{ number: string; roadmap_complete: boolean }> };
+    expect(roadmap.phases.find((phase) => phase.number === '3')?.roadmap_complete).not.toBe(true);
+
+    const committedFiles = git('diff-tree', '--no-commit-id', '-r', '--name-only', 'HEAD');
+    expect(committedFiles).toContain(`${PHASE_DIR}/03-VERIFICATION.md`);
+  });
 });
 
 describe('upsertFrontmatterKeys', () => {
@@ -212,5 +232,28 @@ describe('upsertFrontmatterKeys', () => {
     const result = upsertFrontmatterKeys(original, { plan: '01', build: { checks: {}, checks_passed_at: null, slices: ['s1'] } });
     expect(extractFrontmatter(result)).toMatchObject({ plan: '01', subsystem: 'auth', provides: ['session cookies'], build: { checks_passed_at: 'null', slices: ['s1'] } });
     expect(stripFrontmatter(result)).toBe(stripFrontmatter(original));
+  });
+
+  it('keeps the lead-written frontmatter when the closing fence has trailing content', () => {
+    // A closing "--- " (trailing space) with no other "---" line anywhere later in the
+    // content: extractFrontmatter (frontmatter.ts) still treats it as the closing fence.
+    const original = ['---', 'subsystem: auth', 'tags: [auth]', '--- ', '', '# Body', '', 'No other dashes here.', ''].join('\n');
+    const result = upsertFrontmatterKeys(original, { plan: '01' });
+    expect(extractFrontmatter(result)).toMatchObject({ plan: '01', subsystem: 'auth', tags: ['auth'] });
+    expect(stripFrontmatter(result)).toContain('No other dashes here.');
+  });
+
+  it('does not swallow a body line that looks like an owned key when a markdown rule follows a dirty closing fence', () => {
+    // The true closing fence ("--- ", trailing space) comes first; a markdown horizontal
+    // rule ("---" on its own line) comes later, after a body line named like an owned key.
+    const original = [
+      '---', 'subsystem: auth', 'tags: [auth]', '--- ', '# Body', '',
+      'plan: see the brief', '', '---', '', 'More body text.', '',
+    ].join('\n');
+    const result = upsertFrontmatterKeys(original, { plan: '01' });
+    expect(extractFrontmatter(result)).toMatchObject({ plan: '01', subsystem: 'auth', tags: ['auth'] });
+    const body = stripFrontmatter(result);
+    expect(body).toContain('plan: see the brief');
+    expect(body).toContain('More body text.');
   });
 });

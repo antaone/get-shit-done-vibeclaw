@@ -66,7 +66,12 @@ function yamlLines(key: string, value: unknown, indent: string): string[] {
 /** The frontmatter lines outside `ownedKeys` (nested lines follow their key), and the body. */
 function withoutOwnedKeys(content: string, ownedKeys: ReadonlySet<string>): { kept: string[]; body: string } {
   const normalized = content.replace(/\r\n/g, '\n');
-  const match = normalized.match(/^---\n([\s\S]*?)\n---(?:\n|$)/);
+  // Same closing-line rule as extractFrontmatter (frontmatter.ts): the first `\n---` after the
+  // opening fence closes the block, whatever follows on that line. `[^\n]*` consumes any trailing
+  // content on the closing line (for example a trailing space) so the body starts after that whole
+  // line, not mid-line — otherwise this and extractFrontmatter would disagree about where the
+  // frontmatter ends, either losing the lead's block to the body or eating body lines as frontmatter.
+  const match = normalized.match(/^---\n([\s\S]*?)\n---[^\n]*(?:\n|$)/);
   const kept: string[] = [];
   if (match) {
     let keep = true;
@@ -127,7 +132,9 @@ export const buildFinalize: QueryHandler = async (args, projectDir, workstream) 
   const missingKeys = ['subsystem', 'tags'].filter((key) => leadFrontmatter[key] === undefined || leadFrontmatter[key] === '');
   if (missingKeys.length > 0) invalid(`summary frontmatter is missing: ${missingKeys.join(', ')}`);
 
-  // 1. Summary frontmatter
+  // 1. Summary frontmatter (computed now; the write itself is deferred until ID coverage
+  // passes below, so a refused run leaves the summary on disk byte-for-byte unchanged —
+  // otherwise init.build could see a `kind: build-summary` for a build that never finalized).
   const now = new Date();
   const briefRel = `${phase.dir}/${planFile.file}`;
   const startedIso = firstAddCommit(projectDir, briefRel)?.time ?? now.toISOString();
@@ -170,7 +177,6 @@ export const buildFinalize: QueryHandler = async (args, projectDir, workstream) 
       checks_passed_at: allPassedAtHead && ran > 0 ? head : null,
     },
   };
-  await writeFile(summaryAbs, upsertFrontmatterKeys(summaryContent, owned), 'utf-8');
 
   // 2. ID coverage over the brief and the summary as the lead wrote it. Keys finalize owns,
   // requirements-completed included (from this run or an earlier one), never count.
@@ -188,6 +194,9 @@ export const buildFinalize: QueryHandler = async (args, projectDir, workstream) 
   if (missing.decisions.length > 0 || missing.requirements.length > 0) {
     return { data: { ok: false, missing } };
   }
+
+  // Coverage passed: now it's safe to write the summary frontmatter.
+  await writeFile(summaryAbs, upsertFrontmatterKeys(summaryContent, owned), 'utf-8');
 
   // 3. State updates through the existing handlers
   const warnings: string[] = [];
@@ -207,12 +216,19 @@ export const buildFinalize: QueryHandler = async (args, projectDir, workstream) 
     '--phase', phase.padded, '--plan', plan, '--duration', `${minutes}min`,
     '--tasks', String(planFile.sliceIds.length), '--files', String(created.length + modified.length),
   ], projectDir, workstream));
-  await step('roadmap.update-plan-progress', () => roadmapUpdatePlanProgress([phase.padded], projectDir, workstream));
+  const verification = readVerification(phase.dirAbs, phase.padded);
+  const verificationPassed = verification?.status === 'passed';
+  // roadmap.update-plan-progress marks the phase's ROADMAP checkbox complete purely from plan/
+  // summary file counts, so it must wait for a passed verification too — otherwise roadmap.analyze
+  // would report a gaps_found phase as complete, the same "complete only on passed" spec rule that
+  // gates phase.complete below.
+  if (verificationPassed) {
+    await step('roadmap.update-plan-progress', () => roadmapUpdatePlanProgress([phase.padded], projectDir, workstream));
+  }
   if (completedIds.length > 0) {
     await step('requirements.mark-complete', () => requirementsMarkComplete(completedIds, projectDir, workstream));
   }
-  const verification = readVerification(phase.dirAbs, phase.padded);
-  const phaseCompleted = verification?.status === 'passed'
+  const phaseCompleted = verificationPassed
     && await step('phase.complete', () => phaseComplete([phase.padded], projectDir, workstream));
 
   // 4. Commit
