@@ -42,8 +42,7 @@ import {
 } from './roadmap.js';
 import { agentSkills } from './skills.js';
 import { withProjectRoot } from './init.js';
-import { extractFrontmatter } from './frontmatter.js';
-import { listPhasePlanFiles, readVerification } from './build-shared.js';
+import { listPhasePlanFiles, readVerification, summaryIsFinalized } from './build-shared.js';
 import type { QueryHandler } from './utils.js';
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
@@ -215,15 +214,6 @@ function listPhasePlanAndSummaryCounts(phasePath: string): { plans: string[]; su
     plans: rootPlans.concat(nestedPlans),
     summaries: rootSummaries.concat(nestedSummaries),
   };
-}
-
-/** True once build.finalize has marked the summary `kind: build-summary`; a refused finalize never writes it. */
-function isFinalizedSummary(phaseDirAbs: string, summaryFile: string): boolean {
-  try {
-    return extractFrontmatter(readFileSync(join(phaseDirAbs, summaryFile), 'utf-8')).kind === 'build-summary';
-  } catch {
-    return false;
-  }
 }
 
 // ─── initNewProject ───────────────────────────────────────────────────────
@@ -632,7 +622,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
           buildInfo.set(phaseNum, {
             hasBrief: briefs.length > 0,
             // A brief stays unfinished until build.finalize marks its summary `kind: build-summary`.
-            incompleteBrief: briefs.some(plan => !isFinalizedSummary(fullDir, `${normalized}-${plan.nn}-SUMMARY.md`)),
+            incompleteBrief: briefs.some(plan => !summaryIsFinalized(fullDir, normalized, plan.nn)),
             verification: readVerification(fullDir, normalized)?.status ?? null,
           });
         } catch { /* no build facts: the classic recommendations apply */ }
@@ -698,7 +688,6 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
   try {
     const waitingPath = join(projectDir, '.planning', 'WAITING.json');
     if (existsSync(waitingPath)) {
-      const { readFileSync } = await import('node:fs');
       waitingSignal = JSON.parse(readFileSync(waitingPath, 'utf-8'));
     }
   } catch { /* intentionally empty */ }

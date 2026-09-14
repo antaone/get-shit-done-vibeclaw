@@ -816,6 +816,28 @@ describe('init manager — build mode', () => {
     assert.deepStrictEqual(actionsFor(), [{ phase: '1', action: 'build', command: '/fvgsd-build 1 --gaps' }]);
   });
 
+  test('does not recommend a gap build when workflow.build_mode is false', () => {
+    writeClassicConfig(tmpDir);
+    writeRoadmap(tmpDir, [{ number: '1', name: 'Auth' }]);
+    writePhaseFile(1, 'auth', '{P}-01-PLAN.md', brief);
+    writePhaseFile(1, 'auth', '{P}-01-SUMMARY.md', buildSummary);
+    writePhaseFile(1, 'auth', '{P}-VERIFICATION.md', ['---', 'phase: 01-auth', 'status: gaps_found', '---', ''].join('\n'));
+    assert.deepStrictEqual(actionsFor(), []);
+  });
+
+  test('honors the root workflow.build_mode: false in a workstream without its own config.json', () => {
+    writeClassicConfig(tmpDir);
+    const wsDir = path.join(tmpDir, '.planning', 'workstreams', 'alpha');
+    fs.mkdirSync(path.join(wsDir, 'phases', '01-auth'), { recursive: true });
+    fs.writeFileSync(path.join(wsDir, 'STATE.md'), '---\nstatus: active\n---\n# State\n');
+    fs.writeFileSync(path.join(wsDir, 'ROADMAP.md'), '# Roadmap\n\n## Progress\n\n- [ ] **Phase 1: Auth**\n\n### Phase 1: Auth\n\n**Goal:** Do the thing\n');
+    fs.writeFileSync(path.join(wsDir, 'phases', '01-auth', '01-CONTEXT.md'), '# Context');
+    assert.deepStrictEqual(
+      actionsFor({ FVGSD_RUNTIME: 'claude', FVGSD_WORKSTREAM: 'alpha' }),
+      [{ phase: '1', action: 'plan', command: '/fvgsd-plan-phase 1' }],
+    );
+  });
+
   test('renders build commands in the codex skill form', () => {
     writeRoadmap(tmpDir, [{ number: '3', name: 'Api' }]);
     scaffoldPhase(tmpDir, 3, { slug: 'api', context: true });

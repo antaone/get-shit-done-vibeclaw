@@ -181,4 +181,26 @@ describe('routeNextAction — build mode', () => {
     const { data } = await routeNextAction([], dir);
     expect(data).toMatchObject({ command: '/fvgsd-discuss-phase', args: '4' });
   });
+
+  it('advances past a finalized build phase that passed verification when workflow.build_mode is false', async () => {
+    const dir = await buildProject({
+      '.planning/config.json': JSON.stringify({ workflow: { build_mode: false } }),
+      [`${PHASE}/03-01-PLAN.md`]: BRIEF,
+      [`${PHASE}/03-01-SUMMARY.md`]: BUILD_SUMMARY,
+      [`${PHASE}/03-VERIFICATION.md`]: ['---', 'phase: 03-user-auth', 'status: passed', '---', ''].join('\n'),
+    });
+    const { data } = await routeNextAction([], dir);
+    expect(data).toMatchObject({ command: '/fvgsd-discuss-phase', args: '4' });
+  });
+
+  it('does not resume a slug-named brief whose summary build.finalize marked', async () => {
+    // build.finalize writes {P}-{NN}-SUMMARY.md, also for a slug-named brief such as 03-01-auth-PLAN.md.
+    const dir = await buildProject({
+      [`${PHASE}/03-01-auth-PLAN.md`]: BRIEF,
+      [`${PHASE}/03-01-SUMMARY.md`]: BUILD_SUMMARY,
+      [`${PHASE}/03-VERIFICATION.md`]: ['---', 'phase: 03-user-auth', 'status: passed', '---', ''].join('\n'),
+    });
+    const { data } = await routeNextAction([], dir);
+    expect(data).toMatchObject({ command: '/fvgsd-discuss-phase', args: '4' });
+  });
 });

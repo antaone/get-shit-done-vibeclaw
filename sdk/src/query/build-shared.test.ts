@@ -10,6 +10,7 @@ import {
   phaseRequirementIds,
   resolveBuildPhase,
   sameCodeTree,
+  summaryIsFinalized,
   writeJsonAtomic,
 } from './build-shared.js';
 
@@ -204,5 +205,31 @@ describe('firstAddCommit and sameCodeTree', () => {
     expect(sameCodeTree(dir, 'f'.repeat(40), head)).toBe(false);
     // Equal full SHAs match without asking git.
     expect(sameCodeTree(dir, 'a'.repeat(64), 'a'.repeat(64))).toBe(true);
+  });
+});
+
+describe('summaryIsFinalized', () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'fvgsd-summary-finalized-'));
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('is true only for the {P}-{NN}-SUMMARY.md that build.finalize marked kind: build-summary', async () => {
+    await writeFile(join(dir, '03-01-SUMMARY.md'), '---\nphase: 03-user-auth\nplan: 01\nkind: build-summary\n---\n# Summary\n');
+    await writeFile(join(dir, '03-02-SUMMARY.md'), '---\nphase: 03-user-auth\nplan: 02\nsubsystem: auth\n---\n# Summary\n');
+    await writeFile(join(dir, '03-03-auth-SUMMARY.md'), '---\nphase: 03-user-auth\nplan: 03\nkind: build-summary\n---\n# Summary\n');
+
+    expect(summaryIsFinalized(dir, '03', '01')).toBe(true);
+    // Written by the lead, never finalized.
+    expect(summaryIsFinalized(dir, '03', '02')).toBe(false);
+    // build.finalize writes {P}-{NN}-SUMMARY.md, never a slug-named summary.
+    expect(summaryIsFinalized(dir, '03', '03')).toBe(false);
+    // No summary at all.
+    expect(summaryIsFinalized(dir, '03', '04')).toBe(false);
   });
 });

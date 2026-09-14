@@ -283,6 +283,20 @@ export function listPhasePlanFiles(phaseDirAbs: string, padded: string): PhasePl
   return plans.sort((a, b) => a.num - b.num || a.file.localeCompare(b.file));
 }
 
+/**
+ * A summary only counts as finalized once `build.finalize` has written its `kind: build-summary`
+ * marker, which it does only after its ID coverage check passes. A lead-written summary that never
+ * went through finalize (STATE, ROADMAP and REQUIREMENTS not updated) leaves its brief unfinished.
+ * Reads `{padded}-{nn}-SUMMARY.md`, the name build.finalize writes, also for a slug-named brief.
+ */
+export function summaryIsFinalized(phaseDirAbs: string, padded: string, nn: string): boolean {
+  try {
+    return extractFrontmatter(readFileSync(join(phaseDirAbs, `${padded}-${nn}-SUMMARY.md`), 'utf-8')).kind === 'build-summary';
+  } catch {
+    return false;
+  }
+}
+
 export interface VerificationInfo {
   /** Absolute path of `{padded}-VERIFICATION.md`. */
   path: string;

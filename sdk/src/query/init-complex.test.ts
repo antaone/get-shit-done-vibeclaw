@@ -892,6 +892,19 @@ describe('initManager — build mode', () => {
     expect(await actions()).toEqual([{ phase: '20', action: 'build', command: '/fvgsd-build 20 --gaps' }]);
   });
 
+  it('does not recommend a gap build when workflow.build_mode is false', async () => {
+    await scaffold([{
+      number: '20',
+      slug: 'auth',
+      files: {
+        '20-01-PLAN.md': BRIEF,
+        '20-01-SUMMARY.md': BUILD_SUMMARY,
+        '20-VERIFICATION.md': '---\nphase: 20-auth\nstatus: gaps_found\n---\n',
+      },
+    }], false);
+    expect(await actions()).toEqual([]);
+  });
+
   it('keeps the plan recommendation when workflow.build_mode is false', async () => {
     await scaffold([{ number: '20', slug: 'auth', files: { '20-CONTEXT.md': '# Context' } }], false);
     expect(await actions()).toEqual([{ phase: '20', action: 'plan', command: '/fvgsd-plan-phase 20' }]);

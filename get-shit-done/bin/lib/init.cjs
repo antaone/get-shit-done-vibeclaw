@@ -29,10 +29,12 @@ function listPhasePlanFiles(phaseDir) {
 }
 
 // `workflow.build_mode` (default true). A raw read keeps loadConfig's flat
-// shape unchanged; unreadable config keeps the default.
+// shape unchanged. Like loadConfig, a workstream without its own config.json
+// uses the root .planning/config.json; unreadable config keeps the default.
 function readBuildMode(cwd) {
   try {
-    const raw = platformReadSync(path.join(planningDir(cwd), 'config.json'));
+    const raw = platformReadSync(path.join(planningDir(cwd), 'config.json'))
+      ?? platformReadSync(path.join(planningRoot(cwd), 'config.json'));
     if (raw === null) return true;
     const parsed = JSON.parse(raw);
     return !(parsed && parsed.workflow && parsed.workflow.build_mode === false);

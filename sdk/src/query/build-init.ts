@@ -27,6 +27,7 @@ import {
   resolveBuildPhase,
   runGit,
   sameCodeTree,
+  summaryIsFinalized,
   type BuildPhase,
   type PhasePlanFile,
 } from './build-shared.js';
@@ -136,21 +137,6 @@ function resumeBase(projectDir: string, briefRel: string, briefAbs: string, head
   return oldest;
 }
 
-/**
- * A summary on disk only counts as finalized once `build.finalize` has written its
- * `kind: build-summary` marker. A lead-written summary that hasn't been through finalize
- * yet (missing STATE/ROADMAP/REQUIREMENTS updates) must not read as `complete`/`human_needed`.
- */
-function summaryIsFinalized(phase: BuildPhase, target: PhasePlanFile): boolean {
-  if (!target.hasSummary) return false;
-  try {
-    const content = readFileSync(join(phase.dirAbs, `${phase.padded}-${target.nn}-SUMMARY.md`), 'utf-8');
-    return extractFrontmatter(content).kind === 'build-summary';
-  } catch {
-    return false;
-  }
-}
-
 function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, head: string): Record<string, unknown> {
   const plans = listPhasePlanFiles(phase.dirAbs, phase.padded);
   const briefs = plans.filter((plan) => plan.kind === 'brief');
@@ -188,7 +174,7 @@ function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, hea
   const status = info?.status ?? null;
   const fresh = info !== null && (scan.lastWorkSeconds === null || info.mtimeMs >= scan.lastWorkSeconds * 1000);
 
-  const finalized = summaryIsFinalized(phase, target);
+  const finalized = summaryIsFinalized(phase.dirAbs, phase.padded, target.nn);
   let state: ResumeState;
   if (finalized && status === 'passed') state = 'complete';
   else if (finalized && status === 'human_needed') state = 'human_needed';
