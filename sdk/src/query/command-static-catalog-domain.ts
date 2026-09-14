@@ -22,6 +22,7 @@ import { writeProfile, generateClaudeProfile, generateDevPreferences, generateCl
 import { phaseMvpMode, taskIsBehaviorAdding, userStoryValidate } from './mvp.js';
 import { worktreeCleanupWave, worktreeReapOrphans } from './worktree.js';
 import { promptBudget } from './prompt-budget.js';
+import { buildGroupProblems } from './build-problems.js';
 import { buildMergeWave } from './build-merge.js';
 import { checksDetect, buildRunChecks } from './build-checks.js';
 import { buildCheckBrief, buildWaves } from './build-brief.js';
@@ -111,6 +112,8 @@ export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler
   ['task is-behavior-adding', taskIsBehaviorAdding],
   ['user-story.validate', userStoryValidate],
   ['user-story validate', userStoryValidate],
+  ['build.group-problems', buildGroupProblems],
+  ['build group-problems', buildGroupProblems],
   ['prompt-budget', promptBudget],
   ['build.merge-wave', buildMergeWave],
   ['build merge-wave', buildMergeWave],

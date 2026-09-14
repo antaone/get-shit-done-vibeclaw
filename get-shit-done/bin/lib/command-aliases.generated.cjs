@@ -560,6 +560,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": false
   },
   {
+    "canonical": "build.group-problems",
+    "aliases": [
+      "build group-problems"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "build.merge-wave",
     "aliases": [
       "build merge-wave"
