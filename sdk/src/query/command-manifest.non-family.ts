@@ -83,6 +83,7 @@ export const NON_FAMILY_COMMAND_MANIFEST: readonly NonFamilyCommandManifestEntry
   { canonical: 'verify-summary', aliases: ['verify.summary', 'verify summary'], mutation: false, outputMode: 'raw' },
 
   { canonical: 'build.scan-stubs', aliases: ['build scan-stubs'], mutation: false, outputMode: 'json' },
+  { canonical: 'build.merge-wave', aliases: ['build merge-wave'], mutation: true, outputMode: 'json' },
   { canonical: 'agent.classify-failure', aliases: ['agent classify-failure'], mutation: false, outputMode: 'json' },
 
   { canonical: 'checks.detect', aliases: ['checks detect'], mutation: false, outputMode: 'json' },
