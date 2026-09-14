@@ -553,9 +553,23 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": false
   },
   {
+    "canonical": "build.check-brief",
+    "aliases": [
+      "build check-brief"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "build.run-checks",
     "aliases": [
       "build run-checks"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "build.waves",
+    "aliases": [
+      "build waves"
     ],
     "mutation": false
   },

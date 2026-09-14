@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, mkdir, rm, readFile, readdir } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, readFile, readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { GSDError } from '../errors.js';
-import { parseFlags, resolveBuildPhase, writeJsonAtomic } from './build-shared.js';
+import { parseFlags, phaseRequirementIds, resolveBuildPhase, writeJsonAtomic } from './build-shared.js';
 
 describe('parseFlags', () => {
   const spec = { values: ['phase', 'set'], booleans: ['gaps'] } as const;
@@ -86,6 +86,31 @@ describe('writeJsonAtomic', () => {
     writeJsonAtomic(target, { ok: false });
     expect(JSON.parse(await readFile(target, 'utf-8'))).toEqual({ ok: false });
     expect(await readdir(join(dir, 'a', 'b'))).toEqual(['data.json']);
+    await rm(dir, { recursive: true, force: true });
+  });
+});
+
+describe('phaseRequirementIds', () => {
+  it('reads the IDs listed in the phase ROADMAP section', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-build-reqs-'));
+    await mkdir(join(dir, '.planning'), { recursive: true });
+    await writeFile(join(dir, '.planning', 'ROADMAP.md'), [
+      '# Roadmap', '', '## v1.0: Test', '',
+      '### Phase 3: User Auth', '', '**Goal:** Users can sign in', '**Requirements:** [AUTH-01, AUTH-02] AUTH-03', '',
+      '### Phase 4: Billing', '', '**Requirements:** TBD', '',
+    ].join('\n'));
+    await writeFile(join(dir, '.planning', 'STATE.md'), ['---', 'milestone: v1.0', '---', '', '# State', ''].join('\n'));
+    expect(await phaseRequirementIds(dir, '3')).toEqual(['AUTH-01', 'AUTH-02', 'AUTH-03']);
+    expect(await phaseRequirementIds(dir, '03')).toEqual(['AUTH-01', 'AUTH-02', 'AUTH-03']);
+    expect(await phaseRequirementIds(dir, '4')).toEqual([]);
+    expect(await phaseRequirementIds(dir, '9')).toEqual([]);
+    expect(await phaseRequirementIds(dir, '')).toEqual([]);
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('returns [] when ROADMAP.md is missing', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'fvgsd-build-reqs-none-'));
+    expect(await phaseRequirementIds(dir, '3')).toEqual([]);
     await rm(dir, { recursive: true, force: true });
   });
 });

@@ -23,6 +23,7 @@ import { phaseMvpMode, taskIsBehaviorAdding, userStoryValidate } from './mvp.js'
 import { worktreeCleanupWave, worktreeReapOrphans } from './worktree.js';
 import { promptBudget } from './prompt-budget.js';
 import { checksDetect, buildRunChecks } from './build-checks.js';
+import { buildCheckBrief, buildWaves } from './build-brief.js';
 
 export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler]> = [
   ['agent-skills', agentSkills],
@@ -114,4 +115,8 @@ export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler
   ['checks detect', checksDetect],
   ['build.run-checks', buildRunChecks],
   ['build run-checks', buildRunChecks],
+  ['build.check-brief', buildCheckBrief],
+  ['build check-brief', buildCheckBrief],
+  ['build.waves', buildWaves],
+  ['build waves', buildWaves],
 ] as const;

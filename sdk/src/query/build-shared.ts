@@ -11,6 +11,7 @@ import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
 import { findPhase } from './phase.js';
+import { roadmapGetPhase } from './roadmap.js';
 
 export interface FlagSpec { values?: readonly string[]; booleans?: readonly string[] }
 export interface ParsedFlags { flags: Record<string, string | boolean>; positionals: string[] }
@@ -132,4 +133,25 @@ export function writeJsonAtomic(filePath: string, value: unknown): void {
   const tmp = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
   renameSync(tmp, filePath);
+}
+
+/** Requirement IDs from the phase's `**Requirements:**` ROADMAP line; [] when absent or TBD. */
+export async function phaseRequirementIds(projectDir: string, phase: string, workstream?: string): Promise<string[]> {
+  if (!phase || !phase.trim()) return [];
+  let section: string | undefined;
+  try {
+    const result = await roadmapGetPhase([phase.trim()], projectDir, workstream);
+    const data = result.data as Record<string, unknown>;
+    section = typeof data.section === 'string' ? data.section : undefined;
+  } catch {
+    return [];
+  }
+  const match = section?.match(/^\*\*Requirements:?\*\*[^\S\n]*:?[^\S\n]*([^\n]*)$/m);
+  if (!match) return [];
+  const ids = match[1]
+    .replace(/[[\]]/g, '')
+    .split(/[,\s]+/)
+    .map((item) => item.trim())
+    .filter((item) => item !== '' && item.toUpperCase() !== 'TBD');
+  return [...new Set(ids)];
 }
