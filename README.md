@@ -58,10 +58,11 @@ npm run build:hooks
 npm link
 ```
 
-The first `npm install` now installs and builds the nested SDK automatically
-when `sdk/dist/cli.js` is missing. A separate `cd sdk && npm run build` step is
-not required. To troubleshoot or rebuild it explicitly, run
-`npm run build:sdk` from the repository root.
+`npm install` installs and builds the nested SDK automatically when
+`sdk/dist/cli.js` is missing or the SDK sources changed since its last build,
+so a clone updated with `git pull && npm install` gets a matching SDK. A separate
+`cd sdk && npm run build` step is not required. To troubleshoot or rebuild it
+explicitly, run `npm run build:sdk` from the repository root.
 
 `npm link` exposes the `fvgsd-vibe`, `fvgsd`, `fvgsd-tools`, and `fvgsd-sdk` commands locally. You can also run VibeClaw without linking:
 

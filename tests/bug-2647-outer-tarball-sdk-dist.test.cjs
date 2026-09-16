@@ -57,9 +57,12 @@ describe('bug #2647: outer tarball ships sdk/dist so fvgsd-sdk query works', () 
       typeof scripts['build:sdk'] === 'string' && scripts['build:sdk'].length > 0,
       'package.json must define scripts["build:sdk"] to compile sdk/dist before publish',
     );
-    assert.ok(
-      /\bbuild\b|\btsc\b/.test(scripts['build:sdk']),
-      `scripts["build:sdk"] must run a build. Got: ${JSON.stringify(scripts['build:sdk'])}`,
+    // ensure-local-sdk.cjs --force always runs `npm ci` and `npm run build` in sdk/
+    // (tests/ensure-local-sdk.test.cjs covers the forced build).
+    assert.equal(
+      scripts['build:sdk'],
+      'node scripts/ensure-local-sdk.cjs --force',
+      `scripts["build:sdk"] must run the forced SDK build. Got: ${JSON.stringify(scripts['build:sdk'])}`,
     );
   });
 
@@ -92,7 +95,7 @@ describe('bug #2647: outer tarball ships sdk/dist so fvgsd-sdk query works', () 
     const npmCache = fs.mkdtempSync(path.join(os.tmpdir(), 'fvgsd-npm-cache-'));
     const npmEnv = { ...process.env, npm_config_cache: npmCache };
     // Ensure the sdk is built so the pack reflects what publish would ship.
-    // The outer prepublishOnly chains through build:sdk, which does `npm ci && npm run build`
+    // The outer prepublishOnly chains through build:sdk, which runs `npm ci` and `npm run build`
     // inside sdk/. We emulate that here without full ci to keep the test fast:
     // if sdk/dist/cli.js already exists, use it; otherwise build.
     const sdkDir = path.join(REPO_ROOT, 'sdk');
