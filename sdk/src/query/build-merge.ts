@@ -30,7 +30,14 @@ interface SliceResultInput {
 }
 
 const BULK_DELETION_LIMIT = 5;
-const PROTECTED_BRANCH = /^(?:main|master|develop|trunk|release\/.+)$/;
+// Full ref names, compared without case: a case-insensitive file system resolves `Main` to refs/heads/Main.
+const PROTECTED_BRANCH = /^refs\/heads\/(?:main|master|develop|trunk|release\/.+)$/i;
+
+/** The full ref name a slice branch resolves to, or null when it names no local branch. */
+function localBranchRef(projectDir: string, branch: string): string | null {
+  const resolved = runGit(projectDir, ['rev-parse', '--symbolic-full-name', branch]);
+  return resolved.ok && resolved.stdout.startsWith('refs/heads/') ? resolved.stdout : null;
+}
 
 function sliceOrder(slice: string): number {
   const match = /^s(\d+)$/.exec(slice);
@@ -132,8 +139,10 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
     return { data: { error: 'merge_in_progress' } };
   }
 
-  const current = runGit(projectDir, ['symbolic-ref', '--quiet', '--short', 'HEAD']);
-  const currentBranch = current.ok ? current.stdout : '';
+  // A detached HEAD (a checked-out commit, or a rebase stopped partway) is no branch to merge onto.
+  const current = runGit(projectDir, ['symbolic-ref', '--quiet', 'HEAD']);
+  if (!current.ok || !current.stdout.startsWith('refs/heads/')) return { data: { error: 'detached_head' } };
+  const currentRef = current.stdout.toLowerCase();
   const data: MergeWaveData = { merged: [], conflicts: [], blocked: [], skipped: [], cleaned: [] };
   const block = (slice: string, reason: BlockReason, detail: string): void => {
     data.blocked.push({ slice, reason, detail });
@@ -147,9 +156,12 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
   //     then bulk deletions, then merges. The CJS sequence checks branch,
   //     then base, then deletions, then worktree-dirty, in that order;
   //   - branch policy: this file denies a fixed list of protected names
-  //     (main/master/develop/trunk/release/*) plus the current branch. The
-  //     CJS sequence instead only allows branches matching
-  //     `^worktree-agent-[A-Za-z0-9._/-]+$` — an allowlist, not a denylist;
+  //     (main/master/develop/trunk/release/*) plus the current branch,
+  //     compared as full ref names without case (`git rev-parse
+  //     --symbolic-full-name`), and blocks a name that is not a local branch
+  //     as invalid_branch. The CJS sequence instead only allows branches
+  //     matching `^worktree-agent-[A-Za-z0-9._/-]+$` — an allowlist, not a
+  //     denylist;
   //   - it continues past a blocked or conflicting slice instead of stopping
   //     the whole wave, so one bad slice doesn't hold up the rest;
   //   - it aborts a conflicting or failed merge and verifies the abort
@@ -157,7 +169,8 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
   //     wave with a top-level `merge_abort_failed` error — reporting what
   //     already merged — if it didn't; and it refuses to run at all when a
   //     merge is already in progress before the loop starts
-  //     (`merge_in_progress`). The CJS sequence never runs `merge --abort`
+  //     (`merge_in_progress`) or HEAD is detached (`detached_head`, which
+  //     includes a rebase stopped partway). The CJS sequence never runs `merge --abort`
   //     at all: on a failed merge it records `merge_failed`, stops the
   //     wave, and leaves MERGE_HEAD in place for its caller to resolve by
   //     hand;
@@ -190,11 +203,12 @@ export const buildMergeWave: QueryHandler = async (args, projectDir) => {
       data.skipped.push({ slice, reason: 'not_isolated' });
       continue;
     }
-    if (!runGit(projectDir, ['check-ref-format', '--branch', branch]).ok) {
+    const ref = runGit(projectDir, ['check-ref-format', '--branch', branch]).ok ? localBranchRef(projectDir, branch) : null;
+    if (ref === null) {
       block(slice, 'invalid_branch', branch);
       continue;
     }
-    if (branch === currentBranch || PROTECTED_BRANCH.test(branch)) {
+    if (ref.toLowerCase() === currentRef || PROTECTED_BRANCH.test(ref)) {
       block(slice, 'protected_branch', branch);
       continue;
     }

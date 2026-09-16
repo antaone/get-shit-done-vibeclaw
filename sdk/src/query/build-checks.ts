@@ -61,6 +61,8 @@ const LABEL_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 const TAIL_BYTES = 256 * 1024;
 const TAIL_LINES = 200;
 const DEFAULT_TIMEOUT_SECONDS = 1800;
+/** setTimeout's largest delay; a longer one fires at once. Timeouts beyond it (about 24.8 days) mean "no early timeout". */
+const MAX_TIMER_DELAY_MS = 2_147_483_647;
 
 function invalid(message: string): GSDError {
   return new GSDError(message, ErrorClassification.Validation);
@@ -327,7 +329,7 @@ function runShellCommand(command: string, cwd: string, timeoutMs: number): Promi
       timedOut = true;
       killTree(child);
       scheduleGrace();
-    }, timeoutMs);
+    }, Math.min(timeoutMs, MAX_TIMER_DELAY_MS));
     child.stdout?.on('data', append);
     child.stderr?.on('data', append);
     child.on('error', (err) => {
@@ -417,6 +419,8 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   const set = flags.set as CheckSet;
   const label = typeof flags.label === 'string' ? flags.label : set;
   if (!LABEL_RE.test(label)) throw invalid(`invalid --label: ${label}`);
+  // latest.json holds each command's latest result; a run labelled `latest` would overwrite it.
+  if (label === 'latest') throw invalid(`invalid --label: ${label} is reserved`);
   let names = [...CHECK_SETS[set]];
   if (typeof flags.only === 'string') {
     const only = flags.only.split(',').map((item) => item.trim()).filter(Boolean);

@@ -160,6 +160,44 @@ describe('build.merge-wave', () => {
     expect(existsSync(join(root, 'pwned'))).toBe(false);
   });
 
+  it('blocks protected and current branches in any ref form, and names that are not local branches', async () => {
+    git(repo, 'checkout', '-q', '-b', 'feature-x');
+    git(repo, 'update-ref', 'refs/tags/v1', 'HEAD');
+    const data = await merge(repo, base, [
+      { slice: 's1', status: 'done', branch: 'refs/heads/main', worktree_path: '' },
+      { slice: 's2', status: 'done', branch: 'heads/main', worktree_path: '' },
+      { slice: 's3', status: 'done', branch: 'refs/heads/feature-x', worktree_path: '' },
+      { slice: 's4', status: 'done', branch: 'worktree-agent-missing', worktree_path: '' },
+      { slice: 's5', status: 'done', branch: 'v1', worktree_path: '' },
+      { slice: 's6', status: 'done', branch: 'Main', worktree_path: '' },
+    ]);
+    expect(data.merged).toEqual([]);
+    expect(data.blocked.slice(0, 5).map((entry) => [entry.slice, entry.reason])).toEqual([
+      ['s1', 'protected_branch'], ['s2', 'protected_branch'], ['s3', 'protected_branch'],
+      ['s4', 'invalid_branch'], ['s5', 'invalid_branch'],
+    ]);
+    // A case-insensitive file system resolves `Main` to refs/heads/Main (protected); elsewhere it is no branch at all.
+    expect(data.blocked[5].slice).toBe('s6');
+    expect(['protected_branch', 'invalid_branch']).toContain(data.blocked[5].reason);
+  });
+
+  it('refuses to merge onto a detached HEAD, including a rebase stopped partway', async () => {
+    const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
+    const args = ['--phase', '3', '--base', base, '--results', JSON.stringify([s1])];
+    git(repo, 'checkout', '-q', '--detach');
+    expect((await buildMergeWave(args, repo)).data).toEqual({ error: 'detached_head' });
+
+    git(repo, 'checkout', '-q', 'main');
+    await writeFile(join(repo, 'b.txt'), 'b\n');
+    git(repo, 'add', '--', 'b.txt');
+    git(repo, 'commit', '-q', '-m', 'b');
+    // `--exec false` stops the rebase after its pick: HEAD is detached, the tree is clean and there is no MERGE_HEAD.
+    expect(() => git(repo, 'rebase', '-q', '--exec', 'false', 'HEAD~1')).toThrow();
+    expect((await buildMergeWave(args, repo)).data).toEqual({ error: 'detached_head' });
+    expect(git(repo, 'branch', '--list', s1.branch)).not.toBe('');
+    git(repo, 'rebase', '--abort');
+  });
+
   it('reads results from --results-file', async () => {
     const s1 = await addSlice(repo, root, 's1', 'a.txt', 'a\n');
     const resultsFile = join(root, 'results.json');

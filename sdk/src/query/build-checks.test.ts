@@ -181,6 +181,13 @@ describe('build.run-checks', () => {
     expect(Date.now() - started).toBeLessThan(8000);
   }, 30_000);
 
+  it('treats a timeout beyond the timer limit as no early timeout', async () => {
+    // 2,147,484 s is more than setTimeout's 2^31-1 ms; unclamped, the timer would fire at once.
+    const dir = await repoWithConfig({ build_command: `${NODE} -e "setTimeout(()=>{},300)"`, build_check_timeout_seconds: 2_147_484 });
+    const [result] = (await run(dir, ['--phase', '3', '--set', 'wave', '--only', 'build'])).results;
+    expect([result.timed_out, result.exit]).toEqual([false, 0]);
+  }, 30_000);
+
   it('kills the timed-out command even when a detached grandchild keeps stdio open', async () => {
     // The direct child spawns a grandchild that escapes the process group (detached)
     // while inheriting stdio, then exits immediately itself. Without the 'exit' +
@@ -272,6 +279,7 @@ describe('build.run-checks', () => {
     [['--phase', '3', '--set', 'full', '--only', 'deploy']],
     [['--phase', '3', '--set', 'quick', '--only', 'test']],
     [['--phase', '3', '--set', 'full', '--label', 'Bad/Label']],
+    [['--phase', '3', '--set', 'full', '--label', 'latest']],
     [['--phase', '3', '--set', 'full', '--set', 'wave']],
     [['--phase', '../x', '--set', 'full']],
     [['--phase', '3', '--set', 'full', 'extra']],
