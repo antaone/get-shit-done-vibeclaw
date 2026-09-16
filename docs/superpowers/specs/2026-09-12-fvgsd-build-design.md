@@ -156,8 +156,8 @@ Returns JSON:
   - `verifying`: every slice has its `feat` commit, and VERIFICATION.md is missing or older than the last `feat` or `fix` commit.
   - `gaps_found`: VERIFICATION.md has status `gaps_found` and is newer than the last `feat` or `fix` commit.
   - `complete`: the summary exists and VERIFICATION.md has status `passed`. The command prints the status and stops.
-- **Baseline.** `last_passing_commit` is `build.checks_passed_at` from the most recent summary with `kind: build-summary`, across all phases. `code_head` is the latest commit that changed files outside `.planning/`. `needs_run` is false only when the two are equal.
-- **Gap runs.** With `--gaps`, `resume.plan` is the next free plan number and `resume.state` describes that plan.
+- **Baseline.** `last_passing_commit` is `build.checks_passed_at` from the most recent summary with `kind: build-summary`, across all phases. `code_head` is the latest commit that changed files outside `.planning/`. `needs_run` is false when the two have the same code tree. A build never re-baselines at a HEAD that holds its own commits, so `needs_run` is also false for a gap build (`--gaps`, or a resumed gap brief) and for a build resumed past `brief_written`: the phase's `baseline.json` still describes what was broken before its first build, and without one every failure counts as new. It is false as well when `baseline.json` was taken at `code_head`'s code tree.
+- **Gap runs.** With `--gaps`, `resume.plan` is the next free plan number and `resume.state` describes that plan. While the latest brief's summary is not finalized (`kind: build-summary` missing), `--gaps` resumes that brief instead.
 
 ### Brief: `{P}-{NN}-PLAN.md`
 
@@ -601,4 +601,4 @@ Assertions compare JSON output or parsed files, never source text or raw substri
 - **Executor-tier models struggle with complex slices.** Mitigations: the brief marks those slices `strong`, and `model_overrides` still applies.
 - **Parallel slices compete for machine resources.** Mitigations: quick checks are scoped to changed files, and concurrency defaults to 3.
 - **Headless runs stop on blockers.** Questions are recorded with `state.add-blocker`, and running the command again resumes from git state.
-- **Nested worktrees when VibeClaw candidates run build.** Git supports worktrees created from a linked worktree. The merge-wave integration test includes a run whose base is itself a linked worktree.
+- **Nested worktrees when VibeClaw candidates run build.** Git supports worktrees created from a linked worktree. The merge-wave integration test includes a run whose base is itself a linked worktree. The check state directory is keyed by the git common dir and the phase, so two builds of the same phase in one repository at the same time (for example VibeClaw candidates in worktrees) share `baseline.json` and `latest.json`: a same-code-tree mismatch then yields `checks_passed_at: null`, which is conservative, but one build can overwrite the other's baseline mid-run.

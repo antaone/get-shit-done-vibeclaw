@@ -198,18 +198,32 @@ export const buildFinalize: QueryHandler = async (args, projectDir, workstream) 
   // Coverage passed: now it's safe to write the summary frontmatter.
   await writeFile(summaryAbs, upsertFrontmatterKeys(summaryContent, owned), 'utf-8');
 
-  // 3. State updates through the existing handlers
+  // 3. State updates through the existing handlers. A step fails when it throws or returns `error`.
+  // A step that ran is still reported when it changed nothing (`updated: false` with a reason),
+  // did not find some requirement IDs (`not_found`), or returned warnings of its own.
   const warnings: string[] = [];
   const step = async (label: string, run: () => Promise<{ data: unknown }>): Promise<boolean> => {
     try {
       const { data } = await run();
-      const error = data && typeof data === 'object' ? (data as Record<string, unknown>).error : undefined;
-      if (typeof error !== 'string') return true;
-      warnings.push(`${label}: ${error}`);
+      const record = (data && typeof data === 'object' ? data : {}) as Record<string, unknown>;
+      if (typeof record.error === 'string') {
+        warnings.push(`${label}: ${record.error}`);
+        return false;
+      }
+      if (record.updated === false && typeof record.reason === 'string' && record.reason !== '') {
+        warnings.push(`${label}: ${record.reason}`);
+      }
+      if (Array.isArray(record.not_found) && record.not_found.length > 0) {
+        warnings.push(`${label}: not found in REQUIREMENTS.md: ${record.not_found.join(', ')}`);
+      }
+      if (Array.isArray(record.warnings)) {
+        for (const warning of record.warnings) warnings.push(`${label}: ${String(warning)}`);
+      }
+      return true;
     } catch (err) {
       warnings.push(`${label}: ${err instanceof Error ? err.message : String(err)}`);
+      return false;
     }
-    return false;
   };
   await step('state.update-progress', () => stateUpdateProgress([], projectDir, workstream));
   await step('state.record-metric', () => stateRecordMetric([

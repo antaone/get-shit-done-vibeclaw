@@ -390,6 +390,15 @@ export function readLatestChecks(projectDir: string, padded: string): Record<str
   return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, LatestCheckEntry> : {};
 }
 
+/** Results of the phase's baseline run (`baseline.json`); [] when it never ran or is unreadable. */
+export function readBaselineResults(projectDir: string, padded: string): CheckResult[] {
+  const dir = buildStateDir(projectDir, padded);
+  if (!dir) return [];
+  const parsed = readJson(join(dir, 'baseline.json'));
+  const results = parsed && typeof parsed === 'object' ? (parsed as Partial<RunChecksData>).results : undefined;
+  return Array.isArray(results) ? results : [];
+}
+
 export const buildRunChecks: QueryHandler = async (args, projectDir, workstream) => {
   const { flags, positionals } = parseFlags(args, { values: ['phase', 'set', 'label', 'only'] });
   if (positionals.length > 0) throw invalid(`unexpected argument: ${positionals[0]}`);
@@ -427,8 +436,7 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   const timeoutRaw = workflow.build_check_timeout_seconds;
   const timeoutSeconds = typeof timeoutRaw === 'number' && Number.isInteger(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : DEFAULT_TIMEOUT_SECONDS;
   const commit = headCommit(projectDir);
-  const baselineRaw = label === 'baseline' ? null : readJson(join(stateDir, 'baseline.json'));
-  const baselineResults = baselineRaw && Array.isArray((baselineRaw as RunChecksData).results) ? (baselineRaw as RunChecksData).results : [];
+  const baselineResults = label === 'baseline' ? [] : readBaselineResults(projectDir, padded);
 
   const results: CheckResult[] = [];
   for (const name of names) {

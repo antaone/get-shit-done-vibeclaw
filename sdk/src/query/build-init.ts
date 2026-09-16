@@ -14,7 +14,7 @@ import { resolveRuntimeCapabilities } from '../runtime-capabilities.js';
 import { resolveModel } from './config-query.js';
 import { extractFrontmatter } from './frontmatter.js';
 import { detectRuntime, escapeRegex, normalizePhaseName, planningPaths, toPosixPath } from './helpers.js';
-import { detectChecks } from './build-checks.js';
+import { detectChecks, readBaselineResults } from './build-checks.js';
 import {
   codeHead,
   firstAddCommit,
@@ -137,7 +137,14 @@ function resumeBase(projectDir: string, briefRel: string, briefAbs: string, head
   return oldest;
 }
 
-function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, head: string): Record<string, unknown> {
+interface ResolvedResume {
+  /** The `resume` object init.build returns. */
+  resume: Record<string, unknown> & { state: ResumeState };
+  /** The resume state describes a gap brief (`gap_closure: true`). */
+  gapBrief: boolean;
+}
+
+function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, head: string): ResolvedResume {
   const plans = listPhasePlanFiles(phase.dirAbs, phase.padded);
   const briefs = plans.filter((plan) => plan.kind === 'brief');
   const latestBrief = briefs.length > 0 ? briefs[briefs.length - 1] : null;
@@ -151,10 +158,13 @@ function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, hea
     target = latestBrief;
     plan = latestBrief.nn;
   } else if (!gaps && plans.length > 0) {
-    return { state: 'classic', plan: null, brief: null, summary: null, ...untouched, base_commit: head, verification };
+    const resume = { state: 'classic' as const, plan: null, brief: null, summary: null, ...untouched, base_commit: head, verification };
+    return { resume, gapBrief: false };
   } else if (!gaps) {
     plan = '01';
-  } else if (latestBrief && latestBrief.gapClosure && !latestBrief.hasSummary) {
+  } else if (latestBrief && !summaryIsFinalized(phase.dirAbs, phase.padded, latestBrief.nn)) {
+    // --gaps starts a new plan only after the latest brief's summary is finalized. Until then it
+    // resumes that brief, gap brief or not: the runner and route.next-action send the user back to it.
     target = latestBrief;
     plan = latestBrief.nn;
   } else {
@@ -162,7 +172,8 @@ function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, hea
   }
 
   if (!target) {
-    return { state: 'new', plan, brief: null, summary: null, ...untouched, base_commit: head, verification };
+    const resume = { state: 'new' as const, plan, brief: null, summary: null, ...untouched, base_commit: head, verification };
+    return { resume, gapBrief: false };
   }
 
   const briefRel = `${phase.dir}/${target.file}`;
@@ -184,7 +195,7 @@ function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, hea
   else if (status === 'gaps_found') state = 'gaps_found';
   else state = 'summarizing';
 
-  return {
+  const resume = {
     state,
     plan,
     brief: briefRel,
@@ -194,6 +205,30 @@ function resolveResume(projectDir: string, phase: BuildPhase, gaps: boolean, hea
     base_commit: base,
     verification,
   };
+  return { resume, gapBrief: target.gapClosure };
+}
+
+/**
+ * Whether the lead must run a baseline. A build never re-baselines at a HEAD that holds its own
+ * commits: a gap build (`--gaps`, or a resumed gap brief) and a build resumed past `brief_written`
+ * keep the phase's `baseline.json`, or count every failure as new without one. A baseline taken at
+ * `code_head`'s code tree still applies. Otherwise (Decision 15) the last passing checks count
+ * when their commit has that code tree.
+ */
+function baselineNeeded(
+  projectDir: string,
+  padded: string,
+  resolved: ResolvedResume,
+  gaps: boolean,
+  lastPassing: string | null,
+  code: string | null,
+): boolean {
+  const { state } = resolved.resume;
+  if (gaps || resolved.gapBrief || (state !== 'new' && state !== 'brief_written')) return false;
+  if (code === null) return true;
+  const baseline = readBaselineResults(projectDir, padded);
+  if (baseline.length > 0 && baseline.every((result) => sameCodeTree(projectDir, result.commit, code))) return false;
+  return lastPassing === null || !sameCodeTree(projectDir, lastPassing, code);
 }
 
 function lastPassingCommit(projectDir: string, workstream?: string): string | null {
@@ -271,10 +306,10 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
     ? runtimeFlag
     : detectRuntime(configRecord as { runtime?: unknown });
   const planningModel = await modelFor('fvgsd-planner', projectDir, workstream);
+  const gaps = flags.gaps === true;
+  const resolved = resolveResume(projectDir, phase, gaps, head);
   const lastPassing = lastPassingCommit(projectDir, workstream);
   const code = codeHead(projectDir);
-  // Decision 15: the last passing checks still count when that commit has code_head's code tree.
-  const needsRun = lastPassing === null || code === null || !sameCodeTree(projectDir, lastPassing, code);
 
   return {
     data: {
@@ -300,8 +335,12 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
         strong: planningModel,
         verifier: await modelFor('fvgsd-verifier', projectDir, workstream),
       },
-      resume: resolveResume(projectDir, phase, flags.gaps === true, head),
-      baseline: { last_passing_commit: lastPassing, code_head: code, needs_run: needsRun },
+      resume: resolved.resume,
+      baseline: {
+        last_passing_commit: lastPassing,
+        code_head: code,
+        needs_run: baselineNeeded(projectDir, phase.padded, resolved, gaps, lastPassing, code),
+      },
     },
   };
 };

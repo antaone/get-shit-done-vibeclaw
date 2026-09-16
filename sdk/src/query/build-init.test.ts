@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { GSDError } from '../errors.js';
 import { resolveRuntimeCapabilities } from '../runtime-capabilities.js';
 import { initBuild } from './build-init.js';
-import { listPhasePlanFiles, readVerification } from './build-shared.js';
+import { buildStateDir, listPhasePlanFiles, readVerification, writeJsonAtomic } from './build-shared.js';
 
 const PHASE_DIR = '.planning/phases/03-user-auth';
 const ROADMAP = [
@@ -61,6 +61,34 @@ function brief(nn: string, gap = false): string {
 
 function verification(status: string): string {
   return ['---', 'phase: 03-user-auth', 'verified: 2026-09-13T10:00:00Z', `status: ${status}`, 'score: 2/2', '---', '', '# Verification', ''].join('\n');
+}
+
+/** A summary build.finalize has finalized (`kind: build-summary`). */
+function finalizedSummary(phase: string, plan: string, completed: string, checksPassedAt: string): string {
+  return [
+    '---', `phase: ${phase}`, `plan: ${plan}`, 'kind: build-summary', 'subsystem: auth', 'tags: [auth]',
+    'build:', `  completed: ${completed}`, `  checks_passed_at: ${checksPassedAt}`, '---', '', '# Summary', '',
+  ].join('\n');
+}
+
+/** Writes the phase's baseline.json as build.run-checks would, with every result taken at `commit`. */
+function writeBaseline(commit: string): void {
+  const result = { name: 'build', command: 'node -e 0', commit, exit: 0, timed_out: false, skipped: false, duration_ms: 1, preexisting: false, output_tail: '' };
+  writeJsonAtomic(join(buildStateDir(dir, '03')!, 'baseline.json'), { set: 'full', label: 'baseline', passed: true, results: [result] });
+}
+
+/** Phase 3's first build, finalized with gaps_found and no passing checks; returns the code head. */
+async function finalizedGapsBuild(): Promise<string> {
+  await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+  await commit('src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+  const head = await commit('src/routes/login.ts', 'export {};\n', 'feat(03-s2): login routes');
+  await put(`${PHASE_DIR}/03-VERIFICATION.md`, verification('gaps_found'));
+  await commit(
+    `${PHASE_DIR}/03-01-SUMMARY.md`,
+    finalizedSummary('03-user-auth', '01', '2026-09-13T10:00:00Z', 'null'),
+    'docs(03): build summary and verification',
+  );
+  return head;
 }
 
 let dir: string;
@@ -208,14 +236,33 @@ describe('init.build', () => {
     expect((await init('3')).resume).toMatchObject({ state: 'classic', plan: null, brief: null });
   });
 
-  it('targets the next plan for --gaps, then resumes an unfinished gap brief', async () => {
-    await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
-    await commit(`${PHASE_DIR}/03-01-SUMMARY.md`, '# Summary\n', 'docs(03): build summary and verification');
+  it('targets the next plan for --gaps after a finalized gaps_found build, then resumes the unfinished gap brief', async () => {
+    await finalizedGapsBuild();
     expect((await init('3', '--gaps')).resume).toMatchObject({ state: 'new', plan: '02', brief: null });
 
     await commit(`${PHASE_DIR}/03-02-PLAN.md`, brief('02', true), 'docs(03): build brief');
     expect((await init('3', '--gaps')).resume).toMatchObject({ state: 'brief_written', plan: '02' });
     expect((await init('3')).resume).toMatchObject({ state: 'brief_written', plan: '02' });
+  });
+
+  it('resumes an unfinished first brief under --gaps instead of starting a new plan', async () => {
+    const base = await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    await commit('src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    const resume = (await init('3')).resume;
+    expect(resume).toMatchObject({ state: 'slices_in_progress', plan: '01', done_slices: ['s1'], base_commit: base });
+    expect((await init('3', '--gaps')).resume).toEqual(resume);
+  });
+
+  it('resumes a brief whose finalize was refused under --gaps, at summarizing', async () => {
+    await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    await commit('src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    await commit('src/routes/login.ts', 'export {};\n', 'feat(03-s2): login routes');
+    await put(`${PHASE_DIR}/03-VERIFICATION.md`, verification('passed'));
+    // A refused finalize leaves the lead's summary without kind: build-summary.
+    await put(`${PHASE_DIR}/03-01-SUMMARY.md`, ['---', 'subsystem: auth', 'tags: [auth]', '---', '', '# Summary', ''].join('\n'));
+    expect((await init('3', '--gaps')).resume).toMatchObject({
+      state: 'summarizing', plan: '01', brief: `${PHASE_DIR}/03-01-PLAN.md`, summary: `${PHASE_DIR}/03-01-SUMMARY.md`,
+    });
   });
 
   it('counts slice commits made after a brief that was never committed', async () => {
@@ -268,14 +315,10 @@ describe('init.build', () => {
   });
 
   it('skips the baseline only when the latest passing commit has the code head tree', async () => {
-    const summary = (completed: string, passedAt: string) => [
-      '---', 'phase: 02-setup', 'plan: 01', 'kind: build-summary', 'subsystem: setup', 'tags: [setup]',
-      'build:', `  completed: ${completed}`, `  checks_passed_at: ${passedAt}`, '---', '', '# Summary', '',
-    ].join('\n');
     const first = await commit('src/app.ts', 'export const a = 1;\n', 'feat(02-s1): app');
     const head = await commit('src/app.ts', 'export const a = 2;\n', 'fix(02-s1): app value');
-    await put('.planning/phases/02-setup/02-01-SUMMARY.md', summary('2026-09-13T10:00:00Z', head));
-    await put('.planning/phases/02-setup/02-02-SUMMARY.md', summary('2026-09-12T10:00:00Z', first));
+    await put('.planning/phases/02-setup/02-01-SUMMARY.md', finalizedSummary('02-setup', '01', '2026-09-13T10:00:00Z', head));
+    await put('.planning/phases/02-setup/02-02-SUMMARY.md', finalizedSummary('02-setup', '02', '2026-09-12T10:00:00Z', first));
     expect((await init('3')).baseline).toEqual({ last_passing_commit: head, code_head: head, needs_run: false });
 
     const next = await commit('src/app.ts', 'export const a = 3;\n', 'chore: bump');
@@ -283,6 +326,63 @@ describe('init.build', () => {
 
     const restored = await commit('src/app.ts', 'export const a = 2;\n', 'chore: restore the app value');
     expect((await init('3')).baseline).toEqual({ last_passing_commit: head, code_head: restored, needs_run: false });
+  });
+
+  it('never re-baselines a --gaps run, with or without the phase baseline', async () => {
+    const head = await finalizedGapsBuild();
+    const briefCommit = git('rev-list', '--max-count=1', 'HEAD', '--', `${PHASE_DIR}/03-01-PLAN.md`);
+    expect(await init('3', '--gaps')).toMatchObject({
+      resume: { state: 'new', plan: '02' },
+      baseline: { last_passing_commit: null, code_head: head, needs_run: false },
+    });
+
+    // The phase's own baseline, taken before its first build, keeps describing what was already broken.
+    writeBaseline(briefCommit);
+    expect((await init('3', '--gaps')).baseline).toEqual({ last_passing_commit: null, code_head: head, needs_run: false });
+
+    // A new build in another phase still follows the last-passing rule.
+    await commit('.planning/phases/04-profiles/04-CONTEXT.md', '# Context\n', 'docs(04): context');
+    expect(await init('4')).toMatchObject({
+      resume: { state: 'new', plan: '01' },
+      baseline: { last_passing_commit: null, code_head: head, needs_run: true },
+    });
+  });
+
+  it('never re-baselines a resumed gap brief, even without --gaps', async () => {
+    const head = await finalizedGapsBuild();
+    await commit(`${PHASE_DIR}/03-02-PLAN.md`, brief('02', true), 'docs(03): build brief');
+    expect(await init('3')).toMatchObject({
+      resume: { state: 'brief_written', plan: '02' },
+      baseline: { last_passing_commit: null, code_head: head, needs_run: false },
+    });
+  });
+
+  it('never re-baselines a build resumed past brief_written', async () => {
+    await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    const head = await commit('src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    expect(await init('3')).toMatchObject({
+      resume: { state: 'slices_in_progress', plan: '01' },
+      baseline: { last_passing_commit: null, code_head: head, needs_run: false },
+    });
+  });
+
+  it('reruns the baseline for a brief_written resume unless baseline.json has the code head tree', async () => {
+    const older = await commit('src/app.ts', 'export const a = 1;\n', 'chore: app');
+    const code = await commit('src/app.ts', 'export const a = 2;\n', 'chore: app value');
+    const briefCommit = await commit(`${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    const expectBaseline = async (needsRun: boolean) => expect(await init('3')).toMatchObject({
+      resume: { state: 'brief_written', plan: '01' },
+      baseline: { last_passing_commit: null, code_head: code, needs_run: needsRun },
+    });
+    await expectBaseline(true);
+
+    // Taken at a commit whose code tree differs from code_head's: run it again.
+    writeBaseline(older);
+    await expectBaseline(true);
+
+    // Taken at the brief commit, which has code_head's code tree: skip the rerun.
+    writeBaseline(briefCommit);
+    await expectBaseline(false);
   });
 
   it('resolves the runtime from --runtime, falling back to detection for unsupported values', async () => {

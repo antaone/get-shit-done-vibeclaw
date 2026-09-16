@@ -213,6 +213,23 @@ describe('build.finalize', () => {
     await expectValidation(buildFinalize(['--phase', '3', '--plan', '02', '--base', base, '--engine', 'agents', '--tier', 'inline', '--fix-rounds', '0'], dir));
   });
 
+  it('reports unknown requirement IDs, state updates that changed nothing and phase.complete warnings', async () => {
+    // The fixture STATE.md has no Progress field, and HUMAN-UAT.md still holds a pending check.
+    await put(`${PHASE_DIR}/03-HUMAN-UAT.md`, ['---', 'status: testing', '---', '', '### 1. Login page', 'result: pending', ''].join('\n'));
+    await put('.planning/REQUIREMENTS.md', [
+      '- [ ] **AUTH-01**: sign in', '- [ ] **AUTH-02**: stay signed in', '', '## Traceability', '',
+      '| Requirement | Phase | Status |', '|---|---|---|', '| AUTH-01 | Phase 3 | Pending |', '| AUTH-02 | Phase 3 | Pending |', '',
+    ].join('\n'));
+    await put(SUMMARY_PATH, summary(COVERING_BODY));
+    const data = (await finalize('AUTH-01,AUTH-09')).data as Record<string, unknown>;
+    expect(data).toMatchObject({ ok: true, phase_complete: true });
+    expect(data.warnings).toEqual([
+      'state.update-progress: Progress field not found in STATE.md',
+      'requirements.mark-complete: not found in REQUIREMENTS.md: AUTH-09',
+      'phase.complete: 03-HUMAN-UAT.md: has pending tests',
+    ]);
+  });
+
   it('does not commit when commit_docs is false', async () => {
     await put('.planning/config.json', JSON.stringify({ commit_docs: false }));
     await put(SUMMARY_PATH, summary(COVERING_BODY));

@@ -29,6 +29,8 @@ Finalize overwrites these keys on every run. Don't write them by hand.
 
 `checks_passed_at` is the latest first-parent commit outside `.planning/`. It is set only when at least one check ran and every non-skipped check's latest result passed at a commit whose code tree (everything outside `.planning/`) is identical to that commit's, otherwise it is `null`. The next build uses it to decide whether a baseline run is needed. Every key finalize doesn't own stays exactly as the lead wrote it.
 
+A build never re-baselines at a HEAD that holds its own commits. A gap build (`--gaps`, or a resumed gap brief) and a build resumed past `brief_written` skip the baseline and keep the phase's `baseline.json`, so failures an earlier build of the phase introduced still count as new; without a `baseline.json`, every failure counts as new. A `baseline.json` already taken at the current code tree is not run again either.
+
 ## Body
 
 ```markdown
@@ -80,4 +82,4 @@ To fix it:
 
 - **`phase_complete`** is true only when VERIFICATION.md has `status: passed`.
 - **`commit`** is null when `commit_docs` is false.
-- **`warnings`** lists state updates that reported an error. Mention them in the final output.
+- **`warnings`** lists, as `<step>: <message>`, state updates that failed or changed nothing, requirement IDs that REQUIREMENTS.md doesn't contain, and the warnings `phase.complete` returns. Mention them in the final output.
