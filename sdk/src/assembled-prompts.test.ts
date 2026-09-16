@@ -150,6 +150,14 @@ describe('PromptFactory assembled output', () => {
     expect(output).toContain('## Context');
     expect(output).toContain('Project State');
   });
+
+  it('labels the milestone brief with the file it was read from', async () => {
+    const headings = async (contextFiles: ContextFiles) => (await factory.buildPrompt(PhaseType.Build, null, contextFiles))
+      .split('\n')
+      .filter((line) => line.startsWith('### Milestone brief'));
+    expect(await headings({ milestone: '# Milestone', milestoneFile: 'MILESTONE-BRIEF.md' })).toEqual(['### Milestone brief (MILESTONE-BRIEF.md)']);
+    expect(await headings({ milestone: '# Milestone', milestoneFile: 'MILESTONE-CONTEXT.md' })).toEqual(['### Milestone brief (MILESTONE-CONTEXT.md)']);
+  });
 });
 
 // ─── InitRunner assembled output ─────────────────────────────────────────────

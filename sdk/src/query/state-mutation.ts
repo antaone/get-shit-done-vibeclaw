@@ -841,6 +841,20 @@ export const stateAddDecision: QueryHandler = async (args, projectDir, workstrea
   return { data: result };
 };
 
+/** The STATE.md section state.add-blocker appends to and state.resolve-blocker removes from. */
+const BLOCKERS_SECTION_PATTERN = /(###?\s*(?:Blockers|Blockers\/Concerns|Concerns)\s*\n)([\s\S]*?)(?=\n###?|\n##[^#]|$)/i;
+
+/** The blocker entries (`- <text>` lines) in STATE.md content, in order; [] without a blockers section. */
+export function listStateBlockers(content: string): string[] {
+  const match = content.replace(/\r\n/g, '\n').match(BLOCKERS_SECTION_PATTERN);
+  if (!match) return [];
+  return match[2]
+    .split('\n')
+    .filter((line) => line.startsWith('- '))
+    .map((line) => line.slice(2).trim())
+    .filter((text) => text !== '');
+}
+
 /**
  * Query handler for state.add-blocker command.
  * argv: `--text`, `--text-file` (see `fvgsd-tools.cjs`).
@@ -869,14 +883,13 @@ export const stateAddBlocker: QueryHandler = async (args, projectDir, workstream
   let created = false;
 
   await readModifyWriteStateMd(projectDir, (content) => {
-    const sectionPattern = /(###?\s*(?:Blockers|Blockers\/Concerns|Concerns)\s*\n)([\s\S]*?)(?=\n###?|\n##[^#]|$)/i;
-    const match = content.match(sectionPattern);
+    const match = content.match(BLOCKERS_SECTION_PATTERN);
 
     if (match) {
       let sectionBody = match[2];
       sectionBody = sectionBody.replace(/None\.?\s*\n?/gi, '').replace(/None yet\.?\s*\n?/gi, '');
       sectionBody = sectionBody.trimEnd() + '\n' + entry + '\n';
-      return content.replace(sectionPattern, (_match, header: string) => `${header}${sectionBody}`);
+      return content.replace(BLOCKERS_SECTION_PATTERN, (_match, header: string) => `${header}${sectionBody}`);
     }
 
     // Section absent — DWIM (CJS state.cjs:532-542): auto-create the
@@ -915,8 +928,7 @@ export const stateResolveBlocker: QueryHandler = async (args, projectDir, workst
   let blockersSectionFound = false;
 
   await readModifyWriteStateMd(projectDir, (content) => {
-    const sectionPattern = /(###?\s*(?:Blockers|Blockers\/Concerns|Concerns)\s*\n)([\s\S]*?)(?=\n###?|\n##[^#]|$)/i;
-    const match = content.match(sectionPattern);
+    const match = content.match(BLOCKERS_SECTION_PATTERN);
 
     if (match) {
       blockersSectionFound = true;
@@ -938,7 +950,7 @@ export const stateResolveBlocker: QueryHandler = async (args, projectDir, workst
         newBody = 'None\n';
       }
 
-      content = content.replace(sectionPattern, (_match, header: string) => `${header}${newBody}`);
+      content = content.replace(BLOCKERS_SECTION_PATTERN, (_match, header: string) => `${header}${newBody}`);
     }
     return content;
   }, workstream);

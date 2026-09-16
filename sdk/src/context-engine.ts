@@ -13,7 +13,7 @@
  */
 
 import { readFile, access, readdir } from 'node:fs/promises';
-import { isAbsolute, join } from 'node:path';
+import { basename, isAbsolute, join } from 'node:path';
 import { constants } from 'node:fs';
 
 import type { ContextFiles } from './types.js';
@@ -30,7 +30,7 @@ import { relPlanningPath } from './workstream-utils.js';
 // ─── File manifest per phase ─────────────────────────────────────────────────
 
 interface FileSpec {
-  key: keyof ContextFiles;
+  key: Exclude<keyof ContextFiles, 'milestoneFile'>;
   filename: string;
   /** Other names tried at the .planning/ root when `filename` is missing. */
   fallbacks?: string[];
@@ -122,6 +122,7 @@ export class ContextEngine {
 
       if (content !== undefined) {
         result[spec.key] = content;
+        if (spec.key === 'milestone') result.milestoneFile = basename(filePath);
       } else if (spec.required) {
         this.logger?.warn(`Required context file missing for ${phaseType} phase: ${spec.filename}`, {
           phase: phaseType,
@@ -144,14 +145,14 @@ export class ContextEngine {
     }
 
     // Truncate oversized files (skip config.json — structured data, not markdown)
-    const truncatable: Array<{ key: keyof ContextFiles; filename: string }> = [
+    const truncatable: Array<{ key: FileSpec['key']; filename: string }> = [
       { key: 'roadmap', filename: 'ROADMAP.md' },
       { key: 'context', filename: 'CONTEXT.md' },
       { key: 'research', filename: 'RESEARCH.md' },
       { key: 'requirements', filename: 'REQUIREMENTS.md' },
       { key: 'plan', filename: 'PLAN.md' },
       { key: 'summary', filename: 'SUMMARY.md' },
-      { key: 'milestone', filename: 'MILESTONE-CONTEXT.md' },
+      { key: 'milestone', filename: result.milestoneFile ?? 'MILESTONE-CONTEXT.md' },
     ];
 
     for (const { key, filename } of truncatable) {

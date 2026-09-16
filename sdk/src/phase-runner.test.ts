@@ -920,6 +920,33 @@ Use TypeScript.`, 'utf-8');
       expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
     });
 
+    it.each(['sha1', 'sha256'])('scans a brief phase whose first plan commit is the root commit (%s objects)', async (format) => {
+      const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-brief-root-'));
+      tempProjectDirs.push(projectDir);
+      const phaseDir = join(projectDir, '.planning', 'phases', '01-auth');
+      await mkdir(phaseDir, { recursive: true });
+      await mkdir(join(projectDir, 'src'), { recursive: true });
+      gitIn(projectDir, 'init', '-q', `--object-format=${format}`);
+      gitIn(projectDir, 'config', 'user.email', 'test@test.com');
+      gitIn(projectDir, 'config', 'user.name', 'Test');
+      gitIn(projectDir, 'config', 'commit.gpgsign', 'false');
+      await writeFile(join(phaseDir, '01-01-PLAN.md'), '---\nkind: brief\nfiles_modified: []\n---\n', 'utf-8');
+      await writeFile(join(projectDir, 'src', 'x.ts'), 'export const retries = 1;\n// FIXME handle retries\n', 'utf-8');
+      gitIn(projectDir, 'add', '-A');
+      gitIn(projectDir, 'commit', '-q', '-m', 'feat(01-s1): retries');
+      const phaseOp = makePhaseOp({ phase_dir: phaseDir, has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ projectDir, config: makeConfig({ workflow: { research: false, skip_discuss: true, plan_check: false } as any }) });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      const brief = makeParsedPlan([]);
+      mockParsePlanFile.mockResolvedValue({ ...brief, frontmatter: { ...brief.frontmatter, kind: 'brief' } } as any);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      // The root commit is diffed against the empty tree, so src/x.ts is scanned and its marker blocks.
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+    });
+
     it('allows changed-file debt markers when they reference tracked follow-up work', async () => {
       const projectDir = await mkdtemp(join(tmpdir(), 'fvgsd-tracked-debt-'));
       tempProjectDirs.push(projectDir);
@@ -1369,6 +1396,62 @@ Use TypeScript.`, 'utf-8');
 
       const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
       expect(verifyStep?.error).toBe('verification_gaps_found');
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+    });
+
+    /**
+     * STATE.md as `state get` returns it, listing `blockers`; each Build session appends `added` to the list,
+     * as a headless build.md does with `state.add-blocker` before it ends with ## BUILD BLOCKED.
+     */
+    function mockStateBlockers(deps: PhaseRunnerDeps, blockers: string[], added: string[]): void {
+      const exec = deps.tools.exec as ReturnType<typeof vi.fn>;
+      const initBuild = exec.getMockImplementation()!;
+      exec.mockImplementation((cmd: string, args: string[] = []) => {
+        if (cmd !== 'state' || args[0] !== 'get') return initBuild(cmd, args);
+        const lines = blockers.length > 0 ? blockers.map((text) => `- ${text}`) : ['None yet.'];
+        return Promise.resolve({ content: ['# Project State', '', '### Blockers/Concerns', '', ...lines, '', '## Session Continuity', ''].join('\n') });
+      });
+      mockRunPhaseStepSession.mockImplementation(async (_prompt, step) => {
+        if (step === PhaseStepType.Build) blockers.push(...added);
+        return makePlanResult();
+      });
+    }
+
+    it('does not rerun a build that recorded a blocker, and names the new blocker in the error', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['brief_written']);
+      // The same approval blocker is still open from an earlier run; the session records it again.
+      const approval = 'Phase 1: the build brief awaits approval';
+      mockStateBlockers(deps, [approval, 'Phase 0: waiting for API credentials'], [approval]);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1']);
+      const verifyStep = result.steps.find(s => s.step === PhaseStepType.Verify);
+      expect(verifyStep).toMatchObject({ success: false, error: `build_blocked: ${approval}` });
+      const verifyEvents = getEmittedEvents(deps).filter(
+        (event) => event.type === GSDEventType.PhaseStepComplete && (event as any).step === PhaseStepType.Verify,
+      );
+      expect(verifyEvents.map((event) => (event as any).error)).toEqual([`build_blocked: ${approval}`]);
+      expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
+      expect(result.success).toBe(false);
+    });
+
+    it('still reruns a build once when the session ended without recording a blocker', async () => {
+      const phaseOp = makePhaseOp({ has_context: true, has_plans: true, plan_count: 1 });
+      const deps = makeDeps({ config: buildConfig() });
+      (deps.tools.initPhaseOp as ReturnType<typeof vi.fn>).mockResolvedValue(phaseOp);
+      mockBuildStates(deps, ['slices_in_progress']);
+      mockStateBlockers(deps, ['Phase 0: waiting for API credentials'], []);
+
+      const result = await new PhaseRunner(deps).run('1');
+
+      const buildPrompt = deps.promptFactory.buildPrompt as ReturnType<typeof vi.fn>;
+      expect(buildPrompt.mock.calls.map(call => call[4])).toEqual(['1', '1']);
+      expect(result.steps.find(s => s.step === PhaseStepType.Verify)?.error).toBe('verification_gaps_found');
       expect(deps.tools.phaseComplete).not.toHaveBeenCalled();
     });
 

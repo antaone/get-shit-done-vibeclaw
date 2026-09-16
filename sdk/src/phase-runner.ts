@@ -38,6 +38,7 @@ import { getToolsForPhase } from './tool-scoping.js';
 import { isDebtScannable, findDebtMarkers, type DebtMarkerFinding } from './debt-markers.js';
 import { runGit, changedFilesSince, firstAddCommit, summaryIsFinalized } from './query/build-shared.js';
 import { escapeRegex, normalizePhaseName } from './query/helpers.js';
+import { listStateBlockers } from './query/state-mutation.js';
 
 // ─── Error type ──────────────────────────────────────────────────────────────
 
@@ -84,6 +85,18 @@ interface BuildResume {
   state: string;
   /** NN of the brief the state describes; null when init.build names none. */
   plan: string | null;
+}
+
+/** Entries of `after` beyond those already in `before`; a text recorded again counts as new. */
+function addedBlockers(before: readonly string[], after: readonly string[]): string[] {
+  const remaining = new Map<string, number>();
+  for (const text of before) remaining.set(text, (remaining.get(text) ?? 0) + 1);
+  return after.filter((text) => {
+    const count = remaining.get(text) ?? 0;
+    if (count === 0) return true;
+    remaining.set(text, count - 1);
+    return false;
+  });
 }
 
 /** Prepended to build.md prompts: the SDK runner has no human to answer questions. */
@@ -1238,6 +1251,7 @@ export class PhaseRunner {
       }
     }
 
+    const blockersBefore = await this.readStateBlockers(phaseNumber);
     const buildResult = await this.retryOnce('build', () =>
       this.runBuildSession(PhaseStepType.Build, phaseNumber, sessionOpts, phaseNumber, phaseOp.phase_dir));
     steps.push(buildResult);
@@ -1247,7 +1261,7 @@ export class PhaseRunner {
       if (decision === 'stop') return true;
     }
 
-    const verifyResult = await this.runBuildVerifyStep(phaseNumber, sessionOpts, callbacks, options, phaseOp);
+    const verifyResult = await this.runBuildVerifyStep(phaseNumber, sessionOpts, callbacks, options, phaseOp, blockersBefore);
     steps.push(verifyResult);
     if (!verifyResult.success && verifyResult.error === 'halted_by_callback') return true;
 
@@ -1333,6 +1347,9 @@ export class PhaseRunner {
    * otherwise. A resume finalizes an unfinalized summary, which can sit under gaps_found
    * as well as summarizing.
    * For human_needed, a `retry` answer from the verification callback halts like `reject`.
+   * A Build session that recorded a STATE.md blocker (compared with `blockersBefore`) is not
+   * rerun, because a rerun would stop at the same blocker; the step fails with
+   * `build_blocked: <new blockers>`. A session that ended without one (crashed or cut off) is.
    */
   private async runBuildVerifyStep(
     phaseNumber: string,
@@ -1340,6 +1357,7 @@ export class PhaseRunner {
     callbacks: HumanGateCallbacks,
     options: PhaseRunnerOptions | undefined,
     phaseOp: PhaseOpInfo,
+    blockersBefore: string[] | null,
   ): Promise<PhaseStepResult> {
     const stepStart = Date.now();
     this.eventStream.emitEvent({
@@ -1353,6 +1371,8 @@ export class PhaseRunner {
     const maxGapRetries = options?.maxGapRetries ?? 1;
     let reruns = 0;
     let outcome: VerificationOutcome = 'status_unreadable';
+    let knownBlockers = blockersBefore;
+    let newBlockers: string[] = [];
     const allPlanResults: PlanResult[] = [];
 
     while (true) {
@@ -1407,8 +1427,17 @@ export class PhaseRunner {
       }
 
       outcome = 'gaps_found';
+      const currentBlockers = await this.readStateBlockers(phaseNumber);
+      if (knownBlockers && currentBlockers) {
+        newBlockers = addedBlockers(knownBlockers, currentBlockers);
+        if (newBlockers.length > 0) {
+          this.logger?.warn(`Build for phase ${phaseNumber} recorded a blocker; not rerunning it: ${newBlockers.join('; ')}`);
+          break;
+        }
+      }
       if (reruns >= maxGapRetries) break;
       reruns++;
+      knownBlockers = currentBlockers;
       // --gaps starts a gap brief, so it follows only a finalized summary. An unfinalized summary
       // (finalize refused or never ran) can also sit under gaps_found; a plain rerun finalizes it.
       const gaps = state === 'gaps_found' && resume.plan !== null
@@ -1421,6 +1450,9 @@ export class PhaseRunner {
 
     const durationMs = Date.now() - stepStart;
     const verifySuccess = outcome === 'passed';
+    const error = newBlockers.length > 0
+      ? `build_blocked: ${newBlockers.join('; ')}`
+      : this.verificationErrorForOutcome(outcome);
     this.eventStream.emitEvent({
       type: GSDEventType.PhaseStepComplete,
       timestamp: new Date().toISOString(),
@@ -1429,15 +1461,27 @@ export class PhaseRunner {
       step: PhaseStepType.Verify,
       success: verifySuccess,
       durationMs,
-      ...(!verifySuccess && { error: this.verificationErrorForOutcome(outcome) }),
+      ...(!verifySuccess && { error }),
     });
     return {
       step: PhaseStepType.Verify,
       success: verifySuccess,
       durationMs,
       planResults: allPlanResults,
-      ...(!verifySuccess && { error: this.verificationErrorForOutcome(outcome) }),
+      ...(!verifySuccess && { error }),
     };
+  }
+
+  /** STATE.md's blocker entries, read through `state get`; null when STATE.md cannot be read. */
+  private async readStateBlockers(phaseNumber: string): Promise<string[] | null> {
+    try {
+      const raw = await this.tools.exec('state', ['get']);
+      const data = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, unknown> | null | undefined;
+      return typeof data?.content === 'string' ? listStateBlockers(data.content) : null;
+    } catch (err) {
+      this.logger?.warn(`Could not read STATE.md blockers for phase ${phaseNumber}: ${err instanceof Error ? err.message : String(err)}`);
+      return null;
+    }
   }
 
   /** `init.build`'s resume state and brief number; throws when the query returns no state (error, phase not found). */
@@ -1655,9 +1699,11 @@ export class PhaseRunner {
     if (!firstPhaseCommit) return [];
 
     const parent = runGit(this.projectDir, ['rev-parse', '--verify', '--quiet', `${firstPhaseCommit}^`]);
+    // The empty tree id of this repository's object format: runGit feeds hash-object an empty stdin
+    // (the null device), which works on Windows and in SHA-256 repositories alike.
     const base = parent.ok && parent.stdout
       ? parent.stdout
-      : runGit(this.projectDir, ['hash-object', '-t', 'tree', '/dev/null']).stdout;
+      : runGit(this.projectDir, ['hash-object', '-t', 'tree', '--stdin']).stdout;
     if (!base) return [];
 
     return changedFilesSince(this.projectDir, base)

@@ -624,6 +624,40 @@ describe('stateAddDecision', () => {
   });
 });
 
+// ─── listStateBlockers ──────────────────────────────────────────────────────
+
+describe('listStateBlockers', () => {
+  let tmpDir: string;
+
+  beforeEach(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'fvgsd-state-blockers-'));
+    await setupTestProject(tmpDir);
+  });
+
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it('lists the entries state.add-blocker writes under the template heading and state.resolve-blocker removes', async () => {
+    const { listStateBlockers, stateAddBlocker, stateResolveBlocker } = await import('./state-mutation.js');
+    const read = async () => listStateBlockers(await readFile(join(tmpDir, '.planning', 'STATE.md'), 'utf-8'));
+    expect(await read()).toEqual([]);
+
+    await stateAddBlocker(['--text', 'Phase 10: waiting for API credentials'], tmpDir);
+    await stateAddBlocker(['--text', 'Phase 10 slice s2: which session store?'], tmpDir);
+    expect(await read()).toEqual(['Phase 10: waiting for API credentials', 'Phase 10 slice s2: which session store?']);
+
+    await stateResolveBlocker(['--text', 'API credentials'], tmpDir);
+    expect(await read()).toEqual(['Phase 10 slice s2: which session store?']);
+  });
+
+  it('reads a ### Blockers section and returns [] without a blockers section', async () => {
+    const { listStateBlockers } = await import('./state-mutation.js');
+    expect(listStateBlockers('# State\r\n\r\n### Blockers\r\n\r\n- Needs design review\r\n\r\n## Session\r\n- not a blocker\r\n')).toEqual(['Needs design review']);
+    expect(listStateBlockers('# State\n\n## Session\n\n- not a blocker\n')).toEqual([]);
+  });
+});
+
 // ─── stateAddRoadmapEvolution (bug #2662) ──────────────────────────────────
 
 describe('stateAddRoadmapEvolution', () => {

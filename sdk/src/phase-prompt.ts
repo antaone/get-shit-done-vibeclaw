@@ -240,7 +240,8 @@ export class PromptFactory {
   private formatContextFiles(contextFiles: ContextFiles): string | null {
     const entries: string[] = [];
 
-    const fileLabels: Record<keyof ContextFiles, string> = {
+    type ContentKey = Exclude<keyof ContextFiles, 'milestoneFile'>;
+    const fileLabels: Record<ContentKey, string> = {
       state: 'Project State (STATE.md)',
       roadmap: 'Roadmap (ROADMAP.md)',
       context: 'Context (CONTEXT.md)',
@@ -249,11 +250,11 @@ export class PromptFactory {
       config: 'Config (config.json)',
       plan: 'Plan (PLAN.md)',
       summary: 'Summary (SUMMARY.md)',
-      milestone: 'Milestone brief (MILESTONE-CONTEXT.md)',
+      milestone: `Milestone brief (${contextFiles.milestoneFile ?? 'MILESTONE-CONTEXT.md'})`,
     };
 
     for (const [key, label] of Object.entries(fileLabels)) {
-      const content = contextFiles[key as keyof ContextFiles];
+      const content = contextFiles[key as ContentKey];
       if (content) {
         entries.push(`### ${label}\n\n${content}`);
       }

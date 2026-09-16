@@ -823,6 +823,8 @@ export interface ContextFiles {
   summary?: string;
   /** MILESTONE-CONTEXT.md, or MILESTONE-BRIEF.md when that is missing. */
   milestone?: string;
+  /** The file `milestone` was read from: `MILESTONE-CONTEXT.md` or `MILESTONE-BRIEF.md`. */
+  milestoneFile?: string;
 }
 
 /**

@@ -231,6 +231,21 @@ describe('ContextEngine', () => {
       expect(files.context).toBe('# Phase context');
       expect(files.requirements).toBe('# Requirements');
       expect(files.milestone).toBe('# Milestone brief');
+      expect(files.milestoneFile).toBe('MILESTONE-BRIEF.md');
+    });
+
+    it('names the MILESTONE-BRIEF.md fallback in its truncation notice', async () => {
+      const largeBrief = Array.from({ length: 50 }, (_, i) => `## Goal ${i}\n\nFirst paragraph.\n\nDetail ${'x'.repeat(200)}.`).join('\n\n');
+      await createPlanningDir(projectDir, {
+        'STATE.md': '# State',
+        'ROADMAP.md': '# Roadmap',
+        'CONTEXT.md': '# Context',
+        'MILESTONE-BRIEF.md': largeBrief,
+      });
+
+      const files = await new ContextEngine(projectDir, undefined, { maxContentLength: 500 }).resolveContextFiles(PhaseType.Build);
+
+      expect(files.milestone!.split('\n').at(-1)).toBe('[Truncated: read .planning/MILESTONE-BRIEF.md for full content]');
     });
 
     it('prefers MILESTONE-CONTEXT.md over MILESTONE-BRIEF.md', async () => {
@@ -245,6 +260,7 @@ describe('ContextEngine', () => {
       const files = await new ContextEngine(projectDir).resolveContextFiles(PhaseType.Build);
 
       expect(files.milestone).toBe('# Milestone context');
+      expect(files.milestoneFile).toBe('MILESTONE-CONTEXT.md');
     });
   });
 
