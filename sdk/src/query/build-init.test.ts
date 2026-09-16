@@ -5,7 +5,7 @@ import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { GSDError } from '../errors.js';
 import { resolveRuntimeCapabilities } from '../runtime-capabilities.js';
-import { initBuild } from './build-init.js';
+import { initBuild, sessionRuntimeCapabilities } from './build-init.js';
 import { buildStateDir, listPhasePlanFiles, readVerification, writeJsonAtomic } from './build-shared.js';
 
 const PHASE_DIR = '.planning/phases/03-user-auth';
@@ -92,7 +92,9 @@ async function finalizedGapsBuild(): Promise<string> {
 }
 
 let dir: string;
-let savedRuntime: string | undefined;
+/** Environment the tests pin, so the session running them (for example `claude -p`) cannot change results. */
+const PINNED_ENV = ['FVGSD_RUNTIME', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS'] as const;
+let savedEnv: Record<string, string | undefined>;
 
 function git(...args: string[]): string {
   return execFileSync('git', args, { cwd: dir, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -128,8 +130,8 @@ async function init(...args: string[]): Promise<Record<string, any>> {
 }
 
 beforeEach(async () => {
-  savedRuntime = process.env.FVGSD_RUNTIME;
-  delete process.env.FVGSD_RUNTIME;
+  savedEnv = Object.fromEntries(PINNED_ENV.map((name) => [name, process.env[name]]));
+  for (const name of PINNED_ENV) delete process.env[name];
   dir = await mkdtemp(join(tmpdir(), 'fvgsd-build-init-'));
   git('init', '-q');
   git('config', 'user.email', 'test@test.com');
@@ -143,8 +145,10 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-  if (savedRuntime === undefined) delete process.env.FVGSD_RUNTIME;
-  else process.env.FVGSD_RUNTIME = savedRuntime;
+  for (const name of PINNED_ENV) {
+    if (savedEnv[name] === undefined) delete process.env[name];
+    else process.env[name] = savedEnv[name];
+  }
   await rm(dir, { recursive: true, force: true });
 });
 
@@ -394,6 +398,14 @@ describe('init.build', () => {
     expect((await init('3', '--runtime', '__FVGSD_RUNTIME__')).runtime.name).toBe('gemini');
   });
 
+  it('reports background tasks off in a Claude Code print-mode session with a limited background wait', async () => {
+    const claude = resolveRuntimeCapabilities('claude');
+    process.env.CLAUDE_CODE_ENTRYPOINT = 'sdk-cli';
+    expect((await init('3')).runtime).toEqual({ name: 'claude', ...claude, background_tasks: false });
+    process.env.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS = '0';
+    expect((await init('3')).runtime).toEqual({ name: 'claude', ...claude });
+  });
+
   it('normalizes build config values', async () => {
     const configFor = async (config: Record<string, unknown>) => {
       await put('.planning/config.json', JSON.stringify(config));
@@ -427,6 +439,26 @@ describe('init.build', () => {
     const data = (await initBuild(['3'], outside)).data;
     await rm(outside, { recursive: true, force: true });
     expect(data).toEqual({ error: 'git_repository_required' });
+  });
+});
+
+describe('sessionRuntimeCapabilities', () => {
+  const claude = resolveRuntimeCapabilities('claude');
+
+  it('turns background tasks off only for Claude Code print mode without an unlimited background wait', () => {
+    const off = { ...claude, background_tasks: false };
+    expect(sessionRuntimeCapabilities('claude', { CLAUDE_CODE_ENTRYPOINT: 'sdk-cli' })).toEqual(off);
+    expect(sessionRuntimeCapabilities('claude', { CLAUDE_CODE_ENTRYPOINT: 'sdk-ts', CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '600000' })).toEqual(off);
+    expect(sessionRuntimeCapabilities('claude', { CLAUDE_CODE_ENTRYPOINT: 'sdk-cli', CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: '0' })).toEqual(claude);
+    expect(sessionRuntimeCapabilities('claude', { CLAUDE_CODE_ENTRYPOINT: 'cli' })).toEqual(claude);
+    expect(sessionRuntimeCapabilities('claude', {})).toEqual(claude);
+  });
+
+  it('leaves other runtimes on their table values', () => {
+    const env = { CLAUDE_CODE_ENTRYPOINT: 'sdk-cli' };
+    for (const runtime of ['codex', 'qwen', 'cursor']) {
+      expect(sessionRuntimeCapabilities(runtime, env)).toEqual(resolveRuntimeCapabilities(runtime));
+    }
   });
 });
 

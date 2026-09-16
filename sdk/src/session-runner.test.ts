@@ -6,7 +6,7 @@
  * doubling the token cost on every phase step invocation.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { PhaseStepType } from './types.js';
 import { CONFIG_DEFAULTS } from './config.js';
 import type { GSDConfig } from './config.js';
@@ -159,6 +159,44 @@ describe('runPhaseStepSession', () => {
       );
       const opts = mockQueryCalls[0].options as { model?: string };
       expect(opts.model).toBe('gpt-5.3-codex');
+    });
+  });
+
+  // Claude Code in print mode stops background agents after CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS
+  // (600 s by default); a Build session runs slice builders in the background.
+  describe('build session environment', () => {
+    const CEILING = 'CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS';
+    const PROBE = 'FVGSD_SESSION_ENV_PROBE';
+    let saved: Record<string, string | undefined>;
+
+    beforeEach(() => {
+      saved = { [CEILING]: process.env[CEILING], [PROBE]: process.env[PROBE] };
+      delete process.env[CEILING];
+      process.env[PROBE] = 'kept';
+    });
+
+    afterEach(() => {
+      for (const [name, value] of Object.entries(saved)) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    });
+
+    it('waits for background agents in a Build session and keeps the rest of process.env', async () => {
+      await runPhaseStepSession('prompt', PhaseStepType.Build, makeConfig());
+      const env = mockQueryCalls[0].options.env as Record<string, string | undefined>;
+      expect([env[CEILING], env[PROBE]]).toEqual(['0', 'kept']);
+    });
+
+    it('keeps a background wait the caller set', async () => {
+      process.env[CEILING] = '900000';
+      await runPhaseStepSession('prompt', PhaseStepType.Build, makeConfig());
+      expect((mockQueryCalls[0].options.env as Record<string, string | undefined>)[CEILING]).toBe('900000');
+    });
+
+    it('leaves the environment of other step sessions to the SDK default', async () => {
+      await runPhaseStepSession('prompt', PhaseStepType.Research, makeConfig());
+      expect(mockQueryCalls[0].options.env).toBeUndefined();
     });
   });
 });

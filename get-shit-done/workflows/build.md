@@ -165,7 +165,7 @@ Read the brief's frontmatter `slices` and `user_setup`, its `<objective>`, and i
 - `CONFIRM` set in a headless session: `fvgsd-sdk query state.add-blocker --text "Phase {N}: the build brief awaits approval"`, `OUTCOME=blocked` → `next`.
 - Each `user_setup` item: interactive → have the user complete it and confirm before building; headless → `fvgsd-sdk query state.add-blocker --text "Phase {N} setup: <item>"` for each, then `OUTCOME=blocked` → `next`.
 
-Before this step ends by any path, wait for a background baseline to finish; no slice work or merge starts beside it.
+Before this step ends by any path, wait for a background baseline to finish without ending your turn (a headless print-mode session stops background commands when its turn ends); no slice work or merge starts beside it.
 </step>
 
 <step name="waves">
@@ -190,7 +190,9 @@ other_slice_notes: {for a resumed partial slice: "chore({P}-{id}): partial exist
 
 **Parallel tier**, per wave:
 1. `WAVE_BASE=$(git rev-parse HEAD)`.
-2. Dispatch one `Agent(subagent_type="fvgsd-builder", description="Build slice {id} of phase {N}", model=..., isolation="worktree", prompt=...)` per message — never several Agent calls in one message, because parallel `git worktree add` races on `.git/config.lock`. Pass `run_in_background: true` where that parameter exists; where it does not, subagents already run in the background. Keep at most `config.max_concurrent_agents` running and collect each SLICE RESULT when its completion arrives.
+2. Dispatch one `Agent(subagent_type="fvgsd-builder", description="Build slice {id} of phase {N}", model=..., isolation="worktree", prompt=...)` per message — never several Agent calls in one message, because parallel `git worktree add` races on `.git/config.lock`.
+   - `runtime.background_tasks` true: pass `run_in_background: true` where that parameter exists; where it does not, subagents already run in the background. Keep at most `config.max_concurrent_agents` running and collect each SLICE RESULT when its completion arrives.
+   - Otherwise: do not pass `run_in_background`. Each call runs in the foreground, so slices run one at a time, still with `isolation="worktree"`, and each SLICE RESULT arrives when its call returns.
 3. Merge the isolated slices. The JSON holds only `slice`, `status`, `branch`, `worktree_path` and `commits`, so it contains no single quotes:
    ```bash
    fvgsd-sdk query build.merge-wave --phase {N} --base "$WAVE_BASE" --results '<json array of those results>'
@@ -309,7 +311,7 @@ Pass `--requirements-completed` only when `IDS` holds at least one ID; otherwise
 </step>
 
 <step name="next">
-If a background baseline is still running, wait for it to finish. Then print a short actions-taken report: slices built, merge-wave `blocked` and `skipped` slices, commits, checks (pass, fail, skipped, pre-existing), verification status, fix rounds used, and any `warnings`.
+If a background baseline is still running, wait for it to finish without ending your turn. Then print a short actions-taken report: slices built, merge-wave `blocked` and `skipped` slices, commits, checks (pass, fail, skipped, pre-existing), verification status, fix rounds used, and any `warnings`.
 
 Then suggest one next command in this runtime's command form (the fvgsd command prefix followed by the name and arguments below). Use `NEXT` when a step set it; otherwise:
 - The run is `blocked` or `stopped` with an unfinished brief (`{BRIEF}` exists, and `{SUMMARY}` is missing or has no `kind: build-summary`) → `build {N}`

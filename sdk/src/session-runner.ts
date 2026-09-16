@@ -276,6 +276,19 @@ function stepTypeToPhaseType(step: PhaseStepType): PhaseType {
 }
 
 /**
+ * Environment for a Build session. Claude Code in print mode waits for background agents (build.md runs
+ * slice builders in the background) only up to CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, 600 s by default,
+ * and then stops them; `0` waits for them. A value the caller already set is kept. The SDK gives the
+ * Claude Code process `env` in place of process.env, so this starts from a copy of process.env.
+ */
+function buildSessionEnv(): Record<string, string | undefined> {
+  return {
+    ...process.env,
+    CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS: process.env.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS ?? '0',
+  };
+}
+
+/**
  * Run a phase step session via the Agent SDK query() function.
  *
  * Unlike runPlanSession which takes a ParsedPlan, this accepts a raw prompt
@@ -321,6 +334,7 @@ export async function runPhaseStepSession(
       maxBudgetUsd,
       cwd,
       ...(model ? { model } : {}),
+      ...(phaseType === PhaseType.Build ? { env: buildSessionEnv() } : {}),
     },
   });
 

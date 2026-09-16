@@ -151,6 +151,8 @@ Plan and execute a discussed phase in one step: a short brief, vertical slices (
 
 With `workflow.build_mode: true` (the default), `/fvgsd-progress`, `/fvgsd-manager`, `/fvgsd-autonomous` and `/fvgsd-discuss-phase --chain` suggest this command instead of plan-phase and execute-phase. See [Configuration](CONFIGURATION.md) for the `workflow.build_*` settings.
 
+Headless `claude -p "/fvgsd-build 3"` runs should set `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` to keep parallel slices; without it the build runs slices one at a time.
+
 ```bash
 /fvgsd-build 3               # Build phase 3
 /fvgsd-build 3 --confirm     # Review the brief before any code is written

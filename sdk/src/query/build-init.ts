@@ -10,7 +10,7 @@ import { join, relative } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
 import { loadConfig } from '../config.js';
 import { SUPPORTED_RUNTIMES } from '../model-catalog.js';
-import { resolveRuntimeCapabilities } from '../runtime-capabilities.js';
+import { resolveRuntimeCapabilities, type RuntimeCapabilities } from '../runtime-capabilities.js';
 import { resolveModel } from './config-query.js';
 import { extractFrontmatter } from './frontmatter.js';
 import { detectRuntime, escapeRegex, normalizePhaseName, planningPaths, toPosixPath } from './helpers.js';
@@ -36,6 +36,22 @@ import type { QueryHandler } from './utils.js';
 type ResumeState =
   | 'new' | 'brief_written' | 'slices_in_progress' | 'verifying' | 'gaps_found'
   | 'summarizing' | 'complete' | 'human_needed' | 'classic';
+
+/**
+ * The runtime's capabilities in this session. Claude Code in print mode (`claude -p` and the Agent SDK,
+ * whose CLAUDE_CODE_ENTRYPOINT starts with `sdk-`) waits for background agents only up to
+ * CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS (600 s by default) and then stops them, so background tasks count
+ * as off there unless that wait is unlimited (`0`). The variables are Claude Code's; other runtimes keep
+ * the table's values.
+ */
+export function sessionRuntimeCapabilities(runtime: string, env: Readonly<Record<string, string | undefined>>): RuntimeCapabilities {
+  const capabilities = resolveRuntimeCapabilities(runtime);
+  const printMode = (env.CLAUDE_CODE_ENTRYPOINT ?? '').startsWith('sdk-');
+  if (runtime === 'claude' && printMode && env.CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS !== '0') {
+    capabilities.background_tasks = false;
+  }
+  return capabilities;
+}
 
 function relPath(projectDir: string, absPath: string): string {
   return toPosixPath(relative(projectDir, absPath));
@@ -327,7 +343,7 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
         requirement_ids: await phaseRequirementIds(projectDir, phase.number, workstream),
       },
       commands: { build: detected.build, typecheck: detected.typecheck, lint: detected.lint, test: detected.test },
-      runtime: { name: runtimeName, ...resolveRuntimeCapabilities(runtimeName) },
+      runtime: { name: runtimeName, ...sessionRuntimeCapabilities(runtimeName, process.env) },
       config: buildConfig(configRecord),
       models: {
         brief: planningModel,
