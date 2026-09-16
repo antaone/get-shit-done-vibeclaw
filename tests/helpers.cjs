@@ -101,7 +101,9 @@ function createTempGitProject(prefix = 'fvgsd-test-') {
   execSync('git add -A', { cwd: tmpDir, stdio: 'pipe' });
   execSync('git commit -m "initial commit"', { cwd: tmpDir, stdio: 'pipe' });
 
-  return tmpDir;
+  // The real path: git reports resolved paths, and the OS temp dir can be a symlink
+  // (macOS /var/folders -> /private/var/folders).
+  return fs.realpathSync(tmpDir);
 }
 
 function cleanup(tmpDir) {
