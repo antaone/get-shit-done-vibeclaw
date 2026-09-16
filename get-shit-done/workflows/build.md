@@ -45,7 +45,7 @@ Stop cases, in order:
 
 **Query errors:** read `error` first in every `build.waves`, `build.run-checks` and `build.merge-wave` result (a background baseline's too), before any list. `error` present → show it (for `build.waves`, its `errors` too); `OUTCOME=blocked` → `next`. With `merge_abort_failed`, also show its `slice`, `detail` and the lists collected so far; that slice is in none of them.
 
-Record: `N` = `phase.number`, `P` = `phase.padded`, `PHASE_DIR` = `phase.dir`, `PLAN` = `resume.plan`, `BASE` = `resume.base_commit`, `BRIEF` = `{PHASE_DIR}/{P}-{PLAN}-PLAN.md`, `SUMMARY` = `{PHASE_DIR}/{P}-{PLAN}-SUMMARY.md`, `VERIFICATION` = `{PHASE_DIR}/{P}-VERIFICATION.md`, `HUMAN_UAT` = `{PHASE_DIR}/{P}-HUMAN-UAT.md`, `ROUND=0`.
+Record: `N` = `phase.number`, `P` = `phase.padded`, `PHASE_DIR` = `phase.dir`, `PLAN` = `resume.plan`, `BASE` = `resume.base_commit`, `BRIEF` = `resume.brief` (when null, `{PHASE_DIR}/{P}-{PLAN}-PLAN.md`), `SUMMARY` = `resume.summary` (when null, `{PHASE_DIR}/{P}-{PLAN}-SUMMARY.md`), `VERIFICATION` = `{PHASE_DIR}/{P}-VERIFICATION.md`, `HUMAN_UAT` = `{PHASE_DIR}/{P}-HUMAN-UAT.md`, `ROUND=0`.
 
 Tier:
 - `TIER=parallel` when `runtime.spawn_agents`, `runtime.parallel_agents` and `runtime.worktree_isolation` are all true and `config.parallel` is `auto`.
@@ -196,7 +196,7 @@ other_slice_notes: {for a resumed partial slice: "chore({P}-{id}): partial exist
    fvgsd-sdk query build.merge-wave --phase {N} --base "$WAVE_BASE" --results '<json array of those results>'
    ```
    Check `error` first (**Query errors** in `initialize`).
-4. For each `conflicts` entry: spawn one builder without `isolation`, with that slice's prompt plus `merge_from: {current branch}`, `worktree_path: {that slice's worktree}` and `other_slice_notes: {the other slices' notes}`, and no `fix_goal` or `fix_problems_json` (`merge_from` alone selects the builder's merge goal). It commits `fix({P}-{slice}): resolve merge with {other}`. Then rerun `build.merge-wave` with only that slice's result and the same `--base "$WAVE_BASE"`; a base taken from the moved HEAD fails with `base_mismatch` once two conflicts are resolved before either rerun.
+4. For each `conflicts` entry: spawn one builder without `isolation`, with that slice's prompt plus `merge_from: {current branch}`, `worktree_path: {that slice's worktree}` and `other_slice_notes: {the other slices' notes}`, and no `fix_goal` or `fix_problems_json` (`merge_from` alone selects the builder's merge goal). It commits `fix({P}-{slice}): resolve merge with {other}`. Then rerun `build.merge-wave` with only that slice's result and the same `--base "$WAVE_BASE"`; a base taken from the moved HEAD fails with `base_mismatch` once two conflicts are resolved before either rerun. A merge builder that returns `blocked` has aborted its merge: handle that slice as blocked under **Slice results**.
 5. Show each `blocked` entry (slice, reason, detail) together with each `skipped` entry (slice, reason). A slice listed in `merged` whose only `blocked` entry is `cleanup_failed` did merge: keep its leftover worktree or branch for the summary's Follow-ups and continue. Any other `blocked` entry → `OUTCOME=blocked` → `next`.
 
 **Sequential tier:** spawn the same prompts one at a time, in wave order, without `isolation`. Builders commit on the current branch; there is no merge.
@@ -206,7 +206,10 @@ other_slice_notes: {for a resumed partial slice: "chore({P}-{id}): partial exist
 **Slice results:**
 - `done` → record commits and notes.
 - `blocked` or `partial` with a `question` → interactive: put the question to the user, then continue the same agent with the answer where the runtime supports continuing an agent; otherwise spawn a new builder with the same inputs plus `other_slice_notes: <answer>; existing commits: <commits>`. In the parallel tier, when that slice then finishes, rerun `build.merge-wave` with only its result and `--base "$WAVE_BASE"`. Headless: let the rest of the wave finish, run `fvgsd-sdk query state.add-blocker --text "Phase {N} slice {id}: <question>"` for each question, then `OUTCOME=blocked` → `next`.
+- `partial` without a `question` → spawn one new builder with the same inputs plus `other_slice_notes: "chore({P}-{id}): partial exists — continue from it"` and its existing commits. In the parallel tier, when it finishes, rerun `build.merge-wave` with only its result and `--base "$WAVE_BASE"`. A second `partial` makes the slice `blocked` with the question `stopped twice before finishing` (show its notes): handle it by the rule above.
 - No SLICE RESULT (the agent crashed): check `git log --oneline {BASE}..` (and the slice worktree when isolated), and spawn one new builder told which commits exist. A second failure makes the slice blocked.
+
+No later wave starts while a slice of this wave is still `partial`.
 
 After each wave:
 
@@ -278,7 +281,7 @@ While problems remain and `ROUND` < `config.fix_rounds`:
    ```bash
    fvgsd-sdk query build.group-problems --brief "{BRIEF}" --problems '<problems json>'
    ```
-3. For each batch in `batches`, spawn one builder per group in that batch under the tier rules (parallel tier: record `WAVE_BASE`, use `isolation`, then `build.merge-wave`). Inputs: the slice prompt for `slice: {group.slice}` (for `fix`, `owns` is the group's files) plus `fix_goal: fix the listed problems` and `fix_problems_json: {that group's problems}`. Builders commit `fix({P}-{slice}): <what>`.
+3. For each batch in `batches`, spawn one builder per group in that batch under the tier rules (parallel tier: record `WAVE_BASE`, use `isolation`, then `build.merge-wave`). Inputs: the slice prompt for `slice: {group.slice}` (for `fix`, `owns` is the group's files) plus `fix_goal: fix the listed problems` and `fix_problems_json: {that group's problems}`. Builders commit `fix({P}-{slice}): <what>`. A fix builder that returns `partial` has committed its unfinished work as `chore({P}-{slice}): partial — <reason>`: its problems stay open for step 4 and the next round (in the parallel tier, `build.merge-wave` skips it: list its branch in the summary's Follow-ups). A merge builder that returns `blocked` blocks like any blocked slice.
 4. Rerun only what failed, plus build and typecheck (check the run-checks `error` first):
    ```bash
    fvgsd-sdk query build.run-checks --phase {N} --set full --only <failed names>,build,typecheck
@@ -291,7 +294,7 @@ When problems remain, VERIFICATION.md keeps `status: gaps_found` and they go int
 </step>
 
 <step name="summary">
-Read `~/.claude/fvgsd/references/build-summary.md`. With the Write tool, write `{SUMMARY}`: frontmatter holding only `subsystem` and `tags` (finalize fills the rest), then the body sections from that reference — what each slice built with commit hashes, the Decisions table covering every D-XX in CONTEXT, deviations from the brief, checks (including pre-existing failures and skipped commands), verification status linking `{P}-VERIFICATION.md`, review Warning/Info findings, and follow-ups (including any worktree or branch left by `cleanup_failed`). When `resume.summary` is not null, an earlier finalize was refused or did not finish: read that summary and complete it instead of starting over.
+Read `~/.claude/fvgsd/references/build-summary.md`. With the Write tool, write `{SUMMARY}`: frontmatter holding only `subsystem` and `tags` (finalize fills the rest), then the body sections from that reference — what each slice built with commit hashes, the Decisions table covering every D-XX in CONTEXT, deviations from the brief, checks (including pre-existing failures and skipped commands), verification status linking `{P}-VERIFICATION.md`, review Warning/Info findings, and follow-ups (including any worktree or branch left by `cleanup_failed`). When `resume.summary` is not null, an earlier finalize was refused or did not finish: read that summary and complete it instead of starting over. On a `summarizing` resume this session ran no checks: read their results from `$(git rev-parse --git-common-dir)/fvgsd/build/{P}/full.json` and `latest.json`. `ROUND` restarts at 0 in every session, so `--fix-rounds` then counts only this session's rounds.
 
 `IDS` = the requirement IDs this build satisfied: every ID in `inputs.requirement_ids` when verification passed, otherwise only those VERIFICATION.md shows satisfied.
 
@@ -313,6 +316,8 @@ Then suggest one next command in this runtime's command form (the fvgsd command 
 - The phase is complete → `fvgsd-sdk query roadmap.analyze`: take the first later phase that is not complete. Suggest `build <it>` only when it has CONTEXT.md (`has_context` true) and no plans yet (`disk_status` `discussed` or `researched`), `discuss-phase <it>` otherwise, and `complete-milestone` when no phase remains.
 - Gaps remain → `build {N} --gaps`
 - HUMAN-UAT items are pending → `verify-work {N}`
+
+When `config.human_checks` is `defer` and `{HUMAN_UAT}` has pending items, also print `verify-work {N}` in the same command form, marked as also available, whichever command you suggest.
 
 When `fvgsd-sdk query config-get workflow.build_mode --default true` prints `false`, suggest `plan-phase` in place of `build` in any suggestion above or in `NEXT` (`build {N} --gaps` becomes `plan-phase {N} --gaps`). Never replace the unfinished-brief suggestion: it stays `build {N}`, because execute-phase refuses briefs.
 

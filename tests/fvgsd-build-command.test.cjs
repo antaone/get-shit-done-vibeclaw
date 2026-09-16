@@ -86,6 +86,18 @@ describe('build workflow', () => {
     assert.deepEqual(removed, []);
   });
 
+  test('the waves step respawns a slice that returned partial without a question, once', () => {
+    const content = fs.readFileSync(WORKFLOW_PATH, 'utf8');
+    const waves = workflowSteps(content).find((step) => step.name === 'waves');
+    const rule = waves.body.split('\n').find((line) => line.startsWith('- `partial` without a `question` →'));
+    assert.ok(
+      rule
+        && rule.includes('`other_slice_notes: "chore({P}-{id}): partial exists — continue from it"`')
+        && rule.includes('A second `partial` makes the slice `blocked`'),
+      `missing or incomplete partial-slice rule: ${rule}`,
+    );
+  });
+
   test('the next step prints the four end markers', () => {
     const content = fs.readFileSync(WORKFLOW_PATH, 'utf8');
     const next = workflowSteps(content).find((step) => step.name === 'next');

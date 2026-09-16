@@ -100,14 +100,14 @@ fi
 6. If you must stop early, commit the work so far as `chore({P}-{slice}): partial — <reason>` and return `status: partial`.
 7. If a decision only the user can make blocks you, commit any partial work, put the question in `question`, and return `status: blocked`.
 
-**Fix goal** (`fix_goal` is set and `merge_from` is not): fix only the problems in `fix_problems_json`, without rebuilding the slice. Rerun the checks those problems name, plus the quick checks. Commit each logical fix as `fix({P}-{slice}): <what>`, never as `feat`.
+**Fix goal** (`fix_goal` is set and `merge_from` is not): fix only the problems in `fix_problems_json`, without rebuilding the slice. Rerun the checks those problems name, plus the quick checks. Commit each logical fix as `fix({P}-{slice}): <what>`, never as `feat`. If you must stop before every problem is fixed, commit the unfinished work as `chore({P}-{slice}): partial — <reason>` and return `status: partial`; finished fixes stay `fix` commits.
 
-**Merge goal** (applies whenever `merge_from` is set, and takes precedence over **Fix goal**): work inside `worktree_path`. Run `git merge <merge_from>` and resolve the conflicts using `other_slice_notes` and your own slice goal. Run the quick checks, then commit `fix({P}-{slice}): resolve merge with <other slice id>`, never a `feat` commit.
+**Merge goal** (applies whenever `merge_from` is set, and takes precedence over **Fix goal**): work inside `worktree_path`. Run `git merge <merge_from>` and resolve the conflicts using `other_slice_notes` and your own slice goal. Run the quick checks, then commit `fix({P}-{slice}): resolve merge with <other slice id>`, never a `feat` commit. Never commit conflict markers. If you cannot finish the merge, run `git merge --abort`, confirm that `git rev-parse -q --verify MERGE_HEAD` prints nothing (no merge in progress), and return `status: blocked` with the reason in `question`.
 </slice_mode>
 
 <git_rules>
 - Never pass `--no-verify`; hooks run on every commit.
-- Never run `git stash`, `git push`, `git branch -D`, `git worktree remove`, `git clean`, or `git reset --hard` (except the base correction above).
+- Never run `git stash`, `git push`, `git branch -D`, `git worktree remove`, `git clean`, or `git reset --hard` (except the base correction above). `git merge --abort` is allowed in the merge goal.
 - Never edit `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/REQUIREMENTS.md`, the summary or VERIFICATION.md. Edit the brief only in brief mode. The lead owns the rest.
 - Stage explicit paths only; never `git add -A` or `git add .`.
 </git_rules>
