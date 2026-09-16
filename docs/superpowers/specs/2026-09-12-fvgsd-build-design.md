@@ -153,8 +153,8 @@ Returns JSON:
   - `new`: no brief exists for the current plan number.
   - `brief_written`: the brief exists and no slice has commits.
   - `slices_in_progress`: at least one slice lacks its `feat({P}-{slice})` commit. `partial_slices` lists those with a `chore({P}-{slice}): partial` commit.
-  - `verifying`: every slice has its `feat` commit, and VERIFICATION.md is missing or older than the last `feat` or `fix` commit.
-  - `gaps_found`: VERIFICATION.md has status `gaps_found` and is newer than the last `feat` or `fix` commit.
+  - `verifying`: every slice has its `feat` commit, and VERIFICATION.md is missing or older than the last `feat`, `fix` or partial (`chore({P}-{slice or fix}): partial`) commit.
+  - `gaps_found`: VERIFICATION.md has status `gaps_found` and is newer than the last `feat`, `fix` or partial commit.
   - `complete`: the summary exists and VERIFICATION.md has status `passed`. The command prints the status and stops.
 - **Baseline.** `last_passing_commit` is `build.checks_passed_at` from the most recent summary with `kind: build-summary`, across all phases. `code_head` is the latest commit that changed files outside `.planning/`. `needs_run` is false when the two have the same code tree. A build never re-baselines at a HEAD that holds its own commits, so `needs_run` is also false for a gap build (`--gaps`, or a resumed gap brief) and for a build resumed past `brief_written`: the phase's `baseline.json` still describes what was broken before its first build, and without one every failure counts as new. It is false as well when `baseline.json` was taken at `code_head`'s code tree.
 - **Gap runs.** With `--gaps`, `resume.plan` is the next free plan number and `resume.state` describes that plan. While the latest brief's summary is not finalized (`kind: build-summary` missing), `--gaps` resumes that brief instead.

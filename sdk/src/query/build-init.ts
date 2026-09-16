@@ -104,7 +104,8 @@ function scanSliceCommits(projectDir: string, base: string, padded: string): Sli
   const scope = escapeRegex(padded);
   const feat = new RegExp(`^feat\\(${scope}-(s\\d+)\\):`);
   const fix = new RegExp(`^fix\\(${scope}-(s\\d+|fix)\\):`);
-  const partial = new RegExp(`^chore\\(${scope}-(s\\d+)\\): partial`);
+  // Slice builders and fix-round builders that stop early commit `chore({P}-{id}): partial`.
+  const partial = new RegExp(`^chore\\(${scope}-(s\\d+|fix)\\): partial`);
   for (const line of log.stdout.split('\n')) {
     const [, seconds, ...subjectParts] = line.split('\t');
     const subject = subjectParts.join('\t');
@@ -115,9 +116,11 @@ function scanSliceCommits(projectDir: string, base: string, padded: string): Sli
     if (!slice) continue;
     scan.touched.add(slice);
     if (featMatch) scan.done.add(slice);
-    if (partialMatch) scan.partial.add(slice);
+    // `fix` names a fix-round group, not a slice.
+    if (partialMatch && slice !== 'fix') scan.partial.add(slice);
+    // Every feat, fix and partial commit is work: a VERIFICATION.md older than the latest one is stale.
     const time = Number(seconds);
-    if ((featMatch || fixMatch) && Number.isFinite(time)) scan.lastWorkSeconds = Math.max(scan.lastWorkSeconds ?? 0, time);
+    if (Number.isFinite(time)) scan.lastWorkSeconds = Math.max(scan.lastWorkSeconds ?? 0, time);
   }
   return scan;
 }

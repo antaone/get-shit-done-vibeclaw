@@ -235,6 +235,39 @@ describe('init.build', () => {
     expect((await init('3')).resume.state).toBe('complete');
   });
 
+  /** A built brief (both slices committed) with VERIFICATION.md at `status`, written 10 s after the last feat commit. */
+  async function verifiedBuild(status: string): Promise<number> {
+    const start = Number(git('log', '-1', '--format=%ct'));
+    await commitAt(start + 10, `${PHASE_DIR}/03-01-PLAN.md`, brief('01'), 'docs(03): build brief');
+    await commitAt(start + 20, 'src/auth/session.ts', 'export {};\n', 'feat(03-s1): session model');
+    await commitAt(start + 30, 'src/routes/login.ts', 'export {};\n', 'feat(03-s2): login routes');
+    const verificationPath = join(dir, PHASE_DIR, '03-VERIFICATION.md');
+    await writeFile(verificationPath, verification(status));
+    await utimes(verificationPath, start + 40, start + 40);
+    return start + 50;
+  }
+
+  it.each(['s2', 'fix'])('verifies again after a chore(03-%s): partial fix commit newer than a passed VERIFICATION.md', async (id) => {
+    const later = await verifiedBuild('passed');
+    expect((await init('3')).resume.state).toBe('summarizing');
+
+    await commitAt(later, 'src/routes/login.ts', 'export const retries = 1;\n', `chore(03-${id}): partial — review finding half fixed`);
+    expect((await init('3')).resume).toMatchObject({ state: 'verifying', summary: null, done_slices: ['s1', 's2'], partial_slices: [] });
+  });
+
+  it.each([
+    'fix(03-s2): retry expired sessions',
+    'chore(03-s2): partial — retry half done',
+    'fix(03-fix): lint findings',
+    'chore(03-fix): partial — lint findings half fixed',
+  ])('treats "%s" newer than a gaps_found VERIFICATION.md alike', async (subject) => {
+    const later = await verifiedBuild('gaps_found');
+    expect((await init('3')).resume.state).toBe('gaps_found');
+
+    await commitAt(later, 'src/routes/login.ts', 'export const retries = 1;\n', subject);
+    expect((await init('3')).resume).toMatchObject({ state: 'verifying', done_slices: ['s1', 's2'], partial_slices: [] });
+  });
+
   it('reports classic when the phase already has plans that are not briefs', async () => {
     await commit(`${PHASE_DIR}/03-01-PLAN.md`, '---\nphase: 03-user-auth\nplan: 01\n---\n# Plan\n', 'docs(03): plan');
     expect((await init('3')).resume).toMatchObject({ state: 'classic', plan: null, brief: null });
