@@ -14,7 +14,7 @@ const { execFileSync, spawnSync } = require('node:child_process');
 
 const { INSTALL_SCRIPT, installerEnv } = require('./helpers/install-shared.cjs');
 const IDENTITY = require('../get-shit-done/bin/lib/identity.cjs');
-const { codexConfigLayout, parseTomlToObject, stripStaleGsdHookBlocks } = require('../bin/install.js');
+const { codexConfigLayout, ensureCodexHooksJsonSessionStart, parseTomlToObject, stripStaleGsdHookBlocks } = require('../bin/install.js');
 
 // Codex install copies fvgsd/check-update.js from hooks/dist, which only the build step fills.
 before(() => {
@@ -44,6 +44,70 @@ function runCodexInstaller(root, configDir, extra = []) {
 function gsdCheckUpdateCommand(configDir) {
   return `node ${configDir.replace(/\\/g, '/')}/hooks/gsd-check-update.js`;
 }
+
+// GSD 1.42.3 as found in a real ~/.codex: its config.toml block ends with a bare
+// [hooks] table, and its hooks.json keeps SessionStart at the top level. Current
+// Codex skips that hooks.json ("unknown field `SessionStart`"), but both files are
+// GSD's to change, not fvgsd's.
+function seedGsd1423Codex(configDir) {
+  const dir = configDir.replace(/\\/g, '/');
+  const userPart = 'model = "gpt-5"\n\n[features]\ncodex_hooks = true\n\n';
+  const gsdPart = [
+    '# GSD Agent Configuration — managed by get-shit-done installer',
+    '# GSD codex_hooks ownership: section',
+    '',
+    '[agents.gsd-verifier]',
+    'description = "Verifies phase goal achievement."',
+    `config_file = "${dir}/agents/gsd-verifier.toml"`,
+    '',
+    '',
+    '# GSD Hooks',
+    '[hooks]',
+    'event = "SessionStart"',
+    `command = "${gsdCheckUpdateCommand(configDir)}"`,
+    '',
+  ].join('\n');
+  const hookCommand = `"${process.execPath.replace(/\\/g, '/')}" "${dir}/hooks/gsd-check-update.js"`;
+  const hooksJson = `${JSON.stringify({ SessionStart: [{ hooks: [{ type: 'command', command: hookCommand }] }] }, null, 2)}\n`;
+  fs.writeFileSync(path.join(configDir, 'config.toml'), userPart + gsdPart);
+  fs.writeFileSync(path.join(configDir, 'hooks.json'), hooksJson);
+  return { userPart, gsdPart, hooksJson };
+}
+
+test('GSD 1.42.3\'s [hooks] table and top-level hooks.json layout stay byte-identical through fvgsd install', (t) => {
+  const { root, configDir } = tempCodexHome(t, 'gsd-1423-install');
+  const { gsdPart, hooksJson } = seedGsd1423Codex(configDir);
+
+  runCodexInstaller(root, configDir);
+
+  const content = fs.readFileSync(path.join(configDir, 'config.toml'), 'utf8');
+  assert.equal(content.slice(-gsdPart.length), gsdPart, 'GSD marker, sections and [hooks] table are unchanged');
+  assert.deepEqual(codexConfigLayout(content).markers.map((marker) => marker.owner), ['fvgsd', 'gsd']);
+  assert.equal(Object.keys(parseTomlToObject(content).agents).some((name) => name.startsWith(IDENTITY.agentPrefix)), true, 'fvgsd agents are configured');
+  assert.equal(fs.readFileSync(path.join(configDir, 'hooks.json'), 'utf8'), hooksJson, 'hooks.json keeps GSD\'s layout and entry');
+});
+
+test('fvgsd reports its SessionStart hook as skipped while hooks.json keeps GSD 1.42.3\'s top-level layout', (t) => {
+  const { configDir } = tempCodexHome(t, 'gsd-1423-hooks-json');
+  const { hooksJson } = seedGsd1423Codex(configDir);
+
+  const result = ensureCodexHooksJsonSessionStart(configDir, { absoluteRunner: JSON.stringify(process.execPath), platform: 'linux' });
+
+  assert.equal(result.skipped, 'foreign-root-layout');
+  assert.equal(result.wrote, false);
+  assert.equal(fs.readFileSync(path.join(configDir, 'hooks.json'), 'utf8'), hooksJson);
+});
+
+test('uninstall next to GSD 1.42.3\'s Codex layout restores config.toml and hooks.json exactly', (t) => {
+  const { root, configDir } = tempCodexHome(t, 'gsd-1423-uninstall');
+  const { userPart, gsdPart, hooksJson } = seedGsd1423Codex(configDir);
+
+  runCodexInstaller(root, configDir);
+  runCodexInstaller(root, configDir, ['--uninstall']);
+
+  assert.equal(fs.readFileSync(path.join(configDir, 'config.toml'), 'utf8'), userPart + gsdPart);
+  assert.equal(fs.readFileSync(path.join(configDir, 'hooks.json'), 'utf8'), hooksJson);
+});
 
 test('a GSD hook block in config.toml stays byte-identical through fvgsd install', (t) => {
   const { root, configDir } = tempCodexHome(t, 'gsd-hook-block');

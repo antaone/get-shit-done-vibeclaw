@@ -993,23 +993,39 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
   }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) parsed = {};
 
+  const isManagedHook = (hook) => isManagedHookCommand(hook && typeof hook === 'object' ? hook.command : null, {
+    surface: 'codex-hooks-json',
+    includeLegacyAliases: true,
+    configDir: targetDir,
+  });
+
   // Current Codex accepts only top-level metadata plus a nested `hooks`
   // object. Older GSD releases wrote event arrays directly at the root,
-  // which current Codex rejects with "unknown field SessionStart". Accept
-  // that legacy form as migration input, but always emit the current schema.
+  // which current Codex skips with "unknown field SessionStart". Accept
+  // that legacy form as migration input and emit the current schema, unless
+  // a root array holds a hook GSD or VibeClaw vgsd installed (hooks/gsd-*,
+  // hooks/vgsd-*). That layout is theirs to change: leave the root keys as
+  // they are, and don't register fvgsd's hook in a file Codex won't read.
+  const rootEventKeys = Object.keys(parsed).filter((key) => {
+    const value = parsed[key];
+    if (key === 'hooks' || !Array.isArray(value)) return false;
+    return key === 'SessionStart' ||
+      value.some((entry) => entry && typeof entry === 'object' && Array.isArray(entry.hooks));
+  });
+  const foreignRootLayout = rootEventKeys.some((key) => parsed[key].some((entry) =>
+    entry && typeof entry === 'object' && Array.isArray(entry.hooks) &&
+    entry.hooks.some((hook) => hook && typeof hook === 'object' && typeof hook.command === 'string' &&
+      /\/hooks\/v?gsd-/.test(hook.command.replace(/\\/g, '/')))));
   const hookTable =
     parsed.hooks && typeof parsed.hooks === 'object' && !Array.isArray(parsed.hooks)
       ? { ...parsed.hooks }
       : {};
-  for (const [key, value] of Object.entries(parsed)) {
-    if (key === 'hooks' || !Array.isArray(value)) continue;
-    const looksLikeHookEvent =
-      key === 'SessionStart' ||
-      value.some((entry) => entry && typeof entry === 'object' && Array.isArray(entry.hooks));
-    if (!looksLikeHookEvent) continue;
-    const nestedEntries = Array.isArray(hookTable[key]) ? hookTable[key] : [];
-    hookTable[key] = [...value, ...nestedEntries];
-    delete parsed[key];
+  if (!foreignRootLayout) {
+    for (const key of rootEventKeys) {
+      const nestedEntries = Array.isArray(hookTable[key]) ? hookTable[key] : [];
+      hookTable[key] = [...parsed[key], ...nestedEntries];
+      delete parsed[key];
+    }
   }
   const sessionStart = Array.isArray(hookTable.SessionStart) ? hookTable.SessionStart : [];
 
@@ -1023,12 +1039,7 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
       continue;
     }
       const keptHooks = originalHooks.filter((hook) => {
-        const cmd = hook && typeof hook === 'object' ? hook.command : null;
-        const managed = isManagedHookCommand(cmd, {
-          surface: 'codex-hooks-json',
-          includeLegacyAliases: true,
-          configDir: targetDir,
-        });
+        const managed = isManagedHook(hook);
         if (managed) removedLegacy = true;
         return !managed;
       });
@@ -1037,7 +1048,12 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
     sanitizedSessionStart.push(nextEntry);
   }
 
-  if (managedCommand) {
+  const skipped = foreignRootLayout && managedCommand ? { skipped: 'foreign-root-layout' } : {};
+  if (foreignRootLayout && !removedLegacy) {
+    return { changed: false, wrote: false, path: hooksJsonPath, ...skipped };
+  }
+
+  if (managedCommand && !foreignRootLayout) {
     sanitizedSessionStart.push({
       hooks: [
         {
@@ -1063,7 +1079,7 @@ function reconcileCodexHooksJsonSessionStart(targetDir, opts = {}) {
     atomicWriteFileSync(hooksJsonPath, nextContent, 'utf8');
   }
 
-  return { changed: changed || removedLegacy, wrote: shouldWrite, path: hooksJsonPath };
+  return { changed: changed || removedLegacy, wrote: shouldWrite, path: hooksJsonPath, ...skipped };
 }
 
 /**
@@ -9329,7 +9345,13 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       // Running migration after strip ensures only user-authored hooks are migrated
       // (#2698 regression: migration before strip converts stale GSD blocks before
       // the strip regexes can match their original shape).
-      const migratedContent = migrateCodexHooksMapFormat(configContent);
+      // Everything from a GSD or VibeClaw marker to the end of the file belongs to
+      // that installer, legacy hook tables included, so only the part above it is
+      // migrated.
+      const ownConfigEnd = foreignCodexMarkerOffset(configContent);
+      const migratedContent = ownConfigEnd === -1
+        ? migrateCodexHooksMapFormat(configContent)
+        : migrateCodexHooksMapFormat(configContent.slice(0, ownConfigEnd)) + configContent.slice(ownConfigEnd);
       if (migratedContent !== configContent) {
         configContent = migratedContent;
         console.log(`  ${green}✓${reset} Migrated legacy Codex [hooks] format to two-level nested AoT`);
@@ -9353,7 +9375,18 @@ function install(isGlobal, runtime = 'claude', options = {}) {
       const validatorFn = (typeof module !== 'undefined' && module.exports && module.exports.__codexSchemaValidator)
         ? module.exports.__codexSchemaValidator
         : validateCodexConfigSchema;
-      const validation = validatorFn(configContent);
+      // The shape rules cover the part above any GSD or VibeClaw marker, which
+      // fvgsd writes into; that installer's part only has to keep the whole
+      // file parseable.
+      const validatedEnd = foreignCodexMarkerOffset(configContent);
+      let validation = validatorFn(validatedEnd === -1 ? configContent : configContent.slice(0, validatedEnd));
+      if (validation.ok && validatedEnd !== -1) {
+        try {
+          parseTomlToObject(configContent);
+        } catch (e) {
+          validation = { ok: false, reason: `TOML parse failed: ${e.message}` };
+        }
+      }
       if (!validation.ok) {
         restoreCodexSnapshot();
         throw new Error(
@@ -9391,7 +9424,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
             absoluteRunner: codexNodeRunner,
             platform: process.platform,
           });
-          if (hookWrite.wrote) {
+          if (hookWrite.skipped === 'foreign-root-layout') {
+            console.warn(`  ${yellow}⚠${reset}  Skipped Codex SessionStart hook registration — hooks.json keeps SessionStart at the top level, as older GSD releases wrote it. Current Codex skips that file, and fvgsd left it unchanged.`);
+          } else if (hookWrite.wrote) {
             console.log(`  ${green}✓${reset} Configured Codex hooks (SessionStart via hooks.json)`);
           } else {
             console.log(`  ${green}✓${reset} Verified Codex hooks (SessionStart via hooks.json)`);
