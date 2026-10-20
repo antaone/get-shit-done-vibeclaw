@@ -169,6 +169,57 @@ describe('fvgsd execution branch guard', () => {
     assert.equal(parsed.branch, prepared.candidate.git.branch);
   });
 
+  // A project may track part of its Vibe state (config, history, promotions) while ignoring the
+  // per-machine candidate records. Every candidate worktree then carries that tracked copy, which
+  // holds no candidates; the guard must read the main worktree's state instead.
+  function localProjectWithTrackedState(prefix) {
+    const root = project(prefix);
+    const vibe = new VibeOrchestrator({ projectRoot: root });
+    vibe.initialize();
+    fs.appendFileSync(path.join(root, '.gitignore'), [
+      '.planning-fvgsd-vibe/candidates/',
+      '.planning-fvgsd-vibe/runs/',
+      '.planning-fvgsd-vibe/state/active-run.json',
+      '',
+    ].join('\n'), 'utf8');
+    git(root, 'add', '-A');
+    git(root, 'commit', '-m', 'track portable Vibe state');
+    return { root, vibe };
+  }
+
+  test('verifies a local candidate whose worktree carries tracked Vibe state', () => {
+    const { vibe } = localProjectWithTrackedState('fvgsd-vibe-tracked-state-');
+    const run = vibe.startRun('project-bootstrap', { id: 'tracked-state' });
+    const prepared = vibe.prepareStage('project', { runId: run.id, tool: 'codex' });
+    const worktree = prepared.candidate.git.worktree;
+    assert.equal(fs.existsSync(path.join(worktree, '.planning-fvgsd-vibe', 'config.yaml')), true);
+    assert.equal(fs.existsSync(path.join(worktree, '.planning-fvgsd-vibe', 'candidates')), false);
+
+    // An interactive session in the worktree, with no launch environment.
+    const result = ensureExecutionBranch({ cwd: worktree, command: 'new-project', runtime: 'codex', env: {} });
+
+    assert.equal(result.allowed, true, result.message);
+    assert.equal(result.mode, 'vibe-candidate');
+    assert.equal(result.candidate_id, prepared.candidate.id);
+    assert.equal(result.branch, prepared.candidate.git.branch);
+  });
+
+  test('a local-mode worktree on a vibe branch that is no candidate is not sent to the multi-machine handoff', () => {
+    const { root, vibe } = localProjectWithTrackedState('fvgsd-vibe-local-stray-');
+    const run = vibe.startRun('project-bootstrap', { id: 'local-stray' });
+    vibe.prepareStage('project', { runId: run.id, tool: 'codex' });
+    const stray = path.join(root, '..', `${path.basename(root)}-stray`);
+    projects.push(stray);
+    git(root, 'worktree', 'add', '-b', 'vibe/local-stray/project/codex-009', stray);
+
+    const result = ensureExecutionBranch({ cwd: stray, command: 'new-project', runtime: 'codex', env: {} });
+
+    assert.equal(result.allowed, false);
+    assert.equal(result.action, 'blocked');
+    assert.equal(result.reason, 'vibe_candidate_required');
+    assert.notEqual(result.mode, 'vibe-git-handoff');
+  });
+
   test('fails closed when Vibe is initialized but execution is not in a candidate', () => {
     const root = project('fvgsd-vibe-integration-');
     const vibe = new VibeOrchestrator({ projectRoot: root });

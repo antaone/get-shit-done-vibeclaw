@@ -212,6 +212,41 @@ function findVibeStore(cwd, options = {}) {
   }
 }
 
+function mainWorktreeRoot(repo, options = {}) {
+  const listed = invokeGit(['worktree', 'list', '--porcelain'], repo.root, options);
+  if (listed.exitCode !== 0) return null;
+  // The first record is the main worktree; a bare repository has none.
+  const first = String(listed.stdout || '').split(/\r?\n\r?\n/)[0] || '';
+  const lines = first.split(/\r?\n/);
+  if (lines.includes('bare')) return null;
+  const worktree = lines.find((line) => line.startsWith('worktree '));
+  return worktree ? path.resolve(worktree.slice('worktree '.length).trim()) : null;
+}
+
+/**
+ * The Vibe state that holds candidate records. A project may track its portable Vibe state
+ * (config, history, promotions) and ignore the per-machine candidate records, so a linked
+ * candidate worktree carries a copy without them, and discovery from inside it stops there. The
+ * main worktree's state is the coordinator's; it is used when it holds candidate records.
+ */
+function coordinatorStore(store, repo, options = {}) {
+  if (path.resolve(store.projectRoot) !== repo.root) return null;
+  const main = mainWorktreeRoot(repo, options.gitOptions || options);
+  if (!main || main === repo.root) return null;
+  const candidate = new VibeStore(main, options.storeOptions);
+  return fs.existsSync(candidate.paths.candidates) ? candidate : null;
+}
+
+function storeIsMultiMachine(store) {
+  try {
+    const config = store.readYaml(store.paths.config, 'VibeClaw config');
+    return Boolean(config && config.git && config.git.multi_machine);
+  } catch {
+    // Unreadable configuration keeps the handoff check, the stricter path.
+    return true;
+  }
+}
+
 function isWithin(parent, child) {
   const relative = path.relative(path.resolve(parent), path.resolve(child));
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
@@ -633,8 +668,12 @@ function inspectExecutionBranch(options = {}) {
   }
 
   if (store) {
-    const result = inspectVibeCandidate(store, repo, runtime, env);
-    if (!result.allowed && repo.branch && repo.branch.startsWith('vibe/')) {
+    const coordinator = coordinatorStore(store, repo, options);
+    const result = inspectVibeCandidate(coordinator || store, repo, runtime, env);
+    // A local coordinator owns its candidates' worktrees, so a vibe/ branch it does not know is
+    // not a multi-machine handoff to verify against a remote.
+    const localCoordinator = coordinator !== null && !storeIsMultiMachine(coordinator);
+    if (!result.allowed && !localCoordinator && repo.branch && repo.branch.startsWith('vibe/')) {
       const handoff = inspectGitHandoff(repo, runtime, command, options.gitOptions || options);
       if (handoff) return { action: handoff.allowed ? handoff.action : 'blocked', command, runtime, ...handoff };
     }
