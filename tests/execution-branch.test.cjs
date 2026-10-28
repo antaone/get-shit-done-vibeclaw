@@ -9,6 +9,7 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { createTempDir, createTempGitProject, cleanup, runGsdTools } = require('./helpers.cjs');
 const {
+  READ_ONLY_COMMANDS,
   inspectExecutionBranch,
   ensureExecutionBranch,
   parseSmartBranch,
@@ -235,6 +236,45 @@ describe('fvgsd execution branch guard', () => {
     assert.doesNotMatch(git(root, 'branch', '--show-current'), /^fvgsd\//);
   });
 
+  test('read-only commands run on a Vibe integration branch while code-changing ones stay blocked', () => {
+    const root = project('fvgsd-vibe-read-only-');
+    new VibeOrchestrator({ projectRoot: root }).initialize();
+    const branch = git(root, 'branch', '--show-current');
+
+    for (const command of ['dod', 'handoff', 'pack', 'progress', 'stats', 'surface']) {
+      const result = ensureExecutionBranch(deterministicOptions(root, { command }));
+      assert.equal(result.allowed, true, command);
+      assert.equal(result.action, 'inspected', command);
+      assert.equal(result.reason, 'vibe_read_only_allowed', command);
+    }
+    for (const command of ['build', 'step', 'deploy', 'quick']) {
+      const result = ensureExecutionBranch(deterministicOptions(root, { command }));
+      assert.equal(result.allowed, false, command);
+      assert.equal(result.reason, 'vibe_candidate_required', command);
+    }
+    assert.equal(git(root, 'branch', '--show-current'), branch);
+  });
+
+  test('read-only commands create no execution branch in a plain repository', () => {
+    const root = project('fvgsd-read-only-plain-');
+    const branch = git(root, 'branch', '--show-current');
+    const result = ensureExecutionBranch(deterministicOptions(root, { command: 'dod' }));
+    assert.equal(result.allowed, true);
+    assert.equal(result.action, 'inspected');
+    assert.equal(Object.hasOwn(result, '_repo'), false);
+    assert.equal(git(root, 'branch', '--show-current'), branch);
+  });
+
+  test('surface runs outside a Git repository through either guard action', () => {
+    const root = createTempDir('fvgsd-surface-no-git-');
+    projects.push(root);
+    for (const action of ['inspect', 'ensure']) {
+      const result = runGsdTools(['execution-branch', action, 'surface', '--runtime', 'claude'], root);
+      assert.equal(result.success, true, result.error);
+      assert.equal(JSON.parse(result.output).allowed, true, action);
+    }
+  });
+
   test('future vibe init imports standalone branch provenance', () => {
     const root = project('fvgsd-vibe-import-');
     const standalone = ensureExecutionBranch(deterministicOptions(root, { command: 'plan-phase' }));
@@ -302,7 +342,7 @@ describe('public fvgsd command guard coverage', () => {
     for (const name of files) {
       const command = name.slice(0, -3);
       const content = fs.readFileSync(path.join(commandDir, name), 'utf8');
-      const expectedAction = command === 'help' || command === 'vibe' ? 'inspect' : 'ensure';
+      const expectedAction = READ_ONLY_COMMANDS.includes(command) ? 'inspect' : 'ensure';
       assert.match(content, /<execution_branch_guard>/, `${name} is missing the guard`);
       assert.ok(
         content.includes(`execution-branch ${expectedAction} "${command}" --runtime __FVGSD_RUNTIME__`),

@@ -21,6 +21,11 @@ const { VibeStore } = require('./vibe/store.cjs');
 const { VibeError } = require('./vibe/errors.cjs');
 
 const SMART_BRANCH_PREFIX = IDENTITY.branchPrefix;
+
+// Commands that change no code: they read state, run checks, or write notes and
+// machine-wide settings. They run where they are invoked (an integration branch,
+// a directory outside Git) without a Vibe candidate or an execution branch.
+const READ_ONLY_COMMANDS = Object.freeze(['dod', 'handoff', 'help', 'pack', 'progress', 'stats', 'surface', 'vibe']);
 const METADATA_VERSION = 1;
 const ALLOWED_CANDIDATE_STATUSES = new Set(['prepared', 'running']);
 
@@ -718,6 +723,9 @@ function publicResult(result) {
 
 function ensureExecutionBranch(options = {}) {
   const env = options.env || process.env;
+  if (READ_ONLY_COMMANDS.includes(options.command)) {
+    return publicResult(inspectExecutionBranch({ ...options, readOnly: true }));
+  }
   const inspected = inspectExecutionBranch(options);
   if (!inspected.allowed || inspected.action !== 'inspected') {
     if (inspected.allowed && inspected.mode === 'standalone-smart-branch' && !inspected.metadata) {
@@ -855,6 +863,7 @@ function discoverStandaloneExecutions(projectRoot, options = {}) {
 
 module.exports = {
   SMART_BRANCH_PREFIX,
+  READ_ONLY_COMMANDS,
   detectRuntime,
   parseSmartBranch,
   inspectExecutionBranch,

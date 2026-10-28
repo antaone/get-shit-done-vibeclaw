@@ -35,7 +35,7 @@ describe('/fvgsd-step, /fvgsd-deploy and /fvgsd-handoff', () => {
       const fm = parseFrontmatter(content);
       assert.equal(fm.name, `fvgsd:${name}`);
       assert.equal(fm['argument-hint'], spec.hint);
-      assert.match(content, new RegExp(`execution-branch ensure "${name}"`));
+      assert.match(content, new RegExp(`execution-branch ${name === 'handoff' ? 'inspect' : 'ensure'} "${name}"`));
       for (const agent of spec.agents) {
         assert.match(content, new RegExp(`subagent_type="${agent}"`), `${name} spawns ${agent}`);
       }

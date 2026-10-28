@@ -10,7 +10,7 @@ requires: [config, update]
 ---
 <execution_branch_guard>
 Before reading execution context, invoking another skill, or changing project state, run:
-`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch ensure "surface" --runtime __FVGSD_RUNTIME__`
+`node "$HOME/.claude/fvgsd/bin/fvgsd-tools.cjs" execution-branch inspect "surface" --runtime __FVGSD_RUNTIME__`
 
 Parse the JSON response:
 - Continue only when `allowed` is `true`.
