@@ -11642,6 +11642,7 @@ module.exports = {
     ensureCodexHooksJsonSessionStart,
     readGsdCommandNames,
     installRuntimeArtifacts,
+    applyRuntimeContentRewritesInPlace,
     uninstallRuntimeArtifacts,
     listOwnHookFiles,
     removeInstallerMigrationRecords,

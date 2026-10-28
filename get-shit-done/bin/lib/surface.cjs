@@ -33,7 +33,7 @@ const {
   PROFILES,
 } = require('./install-profiles.cjs');
 const { CLUSTERS, allClusteredSkills } = require('./clusters.cjs');
-const { findInstallSourceRoot } = require('./runtime-artifact-layout.cjs');
+const { findInstallSourceRoot, rewriteStagedArtifacts } = require('./runtime-artifact-layout.cjs');
 
 const SURFACE_FILE_NAME = IDENTITY.surfaceFile;
 
@@ -212,6 +212,10 @@ function applySurface(runtimeConfigDir, layout, manifest, clusterMap) {
   const resolved = resolveSurface(layout.configDir, manifest, clusterMap);
   for (const kind of layout.kinds) {
     const staged = kind.stage(resolved);
+    // Same rewrites the installer applies after staging, so re-staged files match it.
+    if (layout.runtime && (kind.kind === 'skills' || kind.kind === 'commands')) {
+      rewriteStagedArtifacts(layout, staged);
+    }
     const dest = path.join(layout.configDir, kind.destSubpath);
     _syncGsdDir(staged, dest, kind, manifest);
   }

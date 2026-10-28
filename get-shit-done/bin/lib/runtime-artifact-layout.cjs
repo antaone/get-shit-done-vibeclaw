@@ -11,6 +11,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const IDENTITY = require('./identity.cjs');
 
 const {
@@ -61,6 +62,7 @@ function getInstallExports() {
  * @typedef {Object} Layout
  * @property {string} runtime
  * @property {string} configDir
+ * @property {'local'|'global'} scope
  * @property {ArtifactKind[]} kinds
  */
 
@@ -313,7 +315,34 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
       throw new TypeError(`Unknown runtime: '${runtime}' — add to runtime-artifact-layout.cjs table`);
   }
 
-  return { runtime, configDir, kinds };
+  return { runtime, configDir, scope, kinds };
 }
 
-module.exports = { ALLOWED_RUNTIMES, resolveRuntimeArtifactLayout, findInstallSourceRoot, findAgentsSourceRoot };
+/**
+ * Apply the installer's per-runtime content rewrites (the __FVGSD_RUNTIME__ token
+ * and config paths) to staged skill or command files, as installRuntimeArtifacts
+ * does right after staging. Callers that re-stage outside the installer, such as
+ * applySurface, use it so their files match the installed ones.
+ *
+ * @param {Layout} layout
+ * @param {string} stagedDir
+ */
+function rewriteStagedArtifacts(layout, stagedDir) {
+  const install = getInstallExports();
+  const pathPrefix = install.computePathPrefix({
+    isGlobal: layout.scope !== 'local',
+    isOpencode: layout.runtime === 'opencode',
+    isWindowsHost: process.platform === 'win32',
+    resolvedTarget: path.resolve(layout.configDir).replace(/\\/g, '/'),
+    homeDir: os.homedir().replace(/\\/g, '/'),
+  });
+  install.applyRuntimeContentRewritesInPlace(stagedDir, layout.runtime, pathPrefix);
+}
+
+module.exports = {
+  ALLOWED_RUNTIMES,
+  resolveRuntimeArtifactLayout,
+  rewriteStagedArtifacts,
+  findInstallSourceRoot,
+  findAgentsSourceRoot,
+};
