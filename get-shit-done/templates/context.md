@@ -95,6 +95,13 @@ Template for `.planning/phases/XX-name/{phase_num}-CONTEXT.md` - captures implem
 
 </deferred>
 
+<open_questions>
+## Open Questions
+
+[Optional. "How" questions the discussion could not answer and research should, one list item each. With `workflow.research: on-gap`, /fvgsd-build researches only when this list has an item.]
+
+</open_questions>
+
 ---
 
 *Phase: XX-name*

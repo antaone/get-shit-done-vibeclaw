@@ -671,7 +671,7 @@ If `valid != true`, refuse to verify. Surface the discrepancy and ask the user t
 
 ## Build Mode
 
-This section applies only when your prompt contains a `<build_mode>` block. That block holds `key: value` lines: `brief`, `verification_path`, `human_uat_path`, `human_checks` (`defer` or `block`), `checks_json`, `stubs_json`, `slice_results`, `diff_stat`, `changed_files`, `context`, `roadmap`, `requirement_ids`, `recheck_gaps`.
+This section applies only when your prompt contains a `<build_mode>` block. That block holds `key: value` lines: `brief`, `verification_path`, `human_uat_path`, `human_checks` (`defer` or `block`), `checks_json`, `stubs_json`, `slice_results`, `diff_stat`, `changed_files`, `context`, `roadmap`, `requirement_ids`, `report` (`full` or `lite`; missing means `full`), `recheck_gaps`.
 
 It changes the standard process as follows:
 
@@ -682,7 +682,11 @@ It changes the standard process as follows:
    - you may run targeted probes: one test file, one endpoint, one CLI call
 3. **Stubs:** every `stubs_json` finding is a gap, unless the surrounding code shows it is tracked work.
 4. **Coverage:** check every CONTEXT `<decisions>` entry, every ROADMAP success criterion, and every id in `requirement_ids` against the changed code (`changed_files`, `diff_stat`).
-5. **Report:** write `verification_path` in the VERIFICATION.md format from `<output>` (frontmatter `phase`, `verified`, `status`, `score`, plus `gaps`).
+5. **Report:** write `verification_path` in the VERIFICATION.md format from `<output>` (frontmatter `phase`, `verified`, `status`, `score`, plus `gaps`). With `report: lite`, the body is only:
+   - `## Must-haves`: a table `| # | Must-have | Status | Evidence |`, one row per must-have, with evidence of one line (a `file:line`, a command or a check name)
+   - `## Checks`: one line per failing check, as `<name>: <first error line>` (`preexisting` ones marked so), or `all passed`
+
+   Leave out every other section and all narrative. The frontmatter stays complete, because the lead reads `status` and `gaps` from it.
 6. **Human-only checks** (visual or manual flows): when any exist, write them to `human_uat_path` yourself, whatever `human_checks` says. Step 8's execute-phase sink does not apply in build mode. Format:
 
    ```markdown

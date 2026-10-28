@@ -65,7 +65,7 @@ Resume from `resume.state`: `new` → `research`; `brief_written` → `baseline`
 </step>
 
 <step name="research">
-If `inputs.research` is not null: with `RESEARCH_ONLY`, show its path, `OUTCOME=stopped` → `next`; otherwise skip this step. Also skip it when `config.research` is false and `RESEARCH_ONLY` is not set.
+If `inputs.research` is not null: with `RESEARCH_ONLY`, show its path, `OUTCOME=stopped` → `next`; otherwise skip this step. Also skip it when `config.research` is false and `RESEARCH_ONLY` is not set. With `config.research_mode` `on-gap`, `config.research` is true only when CONTEXT.md has an Open Questions section with at least one item. In that case, add `Research only the Open Questions in {inputs.context}.` to the objective.
 
 ```bash
 RESEARCHER_MODEL=$(fvgsd-sdk query resolve-model fvgsd-phase-researcher --pick model)
@@ -259,6 +259,7 @@ changed_files: {changed files joined with ", "}
 context: {inputs.context}
 roadmap: {inputs.roadmap}
 requirement_ids: {inputs.requirement_ids joined with ", "}
+report: {config.verify_report}
 recheck_gaps:
 </build_mode>
 ${VERIFIER_SKILLS}

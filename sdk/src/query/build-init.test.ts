@@ -163,11 +163,12 @@ describe('init.build', () => {
       context: `${PHASE_DIR}/03-CONTEXT.md`, research: null, spec: null, ui_spec: null, milestone_brief: null,
       roadmap: '.planning/ROADMAP.md', requirements: '.planning/REQUIREMENTS.md', requirement_ids: ['AUTH-01', 'AUTH-02'],
     });
-    expect(data.commands).toEqual({ build: 'make all', typecheck: null, lint: null, test: null });
+    expect(data.commands).toEqual({ build: 'make all', typecheck: null, lint: null, test: null, extra: [] });
     expect(data.runtime).toEqual({ name: 'claude', ...resolveRuntimeCapabilities('claude') });
     expect(data.config).toEqual({
-      research: true, fix_rounds: 2, human_checks: 'defer', code_review: false, parallel: 'auto', engine: 'agents',
+      research: true, research_mode: 'on', fix_rounds: 2, human_checks: 'defer', code_review: false, parallel: 'auto', engine: 'agents',
       max_concurrent_agents: 3, check_timeout_seconds: 1800, mode: 'interactive', security_enforcement: true, commit_docs: true,
+      verify_report: 'full',
     });
     expect(data.models).toEqual({ brief: 'opus', slice: 'sonnet', strong: 'opus', verifier: 'sonnet' });
     expect(data.resume).toEqual({
@@ -457,6 +458,23 @@ describe('init.build', () => {
       research: false, human_checks: 'block', engine: 'workflow', code_review: true, check_timeout_seconds: 60,
       mode: 'yolo', security_enforcement: false, commit_docs: false,
     });
+  });
+
+  it('researches on-gap only when CONTEXT.md lists open questions', async () => {
+    await put('.planning/config.json', JSON.stringify({ workflow: { research: 'on-gap', build_verify_report: 'lite', extra_check_commands: ['npm run db'] } }));
+    const withContext = async (context: string) => {
+      await put(`${PHASE_DIR}/03-CONTEXT.md`, context);
+      return (await init('3')).config;
+    };
+    expect(await withContext('# Context\n\n## Implementation Decisions\n\n- use JWT\n'))
+      .toMatchObject({ research: false, research_mode: 'on-gap', verify_report: 'lite' });
+    expect((await withContext('# Context\n\n## Open Questions\n\n- How does the queue retry?\n\n## Deferred Ideas\n\n- none\n')).research).toBe(true);
+    expect((await withContext('# Context\n\n<open_questions>\n## Open Questions\n\nNone.\n</open_questions>\n')).research).toBe(false);
+    expect((await withContext('# Context\n\n## Open Questions\n\n- None\n\n## Specific Ideas\n\n- How about tabs?\n')).research).toBe(false);
+    expect((await withContext('# Context\n\n### Open questions\n1. Which driver supports pooling?\n')).research).toBe(true);
+    expect((await init('3')).commands.extra).toEqual(['npm run db']);
+    await rm(join(dir, PHASE_DIR, '03-CONTEXT.md'));
+    expect((await init('3')).config.research).toBe(false);
   });
 
   it('reports inherit models when the project has no config.json', async () => {

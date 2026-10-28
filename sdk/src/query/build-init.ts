@@ -72,8 +72,30 @@ function positiveInt(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
 }
 
-function buildConfig(config: Record<string, unknown>) {
+const OPEN_QUESTIONS_HEADING = /^(#{2,4})\s+Open Questions\b/i;
+const NO_ITEM = /^(none|n\/a|-+)\.?$/i;
+
+/**
+ * True when CONTEXT.md has an Open Questions section (heading, optionally inside
+ * `<open_questions>`) with at least one list item that isn't "None".
+ */
+export function hasOpenQuestions(context: string): boolean {
+  const lines = context.split(/\r?\n/);
+  const start = lines.findIndex((line) => OPEN_QUESTIONS_HEADING.test(line));
+  if (start === -1) return false;
+  const level = lines[start].match(OPEN_QUESTIONS_HEADING)![1].length;
+  for (const line of lines.slice(start + 1)) {
+    const heading = line.match(/^(#{1,6})\s/);
+    if ((heading && heading[1].length <= level) || /^\s*<\/open_questions>/.test(line)) break;
+    const item = line.match(/^\s*(?:[-*+]|\d+[.)])\s+(.*\S)/);
+    if (item && !NO_ITEM.test(item[1].trim())) return true;
+  }
+  return false;
+}
+
+function buildConfig(config: Record<string, unknown>, context: string | null) {
   const workflow = (config.workflow ?? {}) as Record<string, unknown>;
+  const researchMode = workflow.research === 'on-gap' ? 'on-gap' : workflow.research === false ? 'off' : 'on';
   const parallelization = config.parallelization;
   const parallelObject = typeof parallelization === 'object' && parallelization !== null
     ? parallelization as Record<string, unknown>
@@ -81,7 +103,8 @@ function buildConfig(config: Record<string, unknown>) {
   const parallelEnabled = parallelObject ? parallelObject.enabled !== false : parallelization !== false;
   const rounds = workflow.build_fix_rounds;
   return {
-    research: workflow.research !== false,
+    research: researchMode === 'on-gap' ? context !== null && hasOpenQuestions(context) : researchMode === 'on',
+    research_mode: researchMode,
     fix_rounds: typeof rounds === 'number' && Number.isInteger(rounds) ? Math.min(5, Math.max(0, rounds)) : 2,
     human_checks: workflow.build_human_checks === 'block' ? 'block' : 'defer',
     code_review: workflow.build_code_review === true,
@@ -92,6 +115,7 @@ function buildConfig(config: Record<string, unknown>) {
     mode: String(config.mode ?? 'interactive'),
     security_enforcement: workflow.security_enforcement !== false,
     commit_docs: config.commit_docs !== false,
+    verify_report: workflow.build_verify_report === 'lite' ? 'lite' : 'full',
   };
 }
 
@@ -318,6 +342,15 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
     .find((candidate) => existsSync(candidate));
 
   const detected = detectChecks(projectDir, (configRecord.workflow ?? {}) as Record<string, unknown>);
+  const contextFile = findInput(files, 'CONTEXT.md');
+  let contextText: string | null = null;
+  if (contextFile) {
+    try {
+      contextText = readFileSync(join(phase.dirAbs, contextFile), 'utf-8');
+    } catch {
+      contextText = null;
+    }
+  }
   // A --runtime value outside the supported runtimes, including the installer token
   // __FVGSD_RUNTIME__ left unreplaced, falls back to detection.
   const runtimeFlag = flags.runtime;
@@ -335,7 +368,7 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
       phase_found: true,
       phase: { number: phase.number, padded: phase.padded, name: phase.name, dir: phase.dir },
       inputs: {
-        context: phaseFile(findInput(files, 'CONTEXT.md')),
+        context: phaseFile(contextFile),
         research: phaseFile(findInput(files, 'RESEARCH.md')),
         // AI-SPEC.md is the ai-integration-phase design contract, not the phase spec; spec-phase skips it too.
         spec: phaseFile(findInput(files, 'SPEC.md', ['UI-SPEC.md', 'AI-SPEC.md'])),
@@ -345,9 +378,9 @@ export const initBuild: QueryHandler = async (args, projectDir, workstream) => {
         requirements: existsSync(paths.requirements) ? relPath(projectDir, paths.requirements) : null,
         requirement_ids: await phaseRequirementIds(projectDir, phase.number, workstream),
       },
-      commands: { build: detected.build, typecheck: detected.typecheck, lint: detected.lint, test: detected.test },
+      commands: { build: detected.build, typecheck: detected.typecheck, lint: detected.lint, test: detected.test, extra: detected.extra },
       runtime: { name: runtimeName, ...sessionRuntimeCapabilities(runtimeName, process.env) },
-      config: buildConfig(configRecord),
+      config: buildConfig(configRecord, contextText),
       models: {
         brief: planningModel,
         slice: await modelFor('fvgsd-builder', projectDir, workstream),
