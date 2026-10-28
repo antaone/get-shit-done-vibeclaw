@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-14",
+  "generated": "2026-10-28",
   "families": {
     "agents": [
       "fvgsd-advisor-researcher",
@@ -53,6 +53,7 @@
       "/fvgsd-debug",
       "/fvgsd-discuss-phase",
       "/fvgsd-docs-update",
+      "/fvgsd-dod",
       "/fvgsd-eval-review",
       "/fvgsd-execute-phase",
       "/fvgsd-explore",
@@ -77,6 +78,7 @@
       "/fvgsd-ns-project",
       "/fvgsd-ns-review",
       "/fvgsd-ns-workflow",
+      "/fvgsd-pack",
       "/fvgsd-pause-work",
       "/fvgsd-phase",
       "/fvgsd-plan-phase",

@@ -92,4 +92,5 @@ export const NON_FAMILY_COMMAND_MANIFEST: readonly NonFamilyCommandManifestEntry
   { canonical: 'build.run-checks', aliases: ['build run-checks'], mutation: false, outputMode: 'json' },
   { canonical: 'build.check-brief', aliases: ['build check-brief'], mutation: false, outputMode: 'json' },
   { canonical: 'build.waves', aliases: ['build waves'], mutation: false, outputMode: 'json' },
+  { canonical: 'pack.show', aliases: ['pack show'], mutation: false, outputMode: 'json' },
 ] as const;

@@ -298,6 +298,21 @@ User acceptance testing with auto-diagnosis.
 /fvgsd-verify-work 1                  # UAT for phase 1
 ```
 
+### `/fvgsd-dod`
+
+Run the definition-of-done checks once: build, typecheck, lint and test, then `workflow.extra_check_commands`. Prints one pass/fail table and the last 20 lines of each failure; the full output stays in the results file it names.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `N` | No | Phase number. When given, the results count as that phase's latest checks |
+
+A check set to `off` in config is skipped. See `/fvgsd-pack` for the settings.
+
+```bash
+/fvgsd-dod                            # Run the checks for the working tree
+/fvgsd-dod 3                          # Run them and record them for phase 3
+```
+
 ---
 
 ---
@@ -1020,6 +1035,22 @@ Toggle which skills are surfaced — apply a profile, list, or disable a cluster
 /fvgsd-surface profile standard       # Switch to standard profile
 /fvgsd-surface disable utility        # Disable the utility cluster
 /fvgsd-surface reset                  # Restore install-time profile
+```
+
+The `repo-session` profile surfaces only what a project session uses day to day: `build`, `vibe`, `quick`, `debug`, `verify-work`, `pause-work`, `resume-work`, `pack`, `dod`, `surface`, `help` and `update`, plus the commands they require.
+
+### `/fvgsd-pack`
+
+Show the project pack, or draft its missing parts from the repo. The pack is the `pack` section of `.planning/config.json` (name, deploy targets, migrations, Vibe candidate naming, message prefix, handoff file) plus the check, research and verifier settings beside it. Specialist agents read it and refuse to guess a missing field.
+
+| Subcommand | Description |
+|------------|-------------|
+| `show` | Print the pack, missing fields, value problems and the resolved check commands (default) |
+| `init` | Propose values from package.json scripts, `.github/workflows`, the migrations folder and the project instructions, then save the rows you confirm with `config-set` |
+
+```bash
+/fvgsd-pack                           # Show the pack
+/fvgsd-pack init                      # Draft and confirm the missing parts
 ```
 
 ---

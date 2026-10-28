@@ -736,6 +736,13 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": true
   },
   {
+    "canonical": "pack.show",
+    "aliases": [
+      "pack show"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "phase.mvp-mode",
     "aliases": [
       "phase mvp-mode"

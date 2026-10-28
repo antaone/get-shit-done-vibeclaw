@@ -118,6 +118,11 @@ Plan and execute a discussed phase in one step: a short brief, vertical slices, 
 Usage: `/fvgsd:build 1`
 Result: Creates `01-01-PLAN.md` (the brief), `01-01-SUMMARY.md` and `01-VERIFICATION.md` in the phase directory
 
+**`/fvgsd:dod [phase]`**
+Run the definition-of-done checks once (build, typecheck, lint, test, then `workflow.extra_check_commands`) and print one pass/fail table with the last 20 lines of each failure.
+
+Usage: `/fvgsd:dod` or `/fvgsd:dod 3`
+
 ### Execution
 
 **`/fvgsd:execute-phase <phase-number> [--wave N] [--gaps-only] [--tdd]`**
@@ -519,11 +524,16 @@ Configure GSD beyond the basic settings: model profile, advanced tuning, and thi
 
 Usage: `/fvgsd:config --profile budget`
 
+**`/fvgsd:pack [show|init]`**
+Show the project pack (the `pack` section of config.json plus check, research and verifier settings), or draft the missing parts from the repo and save what you confirm.
+
+Usage: `/fvgsd:pack init`
+
 **`/fvgsd:surface [list|status|profile <name>|disable <cluster>|enable <cluster>|reset]`**
 Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall.
 
 - `list` / `status` — Show enabled and disabled clusters and skills with token cost
-- `profile <name>` — Switch to a named base profile (`core`, `standard`, `full`)
+- `profile <name>` — Switch to a named base profile (`core`, `standard`, `repo-session`, `full`)
 - `disable <cluster>` — Remove a cluster from the active surface
 - `enable <cluster>` — Add a cluster back to the active surface
 - `reset` — Delete the surface delta and return to the install-time profile

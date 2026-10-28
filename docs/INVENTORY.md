@@ -55,7 +55,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 
 ---
 
-## Commands (69 shipped)
+## Commands (71 shipped)
 
 Full roster at `commands/gsd/*.md`. The groupings below mirror `docs/COMMANDS.md` section order; each row carries the command name, a one-line role derived from the command's frontmatter `description:`, and a link to the source file. `tests/command-count-sync.test.cjs` locks the count against the filesystem.
 
@@ -91,6 +91,7 @@ These six routers are descriptor-only entries that the model picks first; the bo
 | `/fvgsd-sketch` | Rapidly sketch UI/design ideas using throwaway HTML mockups; use `--wrap-up` to package findings. | [commands/gsd/sketch.md](../commands/gsd/sketch.md) |
 | `/fvgsd-execute-phase` | Execute all plans in a phase with wave-based parallelization. | [commands/gsd/execute-phase.md](../commands/gsd/execute-phase.md) |
 | `/fvgsd-verify-work` | Validate built features through conversational UAT with auto-diagnosis. | [commands/gsd/verify-work.md](../commands/gsd/verify-work.md) |
+| `/fvgsd-dod` | Run the project's definition-of-done checks and show one pass/fail table. | [commands/gsd/dod.md](../commands/gsd/dod.md) |
 | `/fvgsd-ship` | Create PR, run review, and prepare for merge after verification. | [commands/gsd/ship.md](../commands/gsd/ship.md) |
 | `/fvgsd-fast` | Execute a trivial task inline — no subagents, no planning overhead. | [commands/gsd/fast.md](../commands/gsd/fast.md) |
 | `/fvgsd-quick` | Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents. | [commands/gsd/quick.md](../commands/gsd/quick.md) |
@@ -161,6 +162,7 @@ These six routers are descriptor-only entries that the model picks first; the bo
 | `/fvgsd-config` | Configure GSD settings — workflow toggles (default), advanced knobs (`--advanced`), integrations (`--integrations`), or model profile (`--profile`). | [commands/gsd/config.md](../commands/gsd/config.md) |
 | `/fvgsd-pr-branch` | Create a clean PR branch by filtering out `.planning/` commits. | [commands/gsd/pr-branch.md](../commands/gsd/pr-branch.md) |
 | `/fvgsd-surface` | Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall. | [commands/gsd/surface.md](../commands/gsd/surface.md) |
+| `/fvgsd-pack` | Show or draft the project pack, the config.json facts fvgsd's agents read instead of guessing. | [commands/gsd/pack.md](../commands/gsd/pack.md) |
 | `/fvgsd-vibe` | Route any public workflow through one or more isolated Vibe candidates, including quick, fast, debug, phase, and milestone flows. | [commands/gsd/vibe.md](../commands/gsd/vibe.md) |
 | `/fvgsd-update` | Update GSD to latest version; use `--sync` to sync skills across runtimes or `--reapply` to reapply local patches. | [commands/gsd/update.md](../commands/gsd/update.md) |
 | `/fvgsd-help` | Show available GSD commands and usage guide. | [commands/gsd/help.md](../commands/gsd/help.md) |

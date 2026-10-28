@@ -11,6 +11,7 @@
  * Profile model: three named profiles replace the old minimal/full binary:
  *  - core     — ten skills covering the main project loop and Vibe entry surface
  *  - standard — core + phase management and workspace skills
+ *  - repo-session — the build, check and handoff skills a project session uses day to day
  *  - full     — all skills (previous default, '*' sentinel)
  * Profiles compose: --profile=core,audit resolves to union(closure(core), closure(audit)).
  * Back-compat aliases: --minimal / --core-only both map to --profile=core.
@@ -88,6 +89,21 @@ const PROFILES = Object.freeze({
     'resume-work',
     'pause-work',
     'workspace',
+  ]),
+  // A project session that takes steps through build and reports with dod.
+  'repo-session': Object.freeze([
+    'build',
+    'vibe',
+    'quick',
+    'debug',
+    'verify-work',
+    'pause-work',
+    'resume-work',
+    'pack',
+    'dod',
+    'surface',
+    'help',
+    'update',
   ]),
   full: '*',
 });

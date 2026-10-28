@@ -118,6 +118,8 @@ const CLUSTERS = Object.freeze({
     'debug',
     'extract-learnings',
     'surface',
+    'pack',
+    'dod',
   ]),
 });
 

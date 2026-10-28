@@ -26,6 +26,7 @@ import { buildFinalize } from './build-finalize.js';
 import { buildGroupProblems } from './build-problems.js';
 import { buildMergeWave } from './build-merge.js';
 import { checksDetect, buildRunChecks } from './build-checks.js';
+import { packShow } from './pack.js';
 import { buildCheckBrief, buildWaves } from './build-brief.js';
 import { buildScanStubs } from './build-stubs.js';
 
@@ -131,4 +132,6 @@ export const DOMAIN_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler
   ['build check-brief', buildCheckBrief],
   ['build.waves', buildWaves],
   ['build waves', buildWaves],
+  ['pack.show', packShow],
+  ['pack show', packShow],
 ] as const;

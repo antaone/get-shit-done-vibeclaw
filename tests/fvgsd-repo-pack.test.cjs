@@ -95,3 +95,30 @@ describe('repo pack: validatePackSetting parity with config-set', () => {
     assert.equal(validatePackSetting('workflow.research', 'anything'), null);
   });
 });
+
+describe('repo pack: commands and the repo-session profile', () => {
+  const { loadSkillsManifest, resolveProfile, PROFILES } = require('../get-shit-done/bin/lib/install-profiles.cjs');
+  const { parseFrontmatter } = require('./helpers.cjs');
+  const commandsDir = path.join(__dirname, '..', 'commands', 'gsd');
+
+  test('/fvgsd-pack and /fvgsd-dod use the queries they document', () => {
+    const pack = fs.readFileSync(path.join(commandsDir, 'pack.md'), 'utf8');
+    const dod = fs.readFileSync(path.join(commandsDir, 'dod.md'), 'utf8');
+    assert.equal(parseFrontmatter(pack).name, 'fvgsd:pack');
+    assert.equal(parseFrontmatter(dod).name, 'fvgsd:dod');
+    assert.match(pack, /fvgsd-sdk query pack\.show/);
+    assert.match(pack, /fvgsd-sdk query config-set/);
+    assert.match(dod, /fvgsd-sdk query build\.run-checks --set full --label dod --tail 20/);
+  });
+
+  test('repo-session surfaces the day-to-day skills and stays smaller than full', () => {
+    const manifest = loadSkillsManifest(commandsDir);
+    const resolved = resolveProfile({ modes: ['repo-session'], manifest });
+    assert.equal(resolved.name, 'repo-session');
+    for (const skill of PROFILES['repo-session']) {
+      assert.ok(manifest.has(skill), `${skill} is a real command`);
+      assert.ok(resolved.skills.has(skill), `${skill} is surfaced`);
+    }
+    assert.ok(resolved.skills.size < manifest.size / 2, `${resolved.skills.size} of ${manifest.size} skills`);
+  });
+});

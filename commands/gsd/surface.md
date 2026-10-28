@@ -156,7 +156,7 @@ Surface state is stored at `${RUNTIME_CONFIG_DIR}/.fvgsd-surface.json`
 ## Error handling
 
 - Unknown cluster name → list valid cluster names, exit without writing.
-- Unknown profile name → list known profiles (`core`, `standard`, `full`), exit.
+- Unknown profile name → list known profiles (`core`, `standard`, `repo-session`, `full`), exit.
 - Missing `surface.cjs` → prompt: "Run `npm i -g get-shit-done` to reinstall GSD."
 
 <execution_context>

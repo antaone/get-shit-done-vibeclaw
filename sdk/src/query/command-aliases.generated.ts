@@ -134,6 +134,7 @@ export const NON_FAMILY_COMMAND_ALIASES: readonly NonFamilyCommandAlias[] = [
   { canonical: 'learnings.delete', aliases: ['learnings delete'], mutation: true },
   { canonical: 'learnings.prune', aliases: ['learnings prune'], mutation: true },
   { canonical: 'milestone.complete', aliases: ['milestone complete'], mutation: true },
+  { canonical: 'pack.show', aliases: ['pack show'], mutation: false },
   { canonical: 'phase.mvp-mode', aliases: ['phase mvp-mode'], mutation: false },
   { canonical: 'progress.bar', aliases: ['progress bar'], mutation: false },
   { canonical: 'requirements.mark-complete', aliases: ['requirements mark-complete'], mutation: true },
