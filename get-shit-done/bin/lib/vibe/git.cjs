@@ -505,7 +505,8 @@ function cleanupCandidateWorktree(candidate, { deleteBranch = false, ...options 
   if (deleteBranch) {
     const head = branchHead(candidate.project_root, git.branch, options);
     if (head) {
-      invariant(head === git.result_commit, 'BRANCH_ADVANCED', `Refusing to delete advanced branch '${git.branch}'`);
+      // An unused prepared candidate has no result commit; its branch must still be at its base.
+      invariant(head === (git.result_commit || git.base_commit), 'BRANCH_ADVANCED', `Refusing to delete advanced branch '${git.branch}'`);
       requireGit(['branch', '-D', git.branch], candidate.project_root, 'BRANCH_DELETE_FAILED', `Could not delete candidate branch '${git.branch}'`, options);
       result.branch_deleted = true;
     }

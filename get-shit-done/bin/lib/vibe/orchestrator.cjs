@@ -939,9 +939,25 @@ class VibeOrchestrator {
   cleanup(candidateId, options = {}) {
     return this.store.withLock('orchestration', () => {
       const candidate = this.loadCandidate(candidateId);
-      invariant(['completed', 'promoted', 'failed'].includes(candidate.status), 'CANDIDATE_ACTIVE', `Cannot clean candidate '${candidate.id}' while it is ${candidate.status}`);
+      // A prepared candidate whose branch never moved past its base is unused, for
+      // example one left behind by a reused run. Its worktree must still be clean.
+      const unused = candidate.status === 'prepared'
+        && Boolean(candidate.git && candidate.git.required)
+        && git.branchHead(candidate.project_root, candidate.git.branch, this.gitOptions) === candidate.git.base_commit;
+      invariant(
+        unused || ['completed', 'promoted', 'failed'].includes(candidate.status),
+        'CANDIDATE_ACTIVE',
+        candidate.status === 'prepared'
+          ? `Cannot clean prepared candidate '${candidate.id}': its branch has commits beyond its base`
+          : `Cannot clean candidate '${candidate.id}' while it is ${candidate.status}`,
+      );
       invariant(!(options.deleteBranch && candidate.promotion.status === 'promoted'), 'BRANCH_PROMOTED', 'Promoted candidate branches are preserved');
       const result = git.cleanupCandidateWorktree(candidate, { deleteBranch: options.deleteBranch === true, ...this.gitOptions });
+      if (unused) {
+        candidate.status = 'failed';
+        candidate.cleanup.unused = true;
+        result.unused = true;
+      }
       const timestamp = iso(this.now());
       if (result.worktree_removed || result.worktree_missing) candidate.cleanup.worktree_removed_at = timestamp;
       if (result.branch_deleted) candidate.cleanup.branch_deleted_at = timestamp;

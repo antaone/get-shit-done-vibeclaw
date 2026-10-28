@@ -331,6 +331,28 @@ describe('VibeClaw orchestration core', () => {
     assert.throws(() => vibe.loadCandidate(corrupt.id), expectCode('STATE_CORRUPT'));
   });
 
+  test('cleans a prepared candidate only while its branch is at its base and its worktree is clean', () => {
+    vibe.startRun('feature-development', { id: 'unused-001' });
+    const unused = vibe.prepareStage('research', { tool: 'claude' }).candidate;
+    const cleaned = vibe.cleanup(unused.id, { deleteBranch: true });
+    assert.deepEqual([cleaned.worktree_removed, cleaned.branch_deleted, cleaned.unused], [true, true, true]);
+    const after = vibe.loadCandidate(unused.id);
+    assert.equal(after.status, 'failed');
+    assert.equal(after.cleanup.unused, true);
+    assert.ok(!vibe.next().candidates.some((candidate) => candidate.id === unused.id && candidate.status === 'prepared'));
+
+    const advanced = vibe.prepareStage('research', { tool: 'codex' }).candidate;
+    fs.writeFileSync(path.join(advanced.git.worktree, 'work.txt'), 'work\n', 'utf8');
+    git(advanced.git.worktree, 'add', 'work.txt');
+    git(advanced.git.worktree, 'commit', '-q', '-m', 'work');
+    assert.throws(() => vibe.cleanup(advanced.id), expectCode('CANDIDATE_ACTIVE'));
+
+    const dirty = vibe.prepareStage('research', { tool: 'gemini' }).candidate;
+    fs.writeFileSync(path.join(dirty.git.worktree, 'scratch.txt'), 'scratch\n', 'utf8');
+    assert.throws(() => vibe.cleanup(dirty.id), expectCode('WORKTREE_DIRTY'));
+    assert.equal(vibe.loadCandidate(dirty.id).status, 'prepared');
+  });
+
   test('recovers a stale lock without removing a live fresh lock', () => {
     const store = new VibeStore(project, { lockTimeoutMs: 100, staleLockMs: 25 });
     const lockPath = path.join(project, '.planning-fvgsd-vibe', 'locks', 'test.lock');
