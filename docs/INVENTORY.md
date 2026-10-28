@@ -10,7 +10,7 @@
 
 ---
 
-## Agents (34 shipped)
+## Agents (38 shipped)
 
 Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`docs/AGENTS.md`](AGENTS.md) carries a full role card (*primary*), a short stub in the "Advanced and Specialized Agents" section (*advanced stub*), or no coverage (*inventory only*).
 
@@ -38,6 +38,10 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 | fvgsd-doc-verifier | Verifies factual claims in generated documentation. | `/fvgsd-docs-update` | primary |
 | fvgsd-security-auditor | Verifies threat mitigations from PLAN.md threat model. | `/fvgsd-secure-phase` | primary |
 | fvgsd-builder | Writes the build brief for a phase, or builds one slice of it (brief and slice modes). | `/fvgsd-build` | advanced stub |
+| fvgsd-deploy-runner | Runs one deploy from the project pack's deploy target and reports its runs and after-checks. | sessions deploying a step | advanced stub |
+| fvgsd-proof-collector | Walks a spec's done-when list, runs a probe for each item, and writes the evidence file. | sessions proving a step | advanced stub |
+| fvgsd-handoff-keeper | Appends a handoff entry, rolls old entries to history, and flags a stale STATE.md. | sessions at a step boundary | advanced stub |
+| fvgsd-spec-digester | Reads a long step spec once and writes the phase's CONTEXT.md for this repo. | sessions starting a step | advanced stub |
 | fvgsd-pattern-mapper | Maps new files to closest existing analogs; writes PATTERNS.md for the planner. | `/fvgsd-plan-phase` (between research and planning) | advanced stub |
 | fvgsd-debug-session-manager | Runs the full `/fvgsd-debug` checkpoint-and-continuation loop in isolated context so main stays lean. | `/fvgsd-debug` | advanced stub |
 | fvgsd-code-reviewer | Reviews source files for bugs, security issues, and code-quality problems; produces REVIEW.md. | `/fvgsd-code-review` | advanced stub |
@@ -51,7 +55,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 | fvgsd-doc-classifier | Classifies a single planning document as ADR, PRD, SPEC, DOC, or UNKNOWN; spawned in parallel to process the doc corpus. | `/fvgsd-ingest-docs` | advanced stub |
 | fvgsd-doc-synthesizer | Synthesizes classified planning docs into a single consolidated context with precedence rules, cycle detection, and three-bucket conflicts report. | `/fvgsd-ingest-docs` | advanced stub |
 
-**Coverage note.** `docs/AGENTS.md` gives full role cards for 21 primary agents plus concise stubs for the 13 advanced agents. The Agent Tool Permissions Summary in that file covers only the primary 21 agents; the advanced agents' tool lists are captured in their per-agent frontmatter in `agents/fvgsd-*.md`.
+**Coverage note.** `docs/AGENTS.md` gives full role cards for 21 primary agents plus concise stubs for the 17 advanced agents. The Agent Tool Permissions Summary in that file covers only the primary 21 agents; the advanced agents' tool lists are captured in their per-agent frontmatter in `agents/fvgsd-*.md`.
 
 ---
 

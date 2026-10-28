@@ -405,9 +405,9 @@ tools: Read, Grep, Glob
 // ─── CODEX_AGENT_SANDBOX mapping ────────────────────────────────────────────────
 
 describe('CODEX_AGENT_SANDBOX', () => {
-  test('has all 12 agents mapped', () => {
+  test('has all 16 agents mapped', () => {
     const agentNames = Object.keys(CODEX_AGENT_SANDBOX);
-    assert.strictEqual(agentNames.length, 12, 'has 12 agents');
+    assert.strictEqual(agentNames.length, 16, 'has 16 agents');
   });
 
   test('workspace-write agents have write tools', () => {
@@ -415,6 +415,7 @@ describe('CODEX_AGENT_SANDBOX', () => {
       'fvgsd-executor', 'fvgsd-planner', 'fvgsd-phase-researcher',
       'fvgsd-project-researcher', 'fvgsd-research-synthesizer', 'fvgsd-verifier',
       'fvgsd-codebase-mapper', 'fvgsd-roadmapper', 'fvgsd-debugger', 'fvgsd-builder',
+      'fvgsd-deploy-runner', 'fvgsd-proof-collector', 'fvgsd-handoff-keeper', 'fvgsd-spec-digester',
     ];
     for (const name of writeAgents) {
       assert.strictEqual(CODEX_AGENT_SANDBOX[name], 'workspace-write', `${name} is workspace-write`);

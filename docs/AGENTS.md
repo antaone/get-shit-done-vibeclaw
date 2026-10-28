@@ -1,6 +1,6 @@
 # GSD Agent Reference
 
-> Full role cards for 21 primary agents plus concise stubs for 13 advanced/specialized agents (34 shipped agents total). The `agents/` directory and [`docs/INVENTORY.md`](INVENTORY.md) are the authoritative roster; see [Architecture](ARCHITECTURE.md) for context.
+> Full role cards for 21 primary agents plus concise stubs for 17 advanced/specialized agents (38 shipped agents total). The `agents/` directory and [`docs/INVENTORY.md`](INVENTORY.md) are the authoritative roster; see [Architecture](ARCHITECTURE.md) for context.
 
 ---
 
@@ -10,7 +10,7 @@ GSD uses a multi-agent architecture where thin orchestrators (workflow files) sp
 
 ### Agent Categories
 
-> The table below covers the **21 primary agents** detailed in this section. Thirteen additional shipped agents (builder, pattern-mapper, debug-session-manager, code-reviewer, code-fixer, ai-researcher, domain-researcher, eval-planner, eval-auditor, framework-selector, intel-updater, doc-classifier, doc-synthesizer) have concise stubs in the [Advanced and Specialized Agents](#advanced-and-specialized-agents) section below. For the authoritative 34-agent roster, see [`docs/INVENTORY.md`](INVENTORY.md) and the `agents/` directory.
+> The table below covers the **21 primary agents** detailed in this section. Seventeen additional shipped agents (builder, deploy-runner, proof-collector, handoff-keeper, spec-digester, pattern-mapper, debug-session-manager, code-reviewer, code-fixer, ai-researcher, domain-researcher, eval-planner, eval-auditor, framework-selector, intel-updater, doc-classifier, doc-synthesizer) have concise stubs in the [Advanced and Specialized Agents](#advanced-and-specialized-agents) section below. For the authoritative 38-agent roster, see [`docs/INVENTORY.md`](INVENTORY.md) and the `agents/` directory.
 
 | Category | Count | Agents |
 |----------|-------|--------|
@@ -480,7 +480,7 @@ Communication style, decision patterns, debugging approach, UX preferences, vend
 
 ## Advanced and Specialized Agents
 
-Thirteen additional agents ship under `agents/fvgsd-*.md` and are used by specialty workflows (`/fvgsd-ai-integration-phase`, `/fvgsd-eval-review`, `/fvgsd-code-review`, `/fvgsd-code-review --fix`, `/fvgsd-debug`, `/fvgsd-map-codebase --query`, `/fvgsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
+Seventeen additional agents ship under `agents/fvgsd-*.md` and are used by specialty workflows (`/fvgsd-ai-integration-phase`, `/fvgsd-eval-review`, `/fvgsd-code-review`, `/fvgsd-code-review --fix`, `/fvgsd-debug`, `/fvgsd-map-codebase --query`, `/fvgsd-ingest-docs`) and by the planner pipeline. Each carries full frontmatter in its agent file; the stubs below are concise by design. The authoritative roster (with spawner and primary-doc status per agent) lives in [`docs/INVENTORY.md`](INVENTORY.md).
 
 ### fvgsd-builder
 
@@ -499,6 +499,86 @@ Thirteen additional agents ship under `agents/fvgsd-*.md` and are used by specia
 - Checks its own brief with `build.check-brief` and commits it
 - Runs `build.run-checks --set quick --label quick-{slice}` plus slice-relevant tests before its one `feat` commit
 - Never edits STATE.md, ROADMAP.md, REQUIREMENTS.md, the summary or VERIFICATION.md
+
+---
+
+### fvgsd-deploy-runner
+
+**Role:** Runs one deploy to one environment from the project pack's `pack.deploy` target and reports its runs and after-checks.
+
+| Property | Value |
+|----------|-------|
+| **Spawned by** | A session or command that has already decided to deploy; it passes `env`, `ref`, `sha` and, for `needs_owner` targets, the owner's recorded approval |
+| **Parallelism** | Single instance |
+| **Tools** | Read, Bash, Grep, Glob |
+| **Model (balanced)** | Sonnet |
+| **Color** | Orange |
+| **Produces** | A deploy log under `<git-common-dir>/fvgsd/deploy/` and a `## DEPLOY RESULT` table |
+
+**Key behaviors:**
+- Refuses when the target is missing, invalid, or needs the owner's yes and none was passed
+- Dispatches `kind: github` workflows in order with their inputs and watches each run; runs a `kind: command` target once
+- Never pushes, merges, retries or guesses a workflow or command
+
+---
+
+### fvgsd-proof-collector
+
+**Role:** Walks a spec's done-when list, runs the cheapest probe for each item and writes the evidence file.
+
+| Property | Value |
+|----------|-------|
+| **Spawned by** | A session proving a step is done |
+| **Parallelism** | Single instance |
+| **Tools** | Read, Write, Bash, Grep, Glob |
+| **Model (balanced)** | Sonnet |
+| **Color** | Cyan |
+| **Produces** | `{spec}-PROOF.md` (or the given path), plus human-only items in a HUMAN-UAT file when asked |
+
+**Key behaviors:**
+- Judges each item `pass`, `fail`, `unproven` or `human`, with a one-line evidence entry
+- Probes read; they change state only when the item names that action, and never against production
+- Never fixes, deploys or commits
+
+---
+
+### fvgsd-handoff-keeper
+
+**Role:** Appends a handoff entry, rolls older entries to a history file, keeps the active handoff under its line cap and flags a stale STATE.md.
+
+| Property | Value |
+|----------|-------|
+| **Spawned by** | A session at a step boundary |
+| **Parallelism** | Single instance |
+| **Tools** | Read, Write, Bash, Grep, Glob |
+| **Model (balanced)** | Sonnet |
+| **Color** | Blue |
+| **Produces** | The handoff file at `pack.handoff_path` and its `history/` file, plus a 5-line `## HANDOFF STATUS` |
+
+**Key behaviors:**
+- Moves whole entries unchanged and checks line counts before and after, so no line is lost
+- Checks STATE.md through `state.json` and `state.validate` and reports staleness without editing it
+- Leaves `/fvgsd-pause-work`'s HANDOFF.json and `.continue-here.md` alone
+
+---
+
+### fvgsd-spec-digester
+
+**Role:** Reads a long step spec once and writes the phase's CONTEXT.md for this repo in the discuss-phase format.
+
+| Property | Value |
+|----------|-------|
+| **Spawned by** | A session starting a step from a spec |
+| **Parallelism** | Single instance |
+| **Tools** | Read, Write, Bash, Grep, Glob |
+| **Model (balanced)** | Sonnet (Opus on quality) |
+| **Color** | Purple |
+| **Produces** | `{phase}-CONTEXT.md` with a `### Done when` list and an Open Questions section, committed |
+
+**Key behaviors:**
+- Keeps only the repo's share of a multi-repo spec and the spec's own wording for names and numbers
+- Writes unclear points as open questions, which `workflow.research: on-gap` turns into research
+- Refuses to overwrite an existing CONTEXT.md unless told to
 
 ---
 
@@ -742,7 +822,7 @@ Thirteen additional agents ship under `agents/fvgsd-*.md` and are used by specia
 
 ## Agent Tool Permissions Summary
 
-> **Scope:** this table covers the 21 primary agents only. The 13 advanced/specialized agents listed above carry their own tool surfaces in their `agents/fvgsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
+> **Scope:** this table covers the 21 primary agents only. The 17 advanced/specialized agents listed above carry their own tool surfaces in their `agents/fvgsd-*.md` frontmatter (summarized in the per-agent stubs above and in [`docs/INVENTORY.md`](INVENTORY.md)).
 
 | Agent | Read | Write | Edit | Bash | Grep | Glob | WebSearch | WebFetch | MCP |
 |-------|------|-------|------|------|------|------|-----------|----------|-----|

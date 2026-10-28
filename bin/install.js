@@ -165,6 +165,10 @@ const CODEX_AGENT_SANDBOX = {
   'fvgsd-roadmapper': 'workspace-write',
   'fvgsd-debugger': 'workspace-write',
   'fvgsd-builder': 'workspace-write',
+  'fvgsd-deploy-runner': 'workspace-write',
+  'fvgsd-proof-collector': 'workspace-write',
+  'fvgsd-handoff-keeper': 'workspace-write',
+  'fvgsd-spec-digester': 'workspace-write',
   'fvgsd-plan-checker': 'read-only',
   'fvgsd-integration-checker': 'read-only',
 };

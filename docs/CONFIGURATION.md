@@ -789,6 +789,10 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 | fvgsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
 | fvgsd-executor | Opus | Sonnet | Sonnet | Inherit |
 | fvgsd-builder | Opus | Sonnet | Sonnet | Inherit |
+| fvgsd-deploy-runner | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-proof-collector | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-handoff-keeper | Sonnet | Sonnet | Haiku | Inherit |
+| fvgsd-spec-digester | Opus | Sonnet | Sonnet | Inherit |
 | fvgsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
@@ -805,7 +809,7 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 | fvgsd-doc-writer | Opus | Sonnet | Haiku | Inherit |
 | fvgsd-doc-verifier | Sonnet | Sonnet | Haiku | Inherit |
 
-> **All 34 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
+> **All 38 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
 
 ### Per-Agent Overrides
 
@@ -861,11 +865,11 @@ for the change to take effect. See issue #2256.
 
 | Phase type | Agents |
 |---|---|
-| `planning` | `fvgsd-planner`, `fvgsd-roadmapper`, `fvgsd-pattern-mapper` |
+| `planning` | `fvgsd-planner`, `fvgsd-roadmapper`, `fvgsd-pattern-mapper`, `fvgsd-spec-digester` |
 | `discuss` | (reserved — no subagent today) |
 | `research` | `fvgsd-phase-researcher`, `fvgsd-project-researcher`, `fvgsd-research-synthesizer`, `fvgsd-codebase-mapper`, `fvgsd-ui-researcher` |
-| `execution` | `fvgsd-executor`, `fvgsd-builder`, `fvgsd-debugger`, `fvgsd-doc-writer` |
-| `verification` | `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-nyquist-auditor`, `fvgsd-ui-checker`, `fvgsd-ui-auditor`, `fvgsd-doc-verifier` |
+| `execution` | `fvgsd-executor`, `fvgsd-builder`, `fvgsd-debugger`, `fvgsd-doc-writer`, `fvgsd-deploy-runner`, `fvgsd-handoff-keeper` |
+| `verification` | `fvgsd-verifier`, `fvgsd-plan-checker`, `fvgsd-integration-checker`, `fvgsd-nyquist-auditor`, `fvgsd-ui-checker`, `fvgsd-ui-auditor`, `fvgsd-doc-verifier`, `fvgsd-proof-collector` |
 | `completion` | (reserved — no subagent today) |
 
 `discuss` and `completion` are accepted by the schema for forward compatibility; setting them today is a no-op until a subagent maps to them.
@@ -945,8 +949,8 @@ Each agent in `MODEL_PROFILES` declares one of three default tiers. The resolver
 
 | Tier | Agents | Use case |
 |---|---|---|
-| `light` | fvgsd-codebase-mapper, fvgsd-doc-classifier, fvgsd-doc-verifier, fvgsd-integration-checker, fvgsd-intel-updater, fvgsd-nyquist-auditor, fvgsd-pattern-mapper, fvgsd-plan-checker, fvgsd-research-synthesizer, fvgsd-ui-auditor, fvgsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | fvgsd-advisor-researcher, fvgsd-ai-researcher, fvgsd-builder, fvgsd-code-fixer, fvgsd-code-reviewer, fvgsd-doc-synthesizer, fvgsd-doc-writer, fvgsd-domain-researcher, fvgsd-eval-auditor, fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-ui-researcher, fvgsd-verifier | Default workhorse — research, writing, primary verification |
+| `light` | fvgsd-codebase-mapper, fvgsd-deploy-runner, fvgsd-doc-classifier, fvgsd-doc-verifier, fvgsd-handoff-keeper, fvgsd-integration-checker, fvgsd-intel-updater, fvgsd-nyquist-auditor, fvgsd-pattern-mapper, fvgsd-plan-checker, fvgsd-proof-collector, fvgsd-research-synthesizer, fvgsd-ui-auditor, fvgsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
+| `standard` | fvgsd-advisor-researcher, fvgsd-ai-researcher, fvgsd-builder, fvgsd-code-fixer, fvgsd-code-reviewer, fvgsd-doc-synthesizer, fvgsd-doc-writer, fvgsd-domain-researcher, fvgsd-eval-auditor, fvgsd-executor, fvgsd-phase-researcher, fvgsd-project-researcher, fvgsd-spec-digester, fvgsd-ui-researcher, fvgsd-verifier | Default workhorse — research, writing, primary verification |
 | `heavy` | fvgsd-assumptions-analyzer, fvgsd-debug-session-manager, fvgsd-debugger, fvgsd-eval-planner, fvgsd-framework-selector, fvgsd-planner, fvgsd-roadmapper, fvgsd-security-auditor, fvgsd-user-profiler | Deep reasoning — already at top, can't escalate further |
 
 #### Escalation flow
