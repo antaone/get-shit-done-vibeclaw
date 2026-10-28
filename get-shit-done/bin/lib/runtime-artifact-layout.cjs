@@ -69,10 +69,38 @@ function getInstallExports() {
 // ---------------------------------------------------------------------------
 
 /**
+ * The commands/gsd directory an install came from, read from its source markers,
+ * or null when neither leads to an existing directory:
+ * 1. <runtimeConfigDir>/.fvgsd-source holding the commands/gsd path.
+ * 2. The install record next to this engine. An installed copy lives in
+ *    <config>/fvgsd/bin/lib, and the installer writes <config>/fvgsd/.fvgsd-source
+ *    as JSON whose `repo` is the clone holding commands/gsd. A clone has no such
+ *    file there, so installs and tests that run from a clone keep their own tree.
+ *
+ * @param {string} [runtimeConfigDir]
+ * @returns {string|null}
+ */
+function markerCommandsDir(runtimeConfigDir) {
+  if (runtimeConfigDir) {
+    try {
+      const src = fs.readFileSync(path.join(runtimeConfigDir, IDENTITY.sourceFile), 'utf8').trim();
+      if (src && fs.existsSync(src)) return src;
+    } catch { /* fall through */ }
+  }
+  try {
+    const recordPath = path.join(path.dirname(path.dirname(__dirname)), IDENTITY.sourceFile);
+    const record = JSON.parse(fs.readFileSync(recordPath, 'utf8'));
+    const candidate = typeof record?.repo === 'string' ? path.join(record.repo, 'commands', 'gsd') : null;
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  } catch { /* fall through */ }
+  return null;
+}
+
+/**
  * Locate the GSD commands/gsd source directory.
  *
  * Resolution order:
- * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.fvgsd-source marker.
+ * 1. The install's source markers (see markerCommandsDir).
  * 2. Walk up from __dirname using path.dirname (no literal .. segments).
  * 3. Throw a descriptive error if neither succeeds.
  *
@@ -81,15 +109,8 @@ function getInstallExports() {
  */
 function findInstallSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
-  if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, IDENTITY.sourceFile);
-    if (fs.existsSync(markerPath)) {
-      try {
-        const src = fs.readFileSync(markerPath, 'utf8').trim();
-        if (src && fs.existsSync(src)) return src;
-      } catch { /* fall through */ }
-    }
-  }
+  const marked = markerCommandsDir(runtimeConfigDir);
+  if (marked) return marked;
 
   // Step 2: walk up from __dirname
   let dir = __dirname;
@@ -108,7 +129,7 @@ function findInstallSourceRoot(runtimeConfigDir) {
  * Locate the GSD agents source directory.
  *
  * Resolution order:
- * 1. If runtimeConfigDir provided, check <runtimeConfigDir>/.fvgsd-source marker.
+ * 1. The install's source markers (see markerCommandsDir).
  * 2. Walk up from __dirname using path.dirname (no literal .. segments).
  * 3. Throw a descriptive error if neither succeeds.
  *
@@ -117,18 +138,11 @@ function findInstallSourceRoot(runtimeConfigDir) {
  */
 function findAgentsSourceRoot(runtimeConfigDir) {
   // Step 1: marker check
-  if (runtimeConfigDir) {
-    const markerPath = path.join(runtimeConfigDir, IDENTITY.sourceFile);
-    if (fs.existsSync(markerPath)) {
-      try {
-        const src = fs.readFileSync(markerPath, 'utf8').trim();
-        if (src && fs.existsSync(src)) {
-          // Marker points to commands/gsd; agents/ is a sibling of commands/
-          const agentsCandidate = path.resolve(path.dirname(src), '..', 'agents');
-          if (fs.existsSync(agentsCandidate)) return agentsCandidate;
-        }
-      } catch { /* fall through */ }
-    }
+  const marked = markerCommandsDir(runtimeConfigDir);
+  if (marked) {
+    // The marker points to commands/gsd; agents/ is a sibling of commands/
+    const agentsCandidate = path.resolve(path.dirname(marked), '..', 'agents');
+    if (fs.existsSync(agentsCandidate)) return agentsCandidate;
   }
 
   // Step 2: walk up from __dirname
@@ -302,4 +316,4 @@ function resolveRuntimeArtifactLayout(runtime, configDir, scope = 'global') {
   return { runtime, configDir, kinds };
 }
 
-module.exports = { ALLOWED_RUNTIMES, resolveRuntimeArtifactLayout, findInstallSourceRoot };
+module.exports = { ALLOWED_RUNTIMES, resolveRuntimeArtifactLayout, findInstallSourceRoot, findAgentsSourceRoot };
