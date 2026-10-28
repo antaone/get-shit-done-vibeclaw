@@ -164,10 +164,46 @@ function parseCallsAgents(content) {
   return [...new Set(matches)];
 }
 
+// Workflow references (`@<config>/fvgsd/workflows/<path>.md`, written with `~` or `$HOME`) in
+// skill and workflow bodies. The source files always name the Claude config dir.
+const WORKFLOW_REF_RE = /(?:~|\$HOME)\/\.claude\/fvgsd\/workflows\/([A-Za-z0-9_\-/]+\.md)/g;
+const SPAWN_RE = /subagent_type\s*[=:]\s*["']?(fvgsd-[a-z][a-z-]*)/g;
+
+/**
+ * Agents spawned by the workflow files a skill loads, following nested workflow
+ * references. Only `subagent_type` spawns count: workflows mention other agents
+ * in prose. Returns [] when the workflows directory doesn't exist.
+ *
+ * @param {string} content skill file content
+ * @param {string} workflowsDir get-shit-done/workflows beside commands/gsd
+ * @returns {string[]}
+ */
+function parseWorkflowSpawns(content, workflowsDir) {
+  if (!fs.existsSync(workflowsDir)) return [];
+  const spawned = new Set();
+  const seen = new Set();
+  const queue = [...content.matchAll(WORKFLOW_REF_RE)].map((m) => m[1]);
+  while (queue.length > 0) {
+    const rel = queue.pop();
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+    let text;
+    try {
+      text = fs.readFileSync(path.join(workflowsDir, rel), 'utf8');
+    } catch {
+      continue;
+    }
+    for (const m of text.matchAll(SPAWN_RE)) spawned.add(m[1]);
+    for (const m of text.matchAll(WORKFLOW_REF_RE)) queue.push(m[1]);
+  }
+  return [...spawned];
+}
+
 /**
  * Load the requires: dependency graph from a commands/gsd directory.
  * Also derives calls_agents for each skill by scanning the body text for
- * `fvgsd-*` agent name references. Agent stems are stored under the special
+ * `fvgsd-*` agent name references, plus the agents spawned by the workflow
+ * files it loads. Agent stems are stored under the special
  * key `_calls_agents_<stem>` so they don't conflict with skill stems.
  *
  * @param {string} commandsDir absolute path to commands/gsd/
@@ -176,6 +212,7 @@ function parseCallsAgents(content) {
 function loadSkillsManifest(commandsDir) {
   const manifest = new Map();
   if (!fs.existsSync(commandsDir)) return manifest;
+  const workflowsDir = path.join(path.dirname(path.dirname(commandsDir)), 'get-shit-done', 'workflows');
   const entries = fs.readdirSync(commandsDir, { withFileTypes: true });
   for (const entry of entries) {
     if (!entry.isFile()) continue;
@@ -184,9 +221,9 @@ function loadSkillsManifest(commandsDir) {
     try {
       const content = fs.readFileSync(path.join(commandsDir, entry.name), 'utf8');
       manifest.set(stem, parseRequires(content));
-      // Derive agent references from body text
-      const agentRefs = parseCallsAgents(content);
-      manifest.set(`_calls_agents_${stem}`, agentRefs);
+      // Derive agent references from body text and from the workflows it loads
+      const agentRefs = new Set([...parseCallsAgents(content), ...parseWorkflowSpawns(content, workflowsDir)]);
+      manifest.set(`_calls_agents_${stem}`, [...agentRefs]);
     } catch {
       manifest.set(stem, []);
       manifest.set(`_calls_agents_${stem}`, []);
