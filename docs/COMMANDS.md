@@ -313,6 +313,64 @@ A check set to `off` in config is skipped. See `/fvgsd-pack` for the settings.
 /fvgsd-dod 3                          # Run them and record them for phase 3
 ```
 
+### `/fvgsd-step`
+
+Take one step from its spec to a built, checked, proven and reported phase. The spec is digested into the phase's CONTEXT.md by `fvgsd-spec-digester`, then `/fvgsd-build` builds it, the definition-of-done checks run (reusing the build's own run when it passed at HEAD), `fvgsd-deploy-runner` deploys when asked, `fvgsd-proof-collector` writes `{phase}-PROOF.md`, and `fvgsd-handoff-keeper` records the report. The session reads only the agents' short results. There is one approval, before the build.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `spec-path` | **Yes** | The step spec |
+| `phase` | **Yes** | Phase number, or `new` to add a phase named after the spec |
+
+| Flag | Description |
+|------|-------------|
+| `--scope NAME` | The part of a multi-repo spec that belongs to this repo |
+| `--target TEXT` | How proof probes reach the running app, for example a dev base URL |
+| `--deploy ENV` | Deploy to that `pack.deploy` environment after the checks pass |
+| `--yes` | Skip the approval question |
+
+To run a step in a Vibe candidate, start it as `/fvgsd-vibe step <arguments>`.
+
+```bash
+/fvgsd-step specs/step-6.md 7 --target https://dev.example.com --deploy dev
+/fvgsd-step specs/step-7.md new --scope api
+```
+
+### `/fvgsd-deploy`
+
+Deploy HEAD to one `pack.deploy` environment with `fvgsd-deploy-runner`, then record the result with `fvgsd-handoff-keeper`. An environment with `needs_owner: true` needs the owner's yes, passed as `--approval` or given when asked. The command asks before pushing a commit the deploy needs.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `env` | **Yes** | An environment in `pack.deploy` |
+
+| Flag | Description |
+|------|-------------|
+| `--ref BRANCH` | Branch the deploy uses (default: the current branch) |
+| `--approval TEXT` | The owner's yes, verbatim, and where it is recorded |
+
+```bash
+/fvgsd-deploy dev
+/fvgsd-deploy staging --approval "yes, deploy 1a2b3c4 to staging (gate page 2026-10-28)"
+```
+
+### `/fvgsd-handoff`
+
+Add an entry to the handoff file at `pack.handoff_path`, move older entries to `history/`, keep the file under 300 lines, and check whether STATE.md is stale. With no text, the session writes a short entry from its own work. `/fvgsd-pause-work` also adds an entry when `pack.handoff_path` is set.
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `entry text` | No | The entry to add |
+
+| Flag | Description |
+|------|-------------|
+| `--step LABEL` | The current step's label (default: the current phase) |
+
+```bash
+/fvgsd-handoff
+/fvgsd-handoff "Step 6 deployed to dev; proof 9/10, item 4 needs a human" --step "step 6"
+```
+
 ---
 
 ---
@@ -1037,7 +1095,7 @@ Toggle which skills are surfaced — apply a profile, list, or disable a cluster
 /fvgsd-surface reset                  # Restore install-time profile
 ```
 
-The `repo-session` profile surfaces only what a project session uses day to day: `build`, `vibe`, `quick`, `debug`, `verify-work`, `pause-work`, `resume-work`, `pack`, `dod`, `surface`, `help` and `update`, plus the commands they require.
+The `repo-session` profile surfaces only what a project session uses day to day: `build`, `vibe`, `quick`, `debug`, `verify-work`, `pause-work`, `resume-work`, `pack`, `dod`, `step`, `deploy`, `handoff`, `surface`, `help` and `update`, plus the commands they require.
 
 ### `/fvgsd-pack`
 

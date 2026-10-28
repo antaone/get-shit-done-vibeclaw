@@ -59,7 +59,7 @@ Full roster at `agents/fvgsd-*.md`. The "Primary doc" column flags whether [`doc
 
 ---
 
-## Commands (71 shipped)
+## Commands (74 shipped)
 
 Full roster at `commands/gsd/*.md`. The groupings below mirror `docs/COMMANDS.md` section order; each row carries the command name, a one-line role derived from the command's frontmatter `description:`, and a link to the source file. `tests/command-count-sync.test.cjs` locks the count against the filesystem.
 
@@ -96,6 +96,9 @@ These six routers are descriptor-only entries that the model picks first; the bo
 | `/fvgsd-execute-phase` | Execute all plans in a phase with wave-based parallelization. | [commands/gsd/execute-phase.md](../commands/gsd/execute-phase.md) |
 | `/fvgsd-verify-work` | Validate built features through conversational UAT with auto-diagnosis. | [commands/gsd/verify-work.md](../commands/gsd/verify-work.md) |
 | `/fvgsd-dod` | Run the project's definition-of-done checks and show one pass/fail table. | [commands/gsd/dod.md](../commands/gsd/dod.md) |
+| `/fvgsd-step` | Run one step from its spec — digest, build, checks, deploy, proof, report and handoff. | [commands/gsd/step.md](../commands/gsd/step.md) |
+| `/fvgsd-deploy` | Deploy the current commit to one project-pack environment and record the result in the handoff. | [commands/gsd/deploy.md](../commands/gsd/deploy.md) |
+| `/fvgsd-handoff` | Add an entry to the project's handoff notes, roll old entries to history, and check STATE.md. | [commands/gsd/handoff.md](../commands/gsd/handoff.md) |
 | `/fvgsd-ship` | Create PR, run review, and prepare for merge after verification. | [commands/gsd/ship.md](../commands/gsd/ship.md) |
 | `/fvgsd-fast` | Execute a trivial task inline — no subagents, no planning overhead. | [commands/gsd/fast.md](../commands/gsd/fast.md) |
 | `/fvgsd-quick` | Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents. | [commands/gsd/quick.md](../commands/gsd/quick.md) |

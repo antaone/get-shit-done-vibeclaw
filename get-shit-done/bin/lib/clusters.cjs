@@ -120,6 +120,9 @@ const CLUSTERS = Object.freeze({
     'surface',
     'pack',
     'dod',
+    'step',
+    'deploy',
+    'handoff',
   ]),
 });
 

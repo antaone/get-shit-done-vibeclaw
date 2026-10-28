@@ -342,19 +342,19 @@ describe('settings.md is kept (merged into config entry point or remains standal
 // Group: Skill count reduced
 // ---------------------------------------------------------------------------
 describe('skill count', () => {
-  test('total user-invocable files in commands/gsd/*.md is <= 65', () => {
+  test('total user-invocable files in commands/gsd/*.md is <= 68', () => {
     // Exclude `ns-*.md` namespace meta-skills (#2792) from this cap.
     // Those are descriptor-only routers selected first by the model and
     // are not part of the consolidation surface this test tracks; their
     // own contract is enforced by tests/enh-2792-namespace-skills.test.cjs.
-    // fvgsd's own commands (build, vibe, pack, dod) count toward the cap; the
+    // fvgsd's own commands (build, vibe, pack, dod, step, deploy, handoff) count toward the cap; the
     // repo-session surface profile keeps a project session's listing small.
     const files = fs.readdirSync(COMMANDS_DIR)
       .filter((f) => f.endsWith('.md') && !f.startsWith('ns-'));
     assert.ok(
-      files.length <= 65,
+      files.length <= 68,
       [
-        `Expected <= 65 user-invocable skill files, found ${files.length}.`,
+        `Expected <= 68 user-invocable skill files, found ${files.length}.`,
         'Consolidation target is ~58.',
       ].join(' '),
     );

@@ -6,6 +6,7 @@ allowed-tools:
   - Read
   - Write
   - Bash
+  - Agent
 requires: [phase, progress]
 ---
 <execution_branch_guard>
@@ -28,6 +29,7 @@ Routes to the pause-work workflow which handles:
 - Complete state gathering (position, completed work, remaining work, decisions, blockers)
 - Handoff file creation with all context sections
 - Git commit as WIP
+- A short entry in the running handoff notes through fvgsd-handoff-keeper, when `pack.handoff_path` is set
 - Resume instructions
 </objective>
 

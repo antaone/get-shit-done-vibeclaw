@@ -6,6 +6,11 @@ Create structured `.planning/HANDOFF.json` and `.continue-here.md` handoff files
 Read all files referenced by the invoking prompt's execution_context before starting.
 </required_reading>
 
+<available_agent_types>
+Use these exact names; never fall back to general-purpose:
+- fvgsd-handoff-keeper — records the pause in the running handoff notes when `pack.handoff_path` is set
+</available_agent_types>
+
 <process>
 
 <step name="detect">
@@ -209,6 +214,26 @@ timestamp=$(fvgsd-sdk query current-timestamp full --raw)
 ```bash
 fvgsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
 ```
+</step>
+
+<step name="handoff_notes">
+Run `fvgsd-sdk query config-get pack.handoff_path --default ""`. Skip this step when it prints an empty value or the runtime cannot spawn agents.
+
+Otherwise record the pause in the project's running handoff notes. Get the model with `fvgsd-sdk query resolve-model fvgsd-handoff-keeper --pick model`, and pass it only when it is not `inherit`:
+
+```
+Agent(
+  subagent_type="fvgsd-handoff-keeper",
+  description="Record pause in handoff notes",
+  prompt="
+<handoff_inputs>
+entry: {3–6 lines: paused at {location}, task {X} of {Y}; the next action from <next_action>; blockers, if any; the .continue-here.md path}
+step: {phase {N}, or the location}
+</handoff_inputs>
+")
+```
+
+Wait for its `## HANDOFF STATUS` block and add it to the confirmation. HANDOFF.json and `.continue-here.md` stay as written; the keeper doesn't touch them.
 </step>
 
 <step name="confirm">

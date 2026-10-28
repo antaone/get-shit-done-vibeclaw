@@ -123,6 +123,21 @@ Run the definition-of-done checks once (build, typecheck, lint, test, then `work
 
 Usage: `/fvgsd:dod` or `/fvgsd:dod 3`
 
+**`/fvgsd:step <spec-path> <phase|new> [--scope NAME] [--target TEXT] [--deploy ENV] [--yes]`**
+Take one step end to end: digest the spec into CONTEXT.md, build, run the definition-of-done checks, optionally deploy, collect proof, report, and update the handoff. One approval, before the build.
+
+Usage: `/fvgsd:step specs/step-6.md 7 --deploy dev`
+
+**`/fvgsd:deploy <env> [--ref BRANCH] [--approval TEXT]`**
+Deploy HEAD to one `pack.deploy` environment and record the result in the handoff. Owner-gated environments need the owner's yes.
+
+Usage: `/fvgsd:deploy dev`
+
+**`/fvgsd:handoff [entry text] [--step LABEL]`**
+Add an entry to the handoff notes, roll old entries to history, and check STATE.md.
+
+Usage: `/fvgsd:handoff`
+
 ### Execution
 
 **`/fvgsd:execute-phase <phase-number> [--wave N] [--gaps-only] [--tdd]`**
