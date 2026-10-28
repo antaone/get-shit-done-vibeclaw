@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtemp, mkdir, rm, readdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { GSDError } from '../errors.js';
@@ -51,7 +52,7 @@ describe('detectChecks', () => {
     const dir = await tempDir();
     await files(dir, { 'package.json': JSON.stringify({ scripts: { build: 'tsc', typecheck: 'tsc --noEmit', lint: 'eslint .', test: 'vitest' } }) });
     expect(detectChecks(dir, {})).toEqual({
-      build: 'npm run build', typecheck: 'npm run typecheck', lint: 'npm run lint', test: 'npm test',
+      build: 'npm run build', typecheck: 'npm run typecheck', lint: 'npm run lint', test: 'npm test', extra: [],
       sources: { build: 'detected', typecheck: 'detected', lint: 'detected', test: 'detected' },
     });
   });
@@ -136,10 +137,19 @@ describe('detectChecks', () => {
     expect(checks.sources).toEqual({ build: 'config', typecheck: 'none', lint: 'config', test: 'detected' });
   });
 
+  it('turns a command off with "off" and reads extra commands in order', async () => {
+    const dir = await tempDir();
+    await files(dir, { 'package.json': JSON.stringify({ scripts: { lint: 'eslint .', typecheck: 'tsc' } }) });
+    const checks = detectChecks(dir, { lint_command: 'off', typecheck_command: ' OFF ', extra_check_commands: ['npm run db', ' ', 42, 'npm run seed'] });
+    expect(checks).toMatchObject({ lint: null, typecheck: null, extra: ['npm run db', 'npm run seed'] });
+    expect(checks.sources).toMatchObject({ lint: 'off', typecheck: 'off' });
+    expect(detectChecks(dir, { extra_check_commands: 'npm run db' }).extra).toEqual([]);
+  });
+
   it('returns nulls for an empty directory and tolerates malformed package.json', async () => {
     const empty = await tempDir();
     expect(detectChecks(empty, {})).toEqual({
-      build: null, typecheck: null, lint: null, test: null,
+      build: null, typecheck: null, lint: null, test: null, extra: [],
       sources: { build: 'none', typecheck: 'none', lint: 'none', test: 'none' },
     });
     const broken = await tempDir();
@@ -266,6 +276,37 @@ describe('build.run-checks', () => {
     expect([lines.length, lines[0], lines[199]]).toEqual([200, 'line 300', 'line 499']);
   }, 30_000);
 
+  it('runs extra commands after the four in the full set only', async () => {
+    const dir = await repoWithConfig({
+      build_command: `${NODE} -e "process.exit(0)"`,
+      extra_check_commands: [`${NODE} -e "process.exit(0)"`, `${NODE} -e "process.exit(4)"`],
+      build_check_timeout_seconds: 60,
+    });
+    const full = await run(dir, ['--phase', '3', '--set', 'full']);
+    expect(full.results.map((r) => [r.name, r.exit])).toEqual([
+      ['build', 0], ['typecheck', null], ['lint', null], ['test', null], ['extra-1', 0], ['extra-2', 4],
+    ]);
+    expect(full.passed).toBe(false);
+    const wave = await run(dir, ['--phase', '3', '--set', 'wave']);
+    expect(wave.results.map((r) => r.name)).toEqual(['build', 'typecheck']);
+    const rerun = await run(dir, ['--phase', '3', '--set', 'full', '--only', 'extra-2,build']);
+    expect(rerun.results.map((r) => [r.name, r.exit])).toEqual([['build', 0], ['extra-2', 4]]);
+    expect(readLatestChecks(dir, '03')['extra-2']?.passed).toBe(false);
+  }, 30_000);
+
+  it('runs without a phase under adhoc and trims returned output with --tail', async () => {
+    const dir = await repoWithConfig({
+      build_command: `${NODE} -e "for(let i=0;i<50;i++)console.log('line '+i);process.exit(1)"`,
+      build_check_timeout_seconds: 60,
+    });
+    const result = (await buildRunChecks(['--set', 'full', '--label', 'dod', '--tail', '3'], dir)).data as RunChecksData & { results_file: string };
+    expect(result.results[0].output_tail).toBe('line 47\nline 48\nline 49');
+    expect(result.results_file).toBe(join(dir, '.git', 'fvgsd', 'build', 'adhoc', 'dod.json'));
+    const stored = JSON.parse(readFileSync(result.results_file, 'utf-8')) as RunChecksData;
+    expect(stored.results[0].output_tail.split('\n')).toHaveLength(50);
+    expect(readLatestChecks(dir, 'adhoc').build?.passed).toBe(false);
+  }, 30_000);
+
   it('reports a missing git repository', async () => {
     const dir = await tempDir();
     expect((await buildRunChecks(['--phase', '3', '--set', 'quick'], dir)).data).toEqual({ error: 'git_repository_required' });
@@ -273,8 +314,10 @@ describe('build.run-checks', () => {
 
   it.each([
     [[]],
-    [['--set', 'full']],
     [['--phase', '3']],
+    [['--set', 'full', '--tail', '0']],
+    [['--set', 'full', '--tail', 'x']],
+    [['--phase', '3', '--set', 'full', '--only', 'extra-1']],
     [['--phase', '3', '--set', 'bogus']],
     [['--phase', '3', '--set', 'full', '--only', 'deploy']],
     [['--phase', '3', '--set', 'quick', '--only', 'test']],

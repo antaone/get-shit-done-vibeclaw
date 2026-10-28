@@ -3,7 +3,9 @@
  *
  * Resolves build/typecheck/lint/test commands (configured values first, then the
  * detection rules execute-phase's post-merge gate used in shell) and runs a set of
- * them with a timeout. Results are stored under <git-common-dir>/fvgsd/build/<P>/:
+ * them with a timeout. A configured `off` turns one of the four off, and the full set
+ * also runs `workflow.extra_check_commands` as `extra-1`, `extra-2`, ... Results are
+ * stored under <git-common-dir>/fvgsd/build/<P>/ (`adhoc` without --phase):
  * `<label>.json` for each run and `latest.json` with each command's latest result.
  */
 
@@ -24,17 +26,20 @@ export const CHECK_SETS: Readonly<Record<CheckSet, readonly CheckName[]>> = Obje
   wave: ['build', 'typecheck'],
   full: ['build', 'typecheck', 'lint', 'test'],
 });
-export type CheckSource = 'config' | 'detected' | 'none';
+export type CheckSource = 'config' | 'detected' | 'off' | 'none';
 export interface DetectedChecks {
   build: string | null;
   typecheck: string | null;
   lint: string | null;
   test: string | null;
+  /** `workflow.extra_check_commands`, run by the full set as `extra-1`, `extra-2`, ... */
+  extra: string[];
   sources: Record<CheckName, CheckSource>;
 }
 export interface DetectDeps { listXcodeSchemes?: (projectPath: string) => string[] }
 export interface CheckResult {
-  name: CheckName;
+  /** One of CHECK_NAMES, or `extra-<n>` for the n-th extra command. */
+  name: string;
   command: string | null;
   commit: string | null;
   exit: number | null;
@@ -58,6 +63,9 @@ export interface LatestCheckEntry {
 const XCODE_DESTINATION = "-destination 'platform=iOS Simulator,name=iPhone 16'";
 const PYTHON_SKIP = new Set(['.planning', 'node_modules', '.git', '.venv', 'venv', '__pycache__']);
 const LABEL_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const EXTRA_RE = /^extra-([1-9][0-9]*)$/;
+/** Results folder for runs without --phase. */
+const ADHOC_PHASE = 'adhoc';
 const TAIL_BYTES = 256 * 1024;
 const TAIL_LINES = 200;
 const DEFAULT_TIMEOUT_SECONDS = 1800;
@@ -165,7 +173,10 @@ function pythonFiles(projectDir: string): string[] {
   return found.sort().slice(0, 20);
 }
 
-/** Resolve the four check commands: non-empty configured values win, then detection. */
+/**
+ * Resolve the four check commands: non-empty configured values win (`off` turns one off),
+ * then detection. Also returns the extra commands in their configured order.
+ */
 export function detectChecks(projectDir: string, workflowConfig: Record<string, unknown>, deps: DetectDeps = {}): DetectedChecks {
   const configured = (key: string): string | null => {
     const value = workflowConfig[key];
@@ -230,13 +241,23 @@ export function detectChecks(projectDir: string, workflowConfig: Record<string, 
   };
 
   const detectors: Record<CheckName, () => string | null> = { build: detectBuild, typecheck: detectTypecheck, lint: detectLint, test: detectTest };
+  const extraRaw = workflowConfig.extra_check_commands;
+  const extra = Array.isArray(extraRaw)
+    ? extraRaw.filter((item): item is string => typeof item === 'string' && item.trim() !== '').map((item) => item.trim())
+    : [];
   const result = { sources: {} } as DetectedChecks;
   for (const name of CHECK_NAMES) {
     const fromConfig = configured(`${name}_command`);
+    if (fromConfig?.toLowerCase() === 'off') {
+      result[name] = null;
+      result.sources[name] = 'off';
+      continue;
+    }
     const command = fromConfig ?? detectors[name]();
     result[name] = command;
     result.sources[name] = fromConfig ? 'config' : command ? 'detected' : 'none';
   }
+  result.extra = extra;
   return result;
 }
 
@@ -402,18 +423,25 @@ export function readBaselineResults(projectDir: string, padded: string): CheckRe
 }
 
 export const buildRunChecks: QueryHandler = async (args, projectDir, workstream) => {
-  const { flags, positionals } = parseFlags(args, { values: ['phase', 'set', 'label', 'only'] });
+  const { flags, positionals } = parseFlags(args, { values: ['phase', 'set', 'label', 'only', 'tail'] });
   if (positionals.length > 0) throw invalid(`unexpected argument: ${positionals[0]}`);
-  if (typeof flags.phase !== 'string') throw invalid('--phase is required');
-  const phaseArg = flags.phase.trim();
-  // Key the results folder off the phase's actual on-disk directory when one exists
-  // (case preserved, e.g. "03a"), so it agrees with build.finalize's later
-  // readLatestChecks(phase.padded) lookup on case-sensitive filesystems. Only fall
-  // back to re-normalizing the flag (which uppercases letter suffixes) when the
-  // phase has no directory yet.
-  const resolvedPhase = await resolveBuildPhase(projectDir, phaseArg, workstream);
-  const padded = resolvedPhase?.padded ?? normalizePhaseName(phaseArg);
-  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(padded)) throw invalid(`invalid --phase: ${flags.phase}`);
+  let padded = ADHOC_PHASE;
+  if (typeof flags.phase === 'string') {
+    const phaseArg = flags.phase.trim();
+    // Key the results folder off the phase's actual on-disk directory when one exists
+    // (case preserved, e.g. "03a"), so it agrees with build.finalize's later
+    // readLatestChecks(phase.padded) lookup on case-sensitive filesystems. Only fall
+    // back to re-normalizing the flag (which uppercases letter suffixes) when the
+    // phase has no directory yet.
+    const resolvedPhase = await resolveBuildPhase(projectDir, phaseArg, workstream);
+    padded = resolvedPhase?.padded ?? normalizePhaseName(phaseArg);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(padded)) throw invalid(`invalid --phase: ${flags.phase}`);
+  }
+  let tail: number | null = null;
+  if (typeof flags.tail === 'string') {
+    if (!/^[1-9][0-9]*$/.test(flags.tail)) throw invalid('--tail must be a positive integer');
+    tail = Number(flags.tail);
+  }
   if (typeof flags.set !== 'string') throw invalid('--set is required');
   if (!Object.prototype.hasOwnProperty.call(CHECK_SETS, flags.set)) throw invalid('--set must be quick, wave or full');
   const set = flags.set as CheckSet;
@@ -421,11 +449,18 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   if (!LABEL_RE.test(label)) throw invalid(`invalid --label: ${label}`);
   // latest.json holds each command's latest result; a run labelled `latest` would overwrite it.
   if (label === 'latest') throw invalid(`invalid --label: ${label} is reserved`);
-  let names = [...CHECK_SETS[set]];
+  const config = await loadConfig(projectDir, workstream);
+  const workflow = config.workflow as unknown as Record<string, unknown>;
+  const detected = detectChecks(projectDir, workflow);
+  const commands = new Map<string, string | null>(CHECK_SETS[set].map((name) => [name, detected[name]]));
+  if (set === 'full') detected.extra.forEach((command, index) => commands.set(`extra-${index + 1}`, command));
+  let names = [...commands.keys()];
   if (typeof flags.only === 'string') {
     const only = flags.only.split(',').map((item) => item.trim()).filter(Boolean);
     for (const name of only) {
-      if (!(CHECK_NAMES as readonly string[]).includes(name)) throw invalid(`unknown check in --only: ${name}`);
+      const known = (CHECK_NAMES as readonly string[]).includes(name)
+        || (EXTRA_RE.test(name) && Number(name.slice('extra-'.length)) <= detected.extra.length);
+      if (!known) throw invalid(`unknown check in --only: ${name}`);
     }
     names = names.filter((name) => only.includes(name));
     if (names.length === 0) throw invalid(`--only selects no checks from set ${set}`);
@@ -434,9 +469,6 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   const stateDir = buildStateDir(projectDir, padded);
   if (!stateDir) return { data: { error: 'git_repository_required' } };
 
-  const config = await loadConfig(projectDir, workstream);
-  const workflow = config.workflow as unknown as Record<string, unknown>;
-  const detected = detectChecks(projectDir, workflow);
   const timeoutRaw = workflow.build_check_timeout_seconds;
   const timeoutSeconds = typeof timeoutRaw === 'number' && Number.isInteger(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : DEFAULT_TIMEOUT_SECONDS;
   const commit = headCommit(projectDir);
@@ -444,7 +476,7 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
 
   const results: CheckResult[] = [];
   for (const name of names) {
-    const command = detected[name];
+    const command = commands.get(name) ?? null;
     if (command === null) {
       results.push({ name, command: null, commit, exit: null, timed_out: false, skipped: true, duration_ms: 0, preexisting: false, output_tail: '' });
       continue;
@@ -467,7 +499,8 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
   }
 
   const data: RunChecksData = { set, label, passed: results.every((r) => !isFailure(r)), results };
-  writeJsonAtomic(join(stateDir, `${label}.json`), data);
+  const resultsFile = join(stateDir, `${label}.json`);
+  writeJsonAtomic(resultsFile, data);
   await withLock(join(stateDir, 'latest.lock'), () => {
     const latestPath = join(stateDir, 'latest.json');
     const existing = readJson(latestPath);
@@ -480,5 +513,9 @@ export const buildRunChecks: QueryHandler = async (args, projectDir, workstream)
     }
     writeJsonAtomic(latestPath, latest);
   });
-  return { data };
+  // --tail shortens only the returned output; the results file keeps the full tail.
+  const returned = tail === null
+    ? data.results
+    : data.results.map((r) => ({ ...r, output_tail: r.output_tail === '' ? '' : r.output_tail.split('\n').slice(-tail).join('\n') }));
+  return { data: { ...data, results: returned, results_file: resultsFile } };
 };
