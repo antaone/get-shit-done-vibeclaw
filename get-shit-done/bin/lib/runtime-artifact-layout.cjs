@@ -28,17 +28,39 @@ const COMMAND_ENTRY_PREFIX = `${IDENTITY.commandPrefix}-`;
 // ---------------------------------------------------------------------------
 
 /**
+ * The clone an installed copy of this engine came from, or null. An installed
+ * copy lives in <config>/fvgsd/bin/lib, and the installer writes
+ * <config>/fvgsd/.fvgsd-source as JSON whose `repo` is that clone. A clone has
+ * no such file beside its lib, so code run from a clone keeps its own tree.
+ *
+ * @returns {string|null}
+ */
+function installRecordRepo() {
+  try {
+    const recordPath = path.join(path.dirname(path.dirname(__dirname)), IDENTITY.sourceFile);
+    const record = JSON.parse(fs.readFileSync(recordPath, 'utf8'));
+    return typeof record?.repo === 'string' && fs.existsSync(record.repo) ? record.repo : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Load bin/install.js exports in a test-safe way.
  * Sets FVGSD_TEST_MODE only for the duration of the require() call and only if
  * it was not already set, restoring the original value in a finally block so
  * the module-level environment is never permanently mutated.
+ * An installed copy has no bin/install.js beside it, so it loads the one in the
+ * clone named by its install record.
  */
 function loadInstallExports() {
   const savedTestMode = process.env.FVGSD_TEST_MODE;
   if (savedTestMode === undefined) process.env.FVGSD_TEST_MODE = '1';
   try {
+    const local = path.join(path.dirname(path.dirname(path.dirname(__dirname))), 'bin', 'install.js');
+    const repo = fs.existsSync(local) ? null : installRecordRepo();
     // eslint-disable-next-line global-require -- lazy import to avoid running installer at module load
-    return require('../../../bin/install.js');
+    return require(repo ? path.join(repo, 'bin', 'install.js') : '../../../bin/install.js');
   } finally {
     if (savedTestMode === undefined) delete process.env.FVGSD_TEST_MODE;
     else process.env.FVGSD_TEST_MODE = savedTestMode;
@@ -89,13 +111,9 @@ function markerCommandsDir(runtimeConfigDir) {
       if (src && fs.existsSync(src)) return src;
     } catch { /* fall through */ }
   }
-  try {
-    const recordPath = path.join(path.dirname(path.dirname(__dirname)), IDENTITY.sourceFile);
-    const record = JSON.parse(fs.readFileSync(recordPath, 'utf8'));
-    const candidate = typeof record?.repo === 'string' ? path.join(record.repo, 'commands', 'gsd') : null;
-    if (candidate && fs.existsSync(candidate)) return candidate;
-  } catch { /* fall through */ }
-  return null;
+  const repo = installRecordRepo();
+  const candidate = repo ? path.join(repo, 'commands', 'gsd') : null;
+  return candidate && fs.existsSync(candidate) ? candidate : null;
 }
 
 /**

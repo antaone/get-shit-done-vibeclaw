@@ -63,6 +63,17 @@ describe('install source markers', () => {
     assert.throws(() => installed.findInstallSourceRoot(config), /could not locate commands\/gsd/);
   });
 
+  test("an installed engine loads the clone's installer for its rewrites", () => {
+    const staged = path.join(tmp, 'staged', 'fvgsd-demo');
+    fs.mkdirSync(staged, { recursive: true });
+    fs.writeFileSync(path.join(staged, 'SKILL.md'), 'guard --runtime __FVGSD_RUNTIME__\n');
+    const layout = { runtime: 'claude', configDir: config, scope: 'global', kinds: [] };
+    assert.throws(() => installed.rewriteStagedArtifacts(layout, path.dirname(staged)), /Cannot find module/);
+    writeRecord({ repo: path.join(__dirname, '..') });
+    installed.rewriteStagedArtifacts(layout, path.dirname(staged));
+    assert.equal(fs.readFileSync(path.join(staged, 'SKILL.md'), 'utf8'), 'guard --runtime claude\n');
+  });
+
   test("an engine run from a clone ignores an earlier install's record and uses its own tree", () => {
     writeRecord({ repo });
     assert.equal(clone.findInstallSourceRoot(config), CLONE_COMMANDS);
