@@ -24,7 +24,8 @@ export interface GitConfig {
 }
 
 export interface WorkflowConfig {
-  research: boolean;
+  /** 'on-gap': the build workflow researches only when CONTEXT.md lists open questions. */
+  research: boolean | 'on-gap';
   plan_check: boolean;
   verifier: boolean;
   nyquist_validation: boolean;
@@ -78,11 +79,42 @@ export interface WorkflowConfig {
   build_engine?: 'agents' | 'workflow';
   /** Per-command timeout for build.run-checks, in seconds (default 1800). */
   build_check_timeout_seconds?: number;
-  /** Check commands. An empty or missing value means checks.detect decides. */
+  /** Check commands. An empty or missing value means checks.detect decides; 'off' skips the check. */
   build_command?: string;
   typecheck_command?: string;
   lint_command?: string;
   test_command?: string;
+  /** More commands the full check set runs after the four above, as extra-1, extra-2, ... */
+  extra_check_commands?: string[];
+  /** 'lite' asks the build verifier for a must-haves table without narrative (default 'full'). */
+  build_verify_report?: 'full' | 'lite';
+}
+
+/** One deploy target in the project pack. */
+export interface PackDeployTarget {
+  kind: 'github' | 'command';
+  /** GitHub workflow names, run in order (kind 'github'). */
+  workflows?: string[];
+  /** Shell command (kind 'command'). */
+  command?: string;
+  /** Deploys here need the owner's recorded yes. */
+  needs_owner?: boolean;
+  /** Commands to run after the deploy. */
+  after_checks?: string[];
+  notes?: string;
+}
+
+/** Project facts that fvgsd's specialist agents read instead of guessing (`pack.*`). */
+export interface PackConfig {
+  name?: string;
+  deploy?: Record<string, PackDeployTarget>;
+  migrations?: { dir: string; scheme?: string; lock_timeout?: boolean };
+  /** Vibe candidate naming pattern. */
+  candidates?: string;
+  /** Prefix for status messages to other sessions. */
+  message_prefix?: string;
+  /** Running handoff notes file, relative to the project root. */
+  handoff_path?: string;
 }
 
 export interface HooksConfig {
@@ -100,6 +132,7 @@ export interface GSDConfig {
   git: GitConfig;
   workflow: WorkflowConfig;
   hooks: HooksConfig;
+  pack?: PackConfig;
   agent_skills: Record<string, unknown>;
   /** Project slug for branch templates; mirrors fvgsd-tools `config.project_code`. */
   project_code?: string | null;

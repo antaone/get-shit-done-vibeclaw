@@ -37,6 +37,12 @@ const BUILD_SETTING_CASES = [
   { key: 'workflow.typecheck_command', raw: 'npx tsc --noEmit', expected: 'npx tsc --noEmit', valid: true },
   { key: 'workflow.build_command', raw: 'make all', expected: 'make all', valid: true },
   { key: 'workflow.test_command', raw: 'make check', expected: 'make check', valid: true },
+  { key: 'workflow.test_command', raw: 'off', expected: 'off', valid: true },
+  { key: 'workflow.research', raw: 'on-gap', expected: 'on-gap', valid: true },
+  { key: 'workflow.research', raw: 'false', expected: false, valid: true },
+  { key: 'workflow.build_verify_report', raw: 'lite', expected: 'lite', valid: true },
+  { key: 'workflow.extra_check_commands', raw: '["npm run test:db","make seed-check"]', expected: ['npm run test:db', 'make seed-check'], valid: true },
+  { key: 'workflow.extra_check_commands', raw: '[]', expected: [], valid: true },
   { key: 'workflow.build_mode', raw: 'maybe', valid: false },
   { key: 'workflow.build_fix_rounds', raw: '6', valid: false },
   { key: 'workflow.build_fix_rounds', raw: '-1', valid: false },
@@ -47,6 +53,11 @@ const BUILD_SETTING_CASES = [
   { key: 'workflow.build_engine', raw: 'script', valid: false },
   { key: 'workflow.build_check_timeout_seconds', raw: '0', valid: false },
   { key: 'workflow.lint_command', raw: '42', valid: false },
+  { key: 'workflow.research', raw: 'sometimes', valid: false },
+  { key: 'workflow.build_verify_report', raw: 'short', valid: false },
+  { key: 'workflow.extra_check_commands', raw: 'npm run test:db', valid: false },
+  { key: 'workflow.extra_check_commands', raw: '["npm test",""]', valid: false },
+  { key: 'workflow.extra_check_commands', raw: '[1]', valid: false },
 ];
 
 /**
@@ -121,7 +132,7 @@ describe('build settings: validateBuildSetting in config.cjs', () => {
     ['workflow.build_engine', 'workflow'],
     ['workflow.build_check_timeout_seconds', 1],
     ['workflow.lint_command', ''],
-    ['workflow.research', 'not a build setting'],
+    ['workflow.verifier', 'not a build setting'],
   ];
 
   for (const [key, value] of valid) {

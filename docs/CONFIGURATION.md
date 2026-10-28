@@ -220,7 +220,7 @@ All workflow toggles follow the **absent = enabled** pattern. If a key is missin
 
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
-| `workflow.research` | boolean | `true` | Domain investigation before planning each phase |
+| `workflow.research` | boolean or string | `true` | Domain investigation before planning each phase. `on-gap` makes `/fvgsd-build` research only when the phase's CONTEXT.md has an Open Questions section with at least one item, and then only those questions; plan-phase treats `on-gap` as `true` |
 | `workflow.plan_check` | boolean | `true` | Plan verification loop (up to 3 iterations) |
 | `workflow.verifier` | boolean | `true` | Post-execution verification against phase goals |
 | `workflow.auto_advance` | boolean | `false` | Auto-chain discuss → plan → execute without stopping |
@@ -271,6 +271,21 @@ All workflow toggles follow the **absent = enabled** pattern. If a key is missin
 | `workflow.build_check_timeout_seconds` | number | `1800` | Per-command timeout for `build.run-checks`. |
 | `workflow.lint_command` | string | `""` | Lint command for build checks. Empty means `checks.detect` decides: a package.json `lint` script, a Makefile or Justfile `lint` target, `cargo clippy`, `go vet ./...`, or `ruff check .` when ruff is configured. |
 | `workflow.typecheck_command` | string | `""` | Typecheck command for build checks. Empty means `checks.detect` decides: a package.json `typecheck` or `type-check` script, a Makefile or Justfile `typecheck` target, `npx tsc --noEmit` when `tsconfig.json` exists, or `mypy .` when mypy is configured. |
+| `workflow.extra_check_commands` | string[] | `[]` | More definition-of-done commands. The full check set (the build workflow's final checks and `/fvgsd-dod`) runs them after build, typecheck, lint and test, as `extra-1`, `extra-2`, and so on. Set `build_command`, `typecheck_command`, `lint_command` or `test_command` to `off` to skip that check instead of detecting it. |
+| `workflow.build_verify_report` | string | `full` | `lite` asks the build verifier for a must-haves table and a failing-checks list, with full frontmatter and no narrative. `full` writes the standard VERIFICATION.md. |
+
+## Project Pack
+
+The `pack` section holds project facts that fvgsd's specialist agents read instead of guessing. Every key is optional; `/fvgsd-pack show` lists the missing ones and `/fvgsd-pack init` drafts them from the repo. `config-set` rejects values that don't match the shapes below.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `pack.name` | string | (none) | Short project name |
+| `pack.deploy` | object | (none) | One entry per environment (lowercase names such as `dev`, `staging`, `prod`). Each is `{"kind": "github", "workflows": ["deploy"]}` (GitHub workflows run in order) or `{"kind": "command", "command": "make deploy"}`, with optional `needs_owner` (deploys here need the owner's recorded yes), `after_checks` (commands to run after the deploy) and `notes` |
+| `pack.migrations` | object | (none) | `{"dir": "db/migrations", "scheme": "NNNN_name", "lock_timeout": true}`. Only `dir` is required |
+| `pack.candidates` | string | (none) | Naming pattern for Vibe candidates |
+| `pack.message_prefix` | string | (none) | Prefix for status messages sent to other sessions |
+| `pack.handoff_path` | string | (none) | Running handoff notes file, relative to the project root |
 
 ## Code Quality Settings
 

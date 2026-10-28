@@ -396,7 +396,7 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
 
     // Workflow flags
     tdd_mode: options.tdd || config.tdd_mode || false,
-    research_enabled: config.research,
+    research_enabled: config.research !== false, // 'on-gap' only narrows the build workflow
     plan_checker_enabled: config.plan_checker,
     nyquist_validation_enabled: config.nyquist_validation,
     commit_docs: config.commit_docs,
@@ -636,7 +636,7 @@ function cmdInitNewMilestone(cwd, raw) {
 
     // Config
     commit_docs: config.commit_docs,
-    research_enabled: config.research,
+    research_enabled: config.research !== false, // 'on-gap' only narrows the build workflow
 
     // Current milestone
     current_milestone: milestone.version,

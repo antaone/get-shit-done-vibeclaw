@@ -222,6 +222,7 @@ const BUILD_SETTING_ENUMS: Readonly<Record<string, readonly string[]>> = {
   'workflow.build_human_checks': ['defer', 'block'],
   'workflow.build_parallel': ['auto', 'off'],
   'workflow.build_engine': ['agents', 'workflow'],
+  'workflow.build_verify_report': ['full', 'lite'],
 };
 const BUILD_SETTING_STRINGS = new Set([
   'workflow.lint_command',
@@ -253,6 +254,72 @@ export function validateBuildSetting(keyPath: string, value: unknown): string | 
   }
   if (BUILD_SETTING_STRINGS.has(keyPath) && typeof value !== 'string') {
     return 'Must be a string.';
+  }
+  if (keyPath === 'workflow.research' && value !== true && value !== false && value !== 'on-gap') {
+    return 'Valid values: true, false, on-gap';
+  }
+  if (keyPath === 'workflow.extra_check_commands'
+    && !(Array.isArray(value) && value.every((item) => typeof item === 'string' && item.trim() !== ''))) {
+    return 'Must be a JSON array of shell commands, e.g. ["npm run test:db"].';
+  }
+  return null;
+}
+
+// ─── validatePackSetting ──────────────────────────────────────────────────
+
+const PACK_STRINGS = new Set(['pack.name', 'pack.candidates', 'pack.message_prefix', 'pack.handoff_path']);
+const PACK_DEPLOY_KEYS = new Set(['kind', 'workflows', 'command', 'needs_owner', 'after_checks', 'notes']);
+const PACK_MIGRATION_KEYS = new Set(['dir', 'scheme', 'lock_timeout']);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
+}
+
+/**
+ * Validate a `pack.*` value after CLI coercion.
+ * Returns an error sentence, or null when the value is acceptable or the key is not a pack key.
+ * Mirrored by validatePackSetting in get-shit-done/bin/lib/config.cjs.
+ */
+export function validatePackSetting(keyPath: string, value: unknown): string | null {
+  if (PACK_STRINGS.has(keyPath) && !isNonEmptyString(value)) {
+    return 'Must be a non-empty string.';
+  }
+  if (keyPath === 'pack.deploy') {
+    if (!isPlainObject(value) || Object.keys(value).length === 0) {
+      return 'Must be a JSON object with one entry per environment, e.g. {"dev":{"kind":"command","command":"make deploy"}}.';
+    }
+    for (const [env, target] of Object.entries(value)) {
+      if (!/^[a-z][a-z0-9_-]*$/.test(env)) return `Environment name '${env}' must be lowercase letters, digits, - or _.`;
+      if (!isPlainObject(target)) return `${env} must be a JSON object.`;
+      const unknown = Object.keys(target).filter((key) => !PACK_DEPLOY_KEYS.has(key));
+      if (unknown.length > 0) return `${env} has unknown keys: ${unknown.join(', ')}. Allowed: ${[...PACK_DEPLOY_KEYS].join(', ')}.`;
+      if (target.kind === 'github') {
+        if (!isStringList(target.workflows)) return `${env}: kind github needs workflows, a list of workflow names.`;
+      } else if (target.kind === 'command') {
+        if (!isNonEmptyString(target.command)) return `${env}: kind command needs command, a shell command.`;
+      } else {
+        return `${env}: kind must be github or command.`;
+      }
+      if (target.needs_owner !== undefined && typeof target.needs_owner !== 'boolean') return `${env}: needs_owner must be true or false.`;
+      if (target.after_checks !== undefined && !isStringList(target.after_checks)) return `${env}: after_checks must be a list of shell commands.`;
+      if (target.notes !== undefined && typeof target.notes !== 'string') return `${env}: notes must be a string.`;
+    }
+  }
+  if (keyPath === 'pack.migrations') {
+    if (!isPlainObject(value)) return 'Must be a JSON object, e.g. {"dir":"db/migrations"}.';
+    const unknown = Object.keys(value).filter((key) => !PACK_MIGRATION_KEYS.has(key));
+    if (unknown.length > 0) return `Unknown keys: ${unknown.join(', ')}. Allowed: ${[...PACK_MIGRATION_KEYS].join(', ')}.`;
+    if (!isNonEmptyString(value.dir)) return 'dir is required: the migrations folder.';
+    if (value.scheme !== undefined && !isNonEmptyString(value.scheme)) return 'scheme must be a non-empty string.';
+    if (value.lock_timeout !== undefined && typeof value.lock_timeout !== 'boolean') return 'lock_timeout must be true or false.';
   }
   return null;
 }
@@ -388,7 +455,7 @@ export const configSet: QueryHandler = async (args, projectDir, workstream) => {
   }
 
   // Build settings — keep in sync with validateBuildSetting in config.cjs.
-  const buildSettingError = validateBuildSetting(keyPath, parsedValue);
+  const buildSettingError = validateBuildSetting(keyPath, parsedValue) ?? validatePackSetting(keyPath, parsedValue);
   if (buildSettingError) {
     throw new GSDError(`Invalid ${keyPath} '${rawValue}'. ${buildSettingError}`, ErrorClassification.Validation);
   }

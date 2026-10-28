@@ -557,7 +557,7 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
     planner_model: plannerModel,
     checker_model: checkerModel,
     tdd_mode: tddFlag || (config.workflow.tdd_mode ?? false),
-    research_enabled: config.workflow.research,
+    research_enabled: config.workflow.research !== false, // 'on-gap' only narrows the build workflow
     plan_checker_enabled: config.workflow.plan_check,
     nyquist_validation_enabled: config.workflow.nyquist_validation,
     commit_docs: config.commit_docs,
@@ -649,7 +649,7 @@ export const initNewMilestone: QueryHandler = async (_args, projectDir) => {
     synthesizer_model: synthesizerModel,
     roadmapper_model: roadmapperModel,
     commit_docs: config.commit_docs,
-    research_enabled: config.workflow.research,
+    research_enabled: config.workflow.research !== false, // 'on-gap' only narrows the build workflow
     current_milestone: milestone.version,
     current_milestone_name: milestone.name,
     latest_completed_milestone: latestCompleted?.version || null,

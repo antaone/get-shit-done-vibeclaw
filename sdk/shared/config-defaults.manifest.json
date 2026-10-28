@@ -62,7 +62,9 @@
     "build_engine": "agents",
     "build_check_timeout_seconds": 1800,
     "lint_command": "",
-    "typecheck_command": ""
+    "typecheck_command": "",
+    "extra_check_commands": [],
+    "build_verify_report": "full"
   },
   "planning": {
     "commit_docs": true,

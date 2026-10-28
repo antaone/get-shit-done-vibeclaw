@@ -245,7 +245,7 @@ Set via `workflow.*` namespace in config.json (e.g., `"workflow": { "research": 
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `workflow.research` | boolean | `true` | `true`, `false` | Run research agent before planning |
+| `workflow.research` | boolean or string | `true` | `true`, `false`, `on-gap` | Run research agent before planning. `on-gap`: `/fvgsd-build` researches only when CONTEXT.md lists Open Questions; plan-phase treats it as `true` |
 | `workflow.plan_check` | boolean | `true` | `true`, `false` | Run plan-checker agent to validate plans. _Alias:_ `plan_checker` is the flat-key form used in `CONFIG_DEFAULTS`; `workflow.plan_check` is the canonical namespaced form. |
 | `workflow.verifier` | boolean | `true` | `true`, `false` | Run verifier agent after execution |
 | `workflow.nyquist_validation` | boolean | `true` | `true`, `false` | Enable Nyquist-inspired validation gates |
