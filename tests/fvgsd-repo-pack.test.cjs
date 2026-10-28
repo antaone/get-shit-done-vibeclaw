@@ -16,6 +16,7 @@ function configPath(dir) {
 // parity block calls the CJS copy with the value config-set would have parsed.
 const DEPLOY = {
   dev: { kind: 'github', workflows: ['deploy'], after_checks: ['npm run smoke'] },
+  staging: { kind: 'github', workflows: [{ workflow: 'db-deploy', inputs: { mode: 'deploy' } }, 'deploy', { workflow: 'db-deploy', inputs: { mode: 'sync' } }] },
   prod: { kind: 'command', command: 'make deploy-prod', needs_owner: true, notes: 'owner gate first' },
 };
 const PACK_CASES = [
@@ -25,7 +26,13 @@ const PACK_CASES = [
   { key: 'pack.handoff_path', raw: 'notes/handoff.md', expected: 'notes/handoff.md', valid: true },
   { key: 'pack.deploy', raw: JSON.stringify(DEPLOY), expected: DEPLOY, valid: true },
   { key: 'pack.migrations', raw: '{"dir":"db/migrations","scheme":"NNNN_name","lock_timeout":true}', expected: { dir: 'db/migrations', scheme: 'NNNN_name', lock_timeout: true }, valid: true },
+  { key: 'pack.migrations', raw: 'false', expected: false, valid: true },
+  { key: 'pack.deploy', raw: 'false', expected: false, valid: true },
   { key: 'pack.name', raw: '42', valid: false },
+  { key: 'pack.migrations', raw: 'true', valid: false },
+  { key: 'pack.deploy', raw: '{"dev":{"kind":"github","workflows":[{"inputs":{"mode":"x"}}]}}', valid: false },
+  { key: 'pack.deploy', raw: '{"dev":{"kind":"github","workflows":[{"workflow":"w","inputs":{"n":1}}]}}', valid: false },
+  { key: 'pack.deploy', raw: '{"dev":{"kind":"github","workflows":[{"workflow":"w","ref":"main"}]}}', valid: false },
   { key: 'pack.deploy', raw: '{}', valid: false },
   { key: 'pack.deploy', raw: '{"dev":{"kind":"ftp"}}', valid: false },
   { key: 'pack.deploy', raw: '{"dev":{"kind":"github"}}', valid: false },
@@ -82,6 +89,7 @@ describe('repo pack: validatePackSetting parity with config-set', () => {
   for (const { key, raw, expected, valid } of PACK_CASES) {
     if (key === 'pack.unknown') continue; // rejected by the key check, not the value check
     let coerced = valid ? expected : raw;
+    if (!valid && (raw === 'true' || raw === 'false')) coerced = raw === 'true';
     if (!valid && /^[[{]/.test(raw)) coerced = JSON.parse(raw);
     if (!valid && raw !== '' && !isNaN(raw)) coerced = Number(raw);
     test(`validatePackSetting ${valid ? 'accepts' : 'rejects'} ${key} ${raw}`, () => {

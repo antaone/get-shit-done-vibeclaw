@@ -49,11 +49,16 @@ describe('pack.show', () => {
     const data = await show(dir);
     expect(data.missing).toEqual(['migrations', 'candidates', 'message_prefix']);
     expect(data.problems).toEqual([
-      'pack.deploy: dev: kind github needs workflows, a list of workflow names.',
+      'pack.deploy: dev: kind github needs workflows, a list of workflow names or {"workflow": name, "inputs": {...}} entries with string inputs.',
       'pack.region: unknown field',
     ]);
     expect(data).toMatchObject({ research: 'on-gap', verify_report: 'lite' });
     expect(data.checks).toMatchObject({ lint: null, extra: ['npm run db'], sources: { lint: 'off' } });
+  });
+
+  it('counts false deploy and migrations as present, not missing', async () => {
+    const data = await show(await project({ pack: { name: 'demo-app', deploy: false, migrations: false } }));
+    expect([data.missing, data.problems]).toEqual([['candidates', 'message_prefix', 'handoff_path'], []]);
   });
 
   it('flags a pack that is not an object and rejects arguments', async () => {

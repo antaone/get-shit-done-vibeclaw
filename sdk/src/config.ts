@@ -93,8 +93,8 @@ export interface WorkflowConfig {
 /** One deploy target in the project pack. */
 export interface PackDeployTarget {
   kind: 'github' | 'command';
-  /** GitHub workflow names, run in order (kind 'github'). */
-  workflows?: string[];
+  /** GitHub workflows, run in order (kind 'github'): a name, or a name with dispatch inputs. */
+  workflows?: Array<string | { workflow: string; inputs?: Record<string, string> }>;
   /** Shell command (kind 'command'). */
   command?: string;
   /** Deploys here need the owner's recorded yes. */
@@ -107,8 +107,10 @@ export interface PackDeployTarget {
 /** Project facts that fvgsd's specialist agents read instead of guessing (`pack.*`). */
 export interface PackConfig {
   name?: string;
-  deploy?: Record<string, PackDeployTarget>;
-  migrations?: { dir: string; scheme?: string; lock_timeout?: boolean };
+  /** false: the project has no deploys. */
+  deploy?: Record<string, PackDeployTarget> | false;
+  /** false: the project has no migrations. */
+  migrations?: { dir: string; scheme?: string; lock_timeout?: boolean } | false;
   /** Vibe candidate naming pattern. */
   candidates?: string;
   /** Prefix for status messages to other sessions. */

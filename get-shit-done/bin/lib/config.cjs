@@ -399,14 +399,26 @@ function isStringList(value) {
   return Array.isArray(value) && value.length > 0 && value.every(isNonEmptyString);
 }
 
+// A workflow is a name, or {"workflow": name, "inputs": {key: string}} for a dispatch with inputs.
+function isWorkflowList(value) {
+  return Array.isArray(value) && value.length > 0 && value.every((entry) => isNonEmptyString(entry)
+    || (isPlainObject(entry)
+      && isNonEmptyString(entry.workflow)
+      && Object.keys(entry).every((key) => key === 'workflow' || key === 'inputs')
+      && (entry.inputs === undefined
+        || (isPlainObject(entry.inputs) && Object.values(entry.inputs).every((input) => typeof input === 'string')))));
+}
+
 // Mirrors validatePackSetting in sdk/src/query/config-mutation.ts.
 function validatePackSetting(keyPath, value) {
   if (PACK_STRINGS.has(keyPath) && !isNonEmptyString(value)) {
     return 'Must be a non-empty string.';
   }
+  // false records that the project has no deploys or no migrations, so the field is not missing.
+  if ((keyPath === 'pack.deploy' || keyPath === 'pack.migrations') && value === false) return null;
   if (keyPath === 'pack.deploy') {
     if (!isPlainObject(value) || Object.keys(value).length === 0) {
-      return 'Must be a JSON object with one entry per environment, e.g. {"dev":{"kind":"command","command":"make deploy"}}.';
+      return 'Must be false or a JSON object with one entry per environment, e.g. {"dev":{"kind":"command","command":"make deploy"}}.';
     }
     for (const [env, target] of Object.entries(value)) {
       if (!/^[a-z][a-z0-9_-]*$/.test(env)) return `Environment name '${env}' must be lowercase letters, digits, - or _.`;
@@ -414,7 +426,7 @@ function validatePackSetting(keyPath, value) {
       const unknown = Object.keys(target).filter((key) => !PACK_DEPLOY_KEYS.has(key));
       if (unknown.length > 0) return `${env} has unknown keys: ${unknown.join(', ')}. Allowed: ${[...PACK_DEPLOY_KEYS].join(', ')}.`;
       if (target.kind === 'github') {
-        if (!isStringList(target.workflows)) return `${env}: kind github needs workflows, a list of workflow names.`;
+        if (!isWorkflowList(target.workflows)) return `${env}: kind github needs workflows, a list of workflow names or {"workflow": name, "inputs": {...}} entries with string inputs.`;
       } else if (target.kind === 'command') {
         if (!isNonEmptyString(target.command)) return `${env}: kind command needs command, a shell command.`;
       } else {
@@ -426,7 +438,7 @@ function validatePackSetting(keyPath, value) {
     }
   }
   if (keyPath === 'pack.migrations') {
-    if (!isPlainObject(value)) return 'Must be a JSON object, e.g. {"dir":"db/migrations"}.';
+    if (!isPlainObject(value)) return 'Must be false or a JSON object, e.g. {"dir":"db/migrations"}.';
     const unknown = Object.keys(value).filter((key) => !PACK_MIGRATION_KEYS.has(key));
     if (unknown.length > 0) return `Unknown keys: ${unknown.join(', ')}. Allowed: ${[...PACK_MIGRATION_KEYS].join(', ')}.`;
     if (!isNonEmptyString(value.dir)) return 'dir is required: the migrations folder.';

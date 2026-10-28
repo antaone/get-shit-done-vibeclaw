@@ -281,8 +281,8 @@ The `pack` section holds project facts that fvgsd's specialist agents read inste
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `pack.name` | string | (none) | Short project name |
-| `pack.deploy` | object | (none) | One entry per environment (lowercase names such as `dev`, `staging`, `prod`). Each is `{"kind": "github", "workflows": ["deploy"]}` (GitHub workflows run in order) or `{"kind": "command", "command": "make deploy"}`, with optional `needs_owner` (deploys here need the owner's recorded yes), `after_checks` (commands to run after the deploy) and `notes` |
-| `pack.migrations` | object | (none) | `{"dir": "db/migrations", "scheme": "NNNN_name", "lock_timeout": true}`. Only `dir` is required |
+| `pack.deploy` | object or `false` | (none) | One entry per environment (lowercase names such as `dev`, `staging`, `prod`); leave out environments that don't exist. Each is `{"kind": "github", "workflows": [...]}` or `{"kind": "command", "command": "make deploy"}`, with optional `needs_owner` (deploys here need the owner's recorded yes), `after_checks` (commands to run after the deploy) and `notes`. A workflow entry is a name, or `{"workflow": "db-deploy", "inputs": {"mode": "sync"}}` to dispatch it with string inputs; entries run in order. `false` records that the project has no deploys |
+| `pack.migrations` | object or `false` | (none) | `{"dir": "db/migrations", "scheme": "NNNN_name", "lock_timeout": true}`. Only `dir` is required. `false` records that the project has no migrations |
 | `pack.candidates` | string | (none) | Naming pattern for Vibe candidates |
 | `pack.message_prefix` | string | (none) | Prefix for status messages sent to other sessions |
 | `pack.handoff_path` | string | (none) | Running handoff notes file, relative to the project root |

@@ -30,8 +30,8 @@ Show the project pack, or draft the missing parts from the repo and save what th
 | Key | Value |
 |---|---|
 | `pack.name` | Short project name |
-| `pack.deploy` | One entry per environment: `{"kind": "github", "workflows": [...]}` or `{"kind": "command", "command": "..."}`, plus optional `needs_owner`, `after_checks` (commands) and `notes` |
-| `pack.migrations` | `{"dir": "...", "scheme": "...", "lock_timeout": true}`; only `dir` is required |
+| `pack.deploy` | One entry per environment that exists: `{"kind": "github", "workflows": [...]}` or `{"kind": "command", "command": "..."}`, plus optional `needs_owner`, `after_checks` (commands) and `notes`. A workflow is a name or `{"workflow": "...", "inputs": {"key": "value"}}`. `false` when the project has no deploys |
+| `pack.migrations` | `{"dir": "...", "scheme": "...", "lock_timeout": true}`; only `dir` is required. `false` when the project has no migrations |
 | `pack.candidates` | Vibe candidate naming pattern |
 | `pack.message_prefix` | Prefix for status messages to other sessions |
 | `pack.handoff_path` | Running handoff notes file, relative to the project root |
@@ -47,7 +47,7 @@ Show the project pack, or draft the missing parts from the repo and save what th
 3. `init`:
    - Read only what proposes values: `package.json` scripts, the names and `on:` triggers of `.github/workflows/*.yml` (`workflow_dispatch` workflows are deploy candidates), the migrations folder if one exists, and the deploy, check and migration sections of `CLAUDE.md` or `AGENTS.md`.
    - Propose a value for each missing field, and for each check command the instructions name differently from `pack.show`. Leave a field out when nothing supports it, and say so.
-   - Set `needs_owner: true` on every deploy environment other than `dev`, unless the user says otherwise.
+   - Set `needs_owner: true` on every deploy environment other than `dev`, unless the user says otherwise. Leave out environments that don't exist; never write a placeholder command, because deploy agents run `command` as written.
    - Show the proposal as one table (key, value, source) and ask with AskUserQuestion which rows to save; the user may edit a value in their answer.
    - Save each confirmed row with `fvgsd-sdk query config-set <key> '<value>'` (JSON for objects and lists). A rejected value prints why; fix it with the user or drop it.
    - Run `fvgsd-sdk query pack.show` again and print `missing` and `problems`.
